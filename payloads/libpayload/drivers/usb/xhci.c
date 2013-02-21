@@ -242,7 +242,7 @@ static int
 xhci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq, int dalen,
 	      unsigned char *data)
 {
-	return 1;
+	return -1;
 }
 
 /* finalize == 1: if data is of packet aligned size, add a zero length packet */
@@ -252,7 +252,7 @@ xhci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
 	int maxpsize = ep->maxpacketsize;
 	if (maxpsize == 0)
 		fatal("MaxPacketSize == 0!!!");
-	return 1;
+	return -1;
 }
 
 /* create and hook-up an intr queue into device schedule */
