@@ -24,6 +24,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -84,7 +85,7 @@ static void *map_memory(u64 physical)
 	/* Mapped memory must be aligned to page size */
 	p = physical & ~(page - 1);
 
-	debug("Mapping 1MB of physical memory at 0x%zx.\n", p);
+	debug("Mapping 1MB of physical memory at 0x%llx.\n", (unsigned long long) p);
 
 	v = mmap(NULL, MAP_BYTES, PROT_READ, MAP_SHARED, fd, p);
 
@@ -132,7 +133,7 @@ static int parse_cbtable(u64 address)
 	int i, found = 0;
 	void *buf;
 
-	debug("Looking for coreboot table at %lx\n", address);
+	debug("Looking for coreboot table at %" PRIu64 "\n", address);
 	buf = map_memory(address);
 
 	/* look at every 16 bytes within 4K of the base */
