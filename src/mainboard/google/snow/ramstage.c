@@ -23,6 +23,9 @@
 #include <drivers/ti/tps65090/tps65090.h>
 #include <cbmem.h>
 #include <delay.h>
+#include <edid.h>
+#include <vbe.h>
+#include <boot/coreboot_tables.h>
 #include <arch/cache.h>
 #include <arch/exception.h>
 #include <arch/gpio.h>
@@ -41,9 +44,16 @@
 #define DRAM_SIZE	CONFIG_DRAM_SIZE_MB
 #define DRAM_END	(DRAM_START + DRAM_SIZE)	/* plus one... */
 
+static struct edid snow_edid = {
+	.ha = 1366,
+	.va = 768,
+	.bpp = 16,
+};
+
 void hardwaremain(int boot_complete);
 void main(void)
 {
+	void *graphics_address;
 	console_init();
 	printk(BIOS_INFO,
 	       "hello from ramstage; now with deluxe exception handling.\n");
@@ -77,6 +87,8 @@ void main(void)
 	clock_set_i2s_clk_prescaler(epll_hz, sample_rate * lr_frame_size);
 
 	power_enable_xclkout();
+	graphics_address = cbmem_find(CBMEM_ID_CONSOLE);
+	set_vbe_mode_info_valid(&snow_edid, (uintptr_t)graphics_address);
 
 	hardwaremain(0);
 }
