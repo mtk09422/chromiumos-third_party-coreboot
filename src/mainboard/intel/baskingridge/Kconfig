@@ -15,6 +15,7 @@ config BOARD_SPECIFIC_OPTIONS # dummy
 	select HAVE_SMI_HANDLER
 	select CHROMEOS
 	select EXTERNAL_MRC_BLOB
+	select LAPIC_MONOTONIC_TIMER
 
 config MAINBOARD_DIR
 	string
