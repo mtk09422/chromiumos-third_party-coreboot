@@ -55,7 +55,7 @@ xhci_reinit (hci_t *controller)
 }
 
 hci_t *
-xhci_init (pcidev_t addr)
+xhci_init (void *bar)
 {
 	int i;
 
@@ -86,12 +86,7 @@ xhci_init (pcidev_t addr)
 	init_device_entry (controller, 0);
 	XHCI_INST (controller)->roothub = controller->devices[0];
 
-	controller->bus_address = addr;
-	controller->reg_base = (u32)phys_to_virt(pci_read_config32 (controller->bus_address, 0x10) & ~0xf);
-	//controller->reg_base = pci_read_config32 (controller->bus_address, 0x14) & ~0xf;
-	if (pci_read_config32 (controller->bus_address, 0x14) > 0) {
-		fatal("We don't do 64bit addressing.\n");
-	}
+	controller->reg_base = (u32)(unsigned long)bar;
 	usb_debug("regbase: %lx\n", controller->reg_base);
 
 	XHCI_INST (controller)->capreg = (void*)controller->reg_base;
@@ -203,6 +198,22 @@ xhci_init (pcidev_t addr)
 
 	return controller;
 }
+
+#ifdef CONFIG_USB_PCI
+hci_t *
+xhci_pci_init (pcidev_t addr)
+{
+	u32 reg_addr;
+
+	reg_addr = (u32)phys_to_virt(pci_read_config32 (addr, 0x10) & ~0xf);
+	//controller->reg_base = pci_read_config32 (addr, 0x14) & ~0xf;
+	if (pci_read_config32 (addr, 0x14) > 0) {
+		fatal("We don't do 64bit addressing.\n");
+	}
+
+	return xhci_init((void *)(unsigned long)reg_addr);
+}
+#endif
 
 static void
 xhci_shutdown (hci_t *controller)

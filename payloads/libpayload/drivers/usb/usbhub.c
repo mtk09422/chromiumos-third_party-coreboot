@@ -27,6 +27,8 @@
  * SUCH DAMAGE.
  */
 
+//#define USB_DEBUG
+
 #include <usb/usb.h>
 
 // assume that host_to_device is overwritten if necessary
