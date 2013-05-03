@@ -53,7 +53,6 @@ static struct edid snow_edid = {
 void hardwaremain(int boot_complete);
 void main(void)
 {
-	void *graphics_address;
 	console_init();
 	printk(BIOS_INFO,
 	       "hello from ramstage; now with deluxe exception handling.\n");
@@ -87,8 +86,6 @@ void main(void)
 	clock_set_i2s_clk_prescaler(epll_hz, sample_rate * lr_frame_size);
 
 	power_enable_xclkout();
-	graphics_address = cbmem_find(CBMEM_ID_CONSOLE);
-	set_vbe_mode_info_valid(&snow_edid, (uintptr_t)graphics_address);
 
 	hardwaremain(0);
 }
@@ -228,6 +225,7 @@ static void mainboard_init(device_t dev)
 		.base = (struct exynos5_dp *)EXYNOS5250_DP1_BASE,
 		.video_info = &snow_dp_video_info,
 	};
+	void *fb_addr;
 
 	i2c_init(TPS69050_BUS, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_init(7, CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
@@ -239,6 +237,9 @@ static void mainboard_init(device_t dev)
 
 	/* Disable USB3.0 PLL to save 250mW of power */
 	disable_usb30_pll();
+
+	fb_addr = cbmem_find(CBMEM_ID_CONSOLE);
+	set_vbe_mode_info_valid(&snow_edid, (uintptr_t)(fb_addr) + 64*KiB);
 
 	snow_lcd_vdd();
 	do {
