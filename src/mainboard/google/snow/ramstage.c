@@ -50,12 +50,10 @@ static struct edid snow_edid = {
 	.bpp = 16,
 };
 
-void hardwaremain(int boot_complete);
+void hardwaremain(void);
 void main(void)
 {
-	console_init();
-	printk(BIOS_INFO,
-	       "hello from ramstage; now with deluxe exception handling.\n");
+	/* FIXME this should be moved elsewhere. We don't want ramstage.c */
 
 	/* set up coreboot tables */
 	high_tables_size = CONFIG_COREBOOT_TABLES_SIZE;
@@ -87,7 +85,7 @@ void main(void)
 
 	power_enable_xclkout();
 
-	hardwaremain(0);
+	hardwaremain();
 }
 
 /* TODO: transplanted DP stuff, clean up once we have something that works */
