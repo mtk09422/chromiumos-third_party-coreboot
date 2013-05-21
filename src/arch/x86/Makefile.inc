@@ -174,7 +174,7 @@ $(objcbfs)/coreboot_ram.debug: $(objgenerated)/coreboot_ram.o $(src)/arch/x86/co
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -m elf_i386 -o $@ -L$(obj) $< -T $(src)/arch/x86/coreboot_ram.ld
 else
-	$(CC) -nostdlib -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/x86/coreboot_ram.ld $<
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/x86/coreboot_ram.ld $<
 endif
 
 endif
@@ -184,7 +184,7 @@ $(objgenerated)/coreboot_ram.o: $$(ramstage-objs) $(LIBGCC_FILE_NAME)
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -m elf_i386 -r -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group
 else
-	$(CC) $(CFLAGS) -nostdlib -r -o $@ -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -r -o $@ -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
 endif
 
 ################################################################################
@@ -354,7 +354,7 @@ $(objcbfs)/bootblock.debug: $(objgenerated)/bootblock.o $(objgenerated)/bootbloc
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -m elf_i386 -static -o $@.tmp -L$(obj) $< -T $(objgenerated)/bootblock.ld
 else
-	$(CC) -nostdlib -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/bootblock.ld $<
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/bootblock.ld $<
 endif
 
 ################################################################################
@@ -365,7 +365,7 @@ $(objcbfs)/romstage_null.debug: $$(romstage-objs) $(objgenerated)/romstage_null.
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(romstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(objgenerated)/romstage_null.ld
 else
-	$(CC) -nostdlib -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_null.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_null.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
 endif
 	$(NM) $@ | grep -q " [DdBb] "; if [ $$? -eq 0 ]; then \
 		echo "Forbidden global variables in romstage:"; \
@@ -377,7 +377,7 @@ $(objcbfs)/romstage_xip.debug: $$(romstage-objs) $(objgenerated)/romstage_xip.ld
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(romstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(objgenerated)/romstage_xip.ld
 else
-	$(CC) -nostdlib -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_xip.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_xip.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
 endif
 
 $(objgenerated)/romstage_null.ld: $$(ldscripts) $(obj)/ldoptions
