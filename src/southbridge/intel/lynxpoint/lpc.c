@@ -61,6 +61,11 @@ static void pch_enable_apic(struct device *dev)
 	/* affirm full set of redirection table entries ("write once") */
 	*ioapic_index = 1;
 	reg32 = *ioapic_data;
+	if (pch_is_lp()) {
+		/* PCH-LP has 39 redirection entries */
+		reg32 &= ~0x00ff0000;
+		reg32 |= 0x00270000;
+	}
 	*ioapic_index = 1;
 	*ioapic_data = reg32;
 
