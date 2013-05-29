@@ -398,6 +398,10 @@ config USB_XHCI_BASE_ADDRESS
 	depends on USB_MEMORY && USB_XHCI
 	default 0x12000000
 
+config USB_GEN_HUB
+	bool
+	default n
+
 endmenu
 
 menu "Debugging"
