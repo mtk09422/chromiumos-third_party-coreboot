@@ -66,6 +66,11 @@ Scope (\_TZ)
 			// Get Temperature from TIN# set in NVS
 			Store (\_SB.PCI0.LPCB.EC0.TINS (TMPS), Local0)
 
+			// Check for sensor not calibrated
+			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNCA)) {
+				Return (CTOK(0))
+			}
+
 			// Check for sensor not present
 			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNPR)) {
 				Return (CTOK(0))
