@@ -66,10 +66,12 @@ void dev_initialize_chips(void)
 		/* Initialize chip if we haven't yet. */
 		if (dev->chip_ops && dev->chip_ops->init &&
 				!dev->chip_ops->initialized) {
+			post_log_path(dev);
 			dev->chip_ops->init(dev->chip_info);
 			dev->chip_ops->initialized = 1;
 		}
 	}
+	post_log_clear();
 }
 
 DECLARE_SPIN_LOCK(dev_lock)
@@ -821,8 +823,10 @@ void assign_resources(struct bus *bus)
 			       dev_path(curdev));
 			continue;
 		}
+		post_log_path(curdev);
 		curdev->ops->set_resources(curdev);
 	}
+	post_log_clear();
 	printk(BIOS_SPEW, "%s assign_resources, bus %d link: %d\n",
 	       dev_path(bus->dev), bus->secondary, bus->link_num);
 }
@@ -845,14 +849,17 @@ static void enable_resources(struct bus *link)
 	struct bus *c_link;
 
 	for (dev = link->children; dev; dev = dev->sibling) {
-		if (dev->enabled && dev->ops && dev->ops->enable_resources)
+		if (dev->enabled && dev->ops && dev->ops->enable_resources) {
+			post_log_path(dev);
 			dev->ops->enable_resources(dev);
+		}
 	}
 
 	for (dev = link->children; dev; dev = dev->sibling) {
 		for (c_link = dev->link_list; c_link; c_link = c_link->next)
 			enable_resources(c_link);
 	}
+	post_log_clear();
 }
 
 /**
@@ -891,6 +898,8 @@ unsigned int scan_bus(struct device *busdev, unsigned int max)
 	    !busdev->ops->scan_bus) {
 		return max;
 	}
+
+	post_log_path(busdev);
 
 	do_scan_bus = 1;
 	while (do_scan_bus) {
@@ -951,6 +960,7 @@ void dev_enumerate(void)
 		return;
 	}
 	scan_bus(root, 0);
+	post_log_clear();
 	printk(BIOS_INFO, "done\n");
 }
 
@@ -1131,8 +1141,10 @@ static void init_link(struct bus *link)
 	struct device *dev;
 	struct bus *c_link;
 
-	for (dev = link->children; dev; dev = dev->sibling)
+	for (dev = link->children; dev; dev = dev->sibling) {
+		post_log_path(dev);
 		init_dev(dev);
+	}
 
 	for (dev = link->children; dev; dev = dev->sibling) {
 		for (c_link = dev->link_list; c_link; c_link = c_link->next)
@@ -1163,6 +1175,7 @@ void dev_initialize(void)
 	/* Now initialize everything. */
 	for (link = dev_root.link_list; link; link = link->next)
 		init_link(link);
+	post_log_clear();
 
 	printk(BIOS_INFO, "Devices initialized\n");
 	show_all_devs(BIOS_SPEW, "After init.");
