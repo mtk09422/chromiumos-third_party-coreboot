@@ -46,12 +46,13 @@ prebuild-files = \
 prebuilt-files = $(foreach file,$(cbfs-files), $(call extract_nth,1,$(file)))
 
 # TODO Change -b to Kconfig variable.
-$(obj)/coreboot.pre1: $(objcbfs)/bootblock.bin $$(prebuilt-files) $(CBFSTOOL)
+$(obj)/coreboot.pre1: $(objcbfs)/bootblock.bin $$(prebuilt-files) $(CBFSTOOL) $$(cpu_ucode_cbfs_file)
 	$(CBFSTOOL) $@.tmp create -m armv7 -s $(CONFIG_COREBOOT_ROMSIZE_KB)K \
 		-B $(objcbfs)/bootblock.bin -a 64 -b 0x0000 \
 		-H $(CONFIG_CBFS_HEADER_ROM_OFFSET) \
 		-o $(CONFIG_CBFS_ROM_OFFSET)
 	$(prebuild-files) true
+	$(call add-cpu-microcode-to-cbfs,$@.tmp)
 	mv $@.tmp $@
 else
 .PHONY: $(obj)/coreboot.pre1
