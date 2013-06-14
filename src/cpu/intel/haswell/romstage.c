@@ -258,6 +258,9 @@ void romstage_common(const struct romstage_params *params)
 
 	report_platform_info();
 
+	if (params->copy_spd != NULL)
+		params->copy_spd(params->pei_data);
+
 	sdram_initialize(params->pei_data);
 
 #if CONFIG_COLLECT_TIMESTAMPS
