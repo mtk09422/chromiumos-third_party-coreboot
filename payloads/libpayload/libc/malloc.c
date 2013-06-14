@@ -37,9 +37,6 @@
  * We're also susceptible to the usual buffer overrun poisoning, though the
  * risk is within acceptable ranges for this implementation (don't overrun
  * your buffers, kids!).
- *
- * The header format (hdrtype_t) supports heaps of up to 32MiB (given that int
- * is 32 bits long).
  */
 
 #define IN_MALLOC_C
@@ -68,7 +65,7 @@ static struct memory_type default_type =
 static struct memory_type *const heap = &default_type;
 static struct memory_type *dma = &default_type;
 
-typedef unsigned int hdrtype_t;
+typedef u64 hdrtype_t;
 #define HDRSIZE (sizeof(hdrtype_t))
 
 #define SIZE_BITS ((HDRSIZE << 3) - 7)
