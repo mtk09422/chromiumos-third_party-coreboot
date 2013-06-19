@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#ifndef CPU_X86_CAR_H
-#define CPU_X86_CAR_H
+#ifndef ARCH_EARLY_VARIABLES_H
+#define ARCH_EARLY_VARIABLES_H
 
 #ifdef __PRE_RAM__
 #define CAR_GLOBAL __attribute__((section(".car.global_data,\"w\",@nobits#")))

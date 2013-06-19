@@ -23,7 +23,7 @@
 #include <timestamp.h>
 #ifndef __PRE_RAM__
 /* For CAR_GLOBAL... This should move out of x86 specific code */
-#include <cpu/x86/car.h>
+#include <arch/early_variables.h>
 #endif
 
 #define MAX_TIMESTAMPS 30
