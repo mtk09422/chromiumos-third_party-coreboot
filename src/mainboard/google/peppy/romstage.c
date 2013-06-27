@@ -74,7 +74,7 @@ const struct rcba_config_instruction rcba_config[] = {
 /* Copy SPD data for on-board memory */
 static void copy_spd(struct pei_data *peid)
 {
-	const int gpio_vector[] = {13, 9, 47, -1};
+	const int gpio_vector[] = {47, 9, 13, -1};
 	int spd_index = get_gpios(gpio_vector);
 	struct cbfs_file *spd_file;
 
