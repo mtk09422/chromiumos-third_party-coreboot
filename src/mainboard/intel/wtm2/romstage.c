@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <console/console.h>
 #include "cpu/intel/haswell/haswell.h"
 #include "northbridge/intel/haswell/haswell.h"
