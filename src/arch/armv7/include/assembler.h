@@ -58,3 +58,5 @@
  * Cache alligned
  */
 #define CALGN(code...) code
+
+#define W(instr)	instr
