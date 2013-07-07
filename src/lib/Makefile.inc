@@ -26,6 +26,9 @@ ifneq ($(CONFIG_HAVE_ARCH_MEMCPY),y)
 bootblock-y += memcpy.c
 endif
 bootblock-y += memcmp.c
+ifneq ($(CONFIG_HAVE_ARCH_MEMMOVE),y)
+bootblock-y += memmove.c
+endif
 
 ifneq ($(CONFIG_HAVE_ARCH_MEMSET),y)
 romstage-y += memset.c
@@ -50,7 +53,9 @@ romstage-$(CONFIG_USBDEBUG) += usbdebug.c
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 romstage-$(CONFIG_EARLY_CBMEM_INIT) += cbmem.c
 romstage-y += compute_ip_checksum.c
+ifneq ($(CONFIG_HAVE_ARCH_MEMMOVE),y)
 romstage-y += memmove.c
+endif
 romstage-$(CONFIG_ARCH_X86) += gcc.c
 
 ramstage-y += hardwaremain.c
@@ -64,7 +69,9 @@ ifneq ($(CONFIG_HAVE_ARCH_MEMCPY),y)
 ramstage-y += memcpy.c
 endif
 ramstage-y += memcmp.c
+ifneq ($(CONFIG_HAVE_ARCH_MEMMOVE),y)
 ramstage-y += memmove.c
+endif
 ramstage-y += malloc.c
 smm-$(CONFIG_SMM_TSEG) += malloc.c
 ramstage-y += delay.c
@@ -108,7 +115,10 @@ endif
 ifneq ($(CONFIG_HAVE_ARCH_MEMCPY),y)
 smm-y += memcpy.c
 endif
-smm-y += cbfs.c memmove.c memcmp.c
+ifneq ($(CONFIG_HAVE_ARCH_MEMMOVE),y)
+smm-y += memmove.c
+endif
+smm-y += cbfs.c memcmp.c
 smm-$(CONFIG_CONSOLE_SERIAL8250) += uart8250.c
 smm-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart8250mem.c
 smm-$(CONFIG_USBDEBUG) += usbdebug.c
