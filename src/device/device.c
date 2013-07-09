@@ -195,12 +195,14 @@ static void read_resources(struct bus *bus)
 			       dev_path(curdev));
 			continue;
 		}
+		post_log_path(curdev);
 		curdev->ops->read_resources(curdev);
 
 		/* Read in the resources behind the current device's links. */
 		for (link = curdev->link_list; link; link = link->next)
 			read_resources(link);
 	}
+	post_log_clear();
 	printk(BIOS_SPEW, "%s read_resources bus %d link: %d done\n",
 	       dev_path(bus->dev), bus->secondary, bus->link_num);
 }
@@ -1007,6 +1009,7 @@ void dev_configure(void)
 	for (child = root->link_list->children; child; child = child->sibling) {
 		if (!(child->path.type == DEVICE_PATH_DOMAIN))
 			continue;
+		post_log_path(child);
 		for (res = child->resource_list; res; res = res->next) {
 			if (res->flags & IORESOURCE_FIXED)
 				continue;
@@ -1053,6 +1056,7 @@ void dev_configure(void)
 	for (child = root->link_list->children; child; child = child->sibling) {
 		if (!(child->path.type == DEVICE_PATH_DOMAIN))
 			continue;
+		post_log_path(child);
 		for (res = child->resource_list; res; res = res->next) {
 			if (res->flags & IORESOURCE_FIXED)
 				continue;
