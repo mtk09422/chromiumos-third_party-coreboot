@@ -4,6 +4,7 @@ config CPU_SAMSUNG_EXYNOS5250
 	select HAVE_UART_SPECIAL
 	select EARLY_CONSOLE
 	select DYNAMIC_CBMEM
+	select CAR_MIGRATION
 	bool
 	default n
 
