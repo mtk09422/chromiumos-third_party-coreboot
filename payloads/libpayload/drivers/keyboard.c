@@ -33,6 +33,7 @@
 
 #define I8042_CMD_READ_MODE  0x20
 #define I8042_CMD_WRITE_MODE 0x60
+#define I8042_CMD_DIS_KB     0xad
 
 #define I8042_MODE_XLATE     0x40
 
@@ -352,3 +353,22 @@ void keyboard_init(void)
 	console_add_input_driver(&cons);
 }
 
+void keyboard_disconnect(void)
+{
+	/* If 0x64 returns 0xff, then we have no keyboard
+	 * controller */
+	if (inb(0x64) == 0xFF)
+		return;
+
+	/* Empty keyboard buffer */
+	while (keyboard_havechar())
+		keyboard_getchar();
+
+	/* Send keyboard disconnect command */
+	outb(I8042_CMD_DIS_KB, 0x64);
+	keyboard_wait_write();
+
+	/* Hand off with empty buffer */
+	while (keyboard_havechar())
+		keyboard_getchar();
+}
