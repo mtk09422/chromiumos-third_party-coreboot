@@ -118,7 +118,7 @@ void set_gpio(int gpio_num, int value)
 	u32 config;
 
 	if (gpio_num > MAX_GPIO_NUMBER)
-		return 0; /* Just ignore wrong gpio numbers. */
+		return; /* Just ignore wrong gpio numbers. */
 
 	index = gpio_num / 32;
 	bit = gpio_num % 32;
