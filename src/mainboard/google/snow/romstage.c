@@ -22,6 +22,7 @@
 #include <armv7.h>
 #include <cbfs.h>
 #include <cbmem.h>
+#include <timestamp.h>
 
 #include <arch/cache.h>
 #include <cpu/samsung/exynos5250/i2c.h>
@@ -169,6 +170,14 @@ void main(void)
 	struct mem_timings *mem;
 	void *entry;
 	int is_resume = (get_wakeup_state() != IS_NOT_WAKEUP);
+#if CONFIG_COLLECT_TIMESTAMPS
+	uint64_t start_romstage_time;
+	uint64_t before_dram_time;
+	uint64_t after_dram_time;
+	uint64_t base_time = timestamp_get();
+
+	start_romstage_time = timestamp_get();
+#endif
 
 	/* Clock must be initialized before console_init, otherwise you may need
 	 * to re-initialize serial console drivers again. */
@@ -177,8 +186,14 @@ void main(void)
 	console_init();
 
 	setup_power(is_resume);
+#if CONFIG_COLLECT_TIMESTAMPS
+	before_dram_time = timestamp_get();
+#endif
 	setup_memory(mem, is_resume);
 
+#if CONFIG_COLLECT_TIMESTAMPS
+	after_dram_time = timestamp_get();
+#endif
 	if (is_resume) {
 		wakeup();
 	}
@@ -192,6 +207,18 @@ void main(void)
 
 	cbmem_initialize_empty();
 
+#if CONFIG_COLLECT_TIMESTAMPS
+	timestamp_init(base_time);
+	timestamp_add(TS_START_ROMSTAGE, start_romstage_time );
+	timestamp_add(TS_BEFORE_INITRAM, before_dram_time );
+	timestamp_add(TS_AFTER_INITRAM, after_dram_time );
+#endif
+
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/coreboot_ram");
+
+#if CONFIG_COLLECT_TIMESTAMPS
+	timestamp_add_now(TS_END_ROMSTAGE);
+#endif
+
 	stage_exit(entry);
 }
