@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2011 The ChromiumOS Authors.  All rights reserved.
+ * Copyright 2011 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,22 +22,14 @@
 #include <cbmem.h>
 #include <timestamp.h>
 #ifndef __PRE_RAM__
-/* For CAR_GLOBAL... This should move out of x86 specific code */
 #include <arch/early_variables.h>
+
+static struct timestamp_table* ts_table;
 #endif
 
 #define MAX_TIMESTAMPS 30
 
-#ifndef __PRE_RAM__
-static struct timestamp_table* ts_table;
-#endif
-
-static uint64_t tsc_to_uint64(tsc_t tstamp)
-{
-	return (((uint64_t)tstamp.hi) << 32) + tstamp.lo;
-}
-
-void timestamp_init(tsc_t base)
+void timestamp_init(uint64_t base)
 {
 	struct timestamp_table* tst;
 
@@ -50,12 +42,12 @@ void timestamp_init(tsc_t base)
 		return;
 	}
 
-	tst->base_time = tsc_to_uint64(base);
+	tst->base_time = base;
 	tst->max_entries = MAX_TIMESTAMPS;
 	tst->num_entries = 0;
 }
 
-void timestamp_add(enum timestamp_id id, tsc_t ts_time)
+void timestamp_add(enum timestamp_id id, uint64_t ts_time)
 {
 	struct timestamp_entry *tse;
 #ifdef __PRE_RAM__
@@ -69,12 +61,12 @@ void timestamp_add(enum timestamp_id id, tsc_t ts_time)
 
 	tse = &ts_table->entries[ts_table->num_entries++];
 	tse->entry_id = id;
-	tse->entry_stamp = tsc_to_uint64(ts_time) - ts_table->base_time;
+	tse->entry_stamp = ts_time - ts_table->base_time;
 }
 
 void timestamp_add_now(enum timestamp_id id)
 {
-	timestamp_add(id, rdtsc());
+	timestamp_add(id, timestamp_get());
 }
 
 #ifndef __PRE_RAM__
@@ -82,7 +74,7 @@ void timestamp_add_now(enum timestamp_id id)
 #define MAX_TIMESTAMP_CACHE 8
 struct timestamp_cache {
 	enum timestamp_id id;
-	tsc_t time;
+	uint64_t time;
 } timestamp_cache[MAX_TIMESTAMP_CACHE] CAR_GLOBAL;
 
 static int timestamp_entries CAR_GLOBAL = 0;
@@ -102,7 +94,7 @@ void timestamp_stash(enum timestamp_id id)
 		return;
 	}
 	timestamp_cache[timestamp_entries].id = id;
-	timestamp_cache[timestamp_entries].time = rdtsc();
+	timestamp_cache[timestamp_entries].time = timestamp_get();
 	timestamp_entries++;
 }
 

@@ -11,6 +11,7 @@ ramstage-y += ebda.c
 ramstage-y += rom_media.c
 ramstage-$(CONFIG_COOP_MULTITASKING) += thread.c
 ramstage-$(CONFIG_COOP_MULTITASKING) += thread_switch.S
+ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 romstage-$(CONFIG_EARLY_CONSOLE) += romstage_console.c
 romstage-y += cbfs_and_run.c
@@ -18,6 +19,7 @@ romstage-y += memset.c
 romstage-y += memcpy.c
 romstage-y += memmove.c
 romstage-y += rom_media.c
+romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 smm-y += memset.c
 smm-y += memcpy.c

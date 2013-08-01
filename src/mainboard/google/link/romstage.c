@@ -155,13 +155,12 @@ void main(unsigned long bist)
 	u16 pm1_sts;
 
 #if CONFIG_COLLECT_TIMESTAMPS
-	tsc_t start_romstage_time;
-	tsc_t before_dram_time;
-	tsc_t after_dram_time;
-	tsc_t base_time = {
-		.lo = pci_read_config32(PCI_DEV(0, 0x00, 0), 0xdc),
-		.hi = pci_read_config32(PCI_DEV(0, 0x1f, 2), 0xd0)
-	};
+	uint64_t start_romstage_time;
+	uint64_t before_dram_time;
+	uint64_t after_dram_time;
+	uint64_t base_time =
+		(uint64_t)pci_read_config32(PCI_DEV(0, 0x1f, 2), 0xd0) << 32 ||
+		pci_read_config32(PCI_DEV(0, 0x00, 0), 0xdc);
 #endif
 	struct pei_data pei_data = {
 		pei_version: PEI_VERSION,
@@ -210,7 +209,7 @@ void main(unsigned long bist)
 	};
 
 #if CONFIG_COLLECT_TIMESTAMPS
-	start_romstage_time = rdtsc();
+	start_romstage_time = timestamp_get();
 #endif
 
 	if (bist == 0)
@@ -284,12 +283,12 @@ void main(unsigned long bist)
 	post_code(0x3a);
 	pei_data.boot_mode = boot_mode;
 #if CONFIG_COLLECT_TIMESTAMPS
-	before_dram_time = rdtsc();
+	before_dram_time = timestamp_get();
 #endif
 	sdram_initialize(&pei_data);
 
 #if CONFIG_COLLECT_TIMESTAMPS
-	after_dram_time = rdtsc();
+	after_dram_time = timestamp_get();
 #endif
 	post_code(0x3c);
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2011 The ChromiumOS Authors.  All rights reserved.
+ * Copyright 2011 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 #ifndef __TIMESTAMP_H__
 #define __TIMESTAMP_H__
+
+#include <stdint.h>
 
 struct timestamp_entry {
 	uint32_t	entry_id;
@@ -55,12 +57,13 @@ enum timestamp_id {
 };
 
 #if CONFIG_COLLECT_TIMESTAMPS
-#include <cpu/x86/tsc.h>
-void timestamp_init(tsc_t base);
-void timestamp_add(enum timestamp_id id, tsc_t ts_time);
+void timestamp_init(uint64_t base);
+void timestamp_add(enum timestamp_id id, uint64_t ts_time);
 void timestamp_add_now(enum timestamp_id id);
 void timestamp_stash(enum timestamp_id id);
 void timestamp_sync(void);
+/* Implemented by the architecture code */
+uint64_t timestamp_get(void);
 #else
 #define timestamp_init(base)
 #define timestamp_add(id, time)

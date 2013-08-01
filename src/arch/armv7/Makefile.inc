@@ -192,6 +192,9 @@ romstage-y += memmove.S
 ramstage-y += memmove.S
 bootblock-y += memmove.S
 
+romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
+ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
+
 $(obj)/arch/armv7/coreboot_table.ramstage.o : $(OPTION_TABLE_H)
 
 romstage-srcs += $(objgenerated)/crt0.s
