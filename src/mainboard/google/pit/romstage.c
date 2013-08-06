@@ -43,6 +43,8 @@
 
 #define MMC0_GPIO_PIN	(58)
 
+#define PMIC_I2C_BUS	4
+
 struct pmic_write
 {
 	int or_orig; // Whether to or in the original value.
@@ -89,7 +91,7 @@ static void setup_power(int is_resume)
 
 	/* Initialize I2C bus to configure PMIC. */
 	exynos_pinmux_i2c4();
-	i2c_init(4, 1000000, 0x00); /* 1MHz */
+	i2c_init(PMIC_I2C_BUS, 1000000, 0x00); /* 1MHz */
 
 	printk(BIOS_DEBUG, "%s: Setting up PMIC...\n", __func__);
 
@@ -255,13 +257,17 @@ void main(void)
 	start_romstage_time = timestamp_get();
 #endif
 
+	setup_power(is_resume);
+
 	/* Clock must be initialized before console_init, otherwise you may need
 	 * to re-initialize serial console drivers again. */
 	system_clock_init();
 
 	console_init();
 
-	setup_power(is_resume);
+	/* re-initialize PMIC I2C channel after (re-)setting system clocks */
+	i2c_init(PMIC_I2C_BUS, 1000000, 0x00); /* 1MHz */
+
 #if CONFIG_COLLECT_TIMESTAMPS
 	before_dram_time = timestamp_get();
 #endif
