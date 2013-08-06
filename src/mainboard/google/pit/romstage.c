@@ -254,7 +254,7 @@ void main(void)
 
 	start_romstage_time = timestamp_get();
 #endif
-
+	exynos5420_config_smp();
 	power_init_failed = setup_power(is_resume);
 
 	/* Clock must be initialized before console_init, otherwise you may need
