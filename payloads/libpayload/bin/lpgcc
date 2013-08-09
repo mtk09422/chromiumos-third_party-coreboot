@@ -107,13 +107,13 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-if [ "$CONFIG_ARCH_ARMV7" = "y" ]; then
+if [ "$CONFIG_LP_ARCH_ARMV7" = "y" ]; then
   _ARCHINCDIR=$_INCDIR/armv7
   _ARCHLIBDIR=$_LIBDIR/armv7
   _ARCHEXTRA=""
 fi
 
-if [ "$CONFIG_ARCH_X86" = "y" ]; then
+if [ "$CONFIG_LP_ARCH_X86" = "y" ]; then
   _ARCHINCDIR=$_INCDIR/x86
   _ARCHLIBDIR=$_LIBDIR/x86
   _ARCHEXTRA="-m32 "

@@ -274,7 +274,7 @@ static ssize_t ahci_ata_read_sectors(ata_dev_t *const ata_dev,
 		       printf("ahci: Sector count too high (max. 256).\n");
 		       count = 256;
 		}
-#ifdef CONFIG_STORAGE_64BIT_LBA
+#ifdef CONFIG_LP_STORAGE_64BIT_LBA
 	} else if (ata_dev->read_cmd == ATA_READ_DMA_EXT) {
 		if (start >= (1ULL << 48)) {
 			printf("ahci: Sector is not 48-bit addressable.\n");
@@ -302,7 +302,7 @@ static ssize_t ahci_ata_read_sectors(ata_dev_t *const ata_dev,
 	dev->cmdtable->fis[ 6] = (start >> 16) & 0xff;
 	dev->cmdtable->fis[ 7] = FIS_H2D_DEV_LBA;
 	dev->cmdtable->fis[ 8] = (start >> 24) & 0xff;
-#ifdef CONFIG_STORAGE_64BIT_LBA
+#ifdef CONFIG_LP_STORAGE_64BIT_LBA
 	if (ata_dev->read_cmd == ATA_READ_DMA_EXT) {
 		dev->cmdtable->fis[ 9] = (start >> 32) & 0xff;
 		dev->cmdtable->fis[10] = (start >> 40) & 0xff;
@@ -404,7 +404,7 @@ static int ahci_dev_init(hba_ctrl_t *const ctrl,
 	switch (port->signature) {
 	case HBA_PxSIG_ATA:
 		printf("ahci: ATA drive on port #%d.\n", portnum);
-#ifdef CONFIG_STORAGE_ATA
+#ifdef CONFIG_LP_STORAGE_ATA
 		dev->ata_dev.identify = ahci_identify_device;
 		dev->ata_dev.read_sectors = ahci_ata_read_sectors;
 		return ata_attach_device(&dev->ata_dev, PORT_TYPE_SATA);
@@ -412,7 +412,7 @@ static int ahci_dev_init(hba_ctrl_t *const ctrl,
 		break;
 	case HBA_PxSIG_ATAPI:
 		printf("ahci: ATAPI drive on port #%d.\n", portnum);
-#ifdef CONFIG_STORAGE_ATAPI
+#ifdef CONFIG_LP_STORAGE_ATAPI
 		dev->atapi_dev.identify = ahci_identify_device;
 		dev->atapi_dev.packet_read_cmd = ahci_packet_read_cmd;
 		return atapi_attach_device(&dev->atapi_dev, PORT_TYPE_SATA);
@@ -469,7 +469,7 @@ static void ahci_port_probe(hba_ctrl_t *const ctrl,
 	ahci_dev_init(ctrl, port, portnum);
 }
 
-#ifdef CONFIG_STORAGE_AHCI_ONLY_TESTED
+#ifdef CONFIG_LP_STORAGE_AHCI_ONLY_TESTED
 static u32 working_controllers[] = {
 	0x8086 | 0x2929 << 16,
 };
@@ -484,7 +484,7 @@ static void ahci_init_pci(pcidev_t dev)
 	const u16 vendor = pci_read_config16(dev, 0x00);
 	const u16 device = pci_read_config16(dev, 0x02);
 
-#ifdef CONFIG_STORAGE_AHCI_ONLY_TESTED
+#ifdef CONFIG_LP_STORAGE_AHCI_ONLY_TESTED
 	const u32 vendor_device = pci_read_config32(dev, 0x0);
 	for (i = 0; i < ARRAY_SIZE(working_controllers); ++i)
 		if (vendor_device == working_controllers[i])

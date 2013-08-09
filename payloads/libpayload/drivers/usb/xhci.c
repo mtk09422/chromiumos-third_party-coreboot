@@ -122,7 +122,7 @@ xhci_init (void *bar)
 	usb_debug("ERST Max: %lx -> %lx entries\n", XHCI_INST (controller)->capreg->ERST_Max, 1<<(XHCI_INST (controller)->capreg->ERST_Max));
 
 	// enable all available slots
-	XHCI_INST (controller)->opreg->config = XHCI_INST (controller)->capreg->MaxSlots & CONFIG_MASK_MaxSlotsEn;
+	XHCI_INST (controller)->opreg->config = XHCI_INST (controller)->capreg->MaxSlots & CONFIG_LP_MASK_MaxSlotsEn;
 
 	XHCI_INST (controller)->cmd_ring = memalign(64, 16*sizeof(trb_t)); /* TODO: make sure not to cross 64k page boundary */
 	memset((void*)XHCI_INST (controller)->cmd_ring, 0, 16*sizeof(trb_t));
@@ -199,7 +199,7 @@ xhci_init (void *bar)
 	return controller;
 }
 
-#ifdef CONFIG_USB_PCI
+#ifdef CONFIG_LP_USB_PCI
 hci_t *
 xhci_pci_init (pcidev_t addr)
 {
