@@ -368,7 +368,7 @@ static void dump_console(void)
 {
 	void *console_p;
 	char *console_c;
-	uint32_t size;
+	uint32_t size, cursor;
 
 	if (console.tag != LB_TAG_CBMEM_CONSOLE) {
 		fprintf(stderr, "No console found in coreboot table.\n");
@@ -382,7 +382,8 @@ static void dump_console(void)
 	 *  char console[size]
 	 * Hence we have to add 8 to get to the actual console string.
 	 */
-	size = *(uint32_t *)console_p;
+	size = ((uint32_t *)console_p)[0];
+	cursor = ((uint32_t *)console_p)[1];
 	console_c = malloc(size + 1);
 	if (!console_c) {
 		fprintf(stderr, "Not enough memory for console.\n");
@@ -391,6 +392,7 @@ static void dump_console(void)
 
 	memcpy(console_c, console_p + 8, size);
 	console_c[size] = 0;
+	console_c[cursor] = 0;
 
 	printf("%s", console_c);
 
