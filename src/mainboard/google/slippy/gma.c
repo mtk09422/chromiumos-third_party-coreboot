@@ -43,6 +43,7 @@
 #include <cpu/x86/msr.h>
 #include <edid.h>
 #include <drivers/intel/gma/i915.h>
+
 /*
  * Here is the rough outline of how we bring up the display:
  *  1. Upon power-on Sink generates a hot plug detection pulse thru HPD
@@ -271,10 +272,9 @@ void mainboard_train_link(struct intel_dp *intel_dp)
 }
 
 int i915lightup(unsigned int physbase, unsigned int iobase, unsigned int mmio,
-		unsigned int gfx);
-
+		unsigned int gfx, unsigned int init_fb);
 int i915lightup(unsigned int pphysbase, unsigned int piobase,
-		unsigned int pmmio, unsigned int pgfx)
+		unsigned int pmmio, unsigned int pgfx, unsigned int init_fb)
 {
 	int must_cycle_power = 0;
 	struct intel_dp adp, *dp = &adp;
@@ -297,6 +297,7 @@ int i915lightup(unsigned int pphysbase, unsigned int piobase,
 
 	void runio(struct intel_dp *dp);
 	void runlinux(struct intel_dp *dp);
+
 	dp->gen = 8; // ??
 	dp->is_haswell = 1;
 	dp->DP = 0x2;
@@ -315,6 +316,17 @@ int i915lightup(unsigned int pphysbase, unsigned int piobase,
 	/* observed from YABEL. */
 	dp->aux_clock_divider = 0xe1;
 	dp->precharge = 3;
+
+	/* 1. Normal mode: Set the first page to zero and make
+	   all GTT entries point to the same page
+	   2. Developer/Recovery mode: We do not zero out all
+	   the pages pointed to by GTT in order to avoid wasting time */
+        if (init_fb)
+                setgtt(0, FRAME_BUFFER_PAGES, physbase, 4096);
+        else {
+                setgtt(0, FRAME_BUFFER_PAGES, physbase, 0);
+                memset((void*)graphics, 0, 4096);
+        }
 
 	//intel_prepare_ddi_buffers(0, 0);
 	//ironlake_edp_panel_vdd_on(dp);
@@ -345,9 +357,8 @@ int i915lightup(unsigned int pphysbase, unsigned int piobase,
 	io_i915_write32(0x00000021,0x6f410);
 
 	runio(dp);
-	palette();
 
-	setgtt(0, FRAME_BUFFER_PAGES, physbase, 4096);
+	palette();
 
 	pixels = dp->edid.ha * (dp->edid.va-4) * 4;
 	printk(BIOS_SPEW, "ha=%d, va=%d\n",dp->edid.ha, dp->edid.va);
