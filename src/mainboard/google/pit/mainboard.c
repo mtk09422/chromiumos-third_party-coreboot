@@ -44,6 +44,8 @@
 #define DRAM_START	(CONFIG_SYS_SDRAM_BASE >> 20)
 #define DRAM_SIZE	CONFIG_DRAM_SIZE_MB
 #define DRAM_END	(DRAM_START + DRAM_SIZE)	/* plus one... */
+#define SRAM_START	(0x02020000 >> 20)
+#define SRAM_SIZE	1
 
 static struct edid edid = {
 	.ha = 1366,
@@ -447,6 +449,7 @@ static void mainboard_enable(device_t dev)
 	mmu_init();
 	mmu_config_range(0, DRAM_START, DCACHE_OFF);
 	mmu_config_range(DRAM_START, DRAM_SIZE, DCACHE_WRITEBACK);
+	mmu_config_range(SRAM_START, SRAM_SIZE, DCACHE_WRITEBACK);
 	mmu_config_range(DRAM_END, 4096 - DRAM_END, DCACHE_OFF);
 	dcache_invalidate_all();
 	dcache_mmu_enable();
