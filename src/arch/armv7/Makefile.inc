@@ -165,6 +165,7 @@ ramstage-y += exception_asm.S
 
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += cache.c
+bootblock-y += mmu.c
 
 romstage-y += cache.c
 romstage-y += div0.c
