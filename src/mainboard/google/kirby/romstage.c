@@ -43,6 +43,8 @@
 
 #define MMC0_GPIO_PIN	(58)
 
+#define PMIC_I2C_BUS	4
+
 struct pmic_write
 {
 	int or_orig; // Whether to or in the original value.
@@ -60,7 +62,7 @@ struct pmic_write pmic_writes[] =
 	{ 0, MAX77802_REG_PMIC_BUCK1DVS1, MAX77802_BUCK1DVS1_1V },
 	{ 1, MAX77802_REG_PMIC_BUCK1CTRL, MAX77802_BUCK_TYPE1_ON |
 					  MAX77802_BUCK_TYPE1_IGNORE_PWRREQ },
-	{ 0, MAX77802_REG_PMIC_BUCK2DVS1, MAX77802_BUCK2DVS1_1V },
+	{ 0, MAX77802_REG_PMIC_BUCK2DVS1, MAX77802_BUCK2DVS1_1_2625V },
 	{ 1, MAX77802_REG_PMIC_BUCK2CTRL1, MAX77802_BUCK_TYPE2_ON |
 					   MAX77802_BUCK_TYPE2_IGNORE_PWRREQ },
 	{ 0, MAX77802_REG_PMIC_BUCK3DVS1, MAX77802_BUCK3DVS1_1V },
@@ -72,10 +74,11 @@ struct pmic_write pmic_writes[] =
 	{ 0, MAX77802_REG_PMIC_BUCK6DVS1, MAX77802_BUCK6DVS1_1V },
 	{ 1, MAX77802_REG_PMIC_BUCK6CTRL, MAX77802_BUCK_TYPE1_ON |
 					   MAX77802_BUCK_TYPE1_IGNORE_PWRREQ },
-	{ 1, MAX77802_REG_PMIC_LDO35CTRL1, MAX77802_LDO35CTRL1_1_2V },
+	/* Disable Boost(bypass) OUTPUT */
+	{ 0, MAX77802_REG_PMIC_BOOSTCTRL, MAX77802_BOOSTCTRL_OFF},
 };
 
-static void setup_power(int is_resume)
+static int setup_power(int is_resume)
 {
 	int error = 0;
 	int i;
@@ -83,14 +86,12 @@ static void setup_power(int is_resume)
 	power_init();
 
 	if (is_resume) {
-		return;
+		return 0;
 	}
 
 	/* Initialize I2C bus to configure PMIC. */
 	exynos_pinmux_i2c4();
-	i2c_init(4, 1000000, 0x00); /* 1MHz */
-
-	printk(BIOS_DEBUG, "%s: Setting up PMIC...\n", __func__);
+	i2c_init(PMIC_I2C_BUS, 1000000, 0x00); /* 1MHz */
 
 	for (i = 0; i < ARRAY_SIZE(pmic_writes); i++) {
 		uint8_t data = 0;
@@ -106,8 +107,7 @@ static void setup_power(int is_resume)
 				   &data, sizeof(data));
 	}
 
-	if (error)
-		die("Failed to intialize PMIC.\n");
+	return error;
 }
 
 static void setup_storage(void)
@@ -245,6 +245,7 @@ void main(void)
 	extern struct mem_timings mem_timings;
 	void *entry;
 	int is_resume = (get_wakeup_state() != IS_NOT_WAKEUP);
+	int power_init_failed;
 #if CONFIG_COLLECT_TIMESTAMPS
 	uint64_t start_romstage_time;
 	uint64_t before_dram_time;
@@ -253,14 +254,22 @@ void main(void)
 
 	start_romstage_time = timestamp_get();
 #endif
+	exynos5420_config_smp();
+	power_init_failed = setup_power(is_resume);
 
 	/* Clock must be initialized before console_init, otherwise you may need
 	 * to re-initialize serial console drivers again. */
 	system_clock_init();
 
+	exynos_pinmux_uart3();
 	console_init();
 
-	setup_power(is_resume);
+	if (power_init_failed)
+		die("Failed to intialize power.\n");
+
+	/* re-initialize PMIC I2C channel after (re-)setting system clocks */
+	i2c_init(PMIC_I2C_BUS, 1000000, 0x00); /* 1MHz */
+
 #if CONFIG_COLLECT_TIMESTAMPS
 	before_dram_time = timestamp_get();
 #endif
