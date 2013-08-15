@@ -43,7 +43,8 @@
  * rest of the firmware's lifetime and all subsequent stages (which will not
  * have __PRE_RAM__ defined) can just directly reference it there.
  */
-static int usb_cbfs_open(struct cbfs_media *media) {
+static int usb_cbfs_open(struct cbfs_media *media)
+{
 #ifdef __PRE_RAM__
 	static int first_run = 1;
 	int (*irom_load_usb)(void) = *irom_load_image_from_usb_ptr;
@@ -72,14 +73,16 @@ static int usb_cbfs_open(struct cbfs_media *media) {
 static int alternate_cbfs_close(struct cbfs_media *media) { return 0; }
 
 static size_t alternate_cbfs_read(struct cbfs_media *media, void *dest,
-				  size_t offset, size_t count) {
+				  size_t offset, size_t count)
+{
 	ASSERT(offset + count < alternate_cbfs_size);
 	memcpy(dest, alternate_cbfs_buffer + offset, count);
 	return count;
 }
 
 static void *alternate_cbfs_map(struct cbfs_media *media, size_t offset,
-				   size_t count) {
+				   size_t count)
+{
 	ASSERT(offset + count < alternate_cbfs_size);
 	return alternate_cbfs_buffer + offset;
 }
@@ -87,7 +90,8 @@ static void *alternate_cbfs_map(struct cbfs_media *media, size_t offset,
 static void *alternate_cbfs_unmap(struct cbfs_media *media,
 				  const void *buffer) { return 0; }
 
-static int initialize_exynos_usb_cbfs_media(struct cbfs_media *media) {
+static int initialize_exynos_usb_cbfs_media(struct cbfs_media *media)
+{
 	printk(BIOS_DEBUG, "Using Exynos alternate boot mode USB A-A\n");
 
 	media->open = usb_cbfs_open;
@@ -99,7 +103,8 @@ static int initialize_exynos_usb_cbfs_media(struct cbfs_media *media) {
 	return 0;
 }
 
-int init_default_cbfs_media(struct cbfs_media *media) {
+int init_default_cbfs_media(struct cbfs_media *media)
+{
 	if (*iram_secondary_base == SECONDARY_BASE_BOOT_USB)
 		return initialize_exynos_usb_cbfs_media(media);
 
