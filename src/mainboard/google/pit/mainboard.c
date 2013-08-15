@@ -330,6 +330,19 @@ static void disable_usb30_pll(void)
 	gpio_direction_output(usb3_pll_l, 0);
 }
 
+static void setup_storage(void)
+{
+	/* MMC0: Fixed, 8 bit mode, connected with GPIO. */
+	if (clock_set_dwmci(PERIPH_ID_SDMMC0))
+		printk(BIOS_CRIT, "%s: Failed to set MMC0 clock.\n", __func__);
+	exynos_pinmux_sdmmc0();
+
+	/* MMC2: Removable, 4 bit mode, no GPIO. */
+	/* (Must be after romstage to avoid breaking SDMMC boot.) */
+	clock_set_dwmci(PERIPH_ID_SDMMC2);
+	exynos_pinmux_sdmmc2();
+}
+
 static void gpio_init(void)
 {
 	/* Set up the I2C busses. */
@@ -380,6 +393,7 @@ static void mainboard_init(device_t dev)
 	void *fb_addr = (void *)(get_fb_base_kb() * KiB);
 
 	gpio_init();
+	setup_storage();
 	tmu_init(&exynos5420_tmu_info);
 
 	/* Clock Gating all the unused IP's to save power */

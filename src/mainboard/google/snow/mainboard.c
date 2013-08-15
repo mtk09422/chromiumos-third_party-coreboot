@@ -38,6 +38,8 @@
 
 #include "exynos5250.h"
 
+#define MMC0_GPIO_PIN	(58)
+
 /* convenient shorthand (in MB) */
 #define DRAM_START	(CONFIG_SYS_SDRAM_BASE >> 20)
 #define DRAM_SIZE	CONFIG_DRAM_SIZE_MB
@@ -179,6 +181,24 @@ static void disable_usb30_pll(void)
 	gpio_direction_output(usb3_pll_l, 0);
 }
 
+static void setup_storage(void)
+{
+	/* MMC0: Fixed, 8 bit mode, connected with GPIO. */
+	if (clock_set_mshci(PERIPH_ID_SDMMC0))
+		printk(BIOS_CRIT, "%s: Failed to set MMC0 clock.\n", __func__);
+	if (gpio_direction_output(MMC0_GPIO_PIN, 1)) {
+		printk(BIOS_CRIT, "%s: Unable to power on MMC0.\n", __func__);
+	}
+	gpio_set_pull(MMC0_GPIO_PIN, GPIO_PULL_NONE);
+	gpio_set_drv(MMC0_GPIO_PIN, GPIO_DRV_4X);
+	exynos_pinmux_sdmmc0();
+
+	/* MMC2: Removable, 4 bit mode, no GPIO. */
+	/* (Must be after romstage to avoid breaking SDMMC boot.) */
+	clock_set_mshci(PERIPH_ID_SDMMC2);
+	exynos_pinmux_sdmmc2();
+}
+
 static void gpio_init(void)
 {
 	/* Set up the I2C busses. */
@@ -217,6 +237,7 @@ static void mainboard_init(device_t dev)
 	void *fb_addr = (void *)(get_fb_base_kb() * KiB);
 
 	gpio_init();
+	setup_storage();
 
 	i2c_init(TPS65090_BUS, I2C_0_SPEED, I2C_SLAVE);
 	i2c_init(7, I2C_0_SPEED, I2C_SLAVE);

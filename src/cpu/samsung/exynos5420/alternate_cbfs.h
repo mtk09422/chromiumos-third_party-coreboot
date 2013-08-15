@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef CPU_SAMSUNG_EXYNOS5250_ALTERNATE_CBFS_H
-#define CPU_SAMSUNG_EXYNOS5250_ALTERNATE_CBFS_H
+#ifndef CPU_SAMSUNG_EXYNOS5420_ALTERNATE_CBFS_H
+#define CPU_SAMSUNG_EXYNOS5420_ALTERNATE_CBFS_H
 
 /* These are pointers to function pointers. Double indirection! */
 void * * const irom_sdmmc_read_blocks_ptr = (void * *)0x02020030;
@@ -29,6 +29,12 @@ void * * const irom_load_image_from_usb_ptr = (void * *)0x02020070;
 
 #define SECONDARY_BASE_BOOT_USB 0xfeed0002
 u32 * const iram_secondary_base = (u32 *)0x02020018;
+
+/* Values pulled from U-Boot, I think the manual is wrong here (for SPI) */
+#define OM_STAT_SDMMC 0x4
+#define OM_STAT_EMMC  0x8
+#define OM_STAT_SPI  0x14
+#define OM_STAT_MASK 0x7f
 
 #if defined(__BOOT_BLOCK__)
 	/* A small space in IRAM to hold the romstage-only image */
