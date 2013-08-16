@@ -36,6 +36,7 @@
 #include <cpu/samsung/exynos5420/i2c.h>
 #include <cpu/samsung/exynos5420/dp.h>
 #include <cpu/samsung/exynos5420/fimd.h>
+#include <cpu/samsung/exynos5420/usb.h>
 #include <drivers/parade/ps8625/ps8625.h>
 #include <ec/google/chromeec/ec.h>
 #include <stdlib.h>
@@ -296,7 +297,17 @@ static void backlight_pwm(void)
 	udelay(LCD_T6_DELAY_MS * 1000);
 }
 
+static enum exynos5_gpio_pin usb_drd_vbus = GPIO_H00;
 
+static void setup_usb(void)
+{
+	/* USB HOST port not needed in firmware, HSIC not stuffed */
+	/* TODO: remove (set up 2.0 PHY only to help early bring-up) */
+	setup_usb_host_phy(0);
+
+	/* Kirby has a single VBUS GPIO for both DRDs to save IO-board pins */
+	gpio_direction_output(usb_drd_vbus, 1);
+}
 
 static struct edp_video_info dp_video_info = {
 	.master_mode = 0,
@@ -312,16 +323,6 @@ static struct edp_video_info dp_video_info = {
 /* FIXME: move some place more appropriate */
 #define EXYNOS5420_DP1_BASE	0x145b0000
 #define MAX_DP_TRIES	5
-
-/*
- * This function disables the USB3.0 PLL to save power
- */
-static void disable_usb30_pll(void)
-{
-	enum exynos5_gpio_pin usb3_pll_l = GPIO_Y11;
-
-	gpio_direction_output(usb3_pll_l, 0);
-}
 
 static void setup_storage(void)
 {
@@ -371,8 +372,7 @@ static void mainboard_init(device_t dev)
 	/* Clock Gating all the unused IP's to save power */
 	clock_gate();
 
-	/* Disable USB3.0 PLL to save 250mW of power */
-	disable_usb30_pll();
+	setup_usb();
 
 	set_vbe_mode_info_valid(&edid, (uintptr_t)fb_addr);
 
