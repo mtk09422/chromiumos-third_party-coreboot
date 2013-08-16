@@ -81,6 +81,7 @@ enum dcache_op {
 	OP_DCISW,
 	OP_DCCIMVAC,
 	OP_DCCMVAC,
+	OP_DCIMVAC,
 };
 
 /*
@@ -175,14 +176,14 @@ static void dcache_foreach(enum dcache_op op)
 	}
 }
 
-void dcache_clean_invalidate_all(void)
-{
-	dcache_foreach(OP_DCCISW);
-}
-
 void dcache_clean_all(void)
 {
 	dcache_foreach(OP_DCCSW);
+}
+
+void dcache_clean_invalidate_all(void)
+{
+	dcache_foreach(OP_DCCISW);
 }
 
 void dcache_invalidate_all(void)
@@ -226,6 +227,9 @@ static void dcache_op_mva(unsigned long addr,
 		case OP_DCCMVAC:
 			dccmvac(line);
 			break;
+		case OP_DCIMVAC:
+			dcimvac(line);
+			break;
 		default:
 			break;
 		}
@@ -242,6 +246,11 @@ void dcache_clean_by_mva(unsigned long addr, unsigned long len)
 void dcache_clean_invalidate_by_mva(unsigned long addr, unsigned long len)
 {
 	dcache_op_mva(addr, len, OP_DCCIMVAC);
+}
+
+void dcache_invalidate_by_mva(unsigned long addr, unsigned long len)
+{
+	dcache_op_mva(addr, len, OP_DCIMVAC);
 }
 
 void dcache_mmu_disable(void)

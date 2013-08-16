@@ -76,6 +76,7 @@ void icache_invalidate_all(void)
 }
 
 enum dcache_op {
+	OP_DCCSW,
 	OP_DCCISW,
 	OP_DCISW,
 	OP_DCCIMVAC,
@@ -173,6 +174,11 @@ static void dcache_foreach(enum dcache_op op)
 			break;
 		}
 	}
+}
+
+void dcache_clean_all(void)
+{
+	dcache_foreach(OP_DCCSW);
 }
 
 void dcache_clean_invalidate_all(void)
