@@ -137,8 +137,8 @@ chip northbridge/intel/haswell
 					register "t7" = "500"
 					# LVDS Swap settings are normal.
 					register "lvds_swap" = "0"
-					# Enable Spread Sprectrum at 1.0%
-					register "sscg_percent" = "0x10"
+					# Enable Spread Sprectrum at 0.5%
+					register "sscg_percent" = "0x05"
 					device i2c 35 on end
 				end
 			end
