@@ -143,6 +143,9 @@ static void dcache_op_set_way(enum dcache_op op)
 			case OP_DCISW:
 				dcisw(val);
 				break;
+			case OP_DCCSW:
+				dccsw(val);
+				break;
 			default:
 				break;
 			}
