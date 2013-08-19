@@ -29,10 +29,8 @@ unsigned long ulzman(const unsigned char *src, unsigned long srcn,
 
 	memcpy(properties, src, LZMA_PROPERTIES_SIZE);
 	memcpy(&outSize, src + LZMA_PROPERTIES_SIZE, sizeof(outSize));
-	if (outSize > dstn) {
-		printf("lzma: Output truncated.\n");
-		return 0;
-	}
+	if (outSize > dstn)
+		outSize = dstn;
 	if (LzmaDecodeProperties(&state.Properties, properties,
 				 LZMA_PROPERTIES_SIZE) != LZMA_RESULT_OK) {
 		printf("lzma: Incorrect stream properties.\n");
