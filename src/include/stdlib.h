@@ -20,4 +20,12 @@ void *malloc(size_t size);
 static inline void free(void *ptr) {}
 #endif
 
+/* not sure romcc will know how to handle this. */
+#ifndef __ROMCC__
+static inline unsigned long div_round_up(unsigned int n, unsigned int d)
+{
+	return (n + d - 1) / d;
+}
+#endif
+
 #endif /* STDLIB_H */
