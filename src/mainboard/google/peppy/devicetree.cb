@@ -81,6 +81,9 @@ chip northbridge/intel/haswell
 			# Force enable ASPM for PCIe Port1
 			register "pcie_port_force_aspm" = "0x01"
 
+			# Disable PCIe CLKOUT 2-5 and CLKOUT_XDP
+			register "icc_clock_disable" = "0x013c0000"
+
 			device pci 13.0 off end # Smart Sound Audio DSP
 			device pci 14.0 on end # USB3 XHCI
 			device pci 15.0 on end # Serial I/O DMA
