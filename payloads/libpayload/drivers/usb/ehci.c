@@ -791,6 +791,8 @@ ehci_init (void *bar)
 	memset((void *)EHCI_INST(controller)->dummy_qh, 0,
 		sizeof(*EHCI_INST(controller)->dummy_qh));
 	EHCI_INST(controller)->dummy_qh->horiz_link_ptr = QH_TERMINATE;
+	EHCI_INST(controller)->dummy_qh->td.next_qtd = QH_TERMINATE;
+	EHCI_INST(controller)->dummy_qh->td.alt_next_qtd = QH_TERMINATE;
 	for (i = 0; i < 1024; ++i)
 		periodic_list[i] = virt_to_phys(EHCI_INST(controller)->dummy_qh)
 				   | PS_TYPE_QH;
