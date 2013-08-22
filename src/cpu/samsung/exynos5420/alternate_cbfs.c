@@ -22,6 +22,7 @@
 #include <cbfs.h>  /* This driver serves as a CBFS media source. */
 #include <stdlib.h>
 #include <string.h>
+#include <arch/cache.h>
 #include <console/console.h>
 #include "alternate_cbfs.h"
 #include "spi.h"
@@ -52,10 +53,13 @@ static int usb_cbfs_open(struct cbfs_media *media)
 	if (!first_run)
 		return 0;
 
+	dcache_mmu_disable();
 	if (!irom_load_usb()) {
+		dcache_mmu_enable();
 		printk(BIOS_ERR, "Unable to load CBFS image via USB!\n");
 		return -1;
 	}
+	dcache_mmu_enable();
 
 	/*
 	 * We need to trust the host/irom to copy the image to our
