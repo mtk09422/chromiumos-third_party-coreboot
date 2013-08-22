@@ -43,7 +43,9 @@ config MAINBOARD_PART_NUMBER
 
 config DRAM_SIZE_MB
 	int
-	default 4096
+	# FIXME(dhendrix): This should be 4096, but due to DRAM
+	# issues it seems only <2GB is stable.
+	default 2048
 
 config EC_GOOGLE_CHROMEEC_SPI_BUS
 	hex
