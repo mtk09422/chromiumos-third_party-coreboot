@@ -383,6 +383,12 @@ static void backlight_vdd(void)
 	tps65090_thru_ec_fet_set(1);
 }
 
+static void sdmmc_vdd(void)
+{
+	/* Enable FET4, P3.3V_SDCARD */
+	tps65090_thru_ec_fet_set(4);
+}
+
 /* this happens after cpu_init where exynos resources are set */
 static void mainboard_init(device_t dev)
 {
@@ -401,6 +407,8 @@ static void mainboard_init(device_t dev)
 
 	/* Disable USB3.0 PLL to save 250mW of power */
 	disable_usb30_pll();
+
+	sdmmc_vdd();
 
 	set_vbe_mode_info_valid(&edid, (uintptr_t)fb_addr);
 

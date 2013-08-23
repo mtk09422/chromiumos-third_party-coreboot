@@ -134,6 +134,7 @@ static void backlight_en(void)
 #define TPS65090_BUS	4	/* Snow-specific */
 
 #define FET1_CTRL	0x0f
+#define FET4_CTRL	0x12
 #define FET6_CTRL	0x14
 
 static void lcd_vdd(void)
@@ -147,6 +148,12 @@ static void backlight_vdd(void)
 	/* Enable FET1, backlight */
 	tps65090_fet_enable(TPS65090_BUS, FET1_CTRL);
 	udelay(LCD_T5_DELAY_MS * 1000);
+}
+
+static void sdmmc_vdd(void)
+{
+	/* Enable FET4, P3.3V_SDCARD */
+	tps65090_fet_enable(TPS65090_BUS, FET4_CTRL);
 }
 
 //static struct video_info smdk5250_dp_config = {
@@ -249,6 +256,8 @@ static void mainboard_init(device_t dev)
 
 	/* Disable USB3.0 PLL to save 250mW of power */
 	disable_usb30_pll();
+
+	sdmmc_vdd();
 
 	set_vbe_mode_info_valid(&edid, (uintptr_t)fb_addr);
 
