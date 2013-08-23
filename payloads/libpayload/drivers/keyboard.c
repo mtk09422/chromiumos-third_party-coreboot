@@ -31,11 +31,7 @@
 #include <libpayload-config.h>
 #include <libpayload.h>
 
-#define I8042_CMD_READ_MODE  0x20
-#define I8042_CMD_WRITE_MODE 0x60
 #define I8042_CMD_DIS_KB     0xad
-
-#define I8042_MODE_XLATE     0x40
 
 struct layout_maps {
 	const char *country;
@@ -262,16 +258,6 @@ int keyboard_getchar(void)
 	return ret;
 }
 
-static int keyboard_wait_read(void)
-{
-	int retries = 10000;
-
-	while(retries-- && !(inb(0x64) & 0x01))
-		udelay(50);
-
-	return (retries <= 0) ? -1 : 0;
-}
-
 static int keyboard_wait_write(void)
 {
 	int retries = 10000;
@@ -280,20 +266,6 @@ static int keyboard_wait_write(void)
 		udelay(50);
 
 	return (retries <= 0) ? -1 : 0;
-}
-
-static unsigned char keyboard_get_mode(void)
-{
-	outb(I8042_CMD_READ_MODE, 0x64);
-	keyboard_wait_read();
-	return inb(0x60);
-}
-
-static void keyboard_set_mode(unsigned char mode)
-{
-	outb(I8042_CMD_WRITE_MODE, 0x64);
-	keyboard_wait_write();
-	outb(mode, 0x60);
 }
 
 /**
@@ -327,28 +299,15 @@ static struct console_input_driver cons = {
 
 void keyboard_init(void)
 {
-	u8 mode;
 	map = &keyboard_layouts[0];
 
 	/* If 0x64 returns 0xff, then we have no keyboard
 	 * controller */
-
 	if (inb(0x64) == 0xFF)
 		return;
 
 	/* Empty keyboard buffer */
 	while (keyboard_havechar()) keyboard_getchar();
-
-	/* Read the current mode */
-	mode = keyboard_get_mode();
-
-	/* Turn on scancode translate mode so that we can
-	   use the scancode set 1 tables */
-
-	mode |= I8042_MODE_XLATE;
-
-	/* Write the new mode */
-	keyboard_set_mode(mode);
 
 	console_add_input_driver(&cons);
 }
