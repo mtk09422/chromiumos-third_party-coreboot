@@ -122,7 +122,7 @@ static void setup_gpio(void)
 	gpio_set_pull(GPIO_X30, GPIO_PULL_NONE);
 
 	gpio_direction_input(GPIO_X07); // RECMODE_GPIO
-	gpio_set_pull(GPIO_X07, GPIO_PULL_NONE);
+	gpio_set_pull(GPIO_X07, GPIO_PULL_UP);
 
 	gpio_direction_input(GPIO_X34); // LID_GPIO
 	gpio_set_pull(GPIO_X34, GPIO_PULL_NONE);
