@@ -216,6 +216,7 @@ struct lb_gpios {
 #define LB_TAG_VDAT		0x0015
 #define LB_TAG_VBNV		0x0019
 #define LB_TAB_VBOOT_HANDOFF	0x0020
+#define LB_TAB_DMA		0x0022
 struct lb_range {
 	uint32_t tag;
 	uint32_t size;
@@ -330,5 +331,10 @@ void lb_add_memory_range(struct lb_memory *mem,
 struct lb_memory *get_lb_mem(void);
 
 void fill_lb_gpios(struct lb_gpios *gpios);
+
+/* Define this in mainboard.c to add board-specific table entries. */
+void lb_board(struct lb_header *header);
+
+struct lb_record *lb_new_record(struct lb_header *header);
 
 #endif /* COREBOOT_TABLES_H */

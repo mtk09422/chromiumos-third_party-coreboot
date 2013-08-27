@@ -79,7 +79,7 @@ static struct lb_record *lb_last_record(struct lb_header *header)
 	return rec;
 }
 
-static struct lb_record *lb_new_record(struct lb_header *header)
+struct lb_record *lb_new_record(struct lb_header *header)
 {
 	struct lb_record *rec;
 	rec = lb_last_record(header);
@@ -364,6 +364,8 @@ static void lb_strings(struct lb_header *header)
 
 }
 
+void __attribute__((weak)) lb_board(struct lb_header *header) { /* NOOP */ }
+
 static struct lb_forward *lb_forward(struct lb_header *header, struct lb_header *next_header)
 {
 	struct lb_record *rec;
@@ -575,6 +577,9 @@ unsigned long write_coreboot_table(
 	lb_vboot_handoff(head);
 #endif
 	add_cbmem_pointers(head);
+
+	/* Add board-specific table entries, if any. */
+	lb_board(head);
 
 	/* Remember where my valid memory ranges are */
 	return lb_table_fini(head);
