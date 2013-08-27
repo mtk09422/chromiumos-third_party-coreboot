@@ -262,7 +262,7 @@ static void parade_dp_bridge_setup(void)
 	exynos_pinmux_i2c7();
 	i2c_init(7, 100000, 0x00);
 
-	parade_ps8625_bridge_setup(7, 0x48, parade_writes,
+	parade_ps8625_bridge_setup(7, 8, parade_writes,
 				   ARRAY_SIZE(parade_writes));
 	/* Spin until the display is ready.
 	 * It's quite important to try really hard to get the display up,
