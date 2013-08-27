@@ -208,7 +208,11 @@ static const struct parade_write parade_writes[] = {
 	 /* DPCD40B, Initial Code minor revision '05' */
 	{ 0x01, 0xcb, 0x05 },
 	 /* DPCD720, Select external PWM */
-	{ 0x01, 0xa5, 0x80 },
+	//{ 0x01, 0xa5, 0x80 },
+	/* for now, go internal; we're still not sure. */
+	{ 0x01, 0xa5, 0xa0 }, //Enable internal PWM output
+	//FFh for 100% PWM of brightness and 00h for 0% PWM of brightness
+	{ 0x01, 0xa7, 0xff },
 	 /*
 	  * Set LVDS output as 6bit-VESA mapping,
 	  * single LVDS channel
@@ -224,6 +228,15 @@ static const struct parade_write parade_writes[] = {
 	 /* MPU Clock source: LC => RCO */
 	{ 0x04, 0x59, 0x60 },
 	{ 0x04, 0x54, 0x14 },  /* LC -> RCO */
+	/* the next two lines are setting power control timings and
+	 * enables for the lcd. These are the default correct values,
+	 * so we do not set them. But, in future, the part might change
+	 * in some way that requires these to be set. So please
+	 * leave them here commented out.
+	 *
+	 * { 0x01, 0xce, 0x59 },
+	 * { 0x01, 0xcf, 0x86 },
+	 */
 	{ 0x02, 0xa1, 0x91 }  /* HPD high */
 };
 
