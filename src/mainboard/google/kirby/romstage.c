@@ -129,6 +129,9 @@ static void setup_gpio(void)
 
 	gpio_direction_input(GPIO_X12); // POWER_GPIO
 	gpio_set_pull(GPIO_X12, GPIO_PULL_NONE);
+
+	gpio_set_pull(GPIO_H01, GPIO_PULL_NONE); // SLIM_PD_BUF
+	gpio_set_pull(GPIO_H03, GPIO_PULL_NONE); // SLIM_CABLE_DET_BUF
 }
 
 static void setup_memory(struct mem_timings *mem, int is_resume)
