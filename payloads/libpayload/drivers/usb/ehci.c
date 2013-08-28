@@ -30,6 +30,7 @@
 //#define USB_DEBUG
 
 #include <libpayload.h>
+#include <arch/cache.h>
 #include "ehci.h"
 #include "ehci_private.h"
 
@@ -361,7 +362,7 @@ static int ehci_process_async_schedule(
 static int ehci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
 {
 	int result = 0;
-	int remaining = size;
+	int counter = 0;
 	int endp = ep->endpoint & 0xf;
 	int pid = (ep->direction==IN)?EHCI_IN:EHCI_OUT;
 
@@ -372,30 +373,30 @@ static int ehci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
 			return -1;
 	}
 
-	qtd_t *head = memalign(64, sizeof(qtd_t));
+	qtd_t *head = dma_memalign(64, sizeof(qtd_t));
 	qtd_t *cur = head;
+	dcache_clean_by_mva(data, size);
 	while (1) {
 		memset((void *)cur, 0, sizeof(qtd_t));
 		cur->token = QTD_ACTIVE |
 			(pid << QTD_PID_SHIFT) |
 			(0 << QTD_CERR_SHIFT);
-		u32 chunk = fill_td(cur, data, remaining);
-		remaining -= chunk;
-		data += chunk;
+		u32 chunk = fill_td(cur, data + counter, size - counter);
+		counter += chunk;
 
 		cur->alt_next_qtd = QTD_TERMINATE;
-		if (remaining == 0) {
+		if (counter >= size) {
 			cur->next_qtd = virt_to_phys(0) | QTD_TERMINATE;
 			break;
 		} else {
-			qtd_t *next = memalign(64, sizeof(qtd_t));
+			qtd_t *next = dma_memalign(64, sizeof(qtd_t));
 			cur->next_qtd = virt_to_phys(next);
 			cur = next;
 		}
 	}
 
 	/* create QH */
-	ehci_qh_t *qh = memalign(64, sizeof(ehci_qh_t));
+	ehci_qh_t *qh = dma_memalign(64, sizeof(ehci_qh_t));
 	memset((void *)qh, 0, sizeof(ehci_qh_t));
 	qh->horiz_link_ptr = virt_to_phys(qh) | QH_QH;
 	qh->epchar = ep->dev->address |
@@ -415,6 +416,7 @@ static int ehci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
 
 	result = ehci_process_async_schedule(
 			EHCI_INST(ep->dev->controller), qh, head);
+	dcache_invalidate_by_mva(data, size);
 	if (result >= 0)
 		result = size - result;
 
@@ -443,8 +445,10 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 		non_hs_ctrl_ep = 1;
 	}
 
+
 	/* create qTDs */
-	qtd_t *head = memalign(64, sizeof(qtd_t));
+	dcache_clean_by_mva(devreq, drlen);
+	qtd_t *head = dma_memalign(64, sizeof(qtd_t));
 	qtd_t *cur = head;
 	memset((void *)cur, 0, sizeof(qtd_t));
 	cur->token = QTD_ACTIVE |
@@ -454,13 +458,14 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 	if (fill_td(cur, devreq, drlen) != drlen) {
 		usb_debug("ERROR: couldn't send the entire device request\n");
 	}
-	qtd_t *next = memalign(64, sizeof(qtd_t));
+	qtd_t *next = dma_memalign(64, sizeof(qtd_t));
 	cur->next_qtd = virt_to_phys(next);
 	cur->alt_next_qtd = QTD_TERMINATE;
 
 	/* FIXME: We're limited to 16-20K (depending on alignment) for payload for now.
 	 * Figure out, how toggle can be set sensibly in this scenario */
 	if (dalen > 0) {
+		dcache_clean_by_mva(data, dalen);
 		toggle ^= 1;
 		cur = next;
 		memset((void *)cur, 0, sizeof(qtd_t));
@@ -471,7 +476,7 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 		if (fill_td(cur, data, dalen) != dalen) {
 			usb_debug("ERROR: couldn't send the entire control payload\n");
 		}
-		next = memalign(64, sizeof(qtd_t));
+		next = dma_memalign(64, sizeof(qtd_t));
 		cur->next_qtd = virt_to_phys(next);
 		cur->alt_next_qtd = QTD_TERMINATE;
 	}
@@ -488,7 +493,7 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 	cur->alt_next_qtd = QTD_TERMINATE;
 
 	/* create QH */
-	ehci_qh_t *qh = memalign(64, sizeof(ehci_qh_t));
+	ehci_qh_t *qh = dma_memalign(64, sizeof(ehci_qh_t));
 	memset((void *)qh, 0, sizeof(ehci_qh_t));
 	qh->horiz_link_ptr = virt_to_phys(qh) | QH_QH;
 	qh->epchar = dev->address |
@@ -508,6 +513,10 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 			EHCI_INST(dev->controller), qh, head);
 	if (result >= 0)
 		result = dalen - result;
+
+	dcache_invalidate_by_mva(devreq, drlen);
+	if (dalen > 0)
+		dcache_invalidate_by_mva(data, dalen);
 
 	free_qh_and_tds(qh, head);
 	return result;
@@ -581,13 +590,12 @@ static void *ehci_create_intr_queue(
 			return NULL;
 	}
 
-	intr_queue_t *const intrq =
-		(intr_queue_t *)memalign(64, sizeof(intr_queue_t));
+	intr_queue_t *const intrq = (intr_queue_t *)malloc(sizeof(intr_queue_t));
 	/*
 	 * reqcount data chunks
 	 * plus one more spare, which we'll leave out of queue
 	 */
-	u8 *data = (u8 *)malloc(reqsize * (reqcount + 1));
+	u8 *data = (u8 *)dma_malloc(reqsize * (reqcount + 1));
 	if (!intrq || !data)
 		fatal("Not enough memory to create USB interrupt queue.\n");
 	intrq->data = data;
@@ -595,7 +603,7 @@ static void *ehci_create_intr_queue(
 	intrq->reqsize = reqsize;
 
 	/* create #reqcount transfer descriptors (qTDs) */
-	intrq->head = (intr_qtd_t *)memalign(64, sizeof(intr_qtd_t));
+	intrq->head = (intr_qtd_t *)dma_memalign(64, sizeof(intr_qtd_t));
 	intr_qtd_t *cur_td = intrq->head;
 	for (i = 0; i < reqcount; ++i) {
 		fill_intr_queue_td(intrq, cur_td, data);
@@ -603,7 +611,7 @@ static void *ehci_create_intr_queue(
 		if (i < reqcount - 1) {
 			/* create one more qTD */
 			intr_qtd_t *const next_td =
-				(intr_qtd_t *)memalign(64, sizeof(intr_qtd_t));
+				(intr_qtd_t *)dma_memalign(64, sizeof(intr_qtd_t));
 			cur_td->td.next_qtd = virt_to_phys(&next_td->td);
 			cur_td->next = next_td;
 			cur_td = next_td;
@@ -612,7 +620,7 @@ static void *ehci_create_intr_queue(
 	intrq->tail = cur_td;
 
 	/* create spare qTD */
-	intrq->spare = (intr_qtd_t *)memalign(64, sizeof(intr_qtd_t));
+	intrq->spare = (intr_qtd_t *)dma_memalign(64, sizeof(intr_qtd_t));
 	fill_intr_queue_td(intrq, intrq->spare, data);
 
 	/* initialize QH */
@@ -778,7 +786,7 @@ ehci_init (void *bar)
 
 	/* Initialize periodic frame list */
 	/* 1024 32-bit pointers, 4kb aligned */
-	u32 *const periodic_list = (u32 *)memalign(4096, 1024 * sizeof(u32));
+	u32 *const periodic_list = (u32 *)dma_memalign(4096, 1024 * sizeof(u32));
 	if (!periodic_list)
 		fatal("Not enough memory creating EHCI periodic frame list.\n");
 
@@ -787,7 +795,7 @@ ehci_init (void *bar)
 	 * This helps with broken host controllers
 	 * and doesn't violate the standard.
 	 */
-	EHCI_INST(controller)->dummy_qh = (ehci_qh_t *)memalign(64, sizeof(ehci_qh_t));
+	EHCI_INST(controller)->dummy_qh = (ehci_qh_t *)dma_memalign(64, sizeof(ehci_qh_t));
 	memset((void *)EHCI_INST(controller)->dummy_qh, 0,
 		sizeof(*EHCI_INST(controller)->dummy_qh));
 	EHCI_INST(controller)->dummy_qh->horiz_link_ptr = QH_TERMINATE;
