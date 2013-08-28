@@ -60,6 +60,40 @@ static inline void *remodule_next_reloc(const void *reloc)
 	return (void *)rel;
 }
 
+#elif CONFIG_ARCH_ARMV7
+/*
+ * On ARMv7, the only relocations currently allowed are R_ARM_RELATIVE which
+ * have '0' for the symbol info in the relocation metadata (in r_info).
+ * The reason is that the module is fully linked and just has the relocations'
+ * locations.
+ */
+typedef struct {
+	u32 r_offset;
+	u32 r_info;
+} Elf32_Rel;
+
+#define R_ARM_RELATIVE 23
+
+#define RELOCTION_ENTRY_SIZE sizeof(Elf32_Rel)
+static inline int rmodule_reloc_offset(const void *reloc)
+{
+	const Elf32_Rel *rel = reloc;
+	return rel->r_offset;
+}
+
+static inline int rmodule_reloc_valid(const void *reloc)
+{
+	const Elf32_Rel *rel = reloc;
+	return (rel->r_info == R_ARM_RELATIVE);
+}
+
+static inline void *remodule_next_reloc(const void *reloc)
+{
+	const Elf32_Rel *rel = reloc;
+	rel++;
+	return (void *)rel;
+}
+
 #else
 #error Arch needs to add relocation information support for RMODULE
 #endif
