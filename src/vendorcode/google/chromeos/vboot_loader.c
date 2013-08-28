@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <timestamp.h>
+#include <arch/stages.h>
 #include "chromeos.h"
 #include "fmap.h"
 #include "vboot_context.h"
@@ -237,11 +238,15 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 
 	timestamp_add_now(TS_END_COPYRAM);
 
+#if CONFIG_ARCH_X86
 	__asm__ volatile (
 		"movl $0, %%ebp\n"
 		"jmp  *%%edi\n"
 		:: "D"(entry_point)
 	);
+#elif CONFIG_ARCH_ARMV7
+	stage_exit(entry_point);
+#endif
 }
 
 void vboot_verify_firmware(struct romstage_handoff *handoff)
