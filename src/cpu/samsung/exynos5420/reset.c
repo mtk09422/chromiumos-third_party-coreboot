@@ -20,7 +20,9 @@
 #include <reset.h>
 #include <arch/io.h>
 
+#include "power.h"
+
 void soft_reset(void)
 {
-	writel(0x1, samsung_get_base_swreset());
+	writel(0x1, &exynos_power->sw_reset);
 }
