@@ -19,8 +19,10 @@
 
 romstage-y += chromeos.c
 ramstage-y += chromeos.c
-romstage-$(CONFIG_ARCH_X86) += vbnv.c
-ramstage-$(CONFIG_ARCH_X86) += vbnv.c
+romstage-$(CONFIG_ARCH_X86) += vbnv_cmos.c
+ramstage-$(CONFIG_ARCH_X86) += vbnv_cmos.c
+romstage-$(CONFIG_ARCH_ARMV7) += vbnv_ec.c
+ramstage-$(CONFIG_ARCH_ARMV7) += vbnv_ec.c
 romstage-$(CONFIG_ARCH_X86) += vboot.c
 ramstage-y += gnvs.c
 romstage-y += fmap.c
