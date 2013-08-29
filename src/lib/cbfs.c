@@ -121,7 +121,7 @@ void *cbfs_load_optionrom(struct cbfs_media *media, uint16_t vendor,
 	return dest;
 }
 
-#if CONFIG_RELOCATABLE_RAMSTAGE && defined(__PRE_RAM__)
+#if CONFIG_RELOCATABLE_RAMSTAGE && defined(__PRE_RAM__) && !defined(__BOOT_BLOCK__)
 
 #include <rmodule.h>
 #include <romstage_handoff.h>
@@ -305,7 +305,7 @@ int cbfs_execute_stage(struct cbfs_media *media, const char *name)
 	return run_address((void *)(uintptr_t)ntohll(stage->entry));
 }
 
-#if !CONFIG_ALT_CBFS_LOAD_PAYLOAD
+#if !CONFIG_ALT_CBFS_LOAD_PAYLOAD && !defined(__BOOT_BLOCK__)
 void *cbfs_load_payload(struct cbfs_media *media, const char *name)
 {
 	struct cbfs_payload *payload;
