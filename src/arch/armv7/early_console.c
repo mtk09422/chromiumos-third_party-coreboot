@@ -46,7 +46,7 @@ void console_tx_byte(unsigned char byte)
 #endif
 }
 
-static void _console_tx_flush(void)
+void console_tx_flush(void)
 {
 #if CONFIG_CONSOLE_SERIAL8250MEM
 	uart8250_mem_tx_flush(CONFIG_OXFORD_OXPCIE_BASE_ADDRESS + 0x1000);
@@ -75,7 +75,7 @@ int do_printk(int msg_level, const char *fmt, ...)
 	i = vtxprintf(console_tx_byte, fmt, args);
 	va_end(args);
 
-	_console_tx_flush();
+	console_tx_flush();
 
 	return i;
 }
