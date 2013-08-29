@@ -66,7 +66,9 @@ const struct mem_timings mem_timings = {
 
 		.rd_fetch = 0x3,
 
-		.zq_mode_dds = 0x6,
+		/* SLSI recommended using 30-ohm drive strength instead of
+		 * 34-ohm suggested by the SDRAM datasheet. */
+		.zq_mode_dds = 0x7,
 		.zq_mode_term = 0x1,
 		.zq_mode_noterm = 1,
 
@@ -99,7 +101,7 @@ const struct mem_timings mem_timings = {
 		.membaseconfig0 = (0x10 << 16) | DMC_CHIP_MASK_2GB,
 		.memconfig = DMC_MEMCONFIG_CHIP_MAP_SPLIT |
 			DMC_MEMCONFIGx_CHIP_COL_10 |
-			DMC_MEMCONFIGx_CHIP_ROW_15 |
+			DMC_MEMCONFIGx_CHIP_ROW_16 |
 			DMC_MEMCONFIGx_CHIP_BANK_8,
 		.prechconfig_tp_cnt = 0xff,
 		.dpwrdn_cyc = 0xff,
@@ -110,7 +112,7 @@ const struct mem_timings mem_timings = {
 			DMC_CONCONTROL_EMPTY_DISABLE |
 			DMC_CONCONTROL_AREF_EN_DISABLE |
 			DMC_CONCONTROL_IO_PD_CON_DISABLE,
-		.dmc_channels = 1,
+		.dmc_channels = 2,
 		.chips_per_channel = 1,
 		.chips_to_configure = 1,
 		.send_zq_init = 1,

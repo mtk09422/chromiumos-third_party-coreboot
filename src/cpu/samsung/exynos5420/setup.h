@@ -136,6 +136,7 @@ struct exynos5_phy_control;
 #define DMC_MEMCONFIGx_CHIP_COL_10              (3 << 8)
 #define DMC_MEMCONFIGx_CHIP_ROW_14              (2 << 4)
 #define DMC_MEMCONFIGx_CHIP_ROW_15              (3 << 4)
+#define DMC_MEMCONFIGx_CHIP_ROW_16              (4 << 4)
 #define DMC_MEMCONFIGx_CHIP_BANK_8              (3 << 0)
 
 #define DMC_MEMBASECONFIGx_CHIP_BASE(x)         (x << 16)
