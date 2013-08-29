@@ -41,6 +41,7 @@ rmodules-y += memcpy.c
 endif
 romstage-y += memcmp.c
 rmodules-y += memcmp.c
+romstage-y += delay.c
 romstage-y += cbfs.c
 romstage-y += lzma.c
 #romstage-y += lzmadecode.c
