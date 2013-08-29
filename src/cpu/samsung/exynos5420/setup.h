@@ -767,15 +767,12 @@ struct exynos5_phy_control;
 #define DPWRDN_EN		(1 << 1)
 #define DSREF_EN		(1 << 5)
 
-/* As we use channel interleaving, therefore value of the base address
- * register must be set as half of the bus base address
- * RAM start addess is 0x2000_0000 which means chip_base is 0x20, so
- * we need to set half 0x10 to the membaseconfigx registers
- * see exynos5420 UM section 17.17.3.21 for more
- */
-#define DMC_CHIP_BASE_0 0x10
-#define DMC_CHIP_BASE_1 0x50
-#define DMC_CHIP_MASK	0x7C0
+/* AXI base address mask */
+#define DMC_CHIP_MASK_256MB	0x7f0
+#define DMC_CHIP_MASK_512MB	0x7e0
+#define DMC_CHIP_MASK_1GB	0x7c0
+#define DMC_CHIP_MASK_2GB	0x780
+#define DMC_CHIP_MASK_4GB	0x700
 
 #define MEMBASECONFIG_CHIP_MASK_VAL	0x7E0
 #define MEMBASECONFIG_CHIP_MASK_OFFSET	0
