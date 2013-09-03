@@ -315,14 +315,26 @@ static void backlight_pwm(void)
 }
 
 static enum exynos5_gpio_pin usb_drd_vbus = GPIO_H00;
+static enum exynos5_gpio_pin enable_5V_rail = GPIO_H05;
+
+static void prepare_usb(void)
+{
+	/* Kick these resets off early so they get at least 100ms to settle */
+	reset_usb_drd0_dwc3();
+	reset_usb_drd1_dwc3();
+}
 
 static void setup_usb(void)
 {
 	/* USB HOST port not needed in firmware, HSIC not stuffed */
-	/* TODO: remove (set up 2.0 PHY only to help early bring-up) */
-	setup_usb_host_phy(0);
+	setup_usb_drd0_phy();
+	setup_usb_drd1_phy();
+
+	setup_usb_drd0_dwc3();
+	setup_usb_drd1_dwc3();
 
 	/* Kirby has a single VBUS GPIO for both DRDs to save IO-board pins */
+	gpio_direction_output(enable_5V_rail, 1);
 	gpio_direction_output(usb_drd_vbus, 1);
 }
 
@@ -381,6 +393,7 @@ static void mainboard_init(device_t dev)
 
 	void *fb_addr = (void *)(get_fb_base_kb() * KiB);
 
+	prepare_usb();
 	gpio_init();
 	setup_storage();
 	tmu_init(&exynos5420_tmu_info);
@@ -424,6 +437,8 @@ static void mainboard_init(device_t dev)
 
 	backlight_vdd();
 	backlight_pwm();
+
+	setup_usb();
 }
 
 static void mainboard_enable(device_t dev)
