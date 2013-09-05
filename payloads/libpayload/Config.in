@@ -374,29 +374,10 @@ config USB_MSC
 	  Say Y here unless you know exactly what you are doing.
 
 config USB_PCI
-	bool
+	bool "Auto-scan PCI bus for USB host controllers"
+	depends on USB
 	default y if ARCH_X86
 	default n
-
-config USB_MEMORY
-	bool
-	default y if ARCH_ARMV7
-	default n
-
-config USB_OHCI_BASE_ADDRESS
-	hex
-	depends on USB_MEMORY && USB_OHCI
-	default 0x12120000
-
-config USB_EHCI_BASE_ADDRESS
-	hex
-	depends on USB_MEMORY && USB_EHCI
-	default 0x12110000
-
-config USB_XHCI_BASE_ADDRESS
-	hex
-	depends on USB_MEMORY && USB_XHCI
-	default 0x12000000
 
 config USB_GEN_HUB
 	bool
