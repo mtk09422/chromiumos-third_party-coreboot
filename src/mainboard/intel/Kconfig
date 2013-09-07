@@ -23,6 +23,8 @@ config BOARD_INTEL_BASKING_RIDGE
 	bool "Basking Ridge CRB"
 config BOARD_INTEL_WTM2
 	bool "Whitetip Mountain 2 CRB"
+config BOARD_INTEL_BAYLEYBAY
+	bool "Bayley Bay CRB"
 
 endchoice
 
@@ -36,6 +38,7 @@ source "src/mainboard/intel/mtarvon/Kconfig"
 source "src/mainboard/intel/truxton/Kconfig"
 source "src/mainboard/intel/xe7501devkit/Kconfig"
 source "src/mainboard/intel/wtm2/Kconfig"
+source "src/mainboard/intel/bayleybay/Kconfig"
 
 config MAINBOARD_VENDOR
 	string
