@@ -249,11 +249,6 @@ enum tis_status {
 	TPM_STS_DATA_EXPECT = 0x08,
 };
 
-enum tis_defaults {
-	TIS_SHORT_TIMEOUT = 750,	/* ms */
-	TIS_LONG_TIMEOUT = 2000,	/* 2 sec */
-};
-
 #define	TPM_ACCESS(l)			(0x0000 | ((l) << 4))
 #define	TPM_STS(l)			(0x0001 | ((l) << 4))
 #define	TPM_DATA_FIFO(l)		(0x0005 | ((l) << 4))
@@ -300,7 +295,7 @@ static int request_locality(struct tpm_chip *chip, int loc)
 	iic_tpm_write(TPM_ACCESS(loc), &buf, 1);
 
 	/* wait for burstcount */
-	int timeout = chip->vendor.timeout_a / TPM_TIMEOUT;
+	int timeout = 2 * 1000; /* 2s timeout */
 	while (timeout) {
 		if (check_locality(chip, loc) >= 0)
 			return loc;
@@ -334,8 +329,7 @@ static ssize_t get_burstcount(struct tpm_chip *chip)
 	uint8_t buf[3];
 
 	/* wait for burstcount */
-	/* which timeout value, spec has 2 answers (c & d) */
-	int timeout = chip->vendor.timeout_d / TPM_TIMEOUT;
+	int timeout = 2 * 1000; /* 2s timeout */
 	while (timeout) {
 		/* Note: STS is little endian */
 		if (iic_tpm_read(TPM_STS(chip->vendor.locality) + 1, buf, 3) < 0)
@@ -351,20 +345,14 @@ static ssize_t get_burstcount(struct tpm_chip *chip)
 	return -1; //EBUSY;
 }
 
-static int wait_for_stat(struct tpm_chip *chip, uint8_t mask,
-			unsigned long timeout, int *status)
+static int wait_for_stat(struct tpm_chip *chip, uint8_t mask, int *status)
 {
-	/* check current status */
-	*status = tpm_tis_i2c_status(chip);
-	if ((*status & mask) == mask)
-		return 0;
-
-	timeout /= TPM_TIMEOUT;
+	unsigned long timeout = 2 * 1024;
 	while (timeout) {
-		mdelay(TPM_TIMEOUT);
 		*status = tpm_tis_i2c_status(chip);
 		if ((*status & mask) == mask)
 			return 0;
+		mdelay(TPM_TIMEOUT);
 		timeout--;
 	}
 
@@ -432,7 +420,7 @@ static int tpm_tis_i2c_recv(struct tpm_chip *chip, uint8_t *buf, size_t count)
 		goto out;
 	}
 
-	wait_for_stat(chip, TPM_STS_VALID, chip->vendor.timeout_c, &status);
+	wait_for_stat(chip, TPM_STS_VALID, &status);
 	if (status & TPM_STS_DATA_AVAIL) {	/* retry? */
 		printk(BIOS_DEBUG, "tpm_tis_i2c_recv: Error left over data\n");
 		size = -1; //EIO;
@@ -462,9 +450,7 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, uint8_t *buf, size_t len)
 	status = tpm_tis_i2c_status(chip);
 	if ((status & TPM_STS_COMMAND_READY) == 0) {
 		tpm_tis_i2c_ready(chip);
-		if (wait_for_stat
-		    (chip, TPM_STS_COMMAND_READY,
-		     chip->vendor.timeout_b, &status) < 0) {
+		if (wait_for_stat(chip, TPM_STS_COMMAND_READY, &status) < 0) {
 			rc = -1; //ETIME;
 			goto out_err;
 		}
@@ -490,8 +476,7 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, uint8_t *buf, size_t len)
 		if (rc == 0)
 			count += burstcnt;
 
-		wait_for_stat(chip, TPM_STS_VALID,
-				chip->vendor.timeout_c, &status);
+		wait_for_stat(chip, TPM_STS_VALID, &status);
 
 		if ((status & TPM_STS_DATA_EXPECT) == 0) {
 			rc = -1; //EIO;
@@ -502,7 +487,7 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, uint8_t *buf, size_t len)
 
 	/* write last byte */
 	iic_tpm_write(TPM_DATA_FIFO(chip->vendor.locality), &(buf[count]), 1);
-	wait_for_stat(chip, TPM_STS_VALID, chip->vendor.timeout_c, &status);
+	wait_for_stat(chip, TPM_STS_VALID, &status);
 	if ((status & TPM_STS_DATA_EXPECT) != 0) {
 		rc = -1; //EIO;
 		goto out_err;
@@ -552,12 +537,6 @@ int tpm_vendor_init(unsigned bus, uint32_t dev_addr)
 
 	/* Disable interrupts (not supported) */
 	chip->vendor.irq = 0;
-
-	/* Default timeouts */
-	chip->vendor.timeout_a = TIS_SHORT_TIMEOUT;
-	chip->vendor.timeout_b = TIS_LONG_TIMEOUT;
-	chip->vendor.timeout_c = TIS_SHORT_TIMEOUT;
-	chip->vendor.timeout_d = TIS_SHORT_TIMEOUT;
 
 	if (request_locality(chip, 0) != 0) {
 		rc = -1; //ENODEV;
