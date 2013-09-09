@@ -429,7 +429,6 @@ static int tpm_tis_i2c_recv(struct tpm_chip *chip, uint8_t *buf, size_t count)
 
 out:
 	tpm_tis_i2c_ready(chip);
-	release_locality(chip, chip->vendor.locality, 0);
 
 	return size;
 }
@@ -443,9 +442,6 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, uint8_t *buf, size_t len)
 
 	if (len > TPM_BUFSIZE)
 		return -1; //E2BIG; /* command is too long for our tpm, sorry */
-
-	if (request_locality(chip, 0) < 0)
-		return -1; //EBUSY;
 
 	status = tpm_tis_i2c_status(chip);
 	if ((status & TPM_STS_COMMAND_READY) == 0) {
@@ -499,7 +495,6 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, uint8_t *buf, size_t len)
 	return len;
 out_err:
 	tpm_tis_i2c_ready(chip);
-	release_locality(chip, chip->vendor.locality, 0);
 
 	return rc;
 }
