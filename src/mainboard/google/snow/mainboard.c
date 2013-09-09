@@ -317,16 +317,6 @@ static void mainboard_enable(device_t dev)
 {
 	dev->ops->init = &mainboard_init;
 
-#if !CONFIG_DYNAMIC_CBMEM
-	/* set up coreboot tables */
-	/* FIXME: this should happen somewhere else */
-	high_tables_size = CONFIG_COREBOOT_TABLES_SIZE;
-	high_tables_base = CONFIG_SYS_SDRAM_BASE +
-				((unsigned)CONFIG_DRAM_SIZE_MB << 20ULL) -
-				CONFIG_COREBOOT_TABLES_SIZE;
-	cbmem_init(high_tables_base, high_tables_size);
-#endif
-
 	/* set up dcache and MMU */
 	/* FIXME: this should happen via resource allocator */
 	exynos5250_config_l2_cache();
