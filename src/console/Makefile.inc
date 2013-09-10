@@ -15,8 +15,8 @@ romstage-y += post.c
 romstage-y += die.c
 
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += vtxprintf.c
-bootblock-y += console.c
-bootblock-y += die.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += console.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += die.c
 
 ramstage-$(CONFIG_CONSOLE_SERIAL8250) += uart8250_console.c
 ramstage-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart8250mem_console.c
