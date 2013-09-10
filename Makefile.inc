@@ -92,8 +92,13 @@ files-in-dir=$(filter-out $(call dir-wildcards,$(call filter-out-dirs,$(1),$(dir
 #######################################################################
 # reduce command line length by linking the objects of each
 # directory into an intermediate file
+ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
+LINK=$(LD)
+else
+LINK=$(CC) $(CFLAGS)
+endif
 ramstage-postprocess=$(foreach d,$(sort $(dir $(1))), \
-	$(eval $(d)ramstage.o: $(call files-in-dir,$(d),$(1)); $$(LD) -o $$@ -r $$^ ) \
+	$(eval $(d)ramstage.o: $(call files-in-dir,$(d),$(1)); $$(LINK) -o $$@ -r $$^ ) \
 	$(eval ramstage-objs:=$(d)ramstage.o $(filter-out $(call files-in-dir,$(d),$(1)),$(ramstage-objs))))
 
 romstage-c-ccopts:=-D__PRE_RAM__
