@@ -98,6 +98,7 @@ void mainboard_romstage_entry(unsigned long bist)
 		dimm_channel1_disabled: 2,
 		// Enable 2x refresh mode
 		ddr_refresh_2x: 1,
+		dq_pins_interleaved: 1,
 		max_ddr3_freq: 1600,
 		usb_xhci_on_resume: 1,
 		usb2_ports: {
