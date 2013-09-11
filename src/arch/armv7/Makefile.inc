@@ -115,20 +115,12 @@ $(stages_o): $(stages_c)
 ################################################################################
 # Build the coreboot_ram (stage 2)
 
-$(objcbfs)/coreboot_ram.debug: $(objgenerated)/coreboot_ram.o $(src)/arch/armv7/coreboot_ram.ld
+$(objcbfs)/coreboot_ram.debug: $(stages_o) $$(ramstage-objs) $(LIBGCC_FILE_NAME) $(src)/arch/armv7/coreboot_ram.ld
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m armelf_linux_eabi -o $@ -L$(obj) $< -T $(src)/arch/armv7/coreboot_ram.ld
+	$(LD) -m -m armelf_linux_eabi -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(src)/arch/armv7/coreboot_ram.ld
 else
-	$(CC) -nostdlib -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/armv7/coreboot_ram.ld $<
-endif
-
-$(objgenerated)/coreboot_ram.o: $(stages_o) $$(ramstage-objs) $(LIBGCC_FILE_NAME)
-	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m -m armelf_linux_eabi -r -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group
-else
-	$(CC) $(CFLAGS) -nostdlib -r -o $@ -Wl,--start-group $(stages_o) $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -Wl,--start-group $(stages_o) $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group -T $(src)/arch/armv7/coreboot_ram.ld
 endif
 
 CFLAGS += \
