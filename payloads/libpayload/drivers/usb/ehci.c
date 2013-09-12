@@ -359,10 +359,11 @@ static int ehci_process_async_schedule(
 	return result;
 }
 
-static int ehci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
+static int ehci_bulk (endpoint_t *ep, int size, u8 *src, int finalize)
 {
 	int result = 0;
-	int counter = 0;
+	u8 *end = src + size;
+	int remaining = size;
 	int endp = ep->endpoint & 0xf;
 	int pid = (ep->direction==IN)?EHCI_IN:EHCI_OUT;
 
@@ -373,30 +374,42 @@ static int ehci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
 			return -1;
 	}
 
+	if (!dma_coherent(src)) {
+		end = EHCI_INST(ep->dev->controller)->dma_buffer + size;
+		if (size > DMA_SIZE) {
+			usb_debug("EHCI bulk transfer too large for DMA buffer: %d\n", size);
+			return -1;
+		}
+		if (pid == EHCI_OUT)
+			memcpy(end - size, src, size);
+	}
+
+	ehci_qh_t *qh = dma_memalign(64, sizeof(ehci_qh_t));
 	qtd_t *head = dma_memalign(64, sizeof(qtd_t));
 	qtd_t *cur = head;
-	dcache_clean_by_mva(data, size);
+	if (!qh || !head)
+		goto oom;
 	while (1) {
 		memset((void *)cur, 0, sizeof(qtd_t));
 		cur->token = QTD_ACTIVE |
 			(pid << QTD_PID_SHIFT) |
 			(0 << QTD_CERR_SHIFT);
-		u32 chunk = fill_td(cur, data + counter, size - counter);
-		counter += chunk;
+		remaining -= fill_td(cur, end - remaining, remaining);
 
 		cur->alt_next_qtd = QTD_TERMINATE;
-		if (counter >= size) {
+		if (remaining <= 0) {
 			cur->next_qtd = virt_to_phys(0) | QTD_TERMINATE;
 			break;
 		} else {
 			qtd_t *next = dma_memalign(64, sizeof(qtd_t));
+			if (!next)
+				goto oom;
 			cur->next_qtd = virt_to_phys(next);
 			cur = next;
 		}
 	}
 
 	/* create QH */
-	ehci_qh_t *qh = dma_memalign(64, sizeof(ehci_qh_t));
 	memset((void *)qh, 0, sizeof(ehci_qh_t));
 	qh->horiz_link_ptr = virt_to_phys(qh) | QH_QH;
 	qh->epchar = ep->dev->address |
@@ -416,22 +429,31 @@ static int ehci_bulk (endpoint_t *ep, int size, u8 *data, int finalize)
 
 	result = ehci_process_async_schedule(
 			EHCI_INST(ep->dev->controller), qh, head);
-	dcache_invalidate_by_mva(data, size);
-	if (result >= 0)
+	if (result >= 0) {
 		result = size - result;
+		if (pid == EHCI_IN && end != src + size)
+			memcpy(src, end - size, result);
+	}
 
 	ep->toggle = (cur->token & QTD_TOGGLE_MASK) >> QTD_TOGGLE_SHIFT;
 
 	free_qh_and_tds(qh, head);
 
 	return result;
+
+oom:
+	usb_debug("Not enough DMA memory for EHCI control structures!\n");
+	free_qh_and_tds(qh, head);
+	return -1;
 }
 
 
 /* FIXME: Handle control transfers as 3 QHs, so the 2nd stage can be >0x4000 bytes */
-static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq,
-			 int dalen, u8 *data)
+static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *setup,
+			 int dalen, u8 *src)
 {
+	u8 *data = src;
+	u8 *devreq = setup;
 	int endp = 0; // this is control. always 0 (for now)
 	int toggle = 0;
 	int mlen = dev->endpoints[0].maxpacketsize;
@@ -445,11 +467,26 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 		non_hs_ctrl_ep = 1;
 	}
 
+	if (!dma_coherent(setup)) {
+		devreq = EHCI_INST(dev->controller)->dma_buffer;
+		memcpy(devreq, setup, drlen);
+	}
+	if (dalen > 0 && !dma_coherent(src)) {
+		data = EHCI_INST(dev->controller)->dma_buffer + drlen;
+		if (drlen + dalen > DMA_SIZE) {
+			usb_debug("EHCI control transfer too large for DMA buffer: %d\n", drlen + dalen);
+			return -1;
+		}
+		if (dir == OUT)
+			memcpy(data, src, dalen);
+	}
 
 	/* create qTDs */
-	dcache_clean_by_mva(devreq, drlen);
 	qtd_t *head = dma_memalign(64, sizeof(qtd_t));
+	ehci_qh_t *qh = dma_memalign(64, sizeof(ehci_qh_t));
 	qtd_t *cur = head;
+	if (!qh || !head)
+		goto oom;
 	memset((void *)cur, 0, sizeof(qtd_t));
 	cur->token = QTD_ACTIVE |
 		(toggle?QTD_TOGGLE_DATA1:0) |
@@ -461,11 +498,12 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 	qtd_t *next = dma_memalign(64, sizeof(qtd_t));
 	cur->next_qtd = virt_to_phys(next);
 	cur->alt_next_qtd = QTD_TERMINATE;
+	if (!next)
+		goto oom;
 
 	/* FIXME: We're limited to 16-20K (depending on alignment) for payload for now.
 	 * Figure out, how toggle can be set sensibly in this scenario */
 	if (dalen > 0) {
-		dcache_clean_by_mva(data, dalen);
 		toggle ^= 1;
 		cur = next;
 		memset((void *)cur, 0, sizeof(qtd_t));
@@ -477,6 +515,8 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 			usb_debug("ERROR: couldn't send the entire control payload\n");
 		}
 		next = dma_memalign(64, sizeof(qtd_t));
+		if (!next)
+			goto oom;
 		cur->next_qtd = virt_to_phys(next);
 		cur->alt_next_qtd = QTD_TERMINATE;
 	}
@@ -493,7 +533,6 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 	cur->alt_next_qtd = QTD_TERMINATE;
 
 	/* create QH */
-	ehci_qh_t *qh = dma_memalign(64, sizeof(ehci_qh_t));
 	memset((void *)qh, 0, sizeof(ehci_qh_t));
 	qh->horiz_link_ptr = virt_to_phys(qh) | QH_QH;
 	qh->epchar = dev->address |
@@ -511,15 +550,19 @@ static int ehci_control (usbdev_t *dev, direction_t dir, int drlen, void *devreq
 
 	result = ehci_process_async_schedule(
 			EHCI_INST(dev->controller), qh, head);
-	if (result >= 0)
+	if (result >= 0) {
 		result = dalen - result;
-
-	dcache_invalidate_by_mva(devreq, drlen);
-	if (dalen > 0)
-		dcache_invalidate_by_mva(data, dalen);
+		if (dir == IN && data != src)
+			memcpy(src, data, result);
+	}
 
 	free_qh_and_tds(qh, head);
 	return result;
+
+oom:
+	usb_debug("Not enough DMA memory for EHCI control structures!\n");
+	free_qh_and_tds(qh, head);
+	return -1;
 }
 
 
@@ -789,6 +832,12 @@ ehci_init (void *bar)
 	u32 *const periodic_list = (u32 *)dma_memalign(4096, 1024 * sizeof(u32));
 	if (!periodic_list)
 		fatal("Not enough memory creating EHCI periodic frame list.\n");
+
+	if (dma_initialized()) {
+		EHCI_INST(controller)->dma_buffer = dma_memalign(4096, DMA_SIZE);
+		if (!EHCI_INST(controller)->dma_buffer)
+			fatal("Not enough DMA memory for EHCI bounce buffer.\n");
+	}
 
 	/*
 	 * Insert dummy QH in periodic frame list
