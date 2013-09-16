@@ -1,6 +1,3 @@
-OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
-OUTPUT_ARCH(i386)
-
 /*
  * This linker script is used to link rmodules (relocatable modules).  It
  * links at zero so that relocation fixups are easy when placing the binaries

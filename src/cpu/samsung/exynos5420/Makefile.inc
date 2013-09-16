@@ -53,6 +53,12 @@ ramstage-y += dp.c dp_lowlevel.c fimd.c
 ramstage-y += usb.c
 ramstage-y += cbmem.c
 
+rmodules-y += monotonic_timer.c
+rmodules-y += mct.c
+
+VBOOT_STUB_DEPS += $(obj)/cpu/samsung/exynos5420/monotonic_timer.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/cpu/samsung/exynos5420/mct.rmodules.o
+
 exynos5420_add_bl1: $(obj)/coreboot.pre
 	printf "    DD         Adding Samsung Exynos5420 BL1\n"
 	dd if=3rdparty/cpu/samsung/exynos5420/bl1.bin \

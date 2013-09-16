@@ -11,15 +11,12 @@
 
 #include <console/console.h>
 
-/* FIXME(dhendrix): prototypes added for assembler */
 int raise (int signum) __attribute__((used));
 int raise (int signum)
 {
-	printk(BIOS_CRIT, "raise: Signal # %d caught\n", signum);
 	return 0;
 }
 
-/* Dummy function to avoid linker complaints */
 void __aeabi_unwind_cpp_pr0(void) __attribute__((used));
 void __aeabi_unwind_cpp_pr0(void)
 {

@@ -143,6 +143,8 @@ ramstage-y += rmodule.c
 romstage-$(CONFIG_RELOCATABLE_RAMSTAGE) += rmodule.c
 
 RMODULE_LDSCRIPT := $(src)/lib/rmodule.ld
+
+ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 RMODULE_LDFLAGS  := -nostartfiles -shared -z defs -nostdlib -Bsymbolic -T $(RMODULE_LDSCRIPT)
 
 # rmodule_link_rules is a function that should be called with:
@@ -152,9 +154,25 @@ RMODULE_LDFLAGS  := -nostartfiles -shared -z defs -nostdlib -Bsymbolic -T $(RMOD
 # It will create the necessary Make rules.
 define rmodule_link
 $(strip $(1)): $(strip $(2)) $$(RMODULE_LDSCRIPT) $$(obj)/ldoptions
-	$$(LD) $$(RMODULE_LDFLAGS) --defsym=__heap_size=$(strip $(3)) -o $$@ $(strip $(2))
+	$$(LD) $$(RMODULE_LDFLAGS) --defsym=__heap_size=$(strip $(3)) -o $$@ --start-group $(strip $(2)) $$(LIBGCC_FILE_NAME) --end-group
 	$$(NM) -n $$@ > $$(basename $$@).map
 endef
+
+else
+RMODULE_LDFLAGS  := -nostartfiles -Wl,-z,defs -Wl,-Bsymbolic -Wl,-T,$(RMODULE_LDSCRIPT)
+
+# rmodule_link_rules is a function that should be called with:
+# (1) the object name to link
+# (2) the dependencies
+# (3) heap size of the relocatable module
+# It will create the necessary Make rules.
+define rmodule_link
+$(strip $(1)): $(strip $(2)) $$(RMODULE_LDSCRIPT) $$(obj)/ldoptions
+	$$(CC) $$(CFLAGS) $$(RMODULE_LDFLAGS) -Wl,--defsym=__heap_size=$(strip $(3)) -o $$@ -Wl,--start-group $(strip $(2)) $$(LIBGCC_FILE_NAME) -Wl,--end-group
+	$$(NM) -n $$@ > $$(basename $$@).map
+endef
+
+endif
 
 endif
 

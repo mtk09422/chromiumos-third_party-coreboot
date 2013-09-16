@@ -170,15 +170,24 @@ bootblock-y += eabi_compat.c
 ramstage-y += boot.c
 ramstage-y += tables.c
 
-romstage-y += memset.S
-ramstage-y += memset.S
 bootblock-y += memset.S
-romstage-y += memcpy.S
-ramstage-y += memcpy.S
 bootblock-y += memcpy.S
-romstage-y += memmove.S
-ramstage-y += memmove.S
 bootblock-y += memmove.S
+
+romstage-y += memset.S
+romstage-y += memcpy.S
+romstage-y += memmove.S
+
+ramstage-y += memset.S
+ramstage-y += memcpy.S
+ramstage-y += memmove.S
+
+rmodules-y += memset.S
+rmodules-y += memcpy.S
+rmodules-y += memmove.S
+rmodules-y += eabi_compat.c
+
+VBOOT_STUB_DEPS += $(obj)/arch/armv7/eabi_compat.rmodules.o
 
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c

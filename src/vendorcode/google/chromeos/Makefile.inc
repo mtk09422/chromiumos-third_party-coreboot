@@ -57,8 +57,14 @@ VBOOT_STUB_DOTO = $(VBOOT_STUB_ELF:.elf=.o)
 # Dependency for the vboot rmodules. Ordering matters.
 VBOOT_STUB_DEPS += $(obj)/vendorcode/google/chromeos/vboot_wrapper.rmodules.o
 VBOOT_STUB_DEPS += $(obj)/lib/memcmp.rmodules.o
+ifeq ($(CONFIG_ARCH_X86),y)
 VBOOT_STUB_DEPS += $(obj)/arch/x86/lib/memset.rmodules.o
 VBOOT_STUB_DEPS += $(obj)/arch/x86/lib/memcpy.rmodules.o
+endif
+ifeq ($(CONFIG_ARCH_ARMV7),y)
+VBOOT_STUB_DEPS += $(obj)/arch/armv7/memset.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/arch/armv7/memcpy.rmodules.o
+endif
 VBOOT_STUB_DEPS += $(VB_LIB)
 # Remove the '-include' option since that will break vboot's build and ensure
 # vboot_reference can get to coreboot's include files.
@@ -66,7 +72,7 @@ VBOOT_CFLAGS += $(patsubst -I%,-I../%,$(filter-out -include $(src)/include/kconf
 VBOOT_CFLAGS += -DVBOOT_DEBUG
 
 $(VBOOT_STUB_DOTO): $(VBOOT_STUB_DEPS)
-	$(CC) $(LDFLAGS) -nostdlib -r -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -nostdlib -r -o $@ $^
 
 # Link the vbootstub module with a 64KiB-byte heap.
 $(eval $(call rmodule_link,$(VBOOT_STUB_ELF), $(VBOOT_STUB_DOTO), 0x10000))
