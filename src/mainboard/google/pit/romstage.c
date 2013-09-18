@@ -34,6 +34,7 @@
 #include <cpu/samsung/exynos5420/setup.h>
 #include <cpu/samsung/exynos5420/periph.h>
 #include <cpu/samsung/exynos5420/power.h>
+#include <cpu/samsung/exynos5420/trustzone.h>
 #include <cpu/samsung/exynos5420/wakeup.h>
 #include <console/console.h>
 #include <arch/stages.h>
@@ -266,6 +267,8 @@ void main(void)
 #endif
 
 	primitive_mem_test();
+
+	trustzone_init();
 
 	if (is_resume) {
 		wakeup();

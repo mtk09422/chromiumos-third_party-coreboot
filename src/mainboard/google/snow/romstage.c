@@ -33,6 +33,7 @@
 #include <cpu/samsung/exynos5250/setup.h>
 #include <cpu/samsung/exynos5250/periph.h>
 #include <cpu/samsung/exynos5250/power.h>
+#include <cpu/samsung/exynos5250/trustzone.h>
 #include <cpu/samsung/exynos5250/wakeup.h>
 #include <console/console.h>
 #include <arch/stages.h>
@@ -169,6 +170,10 @@ void main(void)
 #if CONFIG_COLLECT_TIMESTAMPS
 	after_dram_time = timestamp_get();
 #endif
+
+	/* This needs to happen on normal boots and on resume. */
+	trustzone_init();
+
 	if (is_resume) {
 		wakeup();
 	}
