@@ -251,10 +251,10 @@ int spi_claim_bus(struct spi_slave *slave)
 	// HIGH speed is required for Tx/Rx to work in 50MHz (SCP 30.2.1.6).
 	if (espi->half_duplex) {
 		clrbits_le32(&regs->ch_cfg, SPI_CH_HS_EN);
-		printk(BIOS_DEBUG, "%s: LOW speed.\n", __func__);
+		DEBUG_SPI("%s: LOW speed.\n", __func__);
 	} else {
 		setbits_le32(&regs->ch_cfg, SPI_CH_HS_EN);
-		printk(BIOS_DEBUG, "%s: HIGH speed.\n", __func__);
+		DEBUG_SPI("%s: HIGH speed.\n", __func__);
 	}
 	return 0;
 }
