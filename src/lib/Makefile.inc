@@ -159,7 +159,7 @@ $(strip $(1)): $(strip $(2)) $$(RMODULE_LDSCRIPT) $$(obj)/ldoptions
 endef
 
 else
-RMODULE_LDFLAGS  := -nostartfiles -Wl,-z,defs -Wl,-Bsymbolic -Wl,-T,$(RMODULE_LDSCRIPT)
+RMODULE_LDFLAGS  := -nostartfiles -shared -Wl,-z,defs -Wl,-Bsymbolic -Wl,-T,$(RMODULE_LDSCRIPT)
 
 # rmodule_link_rules is a function that should be called with:
 # (1) the object name to link
