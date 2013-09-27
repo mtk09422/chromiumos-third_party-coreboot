@@ -23,7 +23,7 @@
 #include <baytrail/mrc_wrapper.h>
 #include <baytrail/romstage.h>
 
-void mainboard_romstage_entry(unsigned long bist)
+void mainboard_romstage_entry(struct romstage_params *rp)
 {
 	struct mrc_params mp = {
 		.mainboard = {
@@ -32,8 +32,6 @@ void mainboard_romstage_entry(unsigned long bist)
 			.spd_addrs = { 0xa0, 0xa2 },
 		},
 	};
-	struct romstage_params rp = {
-		.mrc_params = &mp,
-	};
-	romstage_common(&rp);
+	rp->mrc_params = &mp;
+	romstage_common(rp);
 }
