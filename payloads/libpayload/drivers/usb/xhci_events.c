@@ -306,7 +306,7 @@ xhci_wait_for_command_done(xhci_t *const xhci,
 	return cc;
 }
 
-/* returns amount of bytes not transferred on success, negative CC on error */
+/* returns amount of bytes transferred on success, negative CC on error */
 int
 xhci_wait_for_transfer(xhci_t *const xhci, const int slot_id, const int ep_id)
 {

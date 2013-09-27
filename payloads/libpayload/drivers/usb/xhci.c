@@ -536,6 +536,7 @@ xhci_enqueue_td(transfer_ring_t *const tr, const int ep, const size_t mps,
 		trb->ptr_low = virt_to_phys(cur_start);
 		TRB_SET(TL, trb, cur_length);
 		TRB_SET(TDS, trb, packets);
+		TRB_SET(CH, trb, 1);
 
 		/* Check for first, data stage TRB */
 		if (!trb_count && ep == 1) {
@@ -545,17 +546,19 @@ xhci_enqueue_td(transfer_ring_t *const tr, const int ep, const size_t mps,
 			TRB_SET(TT, trb, TRB_NORMAL);
 		}
 
-		/* Check for last TRB */
-		if (!length)
-			TRB_SET(IOC, trb, 1);
-		else
-			TRB_SET(CH, trb, 1);
-
 		xhci_enqueue_trb(tr);
 
 		cur_start += cur_length;
 		++trb_count;
 	}
+
+	trb = tr->cur;
+	xhci_clear_trb(trb, tr->pcs);
+	trb->ptr_low = virt_to_phys(trb);	/* for easier debugging only */
+	TRB_SET(TT, trb, TRB_EVENT_DATA);
+	TRB_SET(IOC, trb, 1);
+
+	xhci_enqueue_trb(tr);
 }
 
 static int
@@ -569,7 +572,7 @@ xhci_control(usbdev_t *const dev, const direction_t dir,
 	transfer_ring_t *const tr = xhci->dev[dev->address].transfer_rings[1];
 
 	const size_t off = (size_t)data & 0xffff;
-	if ((off + dalen) > ((TRANSFER_RING_SIZE - 3) << 16)) {
+	if ((off + dalen) > ((TRANSFER_RING_SIZE - 4) << 16)) {
 		xhci_debug("Unsupported transfer size\n");
 		return -1;
 	}
@@ -624,11 +627,11 @@ xhci_control(usbdev_t *const dev, const direction_t dir,
 	xhci->dbreg[dev->address] = 1;
 
 	/* Wait for transfer events */
-	int i, residue = 0;
+	int i, transferred = 0;
 	const int n_stages = 2 + !!dalen;
 	for (i = 0; i < n_stages; ++i) {
 		const int ret = xhci_wait_for_transfer(xhci, dev->address, 1);
-		residue += ret;
+		transferred += ret;
 		if (ret < 0) {
 			if (ret == TIMEOUT) {
 				xhci_debug("Stopping ID %d EP 1\n",
@@ -650,8 +653,8 @@ xhci_control(usbdev_t *const dev, const direction_t dir,
 	}
 
 	if (dir == IN && data != src)
-		memcpy(src, data, dalen - residue);
-	return dalen - residue;
+		memcpy(src, data, transferred);
+	return transferred;
 }
 
 /* finalize == 1: if data is of packet aligned size, add a zero length packet */
@@ -670,7 +673,7 @@ xhci_bulk(endpoint_t *const ep, const int size, u8 *const src,
 	transfer_ring_t *const tr = xhci->dev[slot_id].transfer_rings[ep_id];
 
 	const size_t off = (size_t)data & 0xffff;
-	if ((off + size) > ((TRANSFER_RING_SIZE - 1) << 16)) {
+	if ((off + size) > ((TRANSFER_RING_SIZE - 2) << 16)) {
 		xhci_debug("Unsupported transfer size\n");
 		return -1;
 	}
@@ -718,8 +721,8 @@ xhci_bulk(endpoint_t *const ep, const int size, u8 *const src,
 	}
 
 	if (ep->direction == IN && data != src)
-		memcpy(src, data, size - ret);
-	return size - ret;
+		memcpy(src, data, ret);
+	return ret;
 }
 
 static trb_t *

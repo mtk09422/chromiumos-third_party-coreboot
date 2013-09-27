@@ -64,7 +64,7 @@
 enum {
 	TRB_NORMAL = 1,
 	TRB_SETUP_STAGE = 2, TRB_DATA_STAGE = 3, TRB_STATUS_STAGE = 4,
-	TRB_LINK = 6,
+	TRB_LINK = 6, TRB_EVENT_DATA = 7,
 	TRB_CMD_ENABLE_SLOT = 9, TRB_CMD_DISABLE_SLOT = 10, TRB_CMD_ADDRESS_DEV = 11,
 	TRB_CMD_CONFIGURE_EP = 12, TRB_CMD_EVAL_CTX = 13, TRB_CMD_RESET_EP = 14,
 	TRB_CMD_STOP_EP = 15, TRB_CMD_SET_TR_DQ = 16, TRB_CMD_NOOP = 23,
@@ -149,6 +149,7 @@ typedef struct {
 	u8 adv;
 } event_ring_t;
 
+/* Never raise this above 256 to prevent transfer event length overflow! */
 #define TRANSFER_RING_SIZE 32
 typedef struct {
 	trb_t *ring;
