@@ -1,3 +1,7 @@
+if ARCH_ARMV7
+source src/soc/samsung/Kconfig
+endif
+
 if ARCH_X86
 source src/soc/intel/Kconfig
 endif

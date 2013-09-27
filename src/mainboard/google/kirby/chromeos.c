@@ -23,8 +23,8 @@
 #include <ec/google/chromeec/ec_commands.h>
 #include <string.h>
 #include <vendorcode/google/chromeos/chromeos.h>
-#include <cpu/samsung/exynos5420/cpu.h>
-#include <cpu/samsung/exynos5420/gpio.h>
+#include <soc/samsung/exynos5420/cpu.h>
+#include <soc/samsung/exynos5420/gpio.h>
 
 enum {
 	ACTIVE_LOW = 0,

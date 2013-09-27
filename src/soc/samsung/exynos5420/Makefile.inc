@@ -13,6 +13,7 @@ bootblock-y += gpio.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += timer.c
 
 romstage-y += spi.c alternate_cbfs.c
+romstage-y += smp.c
 romstage-y += clock.c
 romstage-y += clock_init.c
 romstage-y += pinmux.c  # required by s3c24x0_i2c and uart.
@@ -27,10 +28,10 @@ endif
 romstage-y += wakeup.c
 romstage-y += gpio.c
 romstage-y += timer.c
-romstage-y += trustzone.c
 romstage-y += i2c.c
 #romstage-y += wdt.c
 romstage-y += cbmem.c
+romstage-y += trustzone.c
 
 ramstage-y += spi.c alternate_cbfs.c
 ramstage-y += clock.c
@@ -45,17 +46,23 @@ ramstage-y += monotonic_timer.c
 ramstage-y += timer.c
 ramstage-y += gpio.c
 ramstage-y += i2c.c
-ramstage-y += dp-reg.c
-ramstage-y += fb.c
+ramstage-y += dp.c dp_lowlevel.c fimd.c
 ramstage-y += usb.c
 ramstage-y += cbmem.c
+
+rmodules-y += monotonic_timer.c
+rmodules-y += mct.c
+
+VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/monotonic_timer.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/mct.rmodules.o
 
 # Run an intermediate step when producing coreboot.rom
 # that adds additional components to the final firmware
 # image outside of CBFS
-.PHONY: exynos5250_add_bl1
-$(obj)/coreboot.rom: exynos5250_add_bl1
-exynos5250_add_bl1: $(obj)/coreboot.pre
-	printf "    DD         Adding Samsung Exynos5250 BL1\n"
-	dd if=3rdparty/cpu/samsung/exynos5250/bl1.bin \
+.PHONY: exynos5420_add_bl1
+$(obj)/coreboot.rom: exynos5420_add_bl1
+exynos5420_add_bl1: $(obj)/coreboot.pre
+	printf "    DD         Adding Samsung Exynos5420 BL1\n"
+	# TODO(hungte) Change this 'cpu' to soc when build scripts are changed.
+	dd if=3rdparty/cpu/samsung/exynos5420/bl1.bin \
 		of=$(obj)/coreboot.pre conv=notrunc >/dev/null 2>&1
