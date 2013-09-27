@@ -17,41 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
-if BOARD_GOOGLE_NYAN
-
-config BOARD_SPECIFIC_OPTIONS # dummy
-	def_bool y
-	select ARCH_ARMV7
-	select SOC_NVIDIA_TEGRA124
-
-config MAINBOARD_DIR
-	string
-	default google/nyan
-
-config MAINBOARD_PART_NUMBER
-	string
-	default "Nyan"
-
-config DRAM_SIZE_MB
-	int
-	default 2048
-
-choice
-	prompt "BCT boot media"
-	default BCT_CFG_SPI
-	help
-	  Which boot media to configure the BCT for.
-
-config BCT_CFG_SPI
-	bool "SPI"
-	help
-	  Configure the BCT for booting from SPI.
-
-config BCT_CFG_EMMC
-	bool "eMMC"
-	help
-	  Configure the BCT for booting from eMMC.
-
-endchoice
-
-endif # BOARD_GOOGLE_NYAN
+bct-cfg-$(CONFIG_BCT_CFG_EMMC) += emmc.cfg
+bct-cfg-$(CONFIG_BCT_CFG_SPI) += spi.cfg
+bct-cfg-y += odmdata.cfg
+bct-cfg-y += sdram.cfg
