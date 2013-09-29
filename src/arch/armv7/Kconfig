@@ -14,9 +14,16 @@ config MAX_REBOOT_CNT
 	int
 	default 3
 
+# If a custom bootblock is necessary, this option should be "select"-ed by
+# the thing that needs it, probably the CPU.
+config ARM_BOOTBLOCK_CUSTOM
+	bool
+	default n
+
 choice
 	prompt "Bootblock behaviour"
 	default ARM_BOOTBLOCK_SIMPLE
+	depends on !ARM_BOOTBLOCK_CUSTOM
 
 config ARM_BOOTBLOCK_SIMPLE
 	bool "Always load fallback"
@@ -33,11 +40,6 @@ config CPU_HAS_BOOTBLOCK_INIT
 config MAINBOARD_HAS_BOOTBLOCK_INIT
 	bool
 	default n
-
-config BOOTBLOCK_SOURCE
-	string
-	default "bootblock_simple.c" if ARM_BOOTBLOCK_SIMPLE
-	default "bootblock_normal.c" if ARM_BOOTBLOCK_NORMAL
 
 config UPDATE_IMAGE
 	bool "Update existing coreboot.rom image"

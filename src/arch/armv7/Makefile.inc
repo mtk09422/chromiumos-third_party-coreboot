@@ -34,10 +34,13 @@ bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += cache.c
 bootblock-y += mmu.c
 
+ifneq ($(CONFIG_ARM_BOOTBLOCK_CUSTOM),y)
 bootblock-y += bootblock.S
+endif
 bootblock-y += id.S
 $(obj)/arch/armv7/id.bootblock.o: $(obj)/build.h
-bootblock-y += $(call strip_quotes,$(CONFIG_BOOTBLOCK_SOURCE))
+bootblock-$(CONFIG_ARM_BOOTBLOCK_SIMPLE) += bootblock_simple.c
+bootblock-$(CONFIG_ARM_BOOTBLOCK_NORMAL) += bootblock_normal.c
 
 bootblock-y += stages.c
 romstage-y += stages.c
