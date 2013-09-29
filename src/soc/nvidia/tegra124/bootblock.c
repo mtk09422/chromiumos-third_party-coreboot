@@ -18,13 +18,99 @@
  */
 
 #include <arch/hlt.h>
+#include <arch/io.h>
 #include <arch/stages.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <stdint.h>
+
+#define UART_TEST 0
+
+static uint8_t readr(int reg)
+{
+	return read8((void *)(0x70000000 + 0x6000 + 4 * reg));
+}
+
+static void writer(int reg, uint8_t val)
+{
+	write8(val, (void *)(0x70000000 + 0x6000 + 4 * reg));
+}
+
+static int test_func(void)
+{
+	unsigned divisor = 221;
+	int i;
+
+	/*
+	 * On poweron, AVP clock source (also called system clock) is set to
+	 * PLLP_out0 with frequency set at 1MHz. Before initializing PLLP, we
+	 * need to move the system clock's source to CLK_M temporarily. And
+	 * then switch it to PLLP_out4 (204MHz) at a later time.
+	 */
+	write32((0 << 12) | (0 << 8) | (0 << 4) | (0 << 0) | (2 << 28),
+		(void *)(0x60006000 + 0x28));
+
+	// wait a little bit (nominally 2-3 us)
+	for (i = 0; i < 0x10000; i++)
+		__asm__ __volatile__("");
+
+	// Set function.
+	setbits_le32((void *)(0x70000000 + 0x3000 + 0x2e0), 3 << 0);
+	setbits_le32((void *)(0x70000000 + 0x3000 + 0x2e4), 3 << 0);
+
+	// Output.
+	clrbits_le32((void *)(0x70000000 + 0x3000 + 0x2e0), 1 << 5);
+	// Input.
+	setbits_le32((void *)(0x70000000 + 0x3000 + 0x2e4), 1 << 5);
+
+	// Disable tristate.
+	clrbits_le32((void *)(0x70000000 + 0x3000 + 0x2e0), 1 << 4);
+	clrbits_le32((void *)(0x70000000 + 0x3000 + 0x2e4), 1 << 4);
+
+	// Assert UART reset and enable clock.
+	setbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
+
+	// Enable the clock.
+	setbits_le32((void *)(0x60006000 + 4 * 4 + 0), 1 << 6);
+
+	// Set the clock source.
+	clrbits_le32((void *)(0x60006000 + 0x100 + 4 * 0x1e), 3 << 30);
+
+	// wait a little bit (nominally 2us?)
+	for (i = 0; i < 0x10000; i++)
+		__asm__ __volatile__("");
+
+	// De-assert reset to UART.
+	clrbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
+
+	// This is supposed to wait for the transmitter to be empty, but it
+	// never completes for some reason.
+	if (0)
+		while (!(readr(5) & 0x40));
+
+	writer(1, 0);
+	writer(3, 0x80 | 0x3);
+	writer(0, 0);
+	writer(1, 0);
+	writer(3, 0x3);
+	writer(2, 0x01 | 0x2 | 0x4);
+	writer(3, 0x80 | 0x3);
+	writer(0, divisor & 0xff);
+	writer(1, (divisor >> 8) & 0xff);
+	writer(3, 0x3);
+
+	for (;;) {
+		writer(0, '!');
+	}
+	return 0;
+}
 
 void main(void)
 {
 	void *entry;
+
+	if (UART_TEST)
+		test_func();
 
 	if (CONFIG_BOOTBLOCK_CONSOLE)
 		console_init();
