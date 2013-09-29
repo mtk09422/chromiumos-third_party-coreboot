@@ -26,6 +26,14 @@ config ARM_BOOTBLOCK_NORMAL
 
 endchoice
 
+config CPU_HAS_BOOTBLOCK_INIT
+	bool
+	default n
+
+config MAINBOARD_HAS_BOOTBLOCK_INIT
+	bool
+	default n
+
 config BOOTBLOCK_SOURCE
 	string
 	default "bootblock_simple.c" if ARM_BOOTBLOCK_SIMPLE

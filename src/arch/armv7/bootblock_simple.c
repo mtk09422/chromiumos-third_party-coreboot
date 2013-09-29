@@ -19,24 +19,12 @@
  * MA 02110-1301 USA
  */
 
-#include <bootblock_common.h>
 #include <arch/cache.h>
 #include <arch/hlt.h>
 #include <arch/stages.h>
+#include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
-
-#include "stages.c"
-
-static int boot_cpu(void)
-{
-	/*
-	 * FIXME: This is a stub for now. All non-boot CPUs should be
-	 * waiting for an interrupt. We could move the chunk of assembly
-	 * which puts them to sleep in here...
-	 */
-	return 1;
-}
 
 void main(void)
 {
@@ -60,14 +48,11 @@ void main(void)
 	sctlr |= SCTLR_Z | SCTLR_I;
 	write_sctlr(sctlr);
 
-	if (boot_cpu()) {
-		bootblock_cpu_init();
-		bootblock_mainboard_init();
-	}
+	bootblock_cpu_init();
+	bootblock_mainboard_init();
 
-#if CONFIG_BOOTBLOCK_CONSOLE
-	console_init();
-#endif
+	if (CONFIG_BOOTBLOCK_CONSOLE)
+		console_init();
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
 
