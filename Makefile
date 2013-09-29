@@ -260,7 +260,7 @@ ifn$(EMPTY)def $(1)-objs_$(2)_template
 de$(EMPTY)fine $(1)-objs_$(2)_template
 $(obj)/$$(1).$(1).o: src/$$(1).$(2) $(obj)/config.h $(4)
 	@printf "    CC         $$$$(subst $$$$(obj)/,,$$$$(@))\n"
-	$(CC) $(3) -MMD $$$$(CFLAGS) -c -o $$$$@ $$$$<
+	$(CC) -MMD $$$$(CFLAGS) $(3) -c -o $$$$@ $$$$<
 en$(EMPTY)def
 end$(EMPTY)if
 endef

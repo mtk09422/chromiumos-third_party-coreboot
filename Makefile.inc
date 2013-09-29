@@ -305,7 +305,7 @@ $(obj)/%.romstage.o $(abspath $(obj))/%.romstage.o: $(obj)/%.c $(obj)/config.h $
 
 $(obj)/%.bootblock.o $(abspath $(obj))/%.bootblock.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD $(bootblock-c-ccopts) $(CFLAGS) -c -o $@ $<
+	$(CC) -MMD $(CFLAGS) $(bootblock-c-ccopts) -c -o $@ $<
 
 #######################################################################
 # Clean up rules

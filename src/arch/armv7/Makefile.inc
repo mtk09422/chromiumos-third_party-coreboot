@@ -265,7 +265,7 @@ $(objgenerated)/bootblock.inc: $(src)/arch/armv7/$(subst ",,$(CONFIG_BOOTBLOCK_S
 	$(CC) $(bootblock-c-ccopts) $(INCLUDES) -MM \
 		-MT$(objgenerated)/bootblock.inc \
 		$< > $(objgenerated)/bootblock.inc.d
-	$(CC) $(bootblock-c-ccopts) -c -S $(CFLAGS) -I. $(INCLUDES) $< -o $@
+	$(CC) -c -S $(CFLAGS) $(bootblock-c-ccopts) -I. $(INCLUDES) $< -o $@
 
 $(objcbfs)/bootblock.debug:  $(objgenerated)/bootblock.o $(objgenerated)/bootblock.ld $$(bootblock-objs) $(stages) $(obj)/config.h
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
