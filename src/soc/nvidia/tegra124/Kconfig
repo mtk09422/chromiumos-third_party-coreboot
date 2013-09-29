@@ -2,7 +2,7 @@ config SOC_NVIDIA_TEGRA124
 	depends on ARCH_ARMV7
 	bool
 	default n
-	select CPU_HAS_BOOTBLOCK_INIT
+	select ARM_BOOTBLOCK_CUSTOM
 
 if SOC_NVIDIA_TEGRA124
 
