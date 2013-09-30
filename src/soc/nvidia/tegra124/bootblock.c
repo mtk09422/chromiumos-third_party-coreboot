@@ -83,10 +83,7 @@ static int test_func(void)
 	// De-assert reset to UART.
 	clrbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
 
-	// This is supposed to wait for the transmitter to be empty, but it
-	// never completes for some reason.
-	if (0)
-		while (!(readr(5) & 0x40));
+	while (!(readr(5) & 0x40));
 
 	writer(1, 0);
 	writer(3, 0x80 | 0x3);
