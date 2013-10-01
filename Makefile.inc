@@ -297,11 +297,11 @@ $(objutil)/%.o: $(objutil)/%.c
 
 $(obj)/%.ramstage.o $(abspath $(obj))/%.ramstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD $(CFLAGS) -c -o $@ $<
+	$(CC) -MMD $(CFLAGS) $(ramstage-c-ccopts) -c -o $@ $<
 
 $(obj)/%.romstage.o $(abspath $(obj))/%.romstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD -D__PRE_RAM__ $(CFLAGS) -c -o $@ $<
+	$(CC) -MMD $(CFLAGS) $(romstage-c-ccopts) -c -o $@ $<
 
 $(obj)/%.bootblock.o $(abspath $(obj))/%.bootblock.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
