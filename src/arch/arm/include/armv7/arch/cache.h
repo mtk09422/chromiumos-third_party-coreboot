@@ -75,25 +75,19 @@
 /* data memory barrier */
 static inline void dmb(void)
 {
-#if !defined(CONFIG_SOC_NVIDIA_TEGRA124) || !defined(__BOOT_BLOCK__)
 	asm volatile ("dmb" : : : "memory");
-#endif
 }
 
 /* data sync barrier */
 static inline void dsb(void)
 {
-#if !defined(CONFIG_SOC_NVIDIA_TEGRA124) || !defined(__BOOT_BLOCK__)
 	asm volatile ("dsb" : : : "memory");
-#endif
 }
 
 /* instruction sync barrier */
 static inline void isb(void)
 {
-#if !defined(CONFIG_SOC_NVIDIA_TEGRA124) || !defined(__BOOT_BLOCK__)
 	asm volatile ("isb" : : : "memory");
-#endif
 }
 
 /*
