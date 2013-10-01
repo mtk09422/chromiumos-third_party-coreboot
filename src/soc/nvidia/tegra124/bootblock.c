@@ -36,9 +36,8 @@ static void writer(int reg, uint8_t val)
 	write8(val, (void *)(0x70000000 + 0x6000 + 4 * reg));
 }
 
-static int test_func(void)
+static void hacky_hardcoded_uart_setup_function(void)
 {
-	unsigned divisor = 221;
 	int i;
 
 	/*
@@ -82,6 +81,11 @@ static int test_func(void)
 
 	// De-assert reset to UART.
 	clrbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
+}
+
+static void test_func(void)
+{
+	const unsigned divisor = 221;
 
 	while (!(readr(5) & 0x40));
 
@@ -99,12 +103,13 @@ static int test_func(void)
 	for (;;) {
 		writer(0, '!');
 	}
-	return 0;
 }
 
 void main(void)
 {
 	void *entry;
+
+	hacky_hardcoded_uart_setup_function();
 
 	if (UART_TEST)
 		test_func();
