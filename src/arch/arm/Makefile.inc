@@ -25,35 +25,23 @@
 # Take care of subdirectories
 subdirs-y += boot/
 subdirs-y += lib/
+subdirs-y += armv7/
 
 # Things that appear in every board
-ramstage-y += exception.c
-ramstage-y += exception_asm.S
-
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
-bootblock-y += cache.c
-bootblock-y += mmu.c
 
-ifneq ($(CONFIG_ARM_BOOTBLOCK_CUSTOM),y)
-bootblock-y += bootblock.S
-endif
 bootblock-y += id.S
 $(obj)/arch/arm/id.bootblock.o: $(obj)/build.h
-bootblock-$(CONFIG_ARM_BOOTBLOCK_SIMPLE) += bootblock_simple.c
-bootblock-$(CONFIG_ARM_BOOTBLOCK_NORMAL) += bootblock_normal.c
 
 bootblock-y += stages.c
 romstage-y += stages.c
 ramstage-y += stages.c
 
-romstage-y += cache.c
 romstage-y += div0.c
 romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 
 ramstage-y += div0.c
-ramstage-y += cache.c
 ramstage-y += cpu.c
-ramstage-y += mmu.c
 
 bootblock-y += eabi_compat.c
 romstage-y += eabi_compat.c
@@ -92,13 +80,7 @@ ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 ################################################################################
 # Common recipes for all stages
 
-CFLAGS += \
-	-ffixed-r8\
-	-march=armv7-a\
-	-marm\
-	-mno-unaligned-access\
-	-mthumb\
-	-mthumb-interwork
+CFLAGS += -ffixed-r8 -mno-unaligned-access
 
 $(objcbfs)/%.bin: $(objcbfs)/%.elf
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"

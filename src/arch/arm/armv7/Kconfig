@@ -1,0 +1,6 @@
+config ARM_BOOTBLOCK_ARMV7
+	def_bool n
+config ARM_ROMSTAGE_ARMV7
+	def_bool n
+config ARM_RAMSTAGE_ARMV7
+	def_bool n

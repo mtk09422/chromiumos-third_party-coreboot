@@ -8,6 +8,8 @@ config ARM_ARCH_OPTIONS
 	select HAVE_ARCH_MEMCPY
 	select HAVE_ARCH_MEMMOVE
 
+source src/arch/arm/armv7/Kconfig
+
 # Maximum reboot count
 # TODO: Improve description.
 config MAX_REBOOT_CNT
