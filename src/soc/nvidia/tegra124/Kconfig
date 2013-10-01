@@ -2,6 +2,10 @@ config SOC_NVIDIA_TEGRA124
 	depends on ARCH_ARMV7
 	bool
 	default n
+	select HAVE_UART_MEMORY_MAPPED
+	select HAVE_UART_SPECIAL
+	select BOOTBLOCK_CONSOLE
+	select EARLY_CONSOLE
 	select ARM_BOOTBLOCK_CUSTOM
 
 if SOC_NVIDIA_TEGRA124
@@ -51,5 +55,48 @@ config STACK_BOTTOM
 config STACK_SIZE
 	hex
 	default 0x800
+
+choice CONSOLE_SERIAL_TEGRA124_UART_CHOICES
+	prompt "Serial Console UART"
+	default CONSOLE_SERIAL_UARTA
+	depends on CONSOLE_SERIAL_UART
+
+config CONSOLE_SERIAL_UARTA
+	bool "UARTA"
+	help
+	  Serial console on UART A.
+
+config CONSOLE_SERIAL_UARTB
+	bool "UARTB"
+	help
+	  Serial console on UART B.
+
+config CONSOLE_SERIAL_UARTC
+	bool "UARTC"
+	help
+	  Serial console on UART C.
+
+config CONSOLE_SERIAL_UARTD
+	bool "UARTD"
+	help
+	  Serial console on UART D.
+
+config CONSOLE_SERIAL_UARTE
+	bool "UARTE"
+	help
+	  Serial console on UART E.
+
+endchoice
+
+config CONSOLE_SERIAL_UART_ADDRESS
+	hex
+	depends on CONSOLE_SERIAL_UART
+	default 0x70006000 if CONSOLE_SERIAL_UARTA
+	default 0x70006040 if CONSOLE_SERIAL_UARTB
+	default 0x70006200 if CONSOLE_SERIAL_UARTC
+	default 0x70006300 if CONSOLE_SERIAL_UARTD
+	default 0x70006400 if CONSOLE_SERIAL_UARTE
+	help
+	  Map the UART names to the respective MMIO addres.
 
 endif

@@ -19,22 +19,8 @@
 
 #include <arch/hlt.h>
 #include <arch/io.h>
-#include <arch/stages.h>
 #include <cbfs.h>
 #include <console/console.h>
-#include <stdint.h>
-
-#define UART_TEST 0
-
-static uint8_t readr(int reg)
-{
-	return read8((void *)(0x70000000 + 0x6000 + 4 * reg));
-}
-
-static void writer(int reg, uint8_t val)
-{
-	write8(val, (void *)(0x70000000 + 0x6000 + 4 * reg));
-}
 
 static void hacky_hardcoded_uart_setup_function(void)
 {
@@ -83,42 +69,16 @@ static void hacky_hardcoded_uart_setup_function(void)
 	clrbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
 }
 
-static void test_func(void)
-{
-	const unsigned divisor = 221;
-
-	while (!(readr(5) & 0x40));
-
-	writer(1, 0);
-	writer(3, 0x80 | 0x3);
-	writer(0, 0);
-	writer(1, 0);
-	writer(3, 0x3);
-	writer(2, 0x01 | 0x2 | 0x4);
-	writer(3, 0x80 | 0x3);
-	writer(0, divisor & 0xff);
-	writer(1, (divisor >> 8) & 0xff);
-	writer(3, 0x3);
-
-	for (;;) {
-		writer(0, '!');
-	}
-}
-
 void main(void)
 {
 	void *entry;
 
 	hacky_hardcoded_uart_setup_function();
 
-	if (UART_TEST)
-		test_func();
-
 	if (CONFIG_BOOTBLOCK_CONSOLE)
 		console_init();
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/romstage");
 
-	if (entry) stage_exit(entry);
 	hlt();
 }

@@ -6,14 +6,17 @@ bootblock-S-ccopts += -marm -march=armv4t
 bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
 bootblock-y += cbfs.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += uart.c
 
 romstage-y += cbfs.c
 romstage-y += monotonic_timer.c
 romstage-y += timer.c
+romstage-$(CONFIG_EARLY_CONSOLE) += uart.c
 
 ramstage-y += cbfs.c
 ramstage-y += monotonic_timer.c
 ramstage-y += timer.c
+ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
 # We want to grab the bootblock right before it goes into the image and wrap
 # it inside a BCT, but ideally we would do that without making special, one
