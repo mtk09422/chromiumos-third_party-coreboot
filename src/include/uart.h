@@ -26,6 +26,8 @@
 #ifndef UART_H
 #define UART_H
 
+#include <stdint.h>
+
 #if CONFIG_CONSOLE_SERIAL8250 || CONFIG_CONSOLE_SERIAL8250MEM
 #include <uart8250.h>
 #endif
