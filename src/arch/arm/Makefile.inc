@@ -25,7 +25,7 @@
 # Take care of subdirectories
 subdirs-y += boot/
 subdirs-y += lib/
-subdirs-y += armv7/
+subdirs-y += armv4/ armv7/
 
 # Things that appear in every board
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
