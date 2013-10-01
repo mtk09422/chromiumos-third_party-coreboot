@@ -69,7 +69,7 @@ endchoice
 
 config TTYS0_BASE
 	hex
-	depends on CONSOLE_SERIAL8250
+	depends on CONSOLE_SERIAL
 	default 0x3f8 if CONSOLE_SERIAL_COM1
 	default 0x2f8 if CONSOLE_SERIAL_COM2
 	default 0x3e8 if CONSOLE_SERIAL_COM3
