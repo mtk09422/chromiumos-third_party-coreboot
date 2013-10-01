@@ -21,7 +21,7 @@ if BOARD_GOOGLE_NYAN
 
 config BOARD_SPECIFIC_OPTIONS # dummy
 	def_bool y
-	select ARCH_ARMV7
+	select ARCH_ARM
 	select SOC_NVIDIA_TEGRA124
 
 config MAINBOARD_DIR

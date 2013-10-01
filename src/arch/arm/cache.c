@@ -276,7 +276,7 @@ void dcache_mmu_enable(void)
 	write_sctlr(sctlr);
 }
 
-void armv7_invalidate_caches(void)
+void arm_invalidate_caches(void)
 {
 	uint32_t clidr;
 	int level;

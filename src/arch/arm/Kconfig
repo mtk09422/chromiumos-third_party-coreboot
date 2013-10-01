@@ -1,4 +1,4 @@
-menu "Architecture (armv7)"
+menu "Architecture (arm)"
 
 
 config ARM_ARCH_OPTIONS

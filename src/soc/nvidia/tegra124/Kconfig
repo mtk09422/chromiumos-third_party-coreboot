@@ -1,5 +1,5 @@
 config SOC_NVIDIA_TEGRA124
-	depends on ARCH_ARMV7
+	depends on ARCH_ARM
 	bool
 	default n
 	select HAVE_UART_MEMORY_MAPPED

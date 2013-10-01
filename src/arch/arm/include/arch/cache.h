@@ -26,12 +26,13 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * cache.h: Cache maintenance API for ARMv7
+ * cache.h: Cache maintenance API for ARM
  */
 
-#ifndef ARMV7_CACHE_H
-#define ARMV7_CACHE_H
+#ifndef ARM_CACHE_H
+#define ARM_CACHE_H
 
+#include <config.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -74,19 +75,25 @@
 /* data memory barrier */
 static inline void dmb(void)
 {
+#if !defined(CONFIG_SOC_NVIDIA_TEGRA124) || !defined(__BOOT_BLOCK__)
 	asm volatile ("dmb" : : : "memory");
+#endif
 }
 
 /* data sync barrier */
 static inline void dsb(void)
 {
+#if !defined(CONFIG_SOC_NVIDIA_TEGRA124) || !defined(__BOOT_BLOCK__)
 	asm volatile ("dsb" : : : "memory");
+#endif
 }
 
 /* instruction sync barrier */
 static inline void isb(void)
 {
+#if !defined(CONFIG_SOC_NVIDIA_TEGRA124) || !defined(__BOOT_BLOCK__)
 	asm volatile ("isb" : : : "memory");
+#endif
 }
 
 /*
@@ -320,8 +327,8 @@ void tlb_invalidate_all(void);
  * Generalized setup/init functions
  */
 
-/* invalidate all caches on ARMv7 */
-void armv7_invalidate_caches(void);
+/* invalidate all caches on ARM */
+void arm_invalidate_caches(void);
 
 /* mmu initialization (set page table address, set permissions, etc) */
 void mmu_init(void);
@@ -338,4 +345,4 @@ void mmu_disable_range(unsigned long start_mb, unsigned long size_mb);
 void mmu_config_range(unsigned long start_mb, unsigned long size_mb,
 						enum dcache_policy policy);
 
-#endif /* ARMV7_CACHE_H */
+#endif /* ARM_CACHE_H */

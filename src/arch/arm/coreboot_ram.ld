@@ -33,7 +33,7 @@ SECTIONS
 	.text : {
 		_text = .;
 		_start = .;
-		*(.text.stage_entry.armv7);
+		*(.text.stage_entry.arm);
 		*(.text);
 		*(.text.*);
 		. = ALIGN(16);

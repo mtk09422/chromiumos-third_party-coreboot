@@ -38,7 +38,7 @@ ifneq ($(CONFIG_ARM_BOOTBLOCK_CUSTOM),y)
 bootblock-y += bootblock.S
 endif
 bootblock-y += id.S
-$(obj)/arch/armv7/id.bootblock.o: $(obj)/build.h
+$(obj)/arch/arm/id.bootblock.o: $(obj)/build.h
 bootblock-$(CONFIG_ARM_BOOTBLOCK_SIMPLE) += bootblock_simple.c
 bootblock-$(CONFIG_ARM_BOOTBLOCK_NORMAL) += bootblock_normal.c
 
@@ -79,7 +79,7 @@ rmodules-y += memcpy.S
 rmodules-y += memmove.S
 rmodules-y += eabi_compat.c
 
-VBOOT_STUB_DEPS += $(obj)/arch/armv7/eabi_compat.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/arch/arm/eabi_compat.rmodules.o
 
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
@@ -87,7 +87,7 @@ ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 
 ################################################################################
-# armv7 specific tools
+# arm specific tools
 
 ################################################################################
 # Common recipes for all stages
@@ -134,7 +134,7 @@ prebuilt-files = $(foreach file,$(cbfs-files), $(call extract_nth,1,$(file)))
 
 # TODO Change -b to Kconfig variable.
 $(obj)/coreboot.pre1: $(objcbfs)/bootblock.bin $$(prebuilt-files) $(CBFSTOOL) $$(cpu_ucode_cbfs_file)
-	$(CBFSTOOL) $@.tmp create -m armv7 -s $(CONFIG_COREBOOT_ROMSIZE_KB)K \
+	$(CBFSTOOL) $@.tmp create -m arm -s $(CONFIG_COREBOOT_ROMSIZE_KB)K \
 		-B $(objcbfs)/bootblock.bin -a 64 \
 		-b $(CONFIG_BOOTBLOCK_ROM_OFFSET) \
 		-H $(CONFIG_CBFS_HEADER_ROM_OFFSET) \
@@ -173,34 +173,34 @@ endif
 ################################################################################
 # Build the bootblock
 
-$(objcbfs)/bootblock.debug: $(src)/arch/armv7/bootblock.ld $(obj)/ldoptions $$(bootblock-objs) $(obj)/config.h
+$(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(bootblock-objs) $(obj)/config.h
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m armelf_linux_eabi -static -o $@ -L$(obj) $< -T $(src)/arch/armv7/bootblock.ld
+	$(LD) -m armelf_linux_eabi -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -include $(obj)/config.h -static -o $@ -L$(obj) -T $(src)/arch/armv7/bootblock.ld -Wl,--start-group $(bootblock-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -include $(obj)/config.h -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
 endif
 
 ################################################################################
 # Build the romstage
 
-$(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/armv7/romstage.ld $(obj)/ldoptions
+$(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm/romstage.ld $(obj)/ldoptions
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) $(romstage-objs) -T $(src)/arch/armv7/romstage.ld
+	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) $(romstage-objs) -T $(src)/arch/arm/romstage.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/armv7/romstage.ld -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/arm/romstage.ld -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
 endif
 
 ################################################################################
 # Build the ramstage
 
-$(objcbfs)/coreboot_ram.debug: $$(ramstage-objs) $(LIBGCC_FILE_NAME) $(src)/arch/armv7/coreboot_ram.ld $(obj)/ldoptions
+$(objcbfs)/coreboot_ram.debug: $$(ramstage-objs) $(LIBGCC_FILE_NAME) $(src)/arch/arm/coreboot_ram.ld $(obj)/ldoptions
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m -m armelf_linux_eabi -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(src)/arch/armv7/coreboot_ram.ld
+	$(LD) -m -m armelf_linux_eabi -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(src)/arch/arm/coreboot_ram.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group -T $(src)/arch/armv7/coreboot_ram.ld
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group -T $(src)/arch/arm/coreboot_ram.ld
 endif
 
 ################################################################################

@@ -154,7 +154,7 @@ static struct {
 	uint32_t arch;
 	const char *name;
 } arch_names[] = {
-	{ CBFS_ARCHITECTURE_ARMV7, "armv7" },
+	{ CBFS_ARCHITECTURE_ARM, "arm" },
 	{ CBFS_ARCHITECTURE_X86, "x86" },
 	{ CBFS_ARCHITECTURE_UNKNOWN, "unknown" }
 };
@@ -226,7 +226,7 @@ void recalculate_rom_geometry(void *romarea)
 	arch = ntohl(master_header->architecture);
 
 	switch (arch) {
-	case CBFS_ARCHITECTURE_ARMV7:
+	case CBFS_ARCHITECTURE_ARM:
 		offset = romarea;
 		phys_start = (0 + ntohl(master_header->offset)) & 0xffffffff;
 		phys_end = romsize & 0xffffffff;
@@ -693,7 +693,7 @@ int create_cbfs_image(const char *romfile, uint32_t _romsize,
 
 	// TODO(hungte) Replace magic numbers by named constants.
 	switch (arch) {
-	case CBFS_ARCHITECTURE_ARMV7:
+	case CBFS_ARCHITECTURE_ARM:
 		/* Set up physical/virtual mapping */
 		offset = romarea;
 
@@ -731,7 +731,7 @@ int create_cbfs_image(const char *romfile, uint32_t _romsize,
 		master_header->align = htonl(align);
 		master_header->offset = htonl(
 				ALIGN((0x40 + bootblocksize), align));
-		master_header->architecture = htonl(CBFS_ARCHITECTURE_ARMV7);
+		master_header->architecture = htonl(CBFS_ARCHITECTURE_ARM);
 
 		((uint32_t *) phys_to_virt(0x4 + offs))[0] =
 				virt_to_phys(master_header);

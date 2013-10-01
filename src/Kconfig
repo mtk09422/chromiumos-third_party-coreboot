@@ -222,7 +222,7 @@ config ARCH_X86
 	default n
 	select PCI
 
-config ARCH_ARMV7
+config ARCH_ARM
 	bool
 	default n
 
@@ -232,8 +232,8 @@ if ARCH_X86
 source src/arch/x86/Kconfig
 endif
 
-if ARCH_ARMV7
-source src/arch/armv7/Kconfig
+if ARCH_ARM
+source src/arch/arm/Kconfig
 endif
 
 config HAVE_ARCH_MEMSET
@@ -275,7 +275,7 @@ config TPM
 	bool
 	default n
 	select LPC_TPM if ARCH_X86
-	select I2C_TPM if ARCH_ARMV7
+	select I2C_TPM if ARCH_ARM
 	help
 	  Enable this option to enable TPM support in coreboot.
 
@@ -303,7 +303,7 @@ source src/console/Kconfig
 config HAVE_UART_IO_MAPPED
 	bool
 	default y if ARCH_X86
-	default n if ARCH_ARMV7
+	default n if ARCH_ARM
 
 config HAVE_UART_MEMORY_MAPPED
 	bool

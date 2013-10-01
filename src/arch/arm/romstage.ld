@@ -39,7 +39,7 @@ SECTIONS
 	.romtext . : {
 		_rom = .;
 		_start = .;
-		*(.text.stage_entry.armv7);
+		*(.text.stage_entry.arm);
 		*(.text.startup);
 		*(.text);
 	}

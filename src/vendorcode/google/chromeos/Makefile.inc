@@ -21,8 +21,8 @@ romstage-y += chromeos.c
 ramstage-y += chromeos.c
 romstage-$(CONFIG_ARCH_X86) += vbnv_cmos.c
 ramstage-$(CONFIG_ARCH_X86) += vbnv_cmos.c
-romstage-$(CONFIG_ARCH_ARMV7) += vbnv_ec.c
-ramstage-$(CONFIG_ARCH_ARMV7) += vbnv_ec.c
+romstage-$(CONFIG_ARCH_ARM) += vbnv_ec.c
+ramstage-$(CONFIG_ARCH_ARM) += vbnv_ec.c
 romstage-$(CONFIG_ARCH_X86) += vboot.c
 ramstage-y += gnvs.c
 romstage-y += fmap.c
@@ -61,9 +61,9 @@ ifeq ($(CONFIG_ARCH_X86),y)
 VBOOT_STUB_DEPS += $(obj)/arch/x86/lib/memset.rmodules.o
 VBOOT_STUB_DEPS += $(obj)/arch/x86/lib/memcpy.rmodules.o
 endif
-ifeq ($(CONFIG_ARCH_ARMV7),y)
-VBOOT_STUB_DEPS += $(obj)/arch/armv7/memset.rmodules.o
-VBOOT_STUB_DEPS += $(obj)/arch/armv7/memcpy.rmodules.o
+ifeq ($(CONFIG_ARCH_ARM),y)
+VBOOT_STUB_DEPS += $(obj)/arch/arm/memset.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/arch/arm/memcpy.rmodules.o
 endif
 VBOOT_STUB_DEPS += $(VB_LIB)
 # Remove the '-include' option since that will break vboot's build and ensure

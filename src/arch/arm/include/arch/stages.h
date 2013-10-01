@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2013 Google Inc.
+ * Copyright (C) 2013 The ChromiumOS Authors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef ARCH_ARMV7_PCI_OPS_H
-#define ARCH_ARMV7_PCI_OPS_H
+#ifndef __ARCH_STAGES_H
+#define __ARCH_STAGES_H
 
-static inline const struct pci_bus_operations *pci_config_default(void)
-{
-	return NULL;
-}
+extern void main(void);
+
+void stage_entry(void) __attribute__((section(".text.stage_entry.arm")));
+void stage_exit(void *);
+void jmp_to_elf_entry(void *entry, unsigned long buffer, unsigned long size);
 
 #endif

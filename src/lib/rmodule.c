@@ -60,9 +60,9 @@ static inline void *remodule_next_reloc(const void *reloc)
 	return (void *)rel;
 }
 
-#elif CONFIG_ARCH_ARMV7
+#elif CONFIG_ARCH_ARM
 /*
- * On ARMv7, the only relocations currently allowed are R_ARM_RELATIVE which
+ * On ARM, the only relocations currently allowed are R_ARM_RELATIVE which
  * have '0' for the symbol info in the relocation metadata (in r_info).
  * The reason is that the module is fully linked and just has the relocations'
  * locations.

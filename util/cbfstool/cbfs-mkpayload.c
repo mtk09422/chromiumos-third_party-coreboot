@@ -51,7 +51,7 @@ int parse_elf_to_payload(const struct buffer *input,
 
 	// The tool may work in architecture-independent way.
 	if (arch != CBFS_ARCHITECTURE_UNKNOWN &&
-	    !((ehdr->e_machine == EM_ARM) && (arch == CBFS_ARCHITECTURE_ARMV7)) &&
+	    !((ehdr->e_machine == EM_ARM) && (arch == CBFS_ARCHITECTURE_ARM)) &&
 	    !((ehdr->e_machine == EM_386) && (arch == CBFS_ARCHITECTURE_X86))) {
 		ERROR("The payload file has the wrong architecture\n");
 		return -1;

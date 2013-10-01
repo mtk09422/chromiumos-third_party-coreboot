@@ -244,7 +244,7 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 		"jmp  *%%edi\n"
 		:: "D"(entry_point)
 	);
-#elif CONFIG_ARCH_ARMV7
+#elif CONFIG_ARCH_ARM
 	stage_exit(entry_point);
 #endif
 }
