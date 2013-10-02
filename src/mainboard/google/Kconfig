@@ -46,6 +46,8 @@ config BOARD_GOOGLE_PEPPY
 	bool "Peppy"
 config BOARD_GOOGLE_PIT
 	bool "Pit"
+config BOARD_GOOGLE_SAMUS
+	bool "Samus"
 config BOARD_GOOGLE_SLIPPY
 	bool "Slippy"
 config BOARD_GOOGLE_SNOW
@@ -65,6 +67,7 @@ source "src/mainboard/google/nyan/Kconfig"
 source "src/mainboard/google/parrot/Kconfig"
 source "src/mainboard/google/peppy/Kconfig"
 source "src/mainboard/google/pit/Kconfig"
+source "src/mainboard/google/samus/Kconfig"
 source "src/mainboard/google/slippy/Kconfig"
 source "src/mainboard/google/snow/Kconfig"
 source "src/mainboard/google/stout/Kconfig"
