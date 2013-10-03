@@ -29,6 +29,8 @@
 #include <southbridge/intel/lynxpoint/pch.h>
 #include <southbridge/intel/lynxpoint/lp_gpio.h>
 #include "gpio.h"
+#include "superio/ite/it8772f/it8772f.h"
+#include "superio/ite/it8772f/early_serial.c"
 
 const struct rcba_config_instruction rcba_config[] = {
 
@@ -88,8 +90,8 @@ void mainboard_romstage_entry(unsigned long bist)
 		temp_mmio_base: 0xfed08000,
 		system_type: 5, /* ULT */
 		tseg_size: CONFIG_SMM_TSEG_SIZE,
-		spd_addresses: { 0xa0, 0x00, 0xa2, 0x00 },
-		ec_present: 1,
+		spd_addresses: { 0xa0, 0x00, 0xa4, 0x00 },
+		ec_present: 0,
 		// 0 = leave channel enabled
 		// 1 = disable dimm 0 on channel
 		// 2 = disable dimm 1 on channel
@@ -135,6 +137,13 @@ void mainboard_romstage_entry(unsigned long bist)
 		.rcba_config = &rcba_config[0],
 		.bist = bist,
 	};
+
+	/* Early SuperIO setup */
+	it8772f_kill_watchdog();
+	it8772f_ac_resume_southbridge();
+	pch_enable_lpc();
+	it8772f_enable_serial(PNP_DEV(IT8772F_BASE, IT8772F_SP1),
+			      CONFIG_TTYS0_BASE);
 
 	/* Call into the real romstage main with this board's attributes. */
 	romstage_common(&romstage_params);

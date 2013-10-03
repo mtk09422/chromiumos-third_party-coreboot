@@ -24,11 +24,6 @@
 #include <device/pci.h>
 #include <southbridge/intel/lynxpoint/pch.h>
 
-#if CONFIG_EC_GOOGLE_CHROMEEC
-#include "ec.h"
-#include <ec/google/chromeec/ec.h>
-#endif
-
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
 
@@ -38,13 +33,7 @@
 
 static int get_lid_switch(void)
 {
-#if CONFIG_EC_GOOGLE_CHROMEEC
-	u8 ec_switches = inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES);
-
-	return !!(ec_switches & EC_SWITCH_LID_OPEN);
-#else
-	return 0;
-#endif
+	return 1;
 }
 
 static void fill_lb_gpio(struct lb_gpio *gpio, int num,
@@ -90,22 +79,7 @@ int get_developer_mode_switch(void)
  * the other is driven by Servo. */
 int get_recovery_mode_switch(void)
 {
-#if CONFIG_EC_GOOGLE_CHROMEEC
-	u8 ec_switches = inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES);
-	u32 ec_events;
-
-	/* If a switch is set, we don't need to look at events. */
-	if (ec_switches & (EC_SWITCH_DEDICATED_RECOVERY))
-		return 1;
-
-	/* Else check if the EC has posted the keyboard recovery event. */
-	ec_events = google_chromeec_get_events_b();
-
-	return !!(ec_events &
-		  EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY));
-#else
 	return 0;
-#endif
 }
 
 int get_write_protect_state(void)

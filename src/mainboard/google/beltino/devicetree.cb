@@ -127,7 +127,7 @@ chip northbridge/intel/haswell
 
 					device pnp 2e.0 off end # FDC
 					device pnp 2e.1 on # Serial Port 1
-						io 0x60 = 0x2f8
+						io 0x60 = 0x3f8
 						irq 0x70 = 4
 					end
 					device pnp 2e.4 on # Environment Controller
