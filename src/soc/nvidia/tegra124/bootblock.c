@@ -22,6 +22,8 @@
 #include <cbfs.h>
 #include <console/console.h>
 
+#include "pinmux.h"
+
 static void hacky_hardcoded_uart_setup_function(void)
 {
 	int i;
@@ -38,19 +40,6 @@ static void hacky_hardcoded_uart_setup_function(void)
 	// wait a little bit (nominally 2-3 us)
 	for (i = 0; i < 0x10000; i++)
 		__asm__ __volatile__("");
-
-	// Set function.
-	setbits_le32((void *)(0x70000000 + 0x3000 + 0x2e0), 3 << 0);
-	setbits_le32((void *)(0x70000000 + 0x3000 + 0x2e4), 3 << 0);
-
-	// Output.
-	clrbits_le32((void *)(0x70000000 + 0x3000 + 0x2e0), 1 << 5);
-	// Input.
-	setbits_le32((void *)(0x70000000 + 0x3000 + 0x2e4), 1 << 5);
-
-	// Disable tristate.
-	clrbits_le32((void *)(0x70000000 + 0x3000 + 0x2e0), 1 << 4);
-	clrbits_le32((void *)(0x70000000 + 0x3000 + 0x2e4), 1 << 4);
 
 	// Assert UART reset and enable clock.
 	setbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
@@ -74,6 +63,13 @@ void main(void)
 	void *entry;
 
 	hacky_hardcoded_uart_setup_function();
+
+	// Serial out, tristate off.
+	pinmux_set_config(PINMUX_KB_ROW9_INDEX, PINMUX_KB_ROW9_FUNC_UA3);
+	// Serial in, tristate_on.
+	pinmux_set_config(PINMUX_KB_ROW10_INDEX, PINMUX_KB_ROW10_FUNC_UA3 |
+						 PINMUX_TRISTATE |
+						 PINMUX_INPUT_ENABLE);
 
 	if (CONFIG_BOOTBLOCK_CONSOLE)
 		console_init();
