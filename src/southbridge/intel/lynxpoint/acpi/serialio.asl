@@ -502,6 +502,8 @@ Device (GPIO)
 			,            // ResourceSourceIndex
 			,            // ResourceSource
 			BAR0)
+		Interrupt (ResourceConsumer,
+			Level, ActiveHigh, Shared, , , ) {14}
 	})
 
 	Method (_CRS, 0, NotSerialized)
