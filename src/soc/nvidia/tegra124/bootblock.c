@@ -21,26 +21,13 @@
 #include <arch/io.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <delay.h>
 
+#include "clock.h"
 #include "pinmux.h"
 
 static void hacky_hardcoded_uart_setup_function(void)
 {
-	int i;
-
-	/*
-	 * On poweron, AVP clock source (also called system clock) is set to
-	 * PLLP_out0 with frequency set at 1MHz. Before initializing PLLP, we
-	 * need to move the system clock's source to CLK_M temporarily. And
-	 * then switch it to PLLP_out4 (204MHz) at a later time.
-	 */
-	write32((0 << 12) | (0 << 8) | (0 << 4) | (0 << 0) | (2 << 28),
-		(void *)(0x60006000 + 0x28));
-
-	// wait a little bit (nominally 2-3 us)
-	for (i = 0; i < 0x10000; i++)
-		__asm__ __volatile__("");
-
 	// Assert UART reset and enable clock.
 	setbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
 
@@ -50,9 +37,7 @@ static void hacky_hardcoded_uart_setup_function(void)
 	// Set the clock source.
 	clrbits_le32((void *)(0x60006000 + 0x100 + 4 * 0x1e), 3 << 30);
 
-	// wait a little bit (nominally 2us?)
-	for (i = 0; i < 0x10000; i++)
-		__asm__ __volatile__("");
+	udelay(2);
 
 	// De-assert reset to UART.
 	clrbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
@@ -61,6 +46,8 @@ static void hacky_hardcoded_uart_setup_function(void)
 void main(void)
 {
 	void *entry;
+
+	set_avp_clock_to_clkm();
 
 	hacky_hardcoded_uart_setup_function();
 
