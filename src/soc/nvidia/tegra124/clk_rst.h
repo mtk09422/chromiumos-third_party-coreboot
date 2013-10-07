@@ -60,7 +60,7 @@ enum {
 };
 
 /* Clock/Reset Controller (CLK_RST_CONTROLLER_) regs */
-struct clk_rst_ctlr {
+struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 crc_rst_src;			/* _RST_SOURCE_0,0x00 */
 	u32 crc_rst_dev[TEGRA_CLK_REGS];	/* _RST_DEVICES_L/H/U_0 */
 	u32 crc_clk_out_enb[TEGRA_CLK_REGS];	/* _CLK_OUT_ENB_L/H/U_0 */
@@ -90,8 +90,63 @@ struct clk_rst_ctlr {
 
 	u32 crc_reserved10;		/* _reserved_10,	0xF8 */
 	u32 crc_reserved11;		/* _reserved_11,	0xFC */
-
-	u32 crc_clk_src[TEGRA_CLK_SOURCES]; /*_I2S1_0...	0x100-1fc */
+					/* 0x100 0x1fc */
+        u32 src_i2s1;
+        u32 src_i2s2;
+        u32 src_spdif_out;
+        u32 src_spdif_in;
+        u32 src_pwm;
+        u32 _pad1;
+        u32 src_sbc2;
+        u32 src_sbc3;
+        u32 _pad2[2];
+        u32 src_i2c1;
+        u32 src_i2c5;
+        u32 _pad[1];
+        u32 src_sbc1;
+        u32 src_disp1;
+        u32 src_disp2;
+        u32 _pad4[2];
+        u32 src_vi;
+        u32 _pad5;
+        u32 src_sdmmc1;
+        u32 src_sdmmc2;
+        u32 src_g3d;
+        u32 src_g2d;
+        u32 src_ndflash;
+        u32 src_sdmmc4  ;
+        u32 src_vfir;
+        u32 src_epp;
+        u32 src_mpe;
+        u32 src_hsi;
+        u32 src_uarta;
+        u32 src_uartb;
+        u32 src_host1x;
+        u32 _pad6[2];
+        u32 src_hdmi;
+        u32 _pad7[2];
+        u32 src_i2c2;
+        u32 src_emc0; /* not correctly documented as to address. */
+        u32 src_uartc;
+	u32 _pad71;
+        u32 src_vi_sensor;
+        u32 _pad8[2];
+        u32 src_sbc4;
+        u32 src_i2c3;
+        u32 src_sdmmc3;
+        u32 src_uartd;
+        u32 src_uarte;
+        u32 src_vde;
+        u32 src_owr;
+        u32 src_nor;
+        u32 src_csite;
+        u32 src_i2s0;
+        u32 src_dtv;
+        u32 pad9[4];
+        u32 src_msenc;
+        u32 src_tsec;
+	u32 pad10;
+        u32 src_osc;
 
 	u32 crc_reserved20[32];	/* _reserved_20,	0x200-27c */
 

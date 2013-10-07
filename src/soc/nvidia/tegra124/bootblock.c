@@ -18,30 +18,11 @@
  */
 
 #include <arch/hlt.h>
-#include <arch/io.h>
 #include <cbfs.h>
 #include <console/console.h>
-#include <delay.h>
 
 #include "clock.h"
 #include "pinmux.h"
-
-static void hacky_hardcoded_uart_setup_function(void)
-{
-	// Assert UART reset and enable clock.
-	setbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
-
-	// Enable the clock.
-	setbits_le32((void *)(0x60006000 + 4 * 4 + 0), 1 << 6);
-
-	// Set the clock source.
-	clrbits_le32((void *)(0x60006000 + 0x100 + 4 * 0x1e), 3 << 30);
-
-	udelay(2);
-
-	// De-assert reset to UART.
-	clrbits_le32((void *)(0x60006000 + 4 + 0), 1 << 6);
-}
 
 void main(void)
 {
@@ -49,7 +30,7 @@ void main(void)
 
 	set_avp_clock_to_clkm();
 
-	hacky_hardcoded_uart_setup_function();
+	init_clocks();
 
 	// Serial out, tristate off.
 	pinmux_set_config(PINMUX_KB_ROW9_INDEX, PINMUX_KB_ROW9_FUNC_UA3);
