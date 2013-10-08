@@ -74,8 +74,8 @@ chip northbridge/intel/haswell
 			register "sio_i2c0_voltage" = "0" # 3.3V
 			register "sio_i2c1_voltage" = "0" # 3.3V
 
-			# Force enable ASPM for PCIe Port 1
-			register "pcie_port_force_aspm" = "0x01"
+			# Enable port coalescing
+			register pcie_port_coalesce = "1"
 
 			# Disable PCIe CLKOUT 1-5 and CLKOUT_XDP
 			register "icc_clock_disable" = "0x013e0000"
@@ -96,11 +96,11 @@ chip northbridge/intel/haswell
 			device pci 17.0 off end # SDIO
 			device pci 19.0 off end # GbE
 			device pci 1b.0 on end # High Definition Audio
-			device pci 1c.0 on end # PCIe Port #1
+			device pci 1c.0 off end # PCIe Port #1
 			device pci 1c.1 off end # PCIe Port #2
-			device pci 1c.2 off end # PCIe Port #3
-			device pci 1c.3 off end # PCIe Port #4
-			device pci 1c.4 off end # PCIe Port #5
+			device pci 1c.2 on end # PCIe Port #3
+			device pci 1c.3 on end # PCIe Port #4
+			device pci 1c.4 on end # PCIe Port #5
 			device pci 1c.5 off end # PCIe Port #6
 			device pci 1d.0 on end # USB2 EHCI
 			device pci 1e.0 off end # PCI bridge
