@@ -32,6 +32,8 @@
 #include "gpio.h"
 #endif
 
+#include <vendorcode/google/chromeos/chromeos.h>
+
 const struct rcba_config_instruction pch_early_config[] = {
 	/* Enable IOAPIC */
 	RCBA_SET_REG_16(OIC, 0x0100),
@@ -130,6 +132,10 @@ int early_pch_init(const void *gpio_map,
 	setup_pch_lp_gpios(gpio_map);
 #else
 	setup_pch_gpios(gpio_map);
+#endif
+
+#if CONFIG_CHROMEOS
+	save_chromeos_gpios();
 #endif
 
 	console_init();

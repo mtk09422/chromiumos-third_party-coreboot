@@ -27,7 +27,7 @@ int get_developer_mode_switch(void);
 int get_recovery_mode_switch(void);
 int get_write_protect_state(void);
 #ifdef __PRE_RAM__
-void save_chromeos_gpios(void);
+void __attribute__((weak)) save_chromeos_gpios(void);
 #endif
 
 /* functions implemented in vbnv.c: */

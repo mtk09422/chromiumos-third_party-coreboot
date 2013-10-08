@@ -81,6 +81,13 @@ int recovery_mode_enabled(void)
 		vboot_enable_recovery();
 }
 
+#ifdef __PRE_RAM__
+void __attribute__((weak)) save_chromeos_gpios(void)
+{
+	// Can be implemented by a mainboard
+}
+#endif
+
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
 void *vboot_get_payload(int *len)
 {

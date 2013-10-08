@@ -24,17 +24,19 @@
 #include <device/pci.h>
 #include <southbridge/intel/lynxpoint/pch.h>
 
+#define GPIO_SPI_WP	58
+#define GPIO_REC_MODE	12
+
+#define FLAG_SPI_WP	0
+#define FLAG_REC_MODE	1
+#define FLAG_DEV_MODE	2
+
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
 
 #define GPIO_COUNT	6
 #define ACTIVE_LOW	0
 #define ACTIVE_HIGH	1
-
-static int get_lid_switch(void)
-{
-	return 1;
-}
 
 static void fill_lb_gpio(struct lb_gpio *gpio, int num,
 			 int polarity, const char *name, int force)
@@ -57,32 +59,59 @@ void fill_lb_gpios(struct lb_gpios *gpios)
 	gpios->count = GPIO_COUNT;
 
 	gpio = gpios->gpios;
-	fill_lb_gpio(gpio++, 58, ACTIVE_HIGH, "write protect", 0);
-	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "recovery",
+	fill_lb_gpio(gpio++, GPIO_SPI_WP, ACTIVE_HIGH, "write protect", 0);
+	fill_lb_gpio(gpio++, GPIO_REC_MODE, ACTIVE_LOW, "recovery",
 		     get_recovery_mode_switch());
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "developer",
 		     get_developer_mode_switch());
-	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "lid",
-		     get_lid_switch());
+	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "lid", 1);
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "power", 0);
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "oprom", oprom_is_loaded);
 }
 #endif
 
-/* The dev-switch is virtual */
+int get_write_protect_state(void)
+{
+	device_t dev;
+#ifdef __PRE_RAM__
+	dev = PCI_DEV(0, 0x1f, 2);
+#else
+	dev = dev_find_slot(0, PCI_DEVFN(0x1f, 2));
+#endif
+	return (pci_read_config32(dev, SATA_SP) >> FLAG_SPI_WP) & 1;
+}
+
 int get_developer_mode_switch(void)
 {
 	return 0;
 }
 
-/* There are actually two recovery switches. One is the magic keyboard chord,
- * the other is driven by Servo. */
 int get_recovery_mode_switch(void)
 {
-	return 0;
+	device_t dev;
+#ifdef __PRE_RAM__
+	dev = PCI_DEV(0, 0x1f, 2);
+#else
+	dev = dev_find_slot(0, PCI_DEVFN(0x1f, 2));
+#endif
+	return (pci_read_config32(dev, SATA_SP) >> FLAG_REC_MODE) & 1;
 }
 
-int get_write_protect_state(void)
+#ifdef __PRE_RAM__
+void save_chromeos_gpios(void)
 {
-	return get_gpio(58);
+	u32 flags = 0;
+
+	/* Write Protect: GPIO58 = GPIO_SPI_WP, active high */
+	if (get_gpio(GPIO_SPI_WP))
+		flags |= (1 << FLAG_SPI_WP);
+
+	/* Recovery: GPIO12 = RECOVERY_L, active low */
+	if (!get_gpio(GPIO_REC_MODE))
+		flags |= (1 << FLAG_REC_MODE);
+
+	/* Developer: Virtual */
+
+	pci_write_config32(PCI_DEV(0, 0x1f, 2), SATA_SP, flags);
 }
+#endif
