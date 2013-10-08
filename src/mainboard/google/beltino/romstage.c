@@ -105,29 +105,29 @@ void mainboard_romstage_entry(unsigned long bist)
 		usb_xhci_on_resume: 1,
 		usb2_ports: {
 			/* Length, Enable, OCn#, Location */
-			{ 0x0064, 1, 0,               /* P0: Port A, CN8 */
-			  USB_PORT_BACK_PANEL },
-			{ 0x0052, 1, 0,               /* P1: Port B, CN9  */
-			  USB_PORT_BACK_PANEL },
-			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P2: CCD */
+			{ 0x0064, 1, 0,               /* P0: VP8 */
+			  USB_PORT_MINI_PCIE },
+			{ 0x0040, 1, 0,               /* P1: Port A, CN22 */
 			  USB_PORT_INTERNAL },
-			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P3: BT */
+			{ 0x0040, 1, 1,		      /* P2: Port B, CN23 */
 			  USB_PORT_INTERNAL },
-			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P4: LTE */
+			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P3: WLAN */
 			  USB_PORT_INTERNAL },
-			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P5: TOUCH */
+			{ 0x0040, 1, 2,		      /* P4: Port C, CN25 */
 			  USB_PORT_INTERNAL },
-			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P6: SD Card */
+			{ 0x0040, 1, 2,		      /* P5: Port D, CN25 */
 			  USB_PORT_INTERNAL },
-			{ 0x0123, 1, 3,               /* P7: USB2 Port */
+			{ 0x0040, 1, USB_OC_PIN_SKIP, /* P6: Card Reader */
 			  USB_PORT_INTERNAL },
+			{ 0x0000, 0, 0,               /* P7: N/C */
+			  USB_PORT_SKIP },
 		},
 		usb3_ports: {
 			/* Enable, OCn# */
-			{ 1, 0               }, /* P1; Port A, CN8 */
-			{ 1, 0               }, /* P2; Port B, CN9  */
-			{ 0, USB_OC_PIN_SKIP }, /* P3; */
-			{ 0, USB_OC_PIN_SKIP }, /* P4; */
+			{ 1, 0 }, /* P1; CN22 */
+			{ 1, 1 }, /* P2; CN23  */
+			{ 1, 2 }, /* P3; CN25 */
+			{ 1, 2 }, /* P4; CN25 */
 		},
 	};
 
