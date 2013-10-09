@@ -25,9 +25,11 @@
 # Take care of subdirectories
 subdirs-y += boot/
 subdirs-y += lib/
+subdirs-y += libgcc/
 subdirs-y += armv4/ armv7/
 
 # Things that appear in every board
+bootblock-y += div0.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 
 bootblock-y += id.S
@@ -160,7 +162,7 @@ $(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(boo
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -m armelf_linux_eabi -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -include $(obj)/config.h -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -include $(obj)/config.h -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
 endif
 
 ################################################################################
@@ -171,18 +173,18 @@ $(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm/romstage.ld $(obj)/
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) $(romstage-objs) -T $(src)/arch/arm/romstage.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/arm/romstage.ld -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/arm/romstage.ld -Wl,--start-group $(romstage-objs) -Wl,--end-group
 endif
 
 ################################################################################
 # Build the ramstage
 
-$(objcbfs)/coreboot_ram.debug: $$(ramstage-objs) $(LIBGCC_FILE_NAME) $(src)/arch/arm/coreboot_ram.ld $(obj)/ldoptions
+$(objcbfs)/coreboot_ram.debug: $$(ramstage-objs) $(src)/arch/arm/coreboot_ram.ld $(obj)/ldoptions
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m -m armelf_linux_eabi -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(src)/arch/arm/coreboot_ram.ld
+	$(LD) -m -m armelf_linux_eabi -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) --end-group -T $(src)/arch/arm/coreboot_ram.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group -T $(src)/arch/arm/coreboot_ram.ld
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) -Wl,--end-group -T $(src)/arch/arm/coreboot_ram.ld
 endif
 
 ################################################################################
