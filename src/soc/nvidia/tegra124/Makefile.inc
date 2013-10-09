@@ -5,6 +5,7 @@ bootblock-y += bootblock_asm.S
 bootblock-y += cbfs.c
 bootblock-y += clock.c
 bootblock-y += i2c.c
+bootblock-y += dma.c
 bootblock-y += monotonic_timer.c
 bootblock-y += power.c
 bootblock-y += ../tegra/gpio.c
