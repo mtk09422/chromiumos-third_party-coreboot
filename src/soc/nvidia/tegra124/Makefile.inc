@@ -4,10 +4,12 @@ bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
 bootblock-y += cbfs.c
 bootblock-y += clock.c
+bootblock-y += dma.c
 bootblock-y += i2c.c
 bootblock-y += dma.c
 bootblock-y += monotonic_timer.c
 bootblock-y += power.c
+bootblock-y += spi.c
 bootblock-y += ../tegra/gpio.c
 bootblock-y += ../tegra/i2c.c
 bootblock-y += ../tegra/pingroup.c
@@ -18,14 +20,18 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 romstage-y += cbfs.c
+romstage-y += dma.c
 romstage-y += monotonic_timer.c
+romstage-y += spi.c
 romstage-y += timer.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 ramstage-y += cbfs.c
+ramstage-y += dma.c
 ramstage-y += monotonic_timer.c
+ramstage-y += spi.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 

@@ -23,6 +23,7 @@
 #include <soc/nvidia/tegra/i2c.h>
 #include <soc/nvidia/tegra124/clock.h>
 #include <soc/nvidia/tegra124/pinmux.h>
+#include <soc/nvidia/tegra124/spi.h>	/* FIXME: move back to soc code? */
 
 #include "pmic.h"
 
@@ -61,4 +62,19 @@ void bootblock_mainboard_init(void)
 	i2c_init(4);
 
 	pmic_init(4);
+
+	/* SPI4 data out (MOSI) */
+	pinmux_set_config(PINMUX_SDMMC1_CMD_INDEX,
+			  PINMUX_SDMMC1_CMD_FUNC_SPI4 | PINMUX_INPUT_ENABLE);
+	/* SPI4 data in (MISO) */
+	pinmux_set_config(PINMUX_SDMMC1_DAT1_INDEX,
+			  PINMUX_SDMMC1_DAT1_FUNC_SPI4 | PINMUX_INPUT_ENABLE);
+	/* SPI4 clock */
+	pinmux_set_config(PINMUX_SDMMC1_DAT2_INDEX,
+			  PINMUX_SDMMC1_DAT2_FUNC_SPI4 | PINMUX_INPUT_ENABLE);
+	/* SPI4 chip select 0 */
+	pinmux_set_config(PINMUX_SDMMC1_DAT3_INDEX,
+			  PINMUX_SDMMC1_DAT3_FUNC_SPI4 | PINMUX_INPUT_ENABLE);
+//	spi_init();
+	tegra_spi_init(4);
 }

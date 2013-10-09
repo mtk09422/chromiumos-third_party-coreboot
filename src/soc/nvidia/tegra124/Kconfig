@@ -59,6 +59,14 @@ config STACK_SIZE
 	hex
 	default 0x800
 
+config CBFS_CACHE_ADDRESS
+	hex "memory address to put CBFS cache data"
+	default 0x803c0000
+
+config CBFS_CACHE_SIZE
+	hex "size of CBFS cache data"
+	default 0x00013000
+
 choice CONSOLE_SERIAL_TEGRA124_UART_CHOICES
 	prompt "Serial Console UART"
 	default CONSOLE_SERIAL_UARTA
