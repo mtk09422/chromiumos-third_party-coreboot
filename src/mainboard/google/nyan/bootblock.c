@@ -18,7 +18,9 @@
  */
 
 #include <bootblock_common.h>
+#include <soc/nvidia/tegra124/clock.h>
 
 void bootblock_mainboard_init(void)
 {
+	clock_config();
 }

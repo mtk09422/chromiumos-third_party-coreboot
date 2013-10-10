@@ -29,9 +29,9 @@ void main(void)
 {
 	void *entry;
 
-	set_avp_clock_to_clkm();
+	clock_init();
 
-	init_clocks();
+	clock_uart_config();
 
 	// Serial out, tristate off.
 	pinmux_set_config(PINMUX_KB_ROW9_INDEX, PINMUX_KB_ROW9_FUNC_UA3);

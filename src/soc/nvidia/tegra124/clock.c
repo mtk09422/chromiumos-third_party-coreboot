@@ -148,8 +148,7 @@ static int pllx_set_rate(struct clk_pll_simple *pll , u32 divn, u32 divm,
 	return 0;
 }
 
-
-void init_pllx(void)
+static void init_pllx(void)
 {
 	int osc;
 	struct clk_pll_table *sel;
@@ -169,16 +168,33 @@ void init_pllx(void)
 
 	adjust_pllp_out_freqs();
 }
-/*
- * On poweron, AVP clock source (also called system clock) is set to PLLP_out0
- * with frequency set at 1MHz. Before initializing PLLP, we need to move the
- * system clock's source to CLK_M temporarily. And then switch it to PLLP_out4
- * (204MHz) at a later time.
+
+void clock_uart_config(void)
+{
+	/* Enable clocks to required peripherals. TBD - minimize this list */
+	/* The UART is super special so Just Do It right here. */
+
+	setbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
+	setbits_le32(clkenable(CLK_UARTA_REG), CLK_UARTA_MASK);
+	clock_ll_set_source_divisor(&clk_rst->src_uarta, 0, 2);
+	udelay(2);
+	clrbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
+}
+
+/**
+ * The T124 requires some special clock initialization, including setting up
+ * the DVC I2C, turning on MSELECT and selecting the G CPU cluster
  */
-void set_avp_clock_to_clkm(void)
+void clock_init(void)
 {
 	u32 val;
 
+	/*
+	 * On poweron, AVP clock source (also called system clock) is set to
+	 * PLLP_out0 with frequency set at 1MHz. Before initializing PLLP, we
+	 * need to move the system clock's source to CLK_M temporarily. And
+	 * then switch it to PLLP_out4 (204MHz) at a later time.
+	 */
 	val = (SCLK_SOURCE_CLKM << SCLK_SWAKEUP_FIQ_SOURCE_SHIFT) |
 		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_IRQ_SOURCE_SHIFT) |
 		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_RUN_SOURCE_SHIFT) |
@@ -186,15 +202,6 @@ void set_avp_clock_to_clkm(void)
 		(SCLK_SYS_STATE_RUN << SCLK_SYS_STATE_SHIFT);
 	writel(val, &clk_rst->crc_sclk_brst_pol);
 	udelay(2);
-}
-
-/**
- * The T124 requires some special clock initialization, including setting up
- * the DVC I2C, turning on MSELECT and selecting the G CPU cluster
- */
-void init_clocks(void)
-{
-	u32 val;
 
 	/* Set active CPU cluster to G */
 	clrbits_le32(&flow->cluster_control, 1);
@@ -220,16 +227,10 @@ void init_clocks(void)
 
 	val = (1 << CLK_SYS_RATE_AHB_RATE_SHIFT);
 	writel(val, &clk_rst->crc_clk_sys_rate);
+}
 
-	/* Enable clocks to required peripherals. TBD - minimize this list */
-	/* The UART is super special so Just Do It right here. */
-
-	setbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
-	setbits_le32(clkenable(CLK_UARTA_REG), CLK_UARTA_MASK);
-	clock_ll_set_source_divisor(&clk_rst->src_uarta, 0, 2);
-	udelay(2);
-	clrbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
-
+void clock_config(void)
+{
 	/* fixme. The stupidity of all this ... we are reading and
 	 * writing the same register lots of times when we could just
 	 * one lousy write with a combined mask. Sigh.

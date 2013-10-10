@@ -165,13 +165,13 @@ enum {
 /* make this a macro, rather than a function; let the C compiler find
  * the error for you if you use an out of range index.. Requires you
  * to declare a clk_rst pointer.  */
-void init_pllx(void);
 #define clkreset(x) &clk_rst->crc_rst_dev[(x)]
 #define clkenable(x) &clk_rst->crc_clk_out_enb[(x)]
 #define clkresetvw(x) &clk_rst->crc_rst_dev_vw[(x)]
 #define clkenablevw(x) &clk_rst->crc_clk_out_enb_vw[(x)]
 
-void set_avp_clock_to_clkm(void);
-void init_clocks(void);
+void clock_uart_config(void);
+void clock_config(void);
+void clock_init(void);
 
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */
