@@ -9,12 +9,16 @@ bootblock-y += ../tegra/gpio.c
 bootblock-y += ../tegra/pingroup.c
 bootblock-y += ../tegra/pinmux.c
 bootblock-y += timer.c
-bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += uart.c
+ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
+bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
+endif
 
 romstage-y += cbfs.c
 romstage-y += monotonic_timer.c
 romstage-y += timer.c
-romstage-$(CONFIG_EARLY_CONSOLE) += uart.c
+ifeq ($(CONFIG_EARLY_CONSOLE),y)
+romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
+endif
 
 ramstage-y += cbfs.c
 ramstage-y += monotonic_timer.c
