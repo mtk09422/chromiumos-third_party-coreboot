@@ -18,6 +18,7 @@
  */
 
 #include <arch/hlt.h>
+#include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
 
@@ -41,6 +42,8 @@ void main(void)
 
 	if (CONFIG_BOOTBLOCK_CONSOLE)
 		console_init();
+
+	bootblock_mainboard_init();
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/romstage");
 
