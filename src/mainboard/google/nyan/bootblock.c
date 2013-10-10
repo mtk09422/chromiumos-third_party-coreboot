@@ -18,9 +18,43 @@
  */
 
 #include <bootblock_common.h>
+#include <console/console.h>
+#include <device/i2c.h>
+#include <soc/nvidia/tegra/i2c.h>
 #include <soc/nvidia/tegra124/clock.h>
+#include <soc/nvidia/tegra124/pinmux.h>
 
 void bootblock_mainboard_init(void)
 {
 	clock_config();
+
+	// I2C1 clock.
+	pinmux_set_config(PINMUX_GEN1_I2C_SCL_INDEX,
+			  PINMUX_GEN1_I2C_SCL_FUNC_I2C1 | PINMUX_INPUT_ENABLE);
+	// I2C1 data.
+	pinmux_set_config(PINMUX_GEN1_I2C_SDA_INDEX,
+			  PINMUX_GEN1_I2C_SDA_FUNC_I2C1 | PINMUX_INPUT_ENABLE);
+	// I2C2 clock.
+	pinmux_set_config(PINMUX_GEN2_I2C_SCL_INDEX,
+			  PINMUX_GEN2_I2C_SCL_FUNC_I2C2 | PINMUX_INPUT_ENABLE);
+	// I2C2 data.
+	pinmux_set_config(PINMUX_GEN2_I2C_SDA_INDEX,
+			  PINMUX_GEN2_I2C_SDA_FUNC_I2C2 | PINMUX_INPUT_ENABLE);
+	// I2C3 (cam) clock.
+	pinmux_set_config(PINMUX_CAM_I2C_SCL_INDEX,
+			  PINMUX_CAM_I2C_SCL_FUNC_I2C3 | PINMUX_INPUT_ENABLE);
+	// I2C3 (cam) data.
+	pinmux_set_config(PINMUX_CAM_I2C_SDA_INDEX,
+			  PINMUX_CAM_I2C_SDA_FUNC_I2C3 | PINMUX_INPUT_ENABLE);
+	// I2C5 (PMU) clock.
+	pinmux_set_config(PINMUX_PWR_I2C_SCL_INDEX,
+			  PINMUX_PWR_I2C_SCL_FUNC_I2CPMU | PINMUX_INPUT_ENABLE);
+	// I2C5 (PMU) data.
+	pinmux_set_config(PINMUX_PWR_I2C_SDA_INDEX,
+			  PINMUX_PWR_I2C_SDA_FUNC_I2CPMU | PINMUX_INPUT_ENABLE);
+
+	i2c_init(0);
+	i2c_init(1);
+	i2c_init(2);
+	i2c_init(4);
 }
