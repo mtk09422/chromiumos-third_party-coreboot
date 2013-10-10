@@ -27,6 +27,8 @@ $(obj)/generated/bct.cfg:
 
 subdirs-y += bct
 
+bootblock-y += bootblock.c
+
 romstage-y += romstage.c
 
 ramstage-y += mainboard.c
