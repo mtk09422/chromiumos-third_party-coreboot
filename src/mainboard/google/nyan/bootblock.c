@@ -24,6 +24,8 @@
 #include <soc/nvidia/tegra124/clock.h>
 #include <soc/nvidia/tegra124/pinmux.h>
 
+#include "pmic.h"
+
 void bootblock_mainboard_init(void)
 {
 	clock_config();
@@ -57,4 +59,6 @@ void bootblock_mainboard_init(void)
 	i2c_init(1);
 	i2c_init(2);
 	i2c_init(4);
+
+	pmic_init(4);
 }
