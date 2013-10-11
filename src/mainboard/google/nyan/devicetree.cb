@@ -19,4 +19,7 @@
 
 chip soc/nvidia/tegra124
 	device cpu_cluster 0 on end
+	register "xres" = "2560"
+	register "yres" = "1600"
+	register "framebuffer_bits_per_pixel" = "24"
 end
