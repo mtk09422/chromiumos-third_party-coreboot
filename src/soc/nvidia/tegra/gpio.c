@@ -26,7 +26,7 @@
 #include "gpio.h"
 #include "pinmux.h"
 
-static void gpio_input_common(int gpio_index, int pinmux_index, u32 pull)
+void __gpio_input(int gpio_index, int pinmux_index, u32 pull)
 {
 	u32 pinmux_config = PINMUX_INPUT_ENABLE | PINMUX_TRISTATE | pull;
 
@@ -36,22 +36,7 @@ static void gpio_input_common(int gpio_index, int pinmux_index, u32 pull)
 	pinmux_set_config(pinmux_index, pinmux_config);
 }
 
-void gpio_input(int gpio_index, int pinmux_index)
-{
-	gpio_input_common(gpio_index, pinmux_index, PINMUX_PULL_NONE);
-}
-
-void gpio_input_pullup(int gpio_index, int pinmux_index)
-{
-	gpio_input_common(gpio_index, pinmux_index, PINMUX_PULL_UP);
-}
-
-void gpio_input_pulldown(int gpio_index, int pinmux_index)
-{
-	gpio_input_common(gpio_index, pinmux_index, PINMUX_PULL_DOWN);
-}
-
-void gpio_output(int gpio_index, int pinmux_index, int value)
+void __gpio_output(int gpio_index, int pinmux_index, int value)
 {
 	/* TODO: Set OPEN_DRAIN based on what pin it is? */
 

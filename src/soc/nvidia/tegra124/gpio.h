@@ -23,6 +23,8 @@
 #include <soc/nvidia/tegra/gpio.h>
 #include <stdint.h>
 
+#include "pinmux.h"	/* for pinmux constants in GPIO macros */
+
 /* GPIO index constants. */
 
 #define GPIO_PORT_CONSTANTS(port) \

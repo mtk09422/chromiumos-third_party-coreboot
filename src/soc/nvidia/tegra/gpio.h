@@ -22,12 +22,20 @@
 
 #include <stdint.h>
 
-/* Higher level functions for common GPIO configurations. */
+/* Higher level function wrappers for common GPIO configurations. */
 
-void gpio_input(int gpio_index, int pinmux_index);
-void gpio_input_pullup(int gpio_index, int pinmux_index);
-void gpio_input_pulldown(int gpio_index, int pinmux_index);
-void gpio_output(int gpio_index, int pinmux_index, int value);
+#define gpio_input(gpio_enum)		__gpio_input(gpio_enum, \
+					PINMUX_##gpio_enum, PINMUX_PULL_NONE)
+#define gpio_input_pulldown(gpio_enum)	__gpio_input(gpio_enum, \
+					PINMUX_##gpio_enum, PINMUX_PULL_DOWN)
+#define gpio_input_pullup(gpio_enum)	__gpio_input(gpio_enum, \
+					PINMUX_##gpio_enum, PINMUX_PULL_UP)
+
+#define gpio_output(gpio_enum, value)	__gpio_output(gpio_enum, \
+					PINMUX_##gpio_enum, value)
+
+void __gpio_input(int gpio_index, int pinmux_index, u32 pull);
+void __gpio_output(int gpio_index, int pinmux_index, int value);
 
 /* Functions to modify specific GPIO control values. */
 
