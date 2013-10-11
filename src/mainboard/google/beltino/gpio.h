@@ -31,31 +31,31 @@ const struct pch_lp_gpio_map mainboard_gpio_map[] = {
 	LP_GPIO_NATIVE,        /* 5: NATIVE: I2C0_SCL_GPIO5 */
 	LP_GPIO_NATIVE,        /* 6: NATIVE: I2C1_SDA_GPIO6 */
 	LP_GPIO_NATIVE,        /* 7: NATIVE: I2C1_SCL_GPIO7 */
-	LP_GPIO_ACPI_SCI,      /* 8: LTE_WAKE_L_Q */
-	LP_GPIO_INPUT,         /* 9: RAM_ID1 */
+	LP_GPIO_ACPI_SCI,      /* 8: LAN_WAKE_L_Q */
+	LP_GPIO_OUT_HIGH,      /* 9: PP3300_WLAN_EN */
 	LP_GPIO_ACPI_SCI,      /* 10: WLAN_WAKE_L_Q */
-	LP_GPIO_UNUSED,        /* 11: UNUSED */
-	LP_GPIO_INPUT_INVERT,  /* 12: TRACKPAD_INT_L (WAKE) */
-	LP_GPIO_INPUT,         /* 13: RAM_ID0 */
-	LP_GPIO_INPUT,         /* 14: EC_IN_RW */
+	LP_GPIO_UNUSED,        /* 11: SMBALERT */
+	LP_GPIO_INPUT_INVERT,  /* 12: RECOVERY_L */
+	LP_GPIO_UNUSED,        /* 13: UNUSED */
+	LP_GPIO_UNUSED,        /* 14: UNUSED */
 	LP_GPIO_UNUSED,        /* 15: UNUSED (STRAP) */
 	LP_GPIO_UNUSED,        /* 16: UNUSED */
-	LP_GPIO_UNUSED,        /* 17: UNUSED */
-	LP_GPIO_NATIVE,        /* 18: PCIE_CLKREQ_WLAN# */
+	LP_GPIO_OUT_HIGH,      /* 17: PP3300_VP8_EN */
+	LP_GPIO_UNUSED,        /* 18: UNUSED */
 	LP_GPIO_UNUSED,        /* 19: UNUSED */
-	LP_GPIO_UNUSED,        /* 20: UNUSED */
-	LP_GPIO_UNUSED,        /* 21: UNUSED */
-	LP_GPIO_UNUSED,        /* 22: UNUSED */
+	LP_GPIO_NATIVE,        /* 20: NATIVE: CLK_PCIE_REQ2# */
+	LP_GPIO_NATIVE,        /* 21: NATIVE: CLK_PCIE_REQ3# */
+	LP_GPIO_NATIVE,        /* 22: NATIVE: CLK_PCIE_REQ4# */
 	LP_GPIO_UNUSED,        /* 23: UNUSED */
-	LP_GPIO_UNUSED,        /* 24: UNUSED */
-	LP_GPIO_INPUT_INVERT,  /* 25: TOUCH_INT_L (WAKE) */
-	LP_GPIO_UNUSED,        /* 26: UNUSED */
+	LP_GPIO_OUT_HIGH,      /* 24: WLAN_OFF_L */
+	LP_GPIO_UNUSED,        /* 25: UNUSED */
+	LP_GPIO_OUT_HIGH,      /* 26: USB_CTL_1 */
 	LP_GPIO_UNUSED,        /* 27: UNUSED */
-	LP_GPIO_UNUSED,        /* 28: UNUSED */
+	LP_GPIO_OUT_HIGH,      /* 28: USB_ILIM_SEL */
 	LP_GPIO_UNUSED,        /* 29: UNUSED */
-	LP_GPIO_NATIVE,        /* 30: NATIVE: PCH_SUSWARN_L */
-	LP_GPIO_NATIVE,        /* 31: NATIVE: ACPRESENT */
-	LP_GPIO_NATIVE,        /* 32: NATIVE: LPC_CLKRUN_L */
+	LP_GPIO_NATIVE,        /* 30: NATIVE: PCH_SUSPWRACK_L */
+	LP_GPIO_NATIVE,        /* 31: NATIVE: PCH_ACPRESENT */
+	LP_GPIO_NATIVE,        /* 32: NATIVE: CLKRUN# */
 	LP_GPIO_NATIVE,        /* 33: NATIVE: DEVSLP0 */
 	LP_GPIO_ACPI_SMI,      /* 34: EC_SMI_L */
 	LP_GPIO_ACPI_SMI,      /* 35: PCH_NMI_DBG_L (route in NMI_EN) */
@@ -64,26 +64,26 @@ const struct pch_lp_gpio_map mainboard_gpio_map[] = {
 	LP_GPIO_UNUSED,        /* 38: UNUSED */
 	LP_GPIO_UNUSED,        /* 39: UNUSED */
 	LP_GPIO_NATIVE,        /* 40: NATIVE: USB_OC0# */
-	LP_GPIO_UNUSED,        /* 41: UNUSED */
-	LP_GPIO_UNUSED,        /* 42: UNUSED */
+	LP_GPIO_NATIVE,        /* 41: NATIVE: USB_OC1# */
+	LP_GPIO_NATIVE,        /* 42: NATIVE: USB_OC2# */
 	LP_GPIO_NATIVE,        /* 43: NATIVE: USB_OC3# */
 	LP_GPIO_UNUSED,        /* 44: UNUSED */
-	LP_GPIO_UNUSED,        /* 45: UNUSED */
-	LP_GPIO_OUT_HIGH,      /* 46: WLAN_DISABLE_L */
-	LP_GPIO_INPUT,         /* 47: RAM_ID2 */
+	LP_GPIO_OUT_HIGH,      /* 45: PP5000_CODEC_EN */
+	LP_GPIO_OUT_HIGH,      /* 46: BT_DISABLE_L */
+	LP_GPIO_OUT_HIGH,      /* 47: USB1_PWR_EN */
 	LP_GPIO_UNUSED,        /* 48: UNUSED */
 	LP_GPIO_UNUSED,        /* 49: UNUSED */
-	LP_GPIO_UNUSED,        /* 50: UNUSED */
-	LP_GPIO_INPUT,         /* 51: ALS_INT_L */
-	LP_GPIO_INPUT,         /* 52: SIM_DET */
-	LP_GPIO_PIRQ,          /* 53: TRACKPAD_INT_DX (PIRQV) */
-	LP_GPIO_PIRQ,          /* 54: TOUCH_INT_L_DX (PIRQW) */
+	LP_GPIO_OUT_HIGH,      /* 50: VP8_DISABLE_L */
+	LP_GPIO_UNUSED,        /* 51: UNUSED */
+	LP_GPIO_UNUSED,        /* 52: UNUSED */
+	LP_GPIO_UNUSED,        /* 53: UNUSED */
+	LP_GPIO_UNUSED,        /* 54: UNUSED */
 	LP_GPIO_UNUSED,        /* 55: UNUSED */
-	LP_GPIO_UNUSED,        /* 56: UNUSED */
-	LP_GPIO_UNUSED,        /* 57: UNUSED */
+	LP_GPIO_OUT_HIGH,      /* 56: USB2_PWR_EN */
+	LP_GPIO_OUT_HIGH,      /* 57: USB3_PWR_EN */
 	LP_GPIO_INPUT,         /* 58: PCH_SPI_WP_D */
-	LP_GPIO_OUT_HIGH,      /* 59: LTE_DISABLE_L */
-	LP_GPIO_NATIVE,        /* 60: NATIVE: SML0ALERT */
+	LP_GPIO_OUT_HIGH,      /* 59: PP3300_LAN_EN */
+	LP_GPIO_NATIVE,        /* 60: NATIVE: SMB0ALERT# */
 	LP_GPIO_UNUSED,        /* 61: UNUSED */
 	LP_GPIO_UNUSED,        /* 62: UNUSED */
 	LP_GPIO_NATIVE,        /* 63: NATIVE: PCH_SLP_S5_L */
