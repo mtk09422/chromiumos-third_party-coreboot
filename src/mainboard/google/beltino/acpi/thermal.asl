@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2012 Google Inc.
+ * Copyright (C) 2011 The Chromium OS Authors. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,20 +21,6 @@
 
 Scope (\_TZ)
 {
-	// Handler for throttle requests on this platform
-	//  0 = Stop throttling
-	//  1 = Start throttling
-	Method (THRT, 1, Serialized)
-	{
-		If (LEqual (Arg0, 0)) {
-			/* Disable Power Limit */
-			\_SB.PCI0.MCHC.CTLD ()
-		} Else {
-			/* Enable Power Limit */
-			\_SB.PCI0.MCHC.CTLE (\F0PW)
-		}
-	}
-
 	ThermalZone (THRM)
 	{
 		Name (_TC1, 0x02)
@@ -77,35 +63,211 @@ Scope (\_TZ)
 
 		Method (_TMP, 0, Serialized)
 		{
-			// Get Temperature from TIN# set in NVS
-			Store (\_SB.PCI0.LPCB.EC0.TINS (TMPS), Local0)
+			// Get CPU Temperature from PECI via SuperIO TMPIN3
+			Store (\_SB.PCI0.LPCB.SIO.ENVC.TIN3, Local0)
 
-			// Check for sensor not calibrated
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNCA)) {
-				Return (CTOK(0))
+			// Check for invalid readings
+			If (LOr (LEqual (Local0, 255), LEqual (Local0, 0))) {
+				Return (CTOK (\F2ON))
 			}
 
-			// Check for sensor not present
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNPR)) {
-				Return (CTOK(0))
+			// PECI raw value is an offset from Tj_max
+			Subtract (255, Local0, Local1)
+
+			// Handle values greater than Tj_max
+			If (LGreaterEqual (Local1, \TMAX)) {
+				Return (CTOK (\TMAX))
 			}
 
-			// Check for sensor not powered
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNOP)) {
-				Return (CTOK(0))
+			// Subtract from Tj_max to get temperature
+			Subtract (\TMAX, Local1, Local0)
+			Return (CTOK (Local0))
+		}
+
+		Method (_AC0) {
+			If (LLessEqual (\FLVL, 0)) {
+				Return (CTOK (\F0OF))
+			} Else {
+				Return (CTOK (\F0ON))
 			}
+		}
 
-			// Check for sensor bad reading
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TBAD)) {
-				Return (CTOK(0))
+		Method (_AC1) {
+			If (LLessEqual (\FLVL, 1)) {
+				Return (CTOK (\F1OF))
+			} Else {
+				Return (CTOK (\F1ON))
 			}
+		}
 
-			// Adjust by offset to get Kelvin
-			Add (\_SB.PCI0.LPCB.EC0.TOFS, Local0, Local0)
+		Method (_AC2) {
+			If (LLessEqual (\FLVL, 2)) {
+				Return (CTOK (\F2OF))
+			} Else {
+				Return (CTOK (\F2ON))
+			}
+		}
 
-			// Convert to 1/10 Kelvin
-			Multiply (Local0, 10, Local0)
-			Return (Local0)
+		Method (_AC3) {
+			If (LLessEqual (\FLVL, 3)) {
+				Return (CTOK (\F3OF))
+			} Else {
+				Return (CTOK (\F3ON))
+			}
+		}
+
+		Method (_AC4) {
+			If (LLessEqual (\FLVL, 4)) {
+				Return (CTOK (\F4OF))
+			} Else {
+				Return (CTOK (\F4ON))
+			}
+		}
+
+		Name (_AL0, Package () { FAN0 })
+		Name (_AL1, Package () { FAN1 })
+		Name (_AL2, Package () { FAN2 })
+		Name (_AL3, Package () { FAN3 })
+		Name (_AL4, Package () { FAN4 })
+
+		PowerResource (FNP0, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 0)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (0, \FLVL)
+				Store (\F0PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (1, \FLVL)
+				Store (\F1PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		PowerResource (FNP1, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 1)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (1, \FLVL)
+				Store (\F1PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (2, \FLVL)
+				Store (\F2PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		PowerResource (FNP2, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 2)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (2, \FLVL)
+				Store (\F2PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (3, \FLVL)
+				Store (\F3PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		PowerResource (FNP3, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 3)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (3, \FLVL)
+				Store (\F3PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (4, \FLVL)
+				Store (\F4PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		PowerResource (FNP4, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 4)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (4, \FLVL)
+				Store (\F4PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (4, \FLVL)
+				Store (\F4PW, \_SB.PCI0.LPCB.SIO.ENVC.F3PS)
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		Device (FAN0)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 0)
+			Name (_PR0, Package () { FNP0 })
+		}
+
+		Device (FAN1)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 1)
+			Name (_PR0, Package () { FNP1 })
+		}
+
+		Device (FAN2)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 2)
+			Name (_PR0, Package () { FNP2 })
+		}
+
+		Device (FAN3)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 3)
+			Name (_PR0, Package () { FNP3 })
+		}
+
+		Device (FAN4)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 4)
+			Name (_PR0, Package () { FNP4 })
 		}
 	}
 }

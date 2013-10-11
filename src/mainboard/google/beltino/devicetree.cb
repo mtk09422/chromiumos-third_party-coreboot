@@ -106,24 +106,12 @@ chip northbridge/intel/haswell
 			device pci 1e.0 off end # PCI bridge
 			device pci 1f.0 on
 				chip superio/ite/it8772f
-					# Enable GPIO10 as USBPWRON12#
-					# Enable GPIO12 as USBPWRON13#
-					register "gpio_set1" = "0x05"
-					# Enable GPIO22 as SIO_WAEKSCI#
-					register "gpio_set2" = "0x04"
-					# Enable GPIO32 as SIO_EXTSMI#
-					register "gpio_set3" = "0x04"
-					# Enable GPIO45 as LED_POWER#
-					register "gpio_set4" = "0x20"
-					# Enable GPIO51 as USBPWRON8#
-					# Enable GPIO52 as USBPWRON1#
-					register "gpio_set5" = "0x06"
 					# Skip keyboard init
 					register "skip_keyboard" = "1"
 					# Enable PECI on TMPIN3
 					register "peci_tmpin" = "3"
-					# Enable FAN3
-					register "fan3_enable" = "1"
+					# Enable FAN2
+					register "fan2_enable" = "1"
 
 					device pnp 2e.0 off end # FDC
 					device pnp 2e.1 on # Serial Port 1

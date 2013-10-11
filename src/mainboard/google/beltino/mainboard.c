@@ -36,7 +36,6 @@
 #include <boot/coreboot_tables.h>
 #include "hda_verb.h"
 #include <southbridge/intel/lynxpoint/pch.h>
-#include "onboard.h"
 
 void mainboard_suspend_resume(void)
 {
