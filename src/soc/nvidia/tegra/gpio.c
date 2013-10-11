@@ -26,14 +26,14 @@
 #include "gpio.h"
 #include "pinmux.h"
 
-static void gpio_input_common(int gpio_index, int pinmux_index,
-			      uint32_t pconfig)
+static void gpio_input_common(int gpio_index, int pinmux_index, u32 pull)
 {
-	pconfig |= PINMUX_INPUT_ENABLE;
+	u32 pinmux_config = PINMUX_INPUT_ENABLE | PINMUX_TRISTATE | pull;
+
 	gpio_set_int_enable(gpio_index, 0);
-	gpio_set_mode(gpio_index, GPIO_MODE_GPIO);
 	gpio_set_out_enable(gpio_index, 0);
-	pinmux_set_config(pinmux_index, pconfig);
+	gpio_set_mode(gpio_index, GPIO_MODE_GPIO);
+	pinmux_set_config(pinmux_index, pinmux_config);
 }
 
 void gpio_input(int gpio_index, int pinmux_index)
@@ -53,14 +53,13 @@ void gpio_input_pulldown(int gpio_index, int pinmux_index)
 
 void gpio_output(int gpio_index, int pinmux_index, int value)
 {
-	uint32_t pconfig = PINMUX_PULL_NONE;
+	/* TODO: Set OPEN_DRAIN based on what pin it is? */
 
-	pinmux_set_config(pinmux_index, pconfig | PINMUX_TRISTATE);
 	gpio_set_int_enable(gpio_index, 0);
-	gpio_set_mode(gpio_index, GPIO_MODE_GPIO);
-	gpio_set_out_enable(gpio_index, 1);
 	gpio_set_out_value(gpio_index, value);
-	pinmux_set_config(pinmux_index, pconfig);
+	gpio_set_out_enable(gpio_index, 1);
+	gpio_set_mode(gpio_index, GPIO_MODE_GPIO);
+	pinmux_set_config(pinmux_index, PINMUX_PULL_NONE);
 }
 
 enum {
@@ -74,50 +73,49 @@ enum {
 
 struct gpio_bank {
 	// Values
-	uint32_t config[GPIO_PORTS_PER_BANK];
-	uint32_t out_enable[GPIO_PORTS_PER_BANK];
-	uint32_t out_value[GPIO_PORTS_PER_BANK];
-	uint32_t in_value[GPIO_PORTS_PER_BANK];
-	uint32_t int_status[GPIO_PORTS_PER_BANK];
-	uint32_t int_enable[GPIO_PORTS_PER_BANK];
-	uint32_t int_level[GPIO_PORTS_PER_BANK];
-	uint32_t int_clear[GPIO_PORTS_PER_BANK];
+	u32 config[GPIO_PORTS_PER_BANK];
+	u32 out_enable[GPIO_PORTS_PER_BANK];
+	u32 out_value[GPIO_PORTS_PER_BANK];
+	u32 in_value[GPIO_PORTS_PER_BANK];
+	u32 int_status[GPIO_PORTS_PER_BANK];
+	u32 int_enable[GPIO_PORTS_PER_BANK];
+	u32 int_level[GPIO_PORTS_PER_BANK];
+	u32 int_clear[GPIO_PORTS_PER_BANK];
 
 	// Masks
-	uint32_t config_mask[GPIO_PORTS_PER_BANK];
-	uint32_t out_enable_mask[GPIO_PORTS_PER_BANK];
-	uint32_t out_value_mask[GPIO_PORTS_PER_BANK];
-	uint32_t in_value_mask[GPIO_PORTS_PER_BANK];
-	uint32_t int_status_mask[GPIO_PORTS_PER_BANK];
-	uint32_t int_enable_mask[GPIO_PORTS_PER_BANK];
-	uint32_t int_level_mask[GPIO_PORTS_PER_BANK];
-	uint32_t int_clear_mask[GPIO_PORTS_PER_BANK];
+	u32 config_mask[GPIO_PORTS_PER_BANK];
+	u32 out_enable_mask[GPIO_PORTS_PER_BANK];
+	u32 out_value_mask[GPIO_PORTS_PER_BANK];
+	u32 in_value_mask[GPIO_PORTS_PER_BANK];
+	u32 int_status_mask[GPIO_PORTS_PER_BANK];
+	u32 int_enable_mask[GPIO_PORTS_PER_BANK];
+	u32 int_level_mask[GPIO_PORTS_PER_BANK];
+	u32 int_clear_mask[GPIO_PORTS_PER_BANK];
 };
 
 static const struct gpio_bank *gpio_banks = (void *)TEGRA_GPIO_BASE;
 
-static uint32_t gpio_read_port(int index, size_t offset)
+static u32 gpio_read_port(int index, size_t offset)
 {
 	int bank = index / GPIO_GPIOS_PER_BANK;
 	int port = (index - bank * GPIO_GPIOS_PER_BANK) / GPIO_GPIOS_PER_PORT;
 
-	return read32((uint8_t *)&gpio_banks[bank] + offset +
-		      port * sizeof(uint32_t));
+	return read32((u8 *)&gpio_banks[bank] + offset +
+		      port * sizeof(u32));
 }
 
-static void gpio_write_port(int index, size_t offset,
-			    uint32_t mask, uint32_t value)
+static void gpio_write_port(int index, size_t offset, u32 mask, u32 value)
 {
 	int bank = index / GPIO_GPIOS_PER_BANK;
 	int port = (index - bank * GPIO_GPIOS_PER_BANK) / GPIO_GPIOS_PER_PORT;
 
-	uint32_t reg = read32((uint8_t *)&gpio_banks[bank] + offset +
-			      port * sizeof(uint32_t));
-	uint32_t new_reg = (reg & ~mask) | (value & mask);
+	u32 reg = read32((u8 *)&gpio_banks[bank] + offset +
+			      port * sizeof(u32));
+	u32 new_reg = (reg & ~mask) | (value & mask);
 
 	if (new_reg != reg) {
-		write32(new_reg, (uint8_t *)&gpio_banks[bank] + offset +
-			port * sizeof(uint32_t));
+		write32(new_reg, (u8 *)&gpio_banks[bank] + offset +
+			port * sizeof(u32));
 	}
 }
 
@@ -131,7 +129,7 @@ void gpio_set_mode(int gpio_index, enum gpio_mode mode)
 int gpio_get_mode(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, config));
 	return (port & (1 << bit)) != 0;
 }
@@ -146,7 +144,7 @@ void gpio_set_lock(int gpio_index)
 int gpio_get_lock(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT + GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, config));
 	return (port & (1 << bit)) != 0;
 }
@@ -161,7 +159,7 @@ void gpio_set_out_enable(int gpio_index, int enable)
 int gpio_get_out_enable(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, out_enable));
 	return (port & (1 << bit)) != 0;
 }
@@ -176,7 +174,7 @@ void gpio_set_out_value(int gpio_index, int value)
 int gpio_get_out_value(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, out_value));
 	return (port & (1 << bit)) != 0;
 }
@@ -184,7 +182,7 @@ int gpio_get_out_value(int gpio_index)
 int gpio_get_in_value(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, in_value));
 	return (port & (1 << bit)) != 0;
 }
@@ -192,7 +190,7 @@ int gpio_get_in_value(int gpio_index)
 int gpio_get_int_status(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, int_status));
 	return (port & (1 << bit)) != 0;
 }
@@ -207,7 +205,7 @@ void gpio_set_int_enable(int gpio_index, int enable)
 int gpio_get_int_enable(int gpio_index)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, int_enable));
 	return (port & (1 << bit)) != 0;
 }
@@ -215,7 +213,7 @@ int gpio_get_int_enable(int gpio_index)
 void gpio_set_int_level(int gpio_index, int high_rise, int edge, int delta)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t value = (high_rise ? (0x000001 << bit) : 0) |
+	u32 value = (high_rise ? (0x000001 << bit) : 0) |
 			 (edge ? (0x000100 << bit) : 0) |
 			 (delta ? (0x010000 << bit) : 0);
 	gpio_write_port(gpio_index, offsetof(struct gpio_bank, config),
@@ -225,7 +223,7 @@ void gpio_set_int_level(int gpio_index, int high_rise, int edge, int delta)
 void gpio_get_int_level(int gpio_index, int *high_rise, int *edge, int *delta)
 {
 	int bit = gpio_index % GPIO_GPIOS_PER_PORT;
-	uint32_t port = gpio_read_port(gpio_index,
+	u32 port = gpio_read_port(gpio_index,
 				       offsetof(struct gpio_bank, int_level));
 	*high_rise = ((port & (0x000001 << bit)) != 0);
 	*edge = ((port & (0x000100 << bit)) != 0);
