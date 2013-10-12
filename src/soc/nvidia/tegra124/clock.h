@@ -171,6 +171,7 @@ enum {
 #define clkenablevw(x) &clk_rst->crc_clk_out_enb_vw[(x)]
 
 void clock_uart_config(void);
+void clock_cpu0_config_and_reset(void * entry);
 void clock_config(void);
 void clock_init(void);
 

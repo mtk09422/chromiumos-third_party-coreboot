@@ -24,6 +24,7 @@
 
 #include "clock.h"
 #include "pinmux.h"
+#include "power.h"
 
 void main(void)
 {
@@ -45,7 +46,22 @@ void main(void)
 
 	bootblock_mainboard_init();
 
+	pinmux_set_config(PINMUX_CORE_PWR_REQ_INDEX,
+			  PINMUX_CORE_PWR_REQ_FUNC_PWRON);
+	pinmux_set_config(PINMUX_CPU_PWR_REQ_INDEX,
+			  PINMUX_CPU_PWR_REQ_FUNC_CPU);
+	pinmux_set_config(PINMUX_PWR_INT_N_INDEX,
+			  PINMUX_PWR_INT_N_FUNC_PMICINTR |
+			  PINMUX_TRISTATE |
+			  PINMUX_INPUT_ENABLE);
+
+	power_enable_cpu_rail();
+	power_ungate_cpu();
+
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/romstage");
+
+	if (entry)
+		clock_cpu0_config_and_reset(entry);
 
 	hlt();
 }

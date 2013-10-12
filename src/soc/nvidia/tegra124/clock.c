@@ -24,7 +24,7 @@
 
 static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 static struct flow_ctlr *flow = (void *)TEGRA_FLOW_BASE;
-static struct pmc_ctlr *pmc = (void*)TEGRA_PMC_BASE;
+static struct tegra_pmc_regs *pmc = (void*)TEGRA_PMC_BASE;
 
 /* only needed in this one place. Avoid namespace pollution. Be green .*/
 struct clk_pll_table {
@@ -181,6 +181,51 @@ void clock_uart_config(void)
 	clrbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
 }
 
+void clock_cpu0_config_and_reset(void *entry)
+{
+	void *evp_cpu_reset = (uint8_t *)TEGRA_EVP_BASE + 0x100;
+	write32((uintptr_t)entry, evp_cpu_reset);
+
+	// Wait for PLLX to lock.
+	while (!(readl(&clk_rst->crc_pll_simple[0].pll_base) & (0x1 << 27)))
+		;
+
+	// Set up cclk_brst and divider.
+	write32((CRC_CCLK_BRST_POL_PLLX_OUT0 << 0) |
+		(CRC_CCLK_BRST_POL_PLLX_OUT0 << 4) |
+		(CRC_CCLK_BRST_POL_PLLX_OUT0 << 8) |
+		(CRC_CCLK_BRST_POL_PLLX_OUT0 << 12) |
+		(CRC_CCLK_BRST_POL_CPU_STATE_RUN << 28),
+		&clk_rst->crc_cclk_brst_pol);
+	write32(CRC_SUPER_CCLK_DIVIDER_SUPER_CDIV_ENB,
+		&clk_rst->crc_super_cclk_div);
+
+	// Enable the clocks for CPUs 0-3.
+	uint32_t cpu_cmplx_clr = read32(&clk_rst->crc_clk_cpu_cmplx_clr);
+	cpu_cmplx_clr |= CRC_CLK_CLR_CPU0_STP | CRC_CLK_CLR_CPU1_STP |
+			 CRC_CLK_CLR_CPU2_STP | CRC_CLK_CLR_CPU3_STP;
+	write32(cpu_cmplx_clr, &clk_rst->crc_clk_cpu_cmplx_clr);
+
+	// Enable other CPU related clocks.
+	setbits_le32(clkenable(CLK_CPU_REG), CLK_CPU_MASK);
+	setbits_le32(clkenablevw(CLK_VW_CPUG_REG), CLK_VW_CPUG_MASK);
+
+	// Disable the reset on the non-CPU parts of the fast cluster.
+	write32(CRC_RST_CPUG_CLR_NONCPU,
+		&clk_rst->crc_rst_cpug_cmplx_clr);
+	// Disable the various resets on the CPUs.
+	write32(CRC_RST_CPUG_CLR_CPU0 | CRC_RST_CPUG_CLR_CPU1 |
+		CRC_RST_CPUG_CLR_CPU2 | CRC_RST_CPUG_CLR_CPU3 |
+		CRC_RST_CPUG_CLR_DBG0 | CRC_RST_CPUG_CLR_DBG1 |
+		CRC_RST_CPUG_CLR_DBG2 | CRC_RST_CPUG_CLR_DBG3 |
+		CRC_RST_CPUG_CLR_CORE0 | CRC_RST_CPUG_CLR_CORE1 |
+		CRC_RST_CPUG_CLR_CORE2 | CRC_RST_CPUG_CLR_CORE3 |
+		CRC_RST_CPUG_CLR_CX0 | CRC_RST_CPUG_CLR_CX1 |
+		CRC_RST_CPUG_CLR_CX2 | CRC_RST_CPUG_CLR_CX3 |
+		CRC_RST_CPUG_CLR_L2 | CRC_RST_CPUG_CLR_PDBG,
+		&clk_rst->crc_rst_cpug_cmplx_clr);
+}
+
 /**
  * The T124 requires some special clock initialization, including setting up
  * the DVC I2C, turning on MSELECT and selecting the G CPU cluster
@@ -215,13 +260,10 @@ void clock_init(void)
 	/* Ambiguous quote from u-boot. TODO: what's this mean?
 	 * "should update same value in PMC_OSC_EDPD_OVER XOFS
 	   field for warmboot "*/
-	val = readl(&pmc->pmc_osc_edpd_over);
-	val &= ~PMC_XOFS_MASK;
-	val |= (OSC_DRIVE_STRENGTH << PMC_XOFS_SHIFT);
-	writel(val, &pmc->pmc_osc_edpd_over);
-
-	/* Set HOLD_CKE_LOW_EN to 1 */
-	setbits_le32(&pmc->pmc_cntrl2, HOLD_CKE_LOW_EN);
+	val = readl(&pmc->osc_edpd_over);
+	val &= ~PMC_OSC_EDPD_OVER_XOFS_MASK;
+	val |= (OSC_DRIVE_STRENGTH << PMC_OSC_EDPD_OVER_XOFS_SHIFT);
+	writel(val, &pmc->osc_edpd_over);
 
 	init_pllx();
 
@@ -238,12 +280,12 @@ void clock_config(void)
 	setbits_le32(clkenable(CLK_CACHE2_REG), CLK_CACHE2_MASK);
 	setbits_le32(clkenable(CLK_GPIO_REG), CLK_GPIO_MASK);
 	setbits_le32(clkenable(CLK_TMR_REG), CLK_TMR_MASK);
-	setbits_le32(clkenable(CLK_CPU_REG), CLK_CPU_MASK);
 	setbits_le32(clkenable(CLK_EMC_REG), CLK_EMC_MASK);
 	setbits_le32(clkenable(CLK_I2C1_REG), CLK_I2C1_MASK);
 	setbits_le32(clkenable(CLK_I2C2_REG), CLK_I2C2_MASK);
 	setbits_le32(clkenable(CLK_I2C3_REG), CLK_I2C3_MASK);
 	setbits_le32(clkenable(CLK_I2C5_REG), CLK_I2C5_MASK);
+	setbits_le32(clkenable(CLK_PMC_REG), CLK_PMC_MASK);
 	setbits_le32(clkenable(CLK_APBDMA_REG), CLK_APBDMA_MASK);
 	setbits_le32(clkenable(CLK_MEM_REG), CLK_MEM_MASK);
 	setbits_le32(clkenable(CLK_CSITE_REG), CLK_CSITE_MASK);
@@ -255,7 +297,7 @@ void clock_config(void)
 	 * divider that would set the MSELECT clock at 102MHz for a
 	 * PLLP base of 408MHz.
 	 */
-	clock_ll_set_source_divisor((void *)CLK_VW_MSELECT_REG, 0,
+	clock_ll_set_source_divisor(&clk_rst->crc_clk_src_vw[1], 0,
 		CLK_DIVIDER(NVBL_PLLP_KHZ, 102000));
 
 	/* Give clock time to stabilize */
@@ -278,12 +320,12 @@ void clock_config(void)
 	clrbits_le32(clkreset(CLK_CACHE2_REG), CLK_CACHE2_MASK);
 	clrbits_le32(clkreset(CLK_GPIO_REG), CLK_GPIO_MASK);
 	clrbits_le32(clkreset(CLK_TMR_REG), CLK_TMR_MASK);
-	clrbits_le32(clkreset(CLK_CPU_REG), CLK_CPU_MASK);
 	clrbits_le32(clkreset(CLK_EMC_REG), CLK_EMC_MASK);
-	clrbits_le32(clkreset(CLK_I2C5_REG), CLK_I2C5_MASK);
-	clrbits_le32(clkreset(CLK_I2C3_REG), CLK_I2C3_MASK);
-	clrbits_le32(clkreset(CLK_I2C2_REG), CLK_I2C2_MASK);
 	clrbits_le32(clkreset(CLK_I2C1_REG), CLK_I2C1_MASK);
+	clrbits_le32(clkreset(CLK_I2C2_REG), CLK_I2C2_MASK);
+	clrbits_le32(clkreset(CLK_I2C3_REG), CLK_I2C3_MASK);
+	clrbits_le32(clkreset(CLK_I2C5_REG), CLK_I2C5_MASK);
+	clrbits_le32(clkreset(CLK_PMC_REG), CLK_PMC_MASK);
 	clrbits_le32(clkreset(CLK_APBDMA_REG), CLK_APBDMA_MASK);
 	clrbits_le32(clkreset(CLK_MEM_REG), CLK_MEM_MASK);
 	clrbits_le32(clkreset(CLK_CSITE_REG), CLK_CSITE_MASK);
