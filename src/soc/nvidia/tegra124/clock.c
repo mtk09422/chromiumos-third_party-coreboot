@@ -79,7 +79,7 @@ static void clock_ll_set_source_divisor(u32 *reg,
 static int clock_get_osc_freq(void)
 {
 	u32 reg;
-        reg = readl(&clk_rst->crc_osc_ctrl);
+        reg = readl(&clk_rst->osc_ctrl);
         reg >>= OSC_CTRL_OSC_FREQ_SHIFT;
 	return reg;
 }
@@ -87,40 +87,38 @@ static int clock_get_osc_freq(void)
 static void adjust_pllp_out_freqs(void)
 {
 	u32 reg;
-        struct clk_pll *pll = &clk_rst->crc_pll[2/*CLOCK_ID_PERIPH*/];
 	/* Set T30 PLLP_OUT1, 2, 3 & 4 freqs to 9.6, 48, 102 & 204MHz */
-	reg = readl(&pll->pll_out[0]);	/* OUTA, contains OUT2 / OUT1 */
+	reg = readl(&clk_rst->pllp_outa); // OUTA contains OUT2 / OUT1
 	reg |= (IN_408_OUT_48_DIVISOR << PLLP_OUT2_RATIO) | PLLP_OUT2_OVR
 		| (IN_408_OUT_9_6_DIVISOR << PLLP_OUT1_RATIO) | PLLP_OUT1_OVR;
-	writel(reg, &pll->pll_out[0]);
+	writel(reg, &clk_rst->pllp_outa);
 
-	reg = readl(&pll->pll_out[1]);   /* OUTB, contains OUT4 / OUT3 */
+	reg = readl(&clk_rst->pllp_outb);   // OUTB, contains OUT4 / OUT3
 	reg |= (IN_408_OUT_204_DIVISOR << PLLP_OUT4_RATIO) | PLLP_OUT4_OVR
 		| (IN_408_OUT_102_DIVISOR << PLLP_OUT3_RATIO) | PLLP_OUT3_OVR;
-	writel(reg, &pll->pll_out[1]);
+	writel(reg, &clk_rst->pllp_outb);
 }
 
-static int pllx_set_rate(struct clk_pll_simple *pll , u32 divn, u32 divm,
-		u32 divp, u32 cpcon)
+static int pllx_set_rate(u32 divn, u32 divm, u32 divp, u32 cpcon)
 {
 	u32 reg;
 
 	/* If PLLX is already enabled, just return */
-	if (readl(&pll->pll_base) & PLL_ENABLE_MASK) {
+	if (readl(&clk_rst->pllx_base) & PLL_ENABLE_MASK) {
 		return 0;
 	}
 
 
 	/* Disable IDDQ */
-	reg = readl(&clk_rst->crc_pllx_misc3);
+	reg = readl(&clk_rst->pllx_misc3);
 	reg &= ~PLLX_IDDQ_MASK;
-	writel(reg, &clk_rst->crc_pllx_misc3);
+	writel(reg, &clk_rst->pllx_misc3);
 	udelay(2);
 
 	/* Set BYPASS, m, n and p to PLLX_BASE */
 	reg = PLL_BYPASS_MASK | (divm << PLL_DIVM_SHIFT);
 	reg |= ((divn << PLL_DIVN_SHIFT) | (divp << PLL_DIVP_SHIFT));
-	writel(reg, &pll->pll_base);
+	writel(reg, &clk_rst->pllx_base);
 
 	/* Set cpcon to PLLX_MISC */
 	reg = (cpcon << PLL_CPCON_SHIFT);
@@ -128,43 +126,35 @@ static int pllx_set_rate(struct clk_pll_simple *pll , u32 divn, u32 divm,
 	/* Set dccon to PLLX_MISC if freq > 600MHz - still needed for T124? */
 	if (divn > 600)
 		reg |= (1 << PLL_DCCON_SHIFT);
-	writel(reg, &pll->pll_misc);
+	writel(reg, &clk_rst->pllx_misc);
 
 	/* Disable BYPASS */
-	reg = readl(&pll->pll_base);
+	reg = readl(&clk_rst->pllx_base);
 	reg &= ~PLL_BYPASS_MASK;
-	writel(reg, &pll->pll_base);
+	writel(reg, &clk_rst->pllx_base);
 
 	/* Set lock_enable to PLLX_MISC */
-	reg = readl(&pll->pll_misc);
+	reg = readl(&clk_rst->pllx_misc);
 	reg |= PLL_LOCK_ENABLE_MASK;
-	writel(reg, &pll->pll_misc);
+	writel(reg, &clk_rst->pllx_misc);
 
 	/* Enable PLLX last, as per JZ */
-	reg = readl(&pll->pll_base);
+	reg = readl(&clk_rst->pllx_base);
 	reg |= PLL_ENABLE_MASK;
-	writel(reg, &pll->pll_base);
+	writel(reg, &clk_rst->pllx_base);
 
 	return 0;
 }
 
 static void init_pllx(void)
 {
-	int osc;
-	struct clk_pll_table *sel;
-        struct clk_pll_simple *pll = &clk_rst->crc_pll_simple[0/*SIMPLE_PLLX*/];
+	int osc = clock_get_osc_freq();
+	struct clk_pll_table *sel = &tegra_pll_x_table[osc];
 
-
-	/* get osc freq */
-	osc = clock_get_osc_freq();
-
-	/* set pllx */
-	sel = &tegra_pll_x_table[osc];
-	if (sel->n == 0){
+	if (sel->n == 0)
 		return;
-	}
 
-	pllx_set_rate(pll, sel->n, sel->m, sel->p, sel->cpcon);
+	pllx_set_rate(sel->n, sel->m, sel->p, sel->cpcon);
 
 	adjust_pllp_out_freqs();
 }
@@ -174,11 +164,11 @@ void clock_uart_config(void)
 	/* Enable clocks to required peripherals. TBD - minimize this list */
 	/* The UART is super special so Just Do It right here. */
 
-	setbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
-	setbits_le32(clkenable(CLK_UARTA_REG), CLK_UARTA_MASK);
-	clock_ll_set_source_divisor(&clk_rst->src_uarta, 0, 2);
+	setbits_le32(&clk_rst->rst_dev_l, CLK_L_UARTA);
+	setbits_le32(&clk_rst->clk_out_enb_l, CLK_L_UARTA);
+	clock_ll_set_source_divisor(&clk_rst->clk_src_uarta, 0, 2);
 	udelay(2);
-	clrbits_le32(clkreset(CLK_UARTA_REG), CLK_UARTA_MASK);
+	clrbits_le32(&clk_rst->rst_dev_l, CLK_L_UARTA);
 }
 
 void clock_cpu0_config_and_reset(void *entry)
@@ -187,7 +177,7 @@ void clock_cpu0_config_and_reset(void *entry)
 	write32((uintptr_t)entry, evp_cpu_reset);
 
 	// Wait for PLLX to lock.
-	while (!(readl(&clk_rst->crc_pll_simple[0].pll_base) & (0x1 << 27)))
+	while (!(readl(&clk_rst->pllx_base) & (0x1 << 27)))
 		;
 
 	// Set up cclk_brst and divider.
@@ -196,23 +186,23 @@ void clock_cpu0_config_and_reset(void *entry)
 		(CRC_CCLK_BRST_POL_PLLX_OUT0 << 8) |
 		(CRC_CCLK_BRST_POL_PLLX_OUT0 << 12) |
 		(CRC_CCLK_BRST_POL_CPU_STATE_RUN << 28),
-		&clk_rst->crc_cclk_brst_pol);
+		&clk_rst->cclk_brst_pol);
 	write32(CRC_SUPER_CCLK_DIVIDER_SUPER_CDIV_ENB,
-		&clk_rst->crc_super_cclk_div);
+		&clk_rst->super_cclk_div);
 
 	// Enable the clocks for CPUs 0-3.
-	uint32_t cpu_cmplx_clr = read32(&clk_rst->crc_clk_cpu_cmplx_clr);
+	uint32_t cpu_cmplx_clr = read32(&clk_rst->clk_cpu_cmplx_clr);
 	cpu_cmplx_clr |= CRC_CLK_CLR_CPU0_STP | CRC_CLK_CLR_CPU1_STP |
 			 CRC_CLK_CLR_CPU2_STP | CRC_CLK_CLR_CPU3_STP;
-	write32(cpu_cmplx_clr, &clk_rst->crc_clk_cpu_cmplx_clr);
+	write32(cpu_cmplx_clr, &clk_rst->clk_cpu_cmplx_clr);
 
 	// Enable other CPU related clocks.
-	setbits_le32(clkenable(CLK_CPU_REG), CLK_CPU_MASK);
-	setbits_le32(clkenablevw(CLK_VW_CPUG_REG), CLK_VW_CPUG_MASK);
+	setbits_le32(&clk_rst->clk_out_enb_l, CLK_L_CPU);
+	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_CPUG);
 
 	// Disable the reset on the non-CPU parts of the fast cluster.
 	write32(CRC_RST_CPUG_CLR_NONCPU,
-		&clk_rst->crc_rst_cpug_cmplx_clr);
+		&clk_rst->rst_cpug_cmplx_clr);
 	// Disable the various resets on the CPUs.
 	write32(CRC_RST_CPUG_CLR_CPU0 | CRC_RST_CPUG_CLR_CPU1 |
 		CRC_RST_CPUG_CLR_CPU2 | CRC_RST_CPUG_CLR_CPU3 |
@@ -223,7 +213,7 @@ void clock_cpu0_config_and_reset(void *entry)
 		CRC_RST_CPUG_CLR_CX0 | CRC_RST_CPUG_CLR_CX1 |
 		CRC_RST_CPUG_CLR_CX2 | CRC_RST_CPUG_CLR_CX3 |
 		CRC_RST_CPUG_CLR_L2 | CRC_RST_CPUG_CLR_PDBG,
-		&clk_rst->crc_rst_cpug_cmplx_clr);
+		&clk_rst->rst_cpug_cmplx_clr);
 }
 
 /**
@@ -245,17 +235,17 @@ void clock_init(void)
 		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_RUN_SOURCE_SHIFT) |
 		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_IDLE_SOURCE_SHIFT) |
 		(SCLK_SYS_STATE_RUN << SCLK_SYS_STATE_SHIFT);
-	writel(val, &clk_rst->crc_sclk_brst_pol);
+	writel(val, &clk_rst->sclk_brst_pol);
 	udelay(2);
 
 	/* Set active CPU cluster to G */
 	clrbits_le32(&flow->cluster_control, 1);
 
 	/* Change the oscillator drive strength */
-	val = readl(&clk_rst->crc_osc_ctrl);
+	val = readl(&clk_rst->osc_ctrl);
 	val &= ~OSC_XOFS_MASK;
 	val |= (OSC_DRIVE_STRENGTH << OSC_XOFS_SHIFT);
-	writel(val, &clk_rst->crc_osc_ctrl);
+	writel(val, &clk_rst->osc_ctrl);
 
 	/* Ambiguous quote from u-boot. TODO: what's this mean?
 	 * "should update same value in PMC_OSC_EDPD_OVER XOFS
@@ -268,68 +258,52 @@ void clock_init(void)
 	init_pllx();
 
 	val = (1 << CLK_SYS_RATE_AHB_RATE_SHIFT);
-	writel(val, &clk_rst->crc_clk_sys_rate);
+	writel(val, &clk_rst->clk_sys_rate);
 }
 
 void clock_config(void)
 {
-	/* fixme. The stupidity of all this ... we are reading and
-	 * writing the same register lots of times when we could just
-	 * one lousy write with a combined mask. Sigh.
-	 */
-	setbits_le32(clkenable(CLK_CACHE2_REG), CLK_CACHE2_MASK);
-	setbits_le32(clkenable(CLK_GPIO_REG), CLK_GPIO_MASK);
-	setbits_le32(clkenable(CLK_TMR_REG), CLK_TMR_MASK);
-	setbits_le32(clkenable(CLK_EMC_REG), CLK_EMC_MASK);
-	setbits_le32(clkenable(CLK_I2C1_REG), CLK_I2C1_MASK);
-	setbits_le32(clkenable(CLK_I2C2_REG), CLK_I2C2_MASK);
-	setbits_le32(clkenable(CLK_I2C3_REG), CLK_I2C3_MASK);
-	setbits_le32(clkenable(CLK_I2C5_REG), CLK_I2C5_MASK);
-	setbits_le32(clkenable(CLK_PMC_REG), CLK_PMC_MASK);
-	setbits_le32(clkenable(CLK_APBDMA_REG), CLK_APBDMA_MASK);
-	setbits_le32(clkenable(CLK_MEM_REG), CLK_MEM_MASK);
-	setbits_le32(clkenable(CLK_CSITE_REG), CLK_CSITE_MASK);
-	setbits_le32(clkenablevw(CLK_VW_MSELECT_REG), CLK_VW_MSELECT_MASK);
-	setbits_le32(clkenablevw(CLK_VW_DVFS_REG), CLK_VW_DVFS_MASK);
+	/* Enable clocks for the required peripherals. */
+	setbits_le32(&clk_rst->clk_out_enb_l,
+		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1);
+	setbits_le32(&clk_rst->clk_out_enb_h,
+		     CLK_H_EMC | CLK_H_I2C2 | CLK_H_I2C5 |
+		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
+	setbits_le32(&clk_rst->clk_out_enb_u, CLK_U_I2C3 | CLK_U_CSITE);
+	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_MSELECT);
+	setbits_le32(&clk_rst->clk_out_enb_w, CLK_W_DVFS);
 
 	/*
 	 * Set MSELECT clock source as PLLP (00)_REG, and ask for a clock
 	 * divider that would set the MSELECT clock at 102MHz for a
 	 * PLLP base of 408MHz.
 	 */
-	clock_ll_set_source_divisor(&clk_rst->crc_clk_src_vw[1], 0,
+	clock_ll_set_source_divisor(&clk_rst->clk_src_mselect, 0,
 		CLK_DIVIDER(NVBL_PLLP_KHZ, 102000));
 
 	/* Give clock time to stabilize */
 	udelay(IO_STABILIZATION_DELAY);
 
 	/* I2C1 gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->src_i2c1, 3, 16);
+	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c1, 3, 16);
 	/* I2C2 gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->src_i2c2, 3, 16);
+	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c2, 3, 16);
 	/* I2C3 (cam) gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->src_i2c3, 3, 16);
+	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c3, 3, 16);
 	/* I2C5 (PMU) gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->src_i2c5, 3, 16);
+	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c5, 3, 16);
 
-	/* Give clock time to stabilize */
+	/* Give clock time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
 
-	/* Take required peripherals out of reset */
+	/* Take required peripherals out of reset. */
 
-	clrbits_le32(clkreset(CLK_CACHE2_REG), CLK_CACHE2_MASK);
-	clrbits_le32(clkreset(CLK_GPIO_REG), CLK_GPIO_MASK);
-	clrbits_le32(clkreset(CLK_TMR_REG), CLK_TMR_MASK);
-	clrbits_le32(clkreset(CLK_EMC_REG), CLK_EMC_MASK);
-	clrbits_le32(clkreset(CLK_I2C1_REG), CLK_I2C1_MASK);
-	clrbits_le32(clkreset(CLK_I2C2_REG), CLK_I2C2_MASK);
-	clrbits_le32(clkreset(CLK_I2C3_REG), CLK_I2C3_MASK);
-	clrbits_le32(clkreset(CLK_I2C5_REG), CLK_I2C5_MASK);
-	clrbits_le32(clkreset(CLK_PMC_REG), CLK_PMC_MASK);
-	clrbits_le32(clkreset(CLK_APBDMA_REG), CLK_APBDMA_MASK);
-	clrbits_le32(clkreset(CLK_MEM_REG), CLK_MEM_MASK);
-	clrbits_le32(clkreset(CLK_CSITE_REG), CLK_CSITE_MASK);
-	clrbits_le32(clkresetvw(CLK_VW_MSELECT_REG), CLK_VW_MSELECT_MASK);
-	clrbits_le32(clkresetvw(CLK_VW_DVFS_REG), CLK_VW_DVFS_MASK);
-
+	clrbits_le32(&clk_rst->rst_dev_l,
+		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1);
+	clrbits_le32(&clk_rst->rst_dev_h,
+		     CLK_H_EMC | CLK_H_I2C2 | CLK_H_I2C5 |
+		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
+	clrbits_le32(&clk_rst->rst_dev_u, CLK_U_I2C3 | CLK_U_CSITE);
+	clrbits_le32(&clk_rst->rst_dev_v, CLK_V_MSELECT);
+	clrbits_le32(&clk_rst->rst_dev_w, CLK_W_DVFS);
 }
