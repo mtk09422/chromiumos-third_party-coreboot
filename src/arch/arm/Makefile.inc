@@ -82,7 +82,7 @@ ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 ################################################################################
 # Common recipes for all stages
 
-CFLAGS += -mno-unaligned-access
+CFLAGS += -mno-unaligned-access -ffunction-sections -fdata-sections
 
 $(objcbfs)/%.bin: $(objcbfs)/%.elf
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
@@ -160,9 +160,9 @@ endif
 $(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(bootblock-objs) $(obj)/config.h
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m armelf_linux_eabi -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
+	$(LD) -m armelf_linux_eabi --gc-sections -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
 endif
 
 ################################################################################
@@ -171,9 +171,9 @@ endif
 $(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm/romstage.ld $(obj)/ldoptions
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) $(romstage-objs) -T $(src)/arch/arm/romstage.ld
+	$(LD) -nostdlib -nostartfiles --gc-sections -static -o $@ -L$(obj) $(romstage-objs) -T $(src)/arch/arm/romstage.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/arm/romstage.ld -Wl,--start-group $(romstage-objs) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/romstage.ld -Wl,--start-group $(romstage-objs) -Wl,--end-group
 endif
 
 ################################################################################
@@ -182,9 +182,9 @@ endif
 $(objcbfs)/coreboot_ram.debug: $$(ramstage-objs) $(src)/arch/arm/coreboot_ram.ld $(obj)/ldoptions
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m -m armelf_linux_eabi -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) --end-group -T $(src)/arch/arm/coreboot_ram.ld
+	$(LD) -m -m armelf_linux_eabi --gc-sections -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) --end-group -T $(src)/arch/arm/coreboot_ram.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) -Wl,--end-group -T $(src)/arch/arm/coreboot_ram.ld
+	$(CC) $(CFLAGS) -nostartfiles -Wl,--gc-sections -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) -Wl,--end-group -T $(src)/arch/arm/coreboot_ram.ld
 endif
 
 ################################################################################

@@ -23,23 +23,25 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 INCLUDE ldoptions
 
+ENTRY(_start)
 TARGET(binary)
 SECTIONS
 {
-	ROMLOC = CONFIG_BOOTBLOCK_BASE;
+	. = CONFIG_BOOTBLOCK_BASE;
 
-	/* This section might be better named .setup */
-	.rom ROMLOC : {
-		_rom = .;
+	.bootblock . : {
 		*(.start);
-		*(.id);
+		KEEP(*(.id));
 		*(.text);
 		*(.text.*);
-		*(.rom.text);
-		*(.rom.data);
-		*(.rom.data.*);
+		*(.rodata);
 		*(.rodata.*);
-		_erom = .;
+		*(.data);
+		*(.data.*);
+		*(.bss);
+		*(.bss.*);
+		*(.sbss);
+		*(.sbss.*);
 	} = 0xff
 
 	/DISCARD/ : {
