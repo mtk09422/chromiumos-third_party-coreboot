@@ -27,6 +27,7 @@
 #include <soc/nvidia/tegra124/gpio.h>
 #include <soc/nvidia/tegra124/pmc.h>
 #include <soc/nvidia/tegra124/spi.h>
+#include <soc/nvidia/tegra124/usb.h>
 
 static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 
@@ -167,6 +168,11 @@ static void setup_pinmux(void)
 			  PINMUX_SDMMC4_DAT6_FUNC_SDMMC4 | pin_up);
 	pinmux_set_config(PINMUX_SDMMC4_DAT7_INDEX,
 			  PINMUX_SDMMC4_DAT7_FUNC_SDMMC4 | pin_up);
+
+	/* TODO: This is supposed to work with the USB special function pinmux,
+	 * but it doesn't. Go with GPIOs for now and solve the problem later. */
+	gpio_output_open_drain(GPIO(N4), 1);	/* USB VBUS EN0 */
+	gpio_output_open_drain(GPIO(N5), 1);	/* USB VBUS EN1 */
 }
 
 static void setup_kernel_info(void)
@@ -194,15 +200,20 @@ static void setup_ec_spi(void)
 
 static void mainboard_init(device_t dev)
 {
-	setup_pinmux();
 	set_clock_sources();
-
-	clock_enable_clear_reset(CLK_L_GPIO | CLK_L_I2C1 | CLK_L_SDMMC4,
+	clock_enable_clear_reset(CLK_L_GPIO | CLK_L_I2C1 |
+				 CLK_L_SDMMC4 | CLK_L_USBD,
 				 CLK_H_EMC | CLK_H_I2C2 | CLK_H_SBC1 |
-				 CLK_H_PMC | CLK_H_MEM,
+				 CLK_H_PMC | CLK_H_MEM | CLK_H_USB3,
 				 CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3,
 				 CLK_V_I2C4,
 				 CLK_W_DVFS);
+
+	usb_setup_utmip1();
+	/* USB2 is the camera, we don't need it in firmware */
+	usb_setup_utmip3();
+
+	setup_pinmux();
 
 	i2c_init(0);
 	i2c_init(1);

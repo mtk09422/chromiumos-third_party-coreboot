@@ -18,6 +18,7 @@
 #include <arch/io.h>
 #include <soc/addressmap.h>
 #include <soc/clock.h>
+#include <stdlib.h>
 #include "clk_rst.h"
 #include "cpug.h"
 #include "flow.h"
@@ -205,6 +206,37 @@ static void init_pll(u32 *base, u32 *misc, const union pll_fields pll)
 	writel(dividers | PLL_BASE_ENABLE, base);
 }
 
+static void init_utmip_pll(void)
+{
+	int khz = clock_get_osc_khz();
+
+	/* Shut off PLL crystal clock while we mess with it */
+	clrbits_le32(&clk_rst->utmip_pll_cfg2, 1 << 30); /* PHY_XTAL_CLKEN */
+	udelay(1);
+
+	write32(80 << 16 |			/* (rst) phy_divn */
+		1 << 8 |			/* (rst) phy_divm */
+		0, &clk_rst->utmip_pll_cfg0);	/* 960MHz * 1 / 80 == 12 MHz */
+
+	write32(div_round_up(khz, 8000) << 27 |	/* pllu_enbl_cnt / 8 (1us) */
+		0 << 16 |			/* PLLU pwrdn */
+		0 << 14 |			/* pll_enable pwrdn */
+		0 << 12 |			/* pll_active pwrdn */
+		div_round_up(khz, 102) << 0 |	/* phy_stbl_cnt / 256 (2.5ms) */
+		0, &clk_rst->utmip_pll_cfg1);
+
+	/* TODO: TRM can't decide if actv is 5us or 10us, keep an eye on it */
+	write32(0 << 24 |			/* SAMP_D/XDEV pwrdn */
+		div_round_up(khz, 3200) << 18 |	/* phy_actv_cnt / 16 (5us) */
+		div_round_up(khz, 256) << 6 |	/* pllu_stbl_cnt / 256 (1ms) */
+		0 << 4 |			/* SAMP_C/USB3 pwrdn */
+		0 << 2 |			/* SAMP_B/XHOST pwrdn */
+		0 << 0 |			/* SAMP_A/USBD pwrdn */
+		0, &clk_rst->utmip_pll_cfg2);
+
+	setbits_le32(&clk_rst->utmip_pll_cfg2, 1 << 30); /* PHY_XTAL_CLKEN */
+}
+
 /* Initialize the UART and put it on CLK_M so we can use it during clock_init().
  * Will later move it to PLLP in clock_config(). The divisor must be very small
  * to accomodate 12KHz OSCs, so we override the 16.0 UART divider with the 15.1
@@ -320,6 +352,7 @@ void clock_init(void)
 	init_pll(&clk_rst->pllc_base, &clk_rst->pllc_misc, osc_table[osc].pllc);
 	init_pll(&clk_rst->plld_base, &clk_rst->plld_misc, osc_table[osc].plld);
 	init_pll(&clk_rst->pllu_base, &clk_rst->pllu_misc, osc_table[osc].pllu);
+	init_utmip_pll();
 
 	val = (1 << CLK_SYS_RATE_AHB_RATE_SHIFT);
 	writel(val, &clk_rst->clk_sys_rate);

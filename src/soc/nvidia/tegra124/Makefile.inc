@@ -50,6 +50,7 @@ ramstage-y += ../tegra/dp.c
 ramstage-y += ../tegra/gpio.c
 ramstage-y += ../tegra/i2c.c
 ramstage-y += ../tegra/pinmux.c
+ramstage-y += ../tegra/usb.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
