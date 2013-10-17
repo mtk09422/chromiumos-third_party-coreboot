@@ -21,6 +21,7 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 romstage-y += cbfs.c
+romstage-y += cbmem.c
 romstage-y += dma.c
 romstage-y += monotonic_timer.c
 romstage-y += spi.c
@@ -30,6 +31,7 @@ romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 ramstage-y += cbfs.c
+ramstage-y += cbmem.c
 ramstage-y += dma.c
 ramstage-y += monotonic_timer.c
 ramstage-y += spi.c
