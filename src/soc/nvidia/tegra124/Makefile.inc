@@ -34,6 +34,7 @@ ramstage-y += cbfs.c
 ramstage-y += cbmem.c
 ramstage-y += dma.c
 ramstage-y += monotonic_timer.c
+ramstage-y += soc.c
 ramstage-y += spi.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
