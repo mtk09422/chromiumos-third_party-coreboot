@@ -4,6 +4,7 @@ bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
 bootblock-y += cbfs.c
 bootblock-y += clock.c
+bootblock-y += cpug.S
 bootblock-y += dma.c
 bootblock-y += i2c.c
 bootblock-y += dma.c

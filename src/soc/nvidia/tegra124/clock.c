@@ -19,6 +19,7 @@
 #include <soc/addressmap.h>
 #include "clk_rst.h"
 #include "clock.h"
+#include "cpug.h"
 #include "flow.h"
 #include "pmc.h"
 
@@ -173,8 +174,11 @@ void clock_uart_config(void)
 
 void clock_cpu0_config_and_reset(void *entry)
 {
-	void *evp_cpu_reset = (uint8_t *)TEGRA_EVP_BASE + 0x100;
-	write32((uintptr_t)entry, evp_cpu_reset);
+	void * const evp_cpu_reset = (uint8_t *)TEGRA_EVP_BASE + 0x100;
+
+	write32(CONFIG_STACK_TOP, &cpug_stack_pointer);
+	write32((uintptr_t)entry, &cpug_entry_point);
+	write32((uintptr_t)&cpug_setup, evp_cpu_reset);
 
 	// Wait for PLLX to lock.
 	while (!(readl(&clk_rst->pllx_base) & (0x1 << 27)))
