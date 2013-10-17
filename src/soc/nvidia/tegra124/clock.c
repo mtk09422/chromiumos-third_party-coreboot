@@ -55,9 +55,7 @@ struct clk_pll_table tegra_pll_x_table[16] = {
 	[OSC_FREQ_OSC48]{216,12,1,8},
 };
 
-/* one of the very few funcs we might move to common code. */
-static void clock_ll_set_source_divisor(u32 *reg,
-	unsigned source, unsigned divisor)
+void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor)
 {
         u32 value;
 
@@ -71,7 +69,6 @@ static void clock_ll_set_source_divisor(u32 *reg,
 
         writel(value, reg);
 }
-
 
 /* Get the oscillator frequency, from the corresponding hardware
  * configuration field. This is actually a per-soc thing. Avoid the

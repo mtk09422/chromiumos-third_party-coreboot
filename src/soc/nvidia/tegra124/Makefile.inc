@@ -22,8 +22,11 @@ endif
 
 romstage-y += cbfs.c
 romstage-y += cbmem.c
+romstage-y += early_display.c
 romstage-y += dma.c
+romstage-y += ../tegra/gpio.c
 romstage-y += monotonic_timer.c
+romstage-y += ../tegra/pinmux.c
 romstage-y += spi.c
 romstage-y += timer.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
@@ -32,6 +35,9 @@ endif
 
 ramstage-y += cbfs.c
 ramstage-y += cbmem.c
+ramstage-y += cpug.S
+ramstage-y += clock.c
+ramstage-y += display.c
 ramstage-y += dma.c
 ramstage-y += monotonic_timer.c
 ramstage-y += soc.c

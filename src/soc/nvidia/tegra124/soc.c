@@ -1,6 +1,8 @@
 /*
  * This file is part of the coreboot project.
  *
+ * Copyright (C) 2007-2009 coresystems GmbH
+ * Copyright (C) 2011 The ChromiumOS Authors.  All rights reserved.
  * Copyright 2013 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,15 +21,25 @@
 
 #include <console/console.h>
 #include <device/device.h>
+#include <soc/nvidia/tegra/dc.h>
+#include <soc/addressmap.h>
 
+/* this sucks, but for now, fb size/location are hardcoded.
+ * Will break if we get 2. Sigh.
+ * We assume it's all multiples of MiB for MMUs sake.
+ */
 static void soc_enable(device_t dev)
 {
-	ram_resource(dev, 0, CONFIG_SYS_SDRAM_BASE >> 10UL,
-			     CONFIG_DRAM_SIZE_MB << 10UL);
+	unsigned long fb_size = FB_SIZE_MB;
+	u32 lcdbase = FB_BASE_MB;
+	ram_resource(dev, 0, CONFIG_SYS_SDRAM_BASE/KiB,
+		(CONFIG_DRAM_SIZE_MB - fb_size)*KiB);
+	mmio_resource(dev, 1, lcdbase*KiB, fb_size*KiB);
 }
 
 static void soc_init(device_t dev)
 {
+	display_startup(dev);
 	printk(BIOS_INFO, "CPU: Tegra124\n");
 }
 

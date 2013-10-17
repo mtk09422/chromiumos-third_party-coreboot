@@ -18,8 +18,10 @@
  */
 
 #include <cbmem.h>
+#include <soc/addressmap.h>
 
 void *cbmem_top(void)
 {
-	return (void *)(CONFIG_SYS_SDRAM_BASE + (CONFIG_DRAM_SIZE_MB << 20UL));
+	return (void *)(CONFIG_SYS_SDRAM_BASE +
+		((CONFIG_DRAM_SIZE_MB - FB_SIZE_MB)<< 20UL));
 }
