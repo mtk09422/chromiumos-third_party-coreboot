@@ -18,23 +18,6 @@
 #define __NVIDIA_TEGRA124_SPI_H__
 
 #include <stddef.h>
-#include <spi-generic.h>
-
-struct tegra_spi_channel {
-	struct spi_slave slave;
-	struct tegra_spi_regs *regs;
-
-	/*
-	 * max transfer size and dma_buf address will be set by
-	 * mainboard-specific code, depending on the requirements for
-	 * the device connected
-	 */
-	unsigned int max_transfer_size;
-	void *dma_buf;
-};
-
-#define TEGRA124_NUM_SPI_CHANNELS 6
-extern struct tegra_spi_channel tegra_spi_channels[];
 
 struct cbfs_media;
 int initialize_tegra_spi_cbfs_media(struct cbfs_media *media,

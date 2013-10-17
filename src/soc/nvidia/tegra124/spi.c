@@ -127,14 +127,19 @@ struct tegra_spi_regs {
 	u32 rx_data;		/* 0x01c: SPI_RX_DATA */
 	u32 dma_ctl;		/* 0x020: SPI_DMA_CTL */
 	u32 dma_blk;		/* 0x024: SPI_DMA_BLK */
-	u8 rsvd[0xe0];		/* 0x028-0x107: reserved */
+	u32 rsvd[56];		/* 0x028-0x107: reserved */
 	u32 tx_fifo;		/* 0x108: SPI_FIFO1 */
-	u8 rsvd2[0x7c];		/* 0x10c-0x187 reserved */
+	u32 rsvd2[31];		/* 0x10c-0x187 reserved */
 	u32 rx_fifo;		/* 0x188: SPI_FIFO2 */
 	u32 spare_ctl;		/* 0x18c: SPI_SPARE_CTRL */
 } __attribute__((packed));
 
-struct tegra_spi_channel tegra_spi_channels[TEGRA124_NUM_SPI_CHANNELS] = {
+struct tegra_spi_channel {
+	struct spi_slave slave;
+	struct tegra_spi_regs *regs;
+};
+
+static struct tegra_spi_channel tegra_spi_channels[] = {
 	/*
 	 * Note: Tegra pinmux must be setup for corresponding SPI channel in
 	 * order for its registers to be accessible. If pinmux has not been
@@ -169,8 +174,13 @@ struct tegra_spi_channel tegra_spi_channels[TEGRA124_NUM_SPI_CHANNELS] = {
 	},
 };
 
-void spi_init(void)
+static void flush_fifos(struct tegra_spi_regs *regs)
 {
+	setbits_le32(&regs->fifo_status, SPI_FIFO_STATUS_RX_FIFO_FLUSH |
+					SPI_FIFO_STATUS_TX_FIFO_FLUSH);
+	while (read32(&regs->fifo_status) &
+		(SPI_FIFO_STATUS_RX_FIFO_FLUSH | SPI_FIFO_STATUS_TX_FIFO_FLUSH))
+		;
 }
 
 void tegra_spi_init(unsigned int bus)
@@ -190,39 +200,18 @@ void tegra_spi_init(unsigned int bus)
 				SPI_CMD1_CS_SW_HW | SPI_CMD1_CS_SW_VAL);
 
 		/* 8-bit transfers, unpacked mode, most significant bit first */
-		clrbits_le32(&regs->command1, SPI_CMD1_BIT_LEN_MASK | SPI_CMD1_PACKED);
+		clrbits_le32(&regs->command1,
+				SPI_CMD1_BIT_LEN_MASK | SPI_CMD1_PACKED);
 		setbits_le32(&regs->command1, 7 << SPI_CMD1_BIT_LEN_SHIFT);
 
-		/* flush FIFOs */
-		setbits_le32(&regs->fifo_status, SPI_FIFO_STATUS_RX_FIFO_FLUSH |
-						SPI_FIFO_STATUS_TX_FIFO_FLUSH);
-		while (read32(&regs->fifo_status) &
-			(SPI_FIFO_STATUS_RX_FIFO_FLUSH | SPI_FIFO_STATUS_TX_FIFO_FLUSH))
-			;
+		flush_fifos(regs);
 	}
 	printk(BIOS_INFO, "Tegra SPI bus %d initialized.\n", bus);
 
 }
 
 static struct tegra_spi_channel * const to_tegra_spi(int bus) {
-	int i;
-	struct tegra_spi_channel *channel = NULL;
-
-	for (i = 0; i < ARRAY_SIZE(tegra_spi_channels); i++) {
-		if (tegra_spi_channels[i].slave.bus == bus)
-			channel = &tegra_spi_channels[i];
-	}
-
-	return channel;
-}
-
-int spi_cs_is_valid(unsigned int bus, unsigned int cs)
-{
-	if (cs < 0 || cs > 3)
-		return 0;
-	if (!to_tegra_spi(bus))
-		return 0;
-	return 1;
+	return &tegra_spi_channels[bus - 1];
 }
 
 void spi_cs_activate(struct spi_slave *slave)
@@ -264,19 +253,19 @@ static void print_fifo_status(struct tegra_spi_channel *spi)
 {
 	u32 status = read32(&spi->regs->fifo_status);
 
-	printk(BIOS_DEBUG, "Raw FIFO status: 0x%08x\n", status);
+	printk(BIOS_INFO, "Raw FIFO status: 0x%08x\n", status);
 	if (status & SPI_FIFO_STATUS_TX_FIFO_OVF)
-		printk(BIOS_DEBUG, "\tTx overflow detected\n");
+		printk(BIOS_INFO, "\tTx overflow detected\n");
 	if (status & SPI_FIFO_STATUS_TX_FIFO_UNR)
-		printk(BIOS_DEBUG, "\tTx underrun detected\n");
+		printk(BIOS_INFO, "\tTx underrun detected\n");
 	if (status & SPI_FIFO_STATUS_RX_FIFO_OVF)
-		printk(BIOS_DEBUG, "\tRx overflow detected\n");
+		printk(BIOS_INFO, "\tRx overflow detected\n");
 	if (status & SPI_FIFO_STATUS_RX_FIFO_UNR)
-		printk(BIOS_DEBUG, "\tRx underrun detected\n");
+		printk(BIOS_INFO, "\tRx underrun detected\n");
 
-	printk(BIOS_DEBUG, "TX_FIFO: 0x%08x, TX_DATA: 0x%08x\n",
+	printk(BIOS_INFO, "TX_FIFO: 0x%08x, TX_DATA: 0x%08x\n",
 		read32(&spi->regs->tx_fifo), read32(&spi->regs->tx_data));
-	printk(BIOS_DEBUG, "RX_FIFO: 0x%08x, RX_DATA: 0x%08x\n",
+	printk(BIOS_INFO, "RX_FIFO: 0x%08x, RX_DATA: 0x%08x\n",
 		read32(&spi->regs->rx_fifo), read32(&spi->regs->rx_data));
 }
 
@@ -293,8 +282,8 @@ static void clear_fifo_status(struct tegra_spi_channel *spi)
 static void dump_regs(struct tegra_spi_channel *spi,
 			struct apb_dma_channel *dma)
 {
-	printk(BIOS_DEBUG, "DMA regs:\n");
-	printk(BIOS_DEBUG, "\tahb_ptr: 0x%08x\n"
+	printk(BIOS_INFO, "DMA regs:\n"
+			"\tahb_ptr: 0x%08x\n"
 			"\tapb_ptr: 0x%08x\n"
 			"\tahb_seq: 0x%08x\n"
 			"\tapb_seq: 0x%08x\n"
@@ -312,8 +301,8 @@ static void dump_regs(struct tegra_spi_channel *spi,
 			read32(&dma->regs->wcount),
 			read32(&dma->regs->dma_byte_sta),
 			read32(&dma->regs->word_transfer));
-	printk(BIOS_DEBUG, "SPI regs:\n");
-	printk(BIOS_DEBUG, "\tdma_blk: 0x%08x\n"
+	printk(BIOS_INFO, "SPI regs:\n"
+			"\tdma_blk: 0x%08x\n"
 			"\tcommand1: 0x%08x\n"
 			"\tdma_ctl: 0x%08x\n"
 			"\ttrans_status: 0x%08x\n",
@@ -334,7 +323,7 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 	ASSERT(bitsout % 8 == 0 && bitsin % 8 == 0);
 
 	/* tegra bus numbers start at 1 */
-	ASSERT(slave->bus >= 1 && slave->bus <= TEGRA124_NUM_SPI_CHANNELS);
+	ASSERT(slave->bus >= 1 && slave->bus <= ARRAY_SIZE(tegra_spi_channels));
 
 	dma = dma_claim();
 	if (!dma) {
@@ -342,14 +331,8 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 		return -1;
 	}
 
-	/* flush FIFOs */
-	setbits_le32(&spi->regs->fifo_status, SPI_FIFO_STATUS_RX_FIFO_FLUSH |
-					SPI_FIFO_STATUS_TX_FIFO_FLUSH);
-	while (read32(&spi->regs->fifo_status) & (SPI_FIFO_STATUS_RX_FIFO_FLUSH |
-				SPI_FIFO_STATUS_TX_FIFO_FLUSH))
-			;
+	flush_fifos(spi->regs);
 
-	/* A few common parameters used for both transmit and receive */
 	/* APB bus width = 8-bits, address wrap for each word */
 	clrbits_le32(&dma->regs->apb_seq, 0x7 << 28);
 	/* AHB 1 word burst, bus width = 32 bits (fixed in hardware),
@@ -435,7 +418,8 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 		/* set DMA bit in SPI_DMA_CTL to start */
 		setbits_le32(&spi->regs->dma_ctl, SPI_DMA_CTL_DMA);
 
-		/* start APBDMA after SPI DMA so we don't read empty bytes from Rx FIFO */
+		/* start APBDMA after SPI DMA so we don't read empty bytes
+		 * from Rx FIFO */
 		dma_start(dma);
 
 		/* FIXME: delay loops should be "thread" friendly */
@@ -525,8 +509,12 @@ static size_t tegra_spi_cbfs_read(struct cbfs_media *media, void *dest,
 	spi_cs_activate(spi->slave);
 
 	if (spi_xfer(spi->slave, spi_read_cmd,
-			sizeof(spi_read_cmd) * 8, NULL, 0) < 0)
+			sizeof(spi_read_cmd) * 8, NULL, 0) < 0) {
+		ret = -1;
+		printk(BIOS_ERR, "SPI failed to transfer %u bytes\n",
+				sizeof(spi_read_cmd));
 		goto tegra_spi_cbfs_read_exit;
+	}
 
 	while (count > 0) {
 		unsigned int remaining;
