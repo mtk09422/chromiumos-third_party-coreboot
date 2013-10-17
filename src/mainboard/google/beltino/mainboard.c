@@ -35,6 +35,7 @@
 #include <arch/interrupt.h>
 #include <boot/coreboot_tables.h>
 #include "hda_verb.h"
+#include "onboard.h"
 #include <southbridge/intel/lynxpoint/pch.h>
 
 void mainboard_suspend_resume(void)
@@ -147,7 +148,7 @@ static void verb_setup(void)
 
 static void mainboard_init(device_t dev)
 {
-	// nothing yet
+	lan_init();
 }
 
 // mainboard_enable is executed as first thing after
