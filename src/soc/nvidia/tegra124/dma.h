@@ -22,6 +22,12 @@
 #include <inttypes.h>
 #include <soc/addressmap.h>
 
+/*
+ * The DMA engine operates on 4 bytes at a time, so make sure any data
+ * passed via DMA is aligned to avoid underrun/overrun.
+ */
+#define TEGRA_DMA_ALIGN_BYTES	4
+
 struct apb_dma_channel_regs {
 	u32 csr;		/* 0x00 */
 	u32 sta;		/* 0x04 */
