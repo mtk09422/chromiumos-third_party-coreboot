@@ -279,8 +279,20 @@ static void clear_fifo_status(struct tegra_spi_channel *spi)
 			SPI_FIFO_STATUS_RX_FIFO_UNR) << 4);
 }
 
-static void dump_regs(struct tegra_spi_channel *spi,
-			struct apb_dma_channel *dma)
+static void dump_spi_regs(struct tegra_spi_channel *spi)
+{
+	printk(BIOS_INFO, "SPI regs:\n"
+			"\tdma_blk: 0x%08x\n"
+			"\tcommand1: 0x%08x\n"
+			"\tdma_ctl: 0x%08x\n"
+			"\ttrans_status: 0x%08x\n",
+			read32(&spi->regs->dma_blk),
+			read32(&spi->regs->command1),
+			read32(&spi->regs->dma_ctl),
+			read32(&spi->regs->trans_status));
+}
+
+static void dump_dma_regs(struct apb_dma_channel *dma)
 {
 	printk(BIOS_INFO, "DMA regs:\n"
 			"\tahb_ptr: 0x%08x\n"
@@ -301,38 +313,76 @@ static void dump_regs(struct tegra_spi_channel *spi,
 			read32(&dma->regs->wcount),
 			read32(&dma->regs->dma_byte_sta),
 			read32(&dma->regs->word_transfer));
-	printk(BIOS_INFO, "SPI regs:\n"
-			"\tdma_blk: 0x%08x\n"
-			"\tcommand1: 0x%08x\n"
-			"\tdma_ctl: 0x%08x\n"
-			"\ttrans_status: 0x%08x\n",
-			read32(&spi->regs->dma_blk),
-			read32(&spi->regs->command1),
-			read32(&spi->regs->dma_ctl),
-			read32(&spi->regs->trans_status));
 }
 
-int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
-	     void *din, unsigned int bitsin)
+
+
+static int tegra_spi_fifo_receive(struct tegra_spi_channel *spi,
+			u8 *din, unsigned int in_bytes)
 {
-	unsigned int out_bytes = bitsout / 8, in_bytes = bitsin / 8;
-	int ret = 0;
-	struct apb_dma_channel *dma;
-	struct tegra_spi_channel *spi = to_tegra_spi(slave->bus);
+	unsigned int remaining;
 
-	ASSERT(bitsout % 8 == 0 && bitsin % 8 == 0);
+	printk(BIOS_SPEW, "%s: Receiving %d bytes\n", __func__, in_bytes);
+	setbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
+	while (in_bytes) {
+		remaining = MIN(in_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
+		in_bytes -= remaining;
 
-	/* tegra bus numbers start at 1 */
-	ASSERT(slave->bus >= 1 && slave->bus <= ARRAY_SIZE(tegra_spi_channels));
+		/* BLOCK_SIZE in SPI_DMA_BLK register applies to both DMA and
+		 * PIO transfers */
+		write32(remaining - 1, &spi->regs->dma_blk);
 
-	dma = dma_claim();
-	if (!dma) {
-		printk(BIOS_ERR, "%s: Unable to claim DMA channel\n", __func__);
-		return -1;
+		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
+		setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
+
+		while ((read32(&spi->regs->trans_status) &
+				SPI_STATUS_BLOCK_COUNT) != remaining)
+			;
+
+		while (remaining) {
+			*din = read8(&spi->regs->rx_fifo);
+			din++;
+			remaining--;
+		}
 	}
+	clrbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
+	return in_bytes;
+}
 
-	flush_fifos(spi->regs);
+static int tegra_spi_fifo_send(struct tegra_spi_channel *spi,
+			const u8 *dout, unsigned int out_bytes)
+{
+	unsigned int remaining;
 
+	printk(BIOS_SPEW, "%s: Sending %d bytes\n", __func__, out_bytes);
+	setbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
+	while (out_bytes) {
+		remaining = MIN(out_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
+		out_bytes -= remaining;
+
+		/* BLOCK_SIZE in SPI_DMA_BLK register applies to both DMA and
+		 * PIO transfers */
+		write32(remaining - 1, &spi->regs->dma_blk);
+
+		while (remaining) {
+			write32(*dout, &spi->regs->tx_fifo);
+			dout++;
+			remaining--;
+		}
+
+		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
+		setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
+
+		while (!(read32(&spi->regs->fifo_status) &
+				SPI_FIFO_STATUS_TX_FIFO_EMPTY))
+			;
+	}
+	clrbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
+	return out_bytes;
+}
+
+static void tegra2_spi_dma_setup(struct apb_dma_channel *dma)
+{
 	/* APB bus width = 8-bits, address wrap for each word */
 	clrbits_le32(&dma->regs->apb_seq, 0x7 << 28);
 	/* AHB 1 word burst, bus width = 32 bits (fixed in hardware),
@@ -341,127 +391,178 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 			(0x7 << 24) | (0x7 << 16), 0x4 << 24);
 	/* Set ONCE mode to transfer one "blocK" at a time (64KB). */
 	setbits_le32(&dma->regs->csr, 1 << 27);
+}
 
-	/*
-	 * Notes for transmit and receive, experimentally determined (need to
-	 * verify):
-	 * - WCOUNT seems to be an "n-1" count, but the documentation does not
-	 *   make this clear. Without the -1 dma_byte_sta will show 1 AHB word
-	 *   (4 bytes) higher than it should and Tx overrun / Rx underrun will
-	 *   likely occur.
-	 *
-	 * - dma_byte_sta is always a multiple 4, so we check for
-	 *   dma_byte_sta < length
-	 *
-	 * - The RDY bit in SPI_TRANS_STATUS needs to be cleared manually
-	 *   (set bit to clear) between each transaction. Otherwise the next
-	 *   transaction does not start.
-	 */
-	if (out_bytes && dout) {
-		printk(BIOS_SPEW, "%s: Writing %d bytes\n",
-					__func__, out_bytes);
+/*
+ * Notes for DMA transmit and receive, experimentally determined (need to
+ * verify):
+ * - WCOUNT seems to be an "n-1" count, but the documentation does not
+ *   make this clear. Without the -1 dma_byte_sta will show 1 AHB word
+ *   (4 bytes) higher than it should and Tx overrun / Rx underrun will
+ *   likely occur.
+ *
+ * - dma_byte_sta is always a multiple 4, so we check for
+ *   dma_byte_sta < length
+ *
+ * - The RDY bit in SPI_TRANS_STATUS needs to be cleared manually
+ *   (set bit to clear) between each transaction. Otherwise the next
+ *   transaction does not start.
+ */
 
-		/* set AHB & APB address pointers */
-		write32((u32)dout, &dma->regs->ahb_ptr);
-		write32((u32)&spi->regs->tx_fifo, &dma->regs->apb_ptr);
+static int tegra_spi_dma_receive(struct tegra_spi_channel *spi,
+		const void *din, unsigned int in_bytes)
+{
+	struct apb_dma_channel *dma;
 
-		setbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
-
-		/* FIXME: calculate word count so that it corresponds to bus width */
-		write32(out_bytes - 1, &dma->regs->wcount);
-
-		/* specify BLOCK_SIZE in SPI_DMA_BLK */
-		write32(out_bytes - 1, &spi->regs->dma_blk);
-
-		/* Set DMA direction for AHB (DRAM) --> APB (SPI) */
-		setbits_le32(&dma->regs->csr, (1 << 28));
-
-		/* write to SPI_TRANS_STATUS RDY bit to clear it */
-		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
-
-		dma_start(dma);
-		/* set DMA bit in SPI_DMA_CTL to start */
-		setbits_le32(&spi->regs->dma_ctl, SPI_DMA_CTL_DMA);
-
-		/* FIXME: delay loops should be "thread" friendly */
-		while ((read32(&dma->regs->dma_byte_sta) < out_bytes) ||
-				dma_busy(dma))
-			;
-		dma_stop(dma);
-		while ((read32(&spi->regs->trans_status) &
-				SPI_STATUS_BLOCK_COUNT) != out_bytes)
-			;
-		clrbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
+	dma = dma_claim();
+	if (!dma) {
+		printk(BIOS_ERR, "%s: Unable to claim DMA channel\n", __func__);
+		return -1;
 	}
 
-	if (in_bytes && din) {
-		printk(BIOS_SPEW, "%s: Reading %d bytes\n",
-					__func__, in_bytes);
+	printk(BIOS_SPEW, "%s: Receiving %d bytes\n", __func__, in_bytes);
+	tegra2_spi_dma_setup(dma);
 
-		/* set AHB & APB address pointers */
-		write32((u32)din, &dma->regs->ahb_ptr);
-		write32((u32)&spi->regs->rx_fifo, &dma->regs->apb_ptr);
+	/* set AHB & APB address pointers */
+	write32((u32)din, &dma->regs->ahb_ptr);
+	write32((u32)&spi->regs->rx_fifo, &dma->regs->apb_ptr);
 
-		setbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
+	setbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
 
-		write32(in_bytes - 1, &dma->regs->wcount);
+	/* FIXME: calculate word count so that it corresponds to bus width */
+	write32(in_bytes - 1, &dma->regs->wcount);
 
-		/* specify BLOCK_SIZE in SPI_DMA_BLK */
-		write32(in_bytes - 1, &spi->regs->dma_blk);
+	/* specify BLOCK_SIZE in SPI_DMA_BLK */
+	write32(in_bytes - 1, &spi->regs->dma_blk);
 
-		/* Set DMA direction for APB (SPI) --> AHB (DRAM) */
-		clrbits_le32(&dma->regs->csr, 1 << 28);
+	/* Set DMA direction for APB (SPI) --> AHB (DRAM) */
+	clrbits_le32(&dma->regs->csr, 1 << 28);
 
-		/* write to SPI_TRANS_STATUS RDY bit to clear it */
-		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
+	/* write to SPI_TRANS_STATUS RDY bit to clear it */
+	setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
 
-		/* set DMA bit in SPI_DMA_CTL to start */
-		setbits_le32(&spi->regs->dma_ctl, SPI_DMA_CTL_DMA);
+	/* set DMA bit in SPI_DMA_CTL to start */
+	setbits_le32(&spi->regs->dma_ctl, SPI_DMA_CTL_DMA);
 
-		/* start APBDMA after SPI DMA so we don't read empty bytes
-		 * from Rx FIFO */
-		dma_start(dma);
+	/* start APBDMA after SPI DMA so we don't read empty bytes
+	 * from Rx FIFO */
+	dma_start(dma);
 
-		/* FIXME: delay loops should be "thread" friendly */
-		while ((read32(&spi->regs->trans_status) &
-				SPI_STATUS_BLOCK_COUNT) != in_bytes)
-			;
-		clrbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
+	/* FIXME: delay loops should be "thread" friendly */
+	while ((read32(&spi->regs->trans_status) &
+			SPI_STATUS_BLOCK_COUNT) != in_bytes)
+		;
+	clrbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
 
-		while ((read32(&dma->regs->dma_byte_sta) < in_bytes) ||
-				dma_busy(dma))
-			;
-		dma_stop(dma);
+	while ((read32(&dma->regs->dma_byte_sta) < in_bytes) ||
+			dma_busy(dma))
+		;
+	dma_stop(dma);
+	dma_release(dma);
+
+	if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR)
+		dump_dma_regs(dma);
+
+	return in_bytes;
+}
+
+static int tegra_spi_dma_send(struct tegra_spi_channel *spi,
+		const u8 *dout, unsigned int out_bytes)
+{
+	struct apb_dma_channel *dma;
+
+	dma = dma_claim();
+	if (!dma) {
+		printk(BIOS_ERR, "%s: Unable to claim DMA channel\n", __func__);
+		return -1;
 	}
+
+	printk(BIOS_SPEW, "%s: Sending %d bytes\n", __func__, out_bytes);
+	tegra2_spi_dma_setup(dma);
+
+	/* set AHB & APB address pointers */
+	write32((u32)dout, &dma->regs->ahb_ptr);
+	write32((u32)&spi->regs->tx_fifo, &dma->regs->apb_ptr);
+
+	setbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
+
+	/* FIXME: calculate word count so that it corresponds to bus width */
+	write32(out_bytes - 1, &dma->regs->wcount);
+
+	/* specify BLOCK_SIZE in SPI_DMA_BLK */
+	write32(out_bytes - 1, &spi->regs->dma_blk);
+
+	/* Set DMA direction for AHB (DRAM) --> APB (SPI) */
+	setbits_le32(&dma->regs->csr, (1 << 28));
+
+	/* write to SPI_TRANS_STATUS RDY bit to clear it */
+	setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
+
+	dma_start(dma);
+	/* set DMA bit in SPI_DMA_CTL to start */
+	setbits_le32(&spi->regs->dma_ctl, SPI_DMA_CTL_DMA);
+
+	/* FIXME: delay loops should be "thread" friendly */
+	while ((read32(&dma->regs->dma_byte_sta) < out_bytes) ||
+			dma_busy(dma))
+		;
+	dma_stop(dma);
+	while ((read32(&spi->regs->trans_status) &
+		SPI_STATUS_BLOCK_COUNT) != out_bytes)
+		;
+	clrbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
 
 	dma_release(dma);
 
+	if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR)
+		dump_dma_regs(dma);
+
+	return out_bytes;
+}
+
+int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
+	     void *din, unsigned int bitsin)
+{
+	unsigned int dma_out, dma_in, fifo_out, fifo_in;
+	int ret = 0;
+	struct tegra_spi_channel *spi = to_tegra_spi(slave->bus);
+	u8 *out_buf = (u8 *)dout;
+	u8 *in_buf = (u8 *)din;
+
+	ASSERT(bitsout % 8 == 0 && bitsin % 8 == 0);
+
+	/* tegra bus numbers start at 1 */
+	ASSERT(slave->bus >= 1 && slave->bus <= ARRAY_SIZE(tegra_spi_channels));
+
+	flush_fifos(spi->regs);
+
 	/*
-	 * FIXME: 4-byte unaligned transfers will cause FIFO overrun/underruns.
-	 * The DMA controller will attempt to send/receive more bytes than it
-	 * should, but the SPI controller is smart enough not to attempt to
-	 * transmit more bytes than BLOCK_SIZE in the SPI_DMA_BLK register.
+	 * DMA operates on 4 bytes at a time, so to avoid accessing memory
+	 * outside the specified buffers we'll only use DMA for 4-byte aligned
+	 * transactions accesses and transfer remaining bytes using FIFO access.
 	 */
-	if (din && (in_bytes % 4)) {
-		if (read32(&spi->regs->fifo_status) &
-				SPI_FIFO_STATUS_RX_FIFO_UNR) {
-			printk(BIOS_DEBUG, "SPI: Ignoring Rx FIFO underrun.\n");
-			setbits_le32(&spi->regs->fifo_status,
-					SPI_FIFO_STATUS_RX_FIFO_UNR);
-		}
+	fifo_out = (bitsout / 8) % TEGRA_DMA_ALIGN_BYTES;
+	dma_out = (bitsout / 8) - fifo_out;
+	fifo_in = (bitsin / 8) % TEGRA_DMA_ALIGN_BYTES;
+	dma_in = (bitsin / 8) - fifo_in;
+
+	if (dma_out) {
+		tegra_spi_dma_send(spi, out_buf, dma_out);
+		out_buf += dma_out;
 	}
-	if (dout && (out_bytes % 4)) {
-		if (read32(&spi->regs->fifo_status) &
-				SPI_FIFO_STATUS_TX_FIFO_OVF) {
-			printk(BIOS_DEBUG, "SPI: Ignoring Tx FIFO overrun.\n");
-			setbits_le32(&spi->regs->fifo_status,
-					SPI_FIFO_STATUS_TX_FIFO_OVF);
-		}
+	if (fifo_out)
+		tegra_spi_fifo_send(spi, out_buf, fifo_out);
+
+	if (dma_in) {
+		tegra_spi_dma_receive(spi, in_buf, dma_in);
+		in_buf += dma_in;
 	}
+	if (fifo_in)
+		tegra_spi_fifo_receive(spi, in_buf, fifo_in);
 
 	if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR) {
 		ret = -1;
-		dump_regs(spi, dma);
+		dump_spi_regs(spi);
 		print_fifo_status(spi);
 		clear_fifo_status(spi);
 	}
@@ -499,7 +600,6 @@ static size_t tegra_spi_cbfs_read(struct cbfs_media *media, void *dest,
 	int ret = count;
 
 	/* TODO: Dual mode (BOTH_EN_BIT) and packed mode */
-
 	spi_read_cmd[0] = JEDEC_READ;
 	spi_read_cmd[1] = (offset >> 16) & 0xff;
 	spi_read_cmd[2] = (offset >> 8) & 0xff;
