@@ -215,6 +215,33 @@ static struct tegra_spi_channel * const to_tegra_spi(int bus) {
 	return &tegra_spi_channels[bus - 1];
 }
 
+static unsigned int tegra_spi_speed(unsigned int bus)
+{
+	/* FIXME: implement this properly, for now use max value (50MHz) */
+	return 50000000;
+}
+
+/*
+ * This calls udelay() with a calculated value based on the SPI speed and
+ * number of bytes remaining to be transferred. It assumes that if the
+ * calculated delay period is less than MIN_DELAY_US then it is probably
+ * not worth the overhead of yielding.
+ */
+#define MIN_DELAY_US 250
+static void tegra_spi_delay(struct tegra_spi_channel *spi,
+				unsigned int bytes_remaining)
+{
+	unsigned int ns_per_byte, delay_us;
+
+	ns_per_byte = 1000000000 / (tegra_spi_speed(spi->slave.bus) / 8);
+	delay_us = (ns_per_byte * bytes_remaining) / 1000;
+
+	if (delay_us < MIN_DELAY_US)
+		return;
+
+	udelay(delay_us);
+}
+
 void spi_cs_activate(struct spi_slave *slave)
 {
 	struct tegra_spi_regs *regs = to_tegra_spi(slave->bus)->regs;
@@ -348,7 +375,7 @@ static int tegra_spi_fifo_receive(struct tegra_spi_channel *spi,
 	setbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
 
 	while (remaining) {
-		unsigned int from_fifo;
+		unsigned int from_fifo, count;
 
 		from_fifo = MIN(in_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
 		remaining -= from_fifo;
@@ -360,8 +387,8 @@ static int tegra_spi_fifo_receive(struct tegra_spi_channel *spi,
 		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
 		setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
 
-		/* FIXME: delay loops should be "thread" friendly */
-		while (spi_byte_count(spi) != from_fifo) {
+		while ((count = spi_byte_count(spi)) != from_fifo) {
+			tegra_spi_delay(spi, from_fifo - count);
 			if (fifo_error(spi))
 				goto done;
 		}
@@ -412,9 +439,9 @@ static int tegra_spi_fifo_send(struct tegra_spi_channel *spi,
 		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
 		setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
 
-		/* FIXME: delay loops should be "thread" friendly */
 		while (!(read32(&spi->regs->fifo_status) &
 				SPI_FIFO_STATUS_TX_FIFO_EMPTY)) {
+			tegra_spi_delay(spi, to_fifo - spi_byte_count(spi));
 			if (fifo_error(spi))
 				goto done;
 		}
@@ -501,14 +528,12 @@ static int tegra_spi_dma_receive(struct tegra_spi_channel *spi,
 	 * from Rx FIFO */
 	dma_start(dma);
 
-	/* FIXME: delay loops should be "thread" friendly */
 	while (spi_byte_count(spi) != in_bytes)
-		;
+		tegra_spi_delay(spi, in_bytes - spi_byte_count(spi));
 	clrbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
 
-	while ((read32(&dma->regs->dma_byte_sta) < in_bytes) ||
-			dma_busy(dma))
-		;
+	while ((read32(&dma->regs->dma_byte_sta) < in_bytes) || dma_busy(dma))
+		;	/* this shouldn't take long, no udelay */
 	dma_stop(dma);
 	dma_release(dma);
 
@@ -526,6 +551,7 @@ static int tegra_spi_dma_send(struct tegra_spi_channel *spi,
 		const u8 *dout, unsigned int out_bytes)
 {
 	struct apb_dma_channel *dma;
+	unsigned int count;
 
 	dma = dma_claim();
 	if (!dma) {
@@ -558,13 +584,12 @@ static int tegra_spi_dma_send(struct tegra_spi_channel *spi,
 	/* set DMA bit in SPI_DMA_CTL to start */
 	setbits_le32(&spi->regs->dma_ctl, SPI_DMA_CTL_DMA);
 
-	/* FIXME: delay loops should be "thread" friendly */
-	while ((read32(&dma->regs->dma_byte_sta) < out_bytes) ||
-			dma_busy(dma))
-		;
+	while ((read32(&dma->regs->dma_byte_sta) < out_bytes) || dma_busy(dma))
+		tegra_spi_delay(spi, out_bytes - spi_byte_count(spi));
 	dma_stop(dma);
-	while (spi_byte_count(spi) != out_bytes)
-		;
+
+	while ((count = spi_byte_count(spi)) != out_bytes)
+		tegra_spi_delay(spi, out_bytes - count);
 	clrbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
 
 	dma_release(dma);
