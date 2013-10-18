@@ -46,7 +46,8 @@
  */
 #define SPI_PACKET_SIZE_BYTES		1
 #define SPI_MAX_TRANSFER_BYTES_FIFO	(64 * SPI_PACKET_SIZE_BYTES)
-#define SPI_MAX_TRANSFER_BYTES_DMA	(65536 * SPI_PACKET_SIZE_BYTES)
+#define SPI_MAX_TRANSFER_BYTES_DMA	((65536 * SPI_PACKET_SIZE_BYTES) - \
+							TEGRA_DMA_ALIGN_BYTES)
 
 /* COMMAND1 */
 #define SPI_CMD1_GO			(1 << 31)
@@ -523,9 +524,9 @@ static int tegra_spi_dma_send(struct tegra_spi_channel *spi,
 int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 	     void *din, unsigned int bitsin)
 {
-	unsigned int dma_out, dma_in, fifo_out, fifo_in;
-	int ret = 0;
+	unsigned int out_bytes = bitsout / 8, in_bytes = bitsin / 8;
 	struct tegra_spi_channel *spi = to_tegra_spi(slave->bus);
+	int ret = 0;
 	u8 *out_buf = (u8 *)dout;
 	u8 *in_buf = (u8 *)din;
 
@@ -541,32 +542,61 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 	 * outside the specified buffers we'll only use DMA for 4-byte aligned
 	 * transactions accesses and transfer remaining bytes using FIFO access.
 	 */
-	fifo_out = (bitsout / 8) % TEGRA_DMA_ALIGN_BYTES;
-	dma_out = (bitsout / 8) - fifo_out;
-	fifo_in = (bitsin / 8) % TEGRA_DMA_ALIGN_BYTES;
-	dma_in = (bitsin / 8) - fifo_in;
 
-	if (dma_out) {
-		tegra_spi_dma_send(spi, out_buf, dma_out);
-		out_buf += dma_out;
+	while (out_bytes > 0) {
+		unsigned int dma_out, fifo_out;
+
+		dma_out = MIN(out_bytes, SPI_MAX_TRANSFER_BYTES_DMA);
+		fifo_out = dma_out % TEGRA_DMA_ALIGN_BYTES;
+		dma_out -= fifo_out;
+
+		if (dma_out) {
+			tegra_spi_dma_send(spi, out_buf, dma_out);
+			out_buf += dma_out;
+			out_bytes -= dma_out;
+		}
+		if (fifo_out) {
+			tegra_spi_fifo_send(spi, out_buf, fifo_out);
+			out_buf += fifo_out;
+			out_bytes -= fifo_out;
+		}
+
+		if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR) {
+			ret = -1;
+			goto spi_xfer_exit;
+		}
 	}
-	if (fifo_out)
-		tegra_spi_fifo_send(spi, out_buf, fifo_out);
 
-	if (dma_in) {
-		tegra_spi_dma_receive(spi, in_buf, dma_in);
-		in_buf += dma_in;
+	while (in_bytes > 0) {
+		unsigned int dma_in, fifo_in;
+
+		dma_in = MIN(in_bytes, SPI_MAX_TRANSFER_BYTES_DMA);
+		fifo_in = dma_in % TEGRA_DMA_ALIGN_BYTES;
+		dma_in -= fifo_in;
+
+		if (dma_in) {
+			tegra_spi_dma_receive(spi, in_buf, dma_in);
+			in_buf += dma_in;
+			in_bytes -= dma_in;
+		}
+		if (fifo_in) {
+			tegra_spi_fifo_receive(spi, in_buf, fifo_in);
+			in_buf += fifo_in;
+			in_bytes -= fifo_in;
+		}
+
+		if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR) {
+			ret = -1;
+			break;
+		}
 	}
-	if (fifo_in)
-		tegra_spi_fifo_receive(spi, in_buf, fifo_in);
 
-	if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR) {
-		ret = -1;
+spi_xfer_exit:
+	if (ret < 0) {
 		dump_spi_regs(spi);
 		print_fifo_status(spi);
 		clear_fifo_status(spi);
 	}
-
 	return ret;
 }
 
@@ -611,23 +641,15 @@ static size_t tegra_spi_cbfs_read(struct cbfs_media *media, void *dest,
 	if (spi_xfer(spi->slave, spi_read_cmd,
 			sizeof(spi_read_cmd) * 8, NULL, 0) < 0) {
 		ret = -1;
-		printk(BIOS_ERR, "SPI failed to transfer %u bytes\n",
-				sizeof(spi_read_cmd));
+		printk(BIOS_ERR, "%s: Failed to transfer %u bytes\n",
+				__func__, sizeof(spi_read_cmd));
 		goto tegra_spi_cbfs_read_exit;
 	}
 
-	while (count > 0) {
-		unsigned int remaining;
-
-		/* FIXME: shouldn't need to subtract 4 here... */
-		remaining = MIN(count, SPI_MAX_TRANSFER_BYTES_DMA - 4);
-		count -= remaining;
-		if (spi_xfer(spi->slave, NULL, 0, dest, remaining * 8)) {
-			ret = -1;
-			printk(BIOS_ERR, "SPI failed to transfer %u bytes\n",
-					remaining);
-			break;
-		}
+	if (spi_xfer(spi->slave, NULL, 0, dest, count * 8)) {
+		ret = -1;
+		printk(BIOS_ERR, "%s: Failed to transfer %u bytes\n",
+				__func__, count);
 	}
 
 tegra_spi_cbfs_read_exit:
