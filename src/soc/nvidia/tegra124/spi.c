@@ -250,7 +250,7 @@ void spi_cs_deactivate(struct spi_slave *slave)
 	write32(val, &regs->command1);
 }
 
-static void print_fifo_status(struct tegra_spi_channel *spi)
+static void dump_fifo_status(struct tegra_spi_channel *spi)
 {
 	u32 status = read32(&spi->regs->fifo_status);
 
@@ -316,69 +316,121 @@ static void dump_dma_regs(struct apb_dma_channel *dma)
 			read32(&dma->regs->word_transfer));
 }
 
+static void dump_regs(struct tegra_spi_channel *spi,
+			struct apb_dma_channel *dma)
+{
+	if (dma)
+		dump_dma_regs(dma);
+	if (spi) {
+		dump_spi_regs(spi);
+		dump_fifo_status(spi);
+	}
+}
 
+static int fifo_error(struct tegra_spi_channel *spi)
+{
+	return read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR ? 1 : 0;
+}
+
+static inline unsigned int spi_byte_count(struct tegra_spi_channel *spi)
+{
+	/* FIXME: Make this take total packet size into account */
+	return read32(&spi->regs->trans_status) &
+		(SPI_STATUS_BLOCK_COUNT << SPI_STATUS_BLOCK_COUNT_SHIFT);
+}
 
 static int tegra_spi_fifo_receive(struct tegra_spi_channel *spi,
 			u8 *din, unsigned int in_bytes)
 {
-	unsigned int remaining;
+	unsigned int received = 0, remaining = in_bytes;
 
 	printk(BIOS_SPEW, "%s: Receiving %d bytes\n", __func__, in_bytes);
 	setbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
-	while (in_bytes) {
-		remaining = MIN(in_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
-		in_bytes -= remaining;
+
+	while (remaining) {
+		unsigned int from_fifo;
+
+		from_fifo = MIN(in_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
+		remaining -= from_fifo;
 
 		/* BLOCK_SIZE in SPI_DMA_BLK register applies to both DMA and
 		 * PIO transfers */
-		write32(remaining - 1, &spi->regs->dma_blk);
+		write32(from_fifo - 1, &spi->regs->dma_blk);
 
 		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
 		setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
 
-		while ((read32(&spi->regs->trans_status) &
-				SPI_STATUS_BLOCK_COUNT) != remaining)
-			;
+		/* FIXME: delay loops should be "thread" friendly */
+		while (spi_byte_count(spi) != from_fifo) {
+			if (fifo_error(spi))
+				goto done;
+		}
 
-		while (remaining) {
+		received += from_fifo;
+		while (from_fifo) {
 			*din = read8(&spi->regs->rx_fifo);
 			din++;
-			remaining--;
+			from_fifo--;
 		}
 	}
+
+done:
 	clrbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
+	if ((received != in_bytes) || fifo_error(spi)) {
+		printk(BIOS_ERR, "%s: ERROR: Received %u bytes, expected %u\n",
+				__func__, received, in_bytes);
+		dump_regs(spi, NULL);
+		return -1;
+	}
 	return in_bytes;
 }
 
 static int tegra_spi_fifo_send(struct tegra_spi_channel *spi,
 			const u8 *dout, unsigned int out_bytes)
 {
-	unsigned int remaining;
+	unsigned int sent = 0, remaining = out_bytes;
 
 	printk(BIOS_SPEW, "%s: Sending %d bytes\n", __func__, out_bytes);
 	setbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
-	while (out_bytes) {
-		remaining = MIN(out_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
-		out_bytes -= remaining;
+
+	while (remaining) {
+		unsigned int to_fifo, tmp;
+
+		to_fifo = MIN(out_bytes, SPI_MAX_TRANSFER_BYTES_FIFO);
 
 		/* BLOCK_SIZE in SPI_DMA_BLK register applies to both DMA and
 		 * PIO transfers */
-		write32(remaining - 1, &spi->regs->dma_blk);
+		write32(to_fifo - 1, &spi->regs->dma_blk);
 
-		while (remaining) {
+		tmp = to_fifo;
+		while (tmp) {
 			write32(*dout, &spi->regs->tx_fifo);
 			dout++;
-			remaining--;
+			tmp--;
 		}
 
 		setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
 		setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
 
+		/* FIXME: delay loops should be "thread" friendly */
 		while (!(read32(&spi->regs->fifo_status) &
-				SPI_FIFO_STATUS_TX_FIFO_EMPTY))
-			;
+				SPI_FIFO_STATUS_TX_FIFO_EMPTY)) {
+			if (fifo_error(spi))
+				goto done;
+		}
+
+		remaining -= to_fifo;
+		sent += to_fifo;
 	}
+
+done:
 	clrbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
+	if ((sent != out_bytes) || fifo_error(spi)) {
+		printk(BIOS_ERR, "%s: ERROR: Sent %u bytes, expected "
+				"to send %u\n", __func__, sent, out_bytes);
+		dump_regs(spi, NULL);
+		return -1;
+	}
 	return out_bytes;
 }
 
@@ -450,8 +502,7 @@ static int tegra_spi_dma_receive(struct tegra_spi_channel *spi,
 	dma_start(dma);
 
 	/* FIXME: delay loops should be "thread" friendly */
-	while ((read32(&spi->regs->trans_status) &
-			SPI_STATUS_BLOCK_COUNT) != in_bytes)
+	while (spi_byte_count(spi) != in_bytes)
 		;
 	clrbits_le32(&spi->regs->command1, SPI_CMD1_RX_EN);
 
@@ -461,8 +512,12 @@ static int tegra_spi_dma_receive(struct tegra_spi_channel *spi,
 	dma_stop(dma);
 	dma_release(dma);
 
-	if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR)
-		dump_dma_regs(dma);
+	if ((spi_byte_count(spi) != in_bytes) || fifo_error(spi)) {
+		printk(BIOS_ERR, "%s: ERROR: Received %u bytes, expected %u\n",
+				__func__, spi_byte_count(spi), in_bytes);
+		dump_regs(spi, dma);
+		return -1;
+	}
 
 	return in_bytes;
 }
@@ -508,15 +563,18 @@ static int tegra_spi_dma_send(struct tegra_spi_channel *spi,
 			dma_busy(dma))
 		;
 	dma_stop(dma);
-	while ((read32(&spi->regs->trans_status) &
-		SPI_STATUS_BLOCK_COUNT) != out_bytes)
+	while (spi_byte_count(spi) != out_bytes)
 		;
 	clrbits_le32(&spi->regs->command1, SPI_CMD1_TX_EN);
 
 	dma_release(dma);
 
-	if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR)
-		dump_dma_regs(dma);
+	if ((spi_byte_count(spi) != out_bytes) || fifo_error(spi)) {
+		printk(BIOS_ERR, "%s: ERROR: Sent %u bytes, expected %u\n",
+				__func__, spi_byte_count(spi), out_bytes);
+		dump_regs(spi, dma);
+		return -1;
+	}
 
 	return out_bytes;
 }
@@ -540,7 +598,8 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 	/*
 	 * DMA operates on 4 bytes at a time, so to avoid accessing memory
 	 * outside the specified buffers we'll only use DMA for 4-byte aligned
-	 * transactions accesses and transfer remaining bytes using FIFO access.
+	 * transactions accesses and transfer remaining bytes manually using
+	 * the Rx/Tx FIFOs.
 	 */
 
 	while (out_bytes > 0) {
@@ -551,19 +610,22 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 		dma_out -= fifo_out;
 
 		if (dma_out) {
-			tegra_spi_dma_send(spi, out_buf, dma_out);
+			ret = tegra_spi_dma_send(spi, out_buf, dma_out);
+			if (ret != dma_out) {
+				ret = -1;
+				goto spi_xfer_exit;
+			}
 			out_buf += dma_out;
 			out_bytes -= dma_out;
 		}
 		if (fifo_out) {
-			tegra_spi_fifo_send(spi, out_buf, fifo_out);
+			ret = tegra_spi_fifo_send(spi, out_buf, fifo_out);
+			if (ret != fifo_out) {
+				ret = -1;
+				goto spi_xfer_exit;
+			}
 			out_buf += fifo_out;
 			out_bytes -= fifo_out;
-		}
-
-		if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR) {
-			ret = -1;
-			goto spi_xfer_exit;
 		}
 	}
 
@@ -575,28 +637,30 @@ int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 		dma_in -= fifo_in;
 
 		if (dma_in) {
-			tegra_spi_dma_receive(spi, in_buf, dma_in);
+			ret = tegra_spi_dma_receive(spi, in_buf, dma_in);
+			if (ret != dma_in) {
+				ret = -1;
+				goto spi_xfer_exit;
+			}
 			in_buf += dma_in;
 			in_bytes -= dma_in;
 		}
 		if (fifo_in) {
-			tegra_spi_fifo_receive(spi, in_buf, fifo_in);
+			ret = tegra_spi_fifo_receive(spi, in_buf, fifo_in);
+			if (ret != fifo_in) {
+				ret = -1;
+				goto spi_xfer_exit;
+			}
 			in_buf += fifo_in;
 			in_bytes -= fifo_in;
 		}
-
-		if (read32(&spi->regs->fifo_status) & SPI_FIFO_STATUS_ERR) {
-			ret = -1;
-			break;
-		}
 	}
+
+	ret = 0;
 
 spi_xfer_exit:
-	if (ret < 0) {
-		dump_spi_regs(spi);
-		print_fifo_status(spi);
+	if (ret < 0)
 		clear_fifo_status(spi);
-	}
 	return ret;
 }
 
