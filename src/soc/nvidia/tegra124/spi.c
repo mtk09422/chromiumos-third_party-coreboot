@@ -792,3 +792,23 @@ int initialize_tegra_spi_cbfs_media(struct cbfs_media *media,
 
 	return 0;
 }
+
+struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
+				  unsigned int max_hz, unsigned int mode)
+{
+	struct tegra_spi_channel *channel = to_tegra_spi(bus);
+	if (!channel)
+		return NULL;
+
+	return &channel->slave;
+}
+
+int spi_claim_bus(struct spi_slave *slave)
+{
+	tegra_spi_init(slave->bus);
+	return 0;
+}
+
+void spi_release_bus(struct spi_slave *slave)
+{
+}
