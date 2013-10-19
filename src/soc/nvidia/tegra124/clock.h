@@ -157,6 +157,8 @@ enum {
 
 /* soc-specific */
 #define NVBL_PLLP_KHZ   (408000)
+#define NVBL_PLLC_KHZ   (600000)
+#define NVBL_PLLD_KHZ   (925000)
 
 void clock_uart_config(void);
 void clock_cpu0_config_and_reset(void * entry);
