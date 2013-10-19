@@ -22,6 +22,9 @@ if BOARD_GOOGLE_NYAN
 config BOARD_SPECIFIC_OPTIONS # dummy
 	def_bool y
 	select ARCH_ARM
+	select CHROMEOS
+	select EC_GOOGLE_CHROMEEC
+	select EC_GOOGLE_CHROMEEC_SPI
 	select SOC_NVIDIA_TEGRA124
 	select MAINBOARD_HAS_BOOTBLOCK_INIT
 
@@ -70,5 +73,9 @@ config BOOT_MEDIA_SPI_CHIP_SELECT
 	default 0
 	help
 	  Which chip select to use for boot media.
+
+config EC_GOOGLE_CHROMEEC_SPI_BUS
+	hex
+	default 1
 
 endif # BOARD_GOOGLE_NYAN
