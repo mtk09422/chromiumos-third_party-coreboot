@@ -300,11 +300,11 @@ static void dump_fifo_status(struct tegra_spi_channel *spi)
 static void clear_fifo_status(struct tegra_spi_channel *spi)
 {
 	clrbits_le32(&spi->regs->fifo_status,
-			(SPI_FIFO_STATUS_ERR |
-			SPI_FIFO_STATUS_TX_FIFO_OVF |
-			SPI_FIFO_STATUS_TX_FIFO_UNR |
-			SPI_FIFO_STATUS_RX_FIFO_OVF |
-			SPI_FIFO_STATUS_RX_FIFO_UNR) << 4);
+				SPI_FIFO_STATUS_ERR |
+				SPI_FIFO_STATUS_TX_FIFO_OVF |
+				SPI_FIFO_STATUS_TX_FIFO_UNR |
+				SPI_FIFO_STATUS_RX_FIFO_OVF |
+				SPI_FIFO_STATUS_RX_FIFO_UNR);
 }
 
 static void dump_spi_regs(struct tegra_spi_channel *spi)
