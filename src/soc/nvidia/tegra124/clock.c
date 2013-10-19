@@ -266,11 +266,13 @@ void clock_config(void)
 {
 	/* Enable clocks for the required peripherals. */
 	setbits_le32(&clk_rst->clk_out_enb_l,
-		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1);
+		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1 |
+		     CLK_L_SDMMC4);
 	setbits_le32(&clk_rst->clk_out_enb_h,
 		     CLK_H_EMC | CLK_H_I2C2 | CLK_H_I2C5 | CLK_H_SBC1 |
 		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
-	setbits_le32(&clk_rst->clk_out_enb_u, CLK_U_I2C3 | CLK_U_CSITE);
+	setbits_le32(&clk_rst->clk_out_enb_u,
+		     CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3);
 	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_MSELECT);
 	setbits_le32(&clk_rst->clk_out_enb_w, CLK_W_DVFS);
 
@@ -300,11 +302,13 @@ void clock_config(void)
 	/* Take required peripherals out of reset. */
 
 	clrbits_le32(&clk_rst->rst_dev_l,
-		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1);
+		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1 |
+		     CLK_L_SDMMC4);
 	clrbits_le32(&clk_rst->rst_dev_h,
 		     CLK_H_EMC | CLK_H_I2C2 | CLK_H_I2C5 | CLK_H_SBC1 |
 		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
-	clrbits_le32(&clk_rst->rst_dev_u, CLK_U_I2C3 | CLK_U_CSITE);
+	clrbits_le32(&clk_rst->rst_dev_u,
+		     CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3);
 	clrbits_le32(&clk_rst->rst_dev_v, CLK_V_MSELECT);
 	clrbits_le32(&clk_rst->rst_dev_w, CLK_W_DVFS);
 }
