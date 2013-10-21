@@ -223,3 +223,14 @@ struct chip_operations mainboard_ops = {
 	.name	= "nyan",
 	.enable_dev = mainboard_enable,
 };
+
+void lb_board(struct lb_header *header)
+{
+	struct lb_range *dma;
+
+	dma = (struct lb_range *)lb_new_record(header);
+	dma->tag = LB_TAB_DMA;
+	dma->size = sizeof(*dma);
+	dma->range_start = CONFIG_DRAM_DMA_START;
+	dma->range_size = CONFIG_DRAM_DMA_SIZE;
+}

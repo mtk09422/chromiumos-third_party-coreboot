@@ -45,6 +45,9 @@ endif
 ifeq ($(CONFIG_ARM_ROMSTAGE_ARMV7),y)
 
 romstage-y += cache.c
+romstage-y += exception.c
+romstage-y += exception_asm.S
+romstage-y += mmu.c
 
 romstage-c-ccopts += $(armv7_flags)
 romstage-S-ccopts += $(armv7_flags)

@@ -40,6 +40,14 @@ config DRAM_SIZE_MB
 	int
 	default 2048
 
+config DRAM_DMA_START
+	hex
+	default 0x83000000
+
+config DRAM_DMA_SIZE
+	hex
+	default 0x00100000
+
 choice
 	prompt "BCT boot media"
 	default BCT_CFG_SPI
