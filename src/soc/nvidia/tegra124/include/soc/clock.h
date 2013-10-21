@@ -149,10 +149,46 @@ enum {
 #define CLOCK_PLL_STABLE_DELAY_US 300
 
 #define IO_STABILIZATION_DELAY (2)
-/* Calculate clock fractional divider value from ref and target frequencies */
+/* Calculate clock fractional divider value from ref and target frequencies.
+ * This is for a U7.1 format. This is not well written up in the book and
+ * there have been some questions about this macro, so here we go.
+ * U7.1 format is defined as (ddddddd+1) + (h*.5)
+ * The lowest order bit is actually a fractional bit.
+ * Hence, the divider can be thought of as 9 bits.
+ * So:
+ * divider = ((ref/freq) << 1 - 1) (upper 7 bits) |
+ *	(ref/freq & 1) (low order half-bit)
+ * however we can't do fractional arithmetic ... these are integers!
+ * So we normalize by shifting the result left 1 bit, and extracting
+ * ddddddd and h directly to the returned u8.
+ * divider = 2*(ref/freq);
+ * We want to
+ * preserve 7 bits of divisor and one bit of fraction, in 8 bits, as well as
+ * subtract one from ddddddd. Since we computed ref*2, the dddddd is now nicely
+ * situated in the upper 7 bits, and the h is sitting there in the low order
+ * bit. To subtract 1 from ddddddd, just subtract 2 from the 8-bit number
+ * and voila, upper 7 bits are (ref/freq-1), and lowest bit is h. Since you
+ * will assign this to a u8, it gets nicely truncated for you.
+ */
 #define CLK_DIVIDER(REF, FREQ)	((((REF) * 2) / FREQ) - 2)
 
-/* Calculate clock frequency value from reference and clock divider value */
+/* Calculate clock frequency value from reference and clock divider value
+ * The discussion in the book is pretty lacking.
+ * The idea is that we need to divide a ref clock by a divisor
+ * in U7.1 format, where 7 upper bits are the integer
+ * and lowest order bit is a fraction.
+ * from the book, U7.1 is (ddddddd+1) + (h*.5)
+ * To normalize to an actual number, we might do this:
+ * ((d>>7+1)&0x7f) + (d&1 >> 1)
+ * but as you might guess, the low order bit would be lost.
+ * Since we can't express the fractional bit, we need to multiply it all by 2.
+ * ((d + 2)&0xfe) + (d & 1)
+ * Since we're just adding +2, the lowest order bit is preserved. Hence
+ * (d+2) is the same as ((d + 2)&0xfe) + (d & 1)
+ *
+ * Since you multiply denominator * 2 (by NOT shifting it),
+ * you multiply numerator * 2 to cancel it out.
+ */
 #define CLK_FREQUENCY(REF, REG)	(((REF) * 2) / (REG + 2))
 
 /* Warning: Some devices just use different bits for the same sources for no
