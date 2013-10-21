@@ -46,13 +46,13 @@ struct clk_pll_table tegra_pll_x_table[16] = {
 	 *  m     7:0   8
 	 *  p    23:20  4
 	 */
-	[OSC_FREQ_OSC13]{216,13,1,8},
-	[OSC_FREQ_OSC19P2]{180,16,1,4},
-	[OSC_FREQ_OSC12]{216,12,1,8},
-	[OSC_FREQ_OSC26]{216,26,1,8},
-	[OSC_FREQ_OSC16P8]{180,14,1,4},
-	[OSC_FREQ_OSC38P4]{180,16,1,4},
-	[OSC_FREQ_OSC48]{216,12,1,8},
+	[OSC_FREQ_OSC13]{146,1,0,8},
+	[OSC_FREQ_OSC19P2]{98,1,0,4},
+	[OSC_FREQ_OSC12]{157,1,0,8},
+	[OSC_FREQ_OSC26]{73,1,0,8},
+	[OSC_FREQ_OSC16P8]{113,1,0,4},
+	[OSC_FREQ_OSC38P4]{98,2,0,4},
+	[OSC_FREQ_OSC48]{157,4,0,8},
 };
 
 void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor)
