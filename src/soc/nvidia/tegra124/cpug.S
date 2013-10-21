@@ -41,6 +41,15 @@ cpug_entry_point:
 	.global cpug_setup
 	.type cpug_setup, function
 	cpug_setup:
+
+	/*
+	 * Set the cpu to System mode with IRQ and FIQ disabled. Prefetch/Data
+	 * aborts may happen early and crash before the abort handlers are
+	 * installed, but at least the problem will show up near the code that
+	 * causes it.
+	 */
+	msr	cpsr_cxf, #0xdf
+
 	ldr	sp, cpug_stack_pointer
 	eor	lr, lr
 	ldr	r0, cpug_entry_point
