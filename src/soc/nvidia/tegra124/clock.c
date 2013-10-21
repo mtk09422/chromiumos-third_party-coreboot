@@ -143,6 +143,8 @@ struct {
 	},
 };
 
+// TODO(hungte) Some clock source are assigned in 3 or 4 bits
+// (OUT_CLK_SOURCE*_MASK/SHIFT), not always OUT_CLK_SOURCE_MASK/SHIFT.
 void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor)
 {
         u32 value;
@@ -361,6 +363,19 @@ void clock_config(void)
 
 	/* UARTA gets PLLP, deactivate CLK_UART_DIV_OVERRIDE */
 	writel(0 << CLK_SOURCE_SHIFT, &clk_rst->clk_src_uarta);
+
+	/* MMC3 and MMC4: Set base clock frequency for SD Clock to Tegra MMC's
+	 * maximum speed (48MHz) so we can change SDCLK by second stage divisor
+	 * in payloads, without touching base clock.
+	 *
+	 * Note, parent clock source for MMC3/4 is PLLP_OUT0. MMC clock source
+	 * should be specified in 3 bits, but since PLLP_OUT0 is #0, it's OK to
+	 * simply call clock_ll_set_source_divisor (2 bits).
+	 */
+	clock_ll_set_source_divisor(&clk_rst->clk_src_sdmmc3, 0,
+				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 48000));
+	clock_ll_set_source_divisor(&clk_rst->clk_src_sdmmc4, 0,
+				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 48000));
 
 	/* Give clock time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
