@@ -32,7 +32,6 @@ struct clk_pll_table {
 	u16	n;
 	u16	m;
 	u8	p;
-	u8	cpcon;
 };
 
 /*
@@ -46,13 +45,13 @@ struct clk_pll_table tegra_pll_x_table[16] = {
 	 *  m     7:0   8
 	 *  p    23:20  4
 	 */
-	[OSC_FREQ_OSC13]{146,1,0,8},
-	[OSC_FREQ_OSC19P2]{98,1,0,4},
-	[OSC_FREQ_OSC12]{157,1,0,8},
-	[OSC_FREQ_OSC26]{73,1,0,8},
-	[OSC_FREQ_OSC16P8]{113,1,0,4},
-	[OSC_FREQ_OSC38P4]{98,2,0,4},
-	[OSC_FREQ_OSC48]{157,4,0,8},
+	[OSC_FREQ_OSC13]{146,1,0},
+	[OSC_FREQ_OSC19P2]{98,1,0},
+	[OSC_FREQ_OSC12]{157,1,0},
+	[OSC_FREQ_OSC26]{73,1,0},
+	[OSC_FREQ_OSC16P8]{113,1,0},
+	[OSC_FREQ_OSC38P4]{98,2,0},
+	[OSC_FREQ_OSC48]{157,4,0},
 };
 
 void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor)
@@ -97,15 +96,13 @@ static void adjust_pllp_out_freqs(void)
 	writel(reg, &clk_rst->pllp_outb);
 }
 
-static int pllx_set_rate(u32 divn, u32 divm, u32 divp, u32 cpcon)
+static int pllx_set_rate(u32 divn, u32 divm, u32 divp)
 {
 	u32 reg;
 
 	/* If PLLX is already enabled, just return */
-	if (readl(&clk_rst->pllx_base) & PLL_ENABLE_MASK) {
+	if (readl(&clk_rst->pllx_base) & PLL_ENABLE_MASK)
 		return 0;
-	}
-
 
 	/* Disable IDDQ */
 	reg = readl(&clk_rst->pllx_misc3);
@@ -117,14 +114,6 @@ static int pllx_set_rate(u32 divn, u32 divm, u32 divp, u32 cpcon)
 	reg = PLL_BYPASS_MASK | (divm << PLL_DIVM_SHIFT);
 	reg |= ((divn << PLL_DIVN_SHIFT) | (divp << PLL_DIVP_SHIFT));
 	writel(reg, &clk_rst->pllx_base);
-
-	/* Set cpcon to PLLX_MISC */
-	reg = (cpcon << PLL_CPCON_SHIFT);
-
-	/* Set dccon to PLLX_MISC if freq > 600MHz - still needed for T124? */
-	if (divn > 600)
-		reg |= (1 << PLL_DCCON_SHIFT);
-	writel(reg, &clk_rst->pllx_misc);
 
 	/* Disable BYPASS */
 	reg = readl(&clk_rst->pllx_base);
@@ -152,7 +141,7 @@ static void init_pllx(void)
 	if (sel->n == 0)
 		return;
 
-	pllx_set_rate(sel->n, sel->m, sel->p, sel->cpcon);
+	pllx_set_rate(sel->n, sel->m, sel->p);
 
 	adjust_pllp_out_freqs();
 }
