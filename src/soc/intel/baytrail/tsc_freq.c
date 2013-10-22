@@ -44,6 +44,8 @@ unsigned long tsc_freq_mhz(void)
 	return (bclk_khz * ((platform_info.lo >> 8) & 0xff)) / 1000;
 }
 
+#if !defined(__SMM__)
+
 void set_max_freq(void)
 {
 	msr_t perf_ctl;
@@ -66,3 +68,5 @@ void set_max_freq(void)
 
 	wrmsr(MSR_IA32_PERF_CTL, perf_ctl);
 }
+
+#endif /* __SMM__ */

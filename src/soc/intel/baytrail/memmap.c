@@ -20,9 +20,15 @@
 #include <arch/io.h>
 #include <cbmem.h>
 #include <baytrail/iosf.h>
+#include <baytrail/smm.h>
 
+
+void *smm_region_start(void)
+{
+	return (void *)(iosf_bunit_read(BUNIT_SMRRL) << 20);
+}
 
 void *cbmem_top(void)
 {
-	return (void *)(iosf_bunit_read(BUNIT_SMRRL) << 20);
+	return smm_region_start();
 }
