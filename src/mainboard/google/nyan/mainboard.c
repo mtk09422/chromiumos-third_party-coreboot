@@ -52,6 +52,59 @@ static void setup_pinmux(void)
 	pinmux_set_config(PINMUX_ULPI_STP_INDEX, PINMUX_ULPI_STP_FUNC_SPI1 |
 						 PINMUX_PULL_NONE |
 						 PINMUX_INPUT_ENABLE);
+
+	// TODO(hungte) Revice pinmux setup, make nice little SoC functions for
+	// every single logical thing instead of dumping a wall of code below.
+	uint32_t pin_up = PINMUX_PULL_UP | PINMUX_INPUT_ENABLE,
+		 pin_up3 = (PINMUX_PULL_UP | PINMUX_INPUT_ENABLE |
+			    PINMUX_TRISTATE),
+		 pin_down = PINMUX_PULL_DOWN | PINMUX_INPUT_ENABLE,
+		 pin_none = PINMUX_PULL_NONE | PINMUX_INPUT_ENABLE;
+
+	// MMC3
+	pinmux_set_config(PINMUX_SDMMC3_CLK_INDEX,
+			  PINMUX_SDMMC3_CLK_FUNC_SDMMC3 | pin_none);
+	pinmux_set_config(PINMUX_SDMMC3_CMD_INDEX,
+			  PINMUX_SDMMC3_CMD_FUNC_SDMMC3 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC3_DAT0_INDEX,
+			  PINMUX_SDMMC3_DAT0_FUNC_SDMMC3 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC3_DAT1_INDEX,
+			  PINMUX_SDMMC3_DAT1_FUNC_SDMMC3 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC3_DAT2_INDEX,
+			  PINMUX_SDMMC3_DAT2_FUNC_SDMMC3 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC3_DAT3_INDEX,
+			  PINMUX_SDMMC3_DAT3_FUNC_SDMMC3 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC3_CLK_LB_IN_INDEX,
+			  PINMUX_SDMMC3_CLK_LB_IN_FUNC_SDMMC3 | pin_up3);
+	pinmux_set_config(PINMUX_SDMMC3_CLK_LB_OUT_INDEX,
+			  PINMUX_SDMMC3_CLK_LB_OUT_FUNC_SDMMC3 | pin_down);
+
+	// MMC3 Card Detect pin.
+	gpio_input_pullup(GPIO(V2));
+	// Enable MMC power.
+	gpio_output(GPIO(R0), 1);
+
+	// MMC4
+	pinmux_set_config(PINMUX_SDMMC4_CLK_INDEX,
+			  PINMUX_SDMMC4_CLK_FUNC_SDMMC4 | pin_none);
+	pinmux_set_config(PINMUX_SDMMC4_CMD_INDEX,
+			  PINMUX_SDMMC4_CMD_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT0_INDEX,
+			  PINMUX_SDMMC4_DAT0_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT1_INDEX,
+			  PINMUX_SDMMC4_DAT1_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT2_INDEX,
+			  PINMUX_SDMMC4_DAT2_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT3_INDEX,
+			  PINMUX_SDMMC4_DAT3_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT4_INDEX,
+			  PINMUX_SDMMC4_DAT4_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT5_INDEX,
+			  PINMUX_SDMMC4_DAT5_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT6_INDEX,
+			  PINMUX_SDMMC4_DAT6_FUNC_SDMMC4 | pin_up);
+	pinmux_set_config(PINMUX_SDMMC4_DAT7_INDEX,
+			  PINMUX_SDMMC4_DAT7_FUNC_SDMMC4 | pin_up);
 }
 
 static void mainboard_init(device_t dev)
