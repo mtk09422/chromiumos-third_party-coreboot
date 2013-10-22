@@ -55,6 +55,17 @@ void dcache_invalidate_all(void)
 {
 }
 
+unsigned int dcache_line_bytes(void)
+{
+	/*
+	 * TODO: Implement this correctly. For now we just return a
+	 * reasonable value. It was added during Nyan development and
+	 * may be used in bootblock code. It matters only if dcache is
+	 * turned on.
+	 */
+	return 64;
+}
+
 void dcache_clean_by_mva(void const *addr, size_t len)
 {
 }
