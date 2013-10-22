@@ -806,9 +806,11 @@ struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 int spi_claim_bus(struct spi_slave *slave)
 {
 	tegra_spi_init(slave->bus);
+	spi_cs_activate(slave);
 	return 0;
 }
 
 void spi_release_bus(struct spi_slave *slave)
 {
+	spi_cs_deactivate(slave);
 }
