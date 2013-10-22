@@ -43,6 +43,8 @@ static void set_clock_sources(void)
 	clock_configure_source(i2c4, CLK_M, 1333);
 	clock_configure_source(i2c5, CLK_M, 1333);
 
+	clock_configure_source(sbc1, PLLP, 5000);
+
 	/* UARTA gets PLLP, deactivate CLK_UART_DIV_OVERRIDE */
 	writel(PLLP << CLK_SOURCE_SHIFT, &clk_rst->clk_src_uarta);
 
