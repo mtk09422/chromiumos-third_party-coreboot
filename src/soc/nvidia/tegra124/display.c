@@ -30,9 +30,9 @@
 #include <cpu/cpu.h>
 #include <boot/tables.h>
 #include <cbmem.h>
+#include <soc/clock.h>
 #include <soc/nvidia/tegra/dc.h>
 #include "clk_rst.h"
-#include "clock.h"
 #include "chip.h"
 #include <soc/display.h>
 
@@ -255,12 +255,12 @@ void display_startup(device_t dev)
 	setbits_le32(&clk_rst->rst_dev_l, CLK_L_DISP1 | CLK_L_HOST1X);
 
 	clock_ll_set_source_divisor(&clk_rst->clk_src_host1x, 4,
-				    CLK_DIVIDER(NVBL_PLLP_KHZ, 144000));
+				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 144000));
 	/* u-boot uses PLLC for DISP1.
 	 * But the u-boot code does not work and we don't set up PLLC anyway.
 	 * PLLP seems quite good enough, so run with that for now.  */
 	clock_ll_set_source_divisor(&clk_rst->clk_src_disp1, 0 /* 4 */,
-				    CLK_DIVIDER(NVBL_PLLP_KHZ, 600000));
+				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 600000));
 
 	udelay(2);
 

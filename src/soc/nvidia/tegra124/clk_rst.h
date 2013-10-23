@@ -326,31 +326,32 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 #define OSC_FREQ_OSC38P4		5	/* 38.4MHz */
 #define OSC_FREQ_OSC48			9	/* 48.0MHz */
 
-/* CLK_RST_CONTROLLER_PLLx_BASE_0 */
-#define PLL_BYPASS_SHIFT		31
-#define PLL_BYPASS_MASK			(1U << PLL_BYPASS_SHIFT)
+/* CLK_RST_CONTROLLER_PLL*_BASE_0 */
+#define PLL_BASE_BYPASS			(1U << 31)
+#define PLL_BASE_ENABLE			(1U << 30)
+#define PLL_BASE_REF_DIS		(1U << 29)
+#define PLL_BASE_OVRRIDE		(1U << 28)
+#define PLL_BASE_LOCK			(1U << 27)
 
-#define PLL_ENABLE_SHIFT		30
-#define PLL_ENABLE_MASK			(1U << PLL_ENABLE_SHIFT)
+#define PLL_BASE_DIVP_SHIFT		20
+#define PLL_BASE_DIVP_MASK		(7U << PLL_BASE_DIVP_SHIFT)
 
-#define PLL_BASE_OVRRIDE_MASK		(1U << 28)
-#define PLL_BASE_LOCK_MASK		(1U << 27)
+#define PLL_BASE_DIVN_SHIFT		8
+#define PLL_BASE_DIVN_MASK		(0x3ffU << PLL_BASE_DIVN_SHIFT)
 
-#define PLL_DIVP_SHIFT			20
-#define PLL_DIVP_MASK			(7U << PLL_DIVP_SHIFT)
-
-#define PLL_DIVN_SHIFT			8
-#define PLL_DIVN_MASK			(0x3ffU << PLL_DIVN_SHIFT)
-
-#define PLL_DIVM_SHIFT			0
-#define PLL_DIVM_MASK			(0x1f << PLL_DIVM_SHIFT)
+#define PLL_BASE_DIVM_SHIFT		0
+#define PLL_BASE_DIVM_MASK		(0x1f << PLL_BASE_DIVM_SHIFT)
 
 /* SPECIAL CASE: PLLM, PLLC and PLLX use different-sized fields here */
-#define PLLCMX_DIVP_MASK		(0xfU << PLL_DIVP_SHIFT)
-#define PLLCMX_DIVN_MASK		(0xffU << PLL_DIVN_SHIFT)
-#define PLLCMX_DIVM_MASK		(0xffU << PLL_DIVM_SHIFT)
+#define PLLCMX_BASE_DIVP_MASK		(0xfU << PLL_BASE_DIVP_SHIFT)
+#define PLLCMX_BASE_DIVN_MASK		(0xffU << PLL_BASE_DIVN_SHIFT)
+#define PLLCMX_BASE_DIVM_MASK		(0xffU << PLL_BASE_DIVM_SHIFT)
 
-/* CLK_RST_CONTROLLER_PLLx_OUTx_0 */
+/* Generic, indiscriminate divisor mask. May catch some innocent bystander bits
+ * on the side that we don't particularly care about. */
+#define PLL_BASE_DIV_MASK		(0xffffff)
+
+/* CLK_RST_CONTROLLER_PLL*_OUT*_0 */
 #define PLL_OUT_RSTN			(1 << 0)
 #define PLL_OUT_CLKEN			(1 << 1)
 #define PLL_OUT_OVRRIDE			(1 << 2)
@@ -365,21 +366,22 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 #define PLL_OUT2_RATIO_SHIFT		24
 #define PLL_OUT2_RATIO_MASK		(0xffU << PLL_OUT2_RATIO_SHIFT)
 
-/* CLK_RST_CONTROLLER_PLLx_MISC_0 */
-#define PLL_DCCON_SHIFT			20
-#define PLL_DCCON_MASK			(1U << PLL_DCCON_SHIFT)
+/* CLK_RST_CONTROLLER_PLL*_MISC_0 */
+#define PLL_MISC_DCCON			(1 << 20)
 
-#define PLL_LOCK_ENABLE_SHIFT		18
-#define PLL_LOCK_ENABLE_MASK		(1U << PLL_LOCK_ENABLE_SHIFT)
+#define PLL_MISC_CPCON_SHIFT		8
+#define PLL_MISC_CPCON_MASK		(0xfU << PLL_MISC_CPCON_SHIFT)
 
-#define PLL_CPCON_SHIFT			8
-#define PLL_CPCON_MASK			(15U << PLL_CPCON_SHIFT)
+#define PLL_MISC_LFCON_SHIFT		4
+#define PLL_MISC_LFCON_MASK		(0xfU << PLL_MISC_LFCON_SHIFT)
 
-#define PLL_LFCON_SHIFT			4
-#define PLL_LFCON_MASK			(15U << PLL_LFCON_SHIFT)
+/* This bit is different all over the place. Oh joy... */
+#define PLLC_MISC_LOCK_ENABLE		(1 << 24)
+#define PLLUD_MISC_LOCK_ENABLE		(1 << 22)
+#define PLLPAXS_MISC_LOCK_ENABLE	(1 << 18)
+#define PLLE_MISC_LOCK_ENABLE		(1 << 9)
 
-#define PLLU_VCO_FREQ_SHIFT		20
-#define PLLU_VCO_FREQ_MASK		(1U << PLLU_VCO_FREQ_SHIFT)
+#define PLLU_MISC_VCO_FREQ		(1 << 20)
 
 #define PLLP_OUT1_OVR			(1 << 2)
 #define PLLP_OUT2_OVR			(1 << 18)
@@ -405,19 +407,6 @@ enum {
 	IN_408_OUT_48_DIVISOR = 15,
 	IN_408_OUT_9_6_DIVISOR = 83,
 };
-
-/* CRC_PLLP_MISC_0 0xac */
-#define PLLP_MISC_PLLP_CPCON_8		(8 << 8)
-#define PLLP_MISC_PLLP_LOCK_ENABLE	(1 << 18)
-
-/* CRC_PLLU_BASE_0 0xc0 */
-#define PLLU_BYPASS_ENABLE		(1 << 31)
-#define PLLU_ENABLE_ENABLE		(1 << 30)
-#define PLLU_REF_DIS_REF_DISABLE	(1 << 29)
-#define PLLU_OVERRIDE_ENABLE		(1 << 24)
-
-/* CRC_PLLU_MISC_0 0xcc */
-#define PLLU_LOCK_ENABLE_ENABLE		(1 << 22)
 
 /* PLLX_BASE_0 0xe0 */
 #define PLLX_BASE_PLLX_ENABLE		(1 << 30)

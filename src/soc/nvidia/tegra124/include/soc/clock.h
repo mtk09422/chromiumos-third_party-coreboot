@@ -156,9 +156,11 @@ enum {
 #define CLK_FREQUENCY(REF, REG)	(((REF) * 2) / (REG + 2))
 
 /* soc-specific */
-#define NVBL_PLLP_KHZ   (408000)
-#define NVBL_PLLC_KHZ   (600000)
-#define NVBL_PLLD_KHZ   (925000)
+#define TEGRA_PLLX_KHZ   (1900000)
+#define TEGRA_PLLP_KHZ   (408000)
+#define TEGRA_PLLC_KHZ   (600000)
+#define TEGRA_PLLD_KHZ   (925000)
+#define TEGRA_PLLU_KHZ   (960000)
 
 int clock_get_osc_khz(void);
 void clock_early_uart(void);

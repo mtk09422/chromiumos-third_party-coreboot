@@ -20,8 +20,8 @@
 #include <bootblock_common.h>
 #include <console/console.h>
 #include <device/i2c.h>
+#include <soc/clock.h>
 #include <soc/nvidia/tegra/i2c.h>
-#include <soc/nvidia/tegra124/clock.h>
 #include <soc/nvidia/tegra124/pinmux.h>
 #include <soc/nvidia/tegra124/spi.h>	/* FIXME: move back to soc code? */
 

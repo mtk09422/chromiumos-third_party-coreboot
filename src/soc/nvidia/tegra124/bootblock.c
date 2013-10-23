@@ -21,8 +21,8 @@
 #include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <soc/clock.h>
 
-#include "clock.h"
 #include "pinmux.h"
 #include "power.h"
 
