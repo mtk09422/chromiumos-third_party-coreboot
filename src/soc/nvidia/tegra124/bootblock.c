@@ -30,9 +30,7 @@ void main(void)
 {
 	void *entry;
 
-	clock_init();
-
-	clock_uart_config();
+	clock_early_uart();
 
 	// Serial out, tristate off.
 	pinmux_set_config(PINMUX_KB_ROW9_INDEX, PINMUX_KB_ROW9_FUNC_UA3);
@@ -43,6 +41,8 @@ void main(void)
 
 	if (CONFIG_BOOTBLOCK_CONSOLE)
 		console_init();
+
+	clock_init();
 
 	bootblock_mainboard_init();
 

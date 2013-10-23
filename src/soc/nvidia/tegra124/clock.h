@@ -160,7 +160,8 @@ enum {
 #define NVBL_PLLC_KHZ   (600000)
 #define NVBL_PLLD_KHZ   (925000)
 
-void clock_uart_config(void);
+int clock_get_osc_khz(void);
+void clock_early_uart(void);
 void clock_cpu0_config_and_reset(void * entry);
 void clock_config(void);
 void clock_init(void);

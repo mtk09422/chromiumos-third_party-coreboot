@@ -60,11 +60,11 @@ void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor)
 
         value = readl(reg);
 
-        value &= ~OUT_CLK_SOURCE_MASK;
-        value |= source << OUT_CLK_SOURCE_SHIFT;
+        value &= ~CLK_SOURCE_MASK;
+        value |= source << CLK_SOURCE_SHIFT;
 
-        value &= ~OUT_CLK_DIVISOR_MASK;
-        value |= divisor << OUT_CLK_DIVISOR_SHIFT;
+        value &= ~CLK_DIVISOR_MASK;
+        value |= divisor << CLK_DIVISOR_SHIFT;
 
         writel(value, reg);
 }
@@ -79,6 +79,28 @@ static int clock_get_osc_freq(void)
         reg = readl(&clk_rst->osc_ctrl);
         reg >>= OSC_CTRL_OSC_FREQ_SHIFT;
 	return reg;
+}
+
+int clock_get_osc_khz(void)
+{
+	/* Implemented better in the next patch, sorry, hard to split this up */
+	switch (clock_get_osc_freq()) {
+	case OSC_FREQ_OSC13:
+		return 13000;
+	case OSC_FREQ_OSC19P2:
+		return 19200;
+	default:
+	case OSC_FREQ_OSC12:
+		return 12000;
+	case OSC_FREQ_OSC26:
+		return 26000;
+	case OSC_FREQ_OSC16P8:
+		return 16800;
+	case OSC_FREQ_OSC38P4:
+		return 38400;
+	case OSC_FREQ_OSC48:
+		return 48000;
+	}
 }
 
 static void adjust_pllp_out_freqs(void)
@@ -146,14 +168,17 @@ static void init_pllx(void)
 	adjust_pllp_out_freqs();
 }
 
-void clock_uart_config(void)
+/* Initialize the UART and put it on CLK_M so we can use it during clock_init().
+ * Will later move it to PLLP in clock_config(). The divisor must be very small
+ * to accomodate 12KHz OSCs, so we override the 16.0 UART divider with the 15.1
+ * CLK_SOURCE divider to get more precision. (This might still not be enough for
+ * some OSCs... if you use 13KHz, be prepared to have a bad time.) The 1800 has
+ * been determined through trial and error (must lead to div 13 at 24MHz). */
+void clock_early_uart(void)
 {
-	/* Enable clocks to required peripherals. TBD - minimize this list */
-	/* The UART is super special so Just Do It right here. */
-
-	setbits_le32(&clk_rst->rst_dev_l, CLK_L_UARTA);
+	clock_ll_set_source_divisor(&clk_rst->clk_src_uarta, 3,
+		CLK_UART_DIV_OVERRIDE | CLK_DIVIDER(clock_get_osc_khz(), 1800));
 	setbits_le32(&clk_rst->clk_out_enb_l, CLK_L_UARTA);
-	clock_ll_set_source_divisor(&clk_rst->clk_src_uarta, 0, 2);
 	udelay(2);
 	clrbits_le32(&clk_rst->rst_dev_l, CLK_L_UARTA);
 }
@@ -284,6 +309,9 @@ void clock_config(void)
 	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c3, 3, 16);
 	/* I2C5 (PMU) gets CLK_M and a divisor of 17 */
 	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c5, 3, 16);
+
+	/* UARTA gets PLLP, deactivate CLK_UART_DIV_OVERRIDE */
+	writel(0 << CLK_SOURCE_SHIFT, &clk_rst->clk_src_uarta);
 
 	/* Give clock time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);

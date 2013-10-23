@@ -443,17 +443,19 @@ enum {
  * get_periph_clock_source()) but it does not seem worth it since the code
  * already checks the ranges of values it is writing, in clk_get_divider().
  */
-#define OUT_CLK_DIVISOR_SHIFT		0
-#define OUT_CLK_DIVISOR_MASK		(0xffff << OUT_CLK_DIVISOR_SHIFT)
+#define CLK_DIVISOR_SHIFT		0
+#define CLK_DIVISOR_MASK		(0xffff << CLK_DIVISOR_SHIFT)
 
-#define OUT_CLK_SOURCE_SHIFT		30
-#define OUT_CLK_SOURCE_MASK		(3U << OUT_CLK_SOURCE_SHIFT)
+#define CLK_SOURCE_SHIFT		30
+#define CLK_SOURCE_MASK			(3U << CLK_SOURCE_SHIFT)
 
-#define OUT_CLK_SOURCE3_SHIFT		29
-#define OUT_CLK_SOURCE3_MASK		(7U << OUT_CLK_SOURCE3_SHIFT)
+#define CLK_SOURCE3_SHIFT		29
+#define CLK_SOURCE3_MASK		(7U << CLK_SOURCE3_SHIFT)
 
-#define OUT_CLK_SOURCE4_SHIFT		28
-#define OUT_CLK_SOURCE4_MASK		(15U << OUT_CLK_SOURCE4_SHIFT)
+#define CLK_SOURCE4_SHIFT		28
+#define CLK_SOURCE4_MASK		(15U << CLK_SOURCE4_SHIFT)
+
+#define CLK_UART_DIV_OVERRIDE		(1 << 24)
 
 /* CLK_RST_CONTROLLER_SCLK_BURST_POLICY */
 #define SCLK_SYS_STATE_SHIFT		28U
