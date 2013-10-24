@@ -222,7 +222,36 @@ void display_startup(device_t dev)
 	/* should probably just make it all MiB ... in future */
 	u32 framebuffer_size_mb = config->framebuffer_size / MiB;
 	u32 framebuffer_base_mb= config->framebuffer_base / MiB;
+	/* light it all up */
+	/* This one may have been done in romstage but that's ok for now. */
+	if (config->panel_vdd_gpio){
+		gpio_output(config->panel_vdd_gpio, 1);
+		printk(BIOS_SPEW,"%s: panel_vdd setting gpio %08x to %d\n",
+			__func__, config->panel_vdd_gpio, 1);
+	}
+	delay(1);
+	if (config->backlight_vdd_gpio){
+		gpio_output(config->backlight_vdd_gpio, 1);
+		printk(BIOS_SPEW,"%s: backlight vdd setting gpio %08x to %d\n",
+			__func__, config->backlight_vdd_gpio, 1);
+	}
+	delay(1);
+	if (config->lvds_shutdown_gpio){
+		gpio_output(config->lvds_shutdown_gpio, 0);
+		printk(BIOS_SPEW,"%s: lvds shutdown setting gpio %08x to %d\n",
+			__func__, config->lvds_shutdown_gpio, 0);
+	}
+	if (config->backlight_en_gpio){
+		gpio_output(config->backlight_en_gpio, 1);
+		printk(BIOS_SPEW,"%s: backlight enable setting gpio %08x to %d\n",
+			__func__, config->backlight_en_gpio, 1);
+	}
 
+	if (config->pwm){
+		gpio_output(config->pwm, 1);
+		printk(BIOS_SPEW,"%s: pwm setting gpio %08x to %d\n",
+			__func__, config->pwm, 1);
+	}
 	printk(BIOS_SPEW,
 		"%s: xres %d yres %d framebuffer_bits_per_pixel %d\n",
 		__func__,
@@ -299,6 +328,5 @@ void display_startup(device_t dev)
 
 	if (!setup_window(&window, config))
 		update_window(dc, &window, config);
-
 }
 
