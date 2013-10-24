@@ -17,9 +17,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/io.h>
 #include <device/device.h>
 #include <boot/coreboot_tables.h>
+#include <soc/addressmap.h>
 #include <soc/nvidia/tegra124/gpio.h>
+#include <soc/nvidia/tegra124/pmc.h>
 
 static void setup_pinmux(void)
 {
@@ -107,9 +110,22 @@ static void setup_pinmux(void)
 			  PINMUX_SDMMC4_DAT7_FUNC_SDMMC4 | pin_up);
 }
 
+static void setup_kernel_info(void)
+{
+	// Setup required information for Linux kernel.
+
+	// pmc.odmdata: [18:19]: console type, [15:17]: UART id.
+	// TODO(hungte) This should be done by filling BCT values, or derived
+	// from CONFIG_CONSOLE_SERIAL_UART[A-E]. Right now we simply copy the
+	// value defined in BCT.
+	struct tegra_pmc_regs *pmc = (void*)TEGRA_PMC_BASE;
+	writel(0x80080000, &pmc->odmdata);
+}
+
 static void mainboard_init(device_t dev)
 {
 	setup_pinmux();
+	setup_kernel_info();
 }
 
 static void mainboard_enable(device_t dev)
