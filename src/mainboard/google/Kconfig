@@ -40,6 +40,8 @@ config BOARD_GOOGLE_LINK
 	bool "Link"
 config BOARD_GOOGLE_NYAN
 	bool "Nyan"
+config BOARD_GOOGLE_PANTHER
+	bool "Panther"
 config BOARD_GOOGLE_PARROT
 	bool "Parrot"
 config BOARD_GOOGLE_PEPPY
@@ -66,6 +68,7 @@ source "src/mainboard/google/falco/Kconfig"
 source "src/mainboard/google/kirby/Kconfig"
 source "src/mainboard/google/link/Kconfig"
 source "src/mainboard/google/nyan/Kconfig"
+source "src/mainboard/google/panther/Kconfig"
 source "src/mainboard/google/parrot/Kconfig"
 source "src/mainboard/google/peppy/Kconfig"
 source "src/mainboard/google/pit/Kconfig"
