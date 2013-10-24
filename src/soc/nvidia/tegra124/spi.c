@@ -461,56 +461,16 @@ done:
 	return out_bytes;
 }
 
-static void tegra_spi_dma_setup(struct tegra_spi_channel *spi,
-				struct apb_dma_channel *dma)
+static void tegra2_spi_dma_setup(struct apb_dma_channel *dma)
 {
-	unsigned int req_sel;
-
 	/* APB bus width = 8-bits, address wrap for each word */
-	clrbits_le32(&dma->regs->apb_seq,
-			APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_MASK <<
-			APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_SHIFT);
-
+	clrbits_le32(&dma->regs->apb_seq, 0x7 << 28);
 	/* AHB 1 word burst, bus width = 32 bits (fixed in hardware),
 	 * no address wrapping */
 	clrsetbits_le32(&dma->regs->ahb_seq,
-			(APBDMACHAN_AHB_SEQ_AHB_BURST_MASK <<
-			 APBDMACHAN_AHB_SEQ_AHB_BURST_SHIFT) |
-			(APBDMACHAN_AHB_SEQ_WRAP_MASK <<
-			APBDMACHAN_AHB_SEQ_WRAP_SHIFT),
-			0x4 << APBDMACHAN_AHB_SEQ_AHB_BURST_SHIFT);
-
-	switch(spi->slave.bus) {
-	case 1:
-		req_sel = APBDMA_SLAVE_SL2B1;
-		break;
-	case 2:
-		req_sel = APBDMA_SLAVE_SL2B2;
-		break;
-	case 3:
-		req_sel = APBDMA_SLAVE_SL2B3;
-		break;
-	case 4:
-		req_sel = APBDMA_SLAVE_SL2B4;
-		break;
-	case 5:
-		req_sel = APBDMA_SLAVE_SL2B5;
-		break;
-	case 6:
-		req_sel = APBDMA_SLAVE_SL2B6;
-		break;
-	default:
-		die("Cannot find matching REQ_SEL?");
-		break;
-	}
-
-	/* Set ONCE mode to transfer one "block" at a time (64KB),
-	 * enable flow control for this spi channel and set REQ_SEL */
-	clrbits_le32(&dma->regs->csr,
-		APBDMACHAN_CSR_REQ_SEL_MASK << APBDMACHAN_CSR_REQ_SEL_SHIFT);
-	setbits_le32(&dma->regs->csr, APBDMACHAN_CSR_ONCE |
-				APBDMACHAN_CSR_FLOW |
-				(req_sel << APBDMACHAN_CSR_REQ_SEL_SHIFT));
+			(0x7 << 24) | (0x7 << 16), 0x4 << 24);
+	/* Set ONCE mode to transfer one "blocK" at a time (64KB). */
+	setbits_le32(&dma->regs->csr, 1 << 27);
 }
 
 /*
@@ -540,9 +500,8 @@ static int tegra_spi_dma_receive(struct tegra_spi_channel *spi,
 		return -1;
 	}
 
-	printk(BIOS_SPEW, "%s: Receiving %d bytes @ 0x%p\n",
-			__func__, in_bytes, din);
-	tegra_spi_dma_setup(spi, dma);
+	printk(BIOS_SPEW, "%s: Receiving %d bytes\n", __func__, in_bytes);
+	tegra2_spi_dma_setup(dma);
 
 	/* set AHB & APB address pointers */
 	write32((u32)din, &dma->regs->ahb_ptr);
@@ -601,7 +560,7 @@ static int tegra_spi_dma_send(struct tegra_spi_channel *spi,
 	}
 
 	printk(BIOS_SPEW, "%s: Sending %d bytes\n", __func__, out_bytes);
-	tegra_spi_dma_setup(spi, dma);
+	tegra2_spi_dma_setup(dma);
 
 	/* set AHB & APB address pointers */
 	write32((u32)dout, &dma->regs->ahb_ptr);
