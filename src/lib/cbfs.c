@@ -130,7 +130,7 @@ static void *load_stage_from_cbfs(struct cbfs_media *media, const char *name,
 {
 	struct rmod_stage_load rmod_ram = {
 		.cbmem_id = CBMEM_ID_RAMSTAGE,
-		.name = CONFIG_CBFS_PREFIX "/vboot",
+		.name = name,
 	};
 
 	if (rmodule_stage_load_from_cbfs(&rmod_ram)) {
