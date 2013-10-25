@@ -23,6 +23,13 @@
 #include "flow.h"
 #include "pmc.h"
 
+/* Warning: Some devices just use different bits for the same sources for no
+ * apparent reason. *Always* double-check the TRM before trusting this macro. */
+#define clock_configure_source(device, src, freq) \
+	clrsetbits_le32(&clk_rst->clk_src_##device, \
+		CLK_SOURCE_MASK | CLK_DIVISOR_MASK, \
+		src << CLK_SOURCE_SHIFT | CLK_DIVIDER(TEGRA_##src##_KHZ, freq));
+
 static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 static struct flow_ctlr *flow = (void *)TEGRA_FLOW_BASE;
 static struct tegra_pmc_regs *pmc = (void*)TEGRA_PMC_BASE;
@@ -143,23 +150,6 @@ struct {
 	},
 };
 
-// TODO(hungte) Some clock source are assigned in 3 or 4 bits
-// (OUT_CLK_SOURCE*_MASK/SHIFT), not always OUT_CLK_SOURCE_MASK/SHIFT.
-void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor)
-{
-        u32 value;
-
-        value = readl(reg);
-
-        value &= ~CLK_SOURCE_MASK;
-        value |= source << CLK_SOURCE_SHIFT;
-
-        value &= ~CLK_DIVISOR_MASK;
-        value |= divisor << CLK_DIVISOR_SHIFT;
-
-        writel(value, reg);
-}
-
 /* Get the oscillator frequency, from the corresponding hardware
  * configuration field. This is actually a per-soc thing. Avoid the
  * temptation to make it common.
@@ -214,8 +204,8 @@ static void init_pll(u32 *base, u32 *misc, const union pll_fields pll)
  * been determined through trial and error (must lead to div 13 at 24MHz). */
 void clock_early_uart(void)
 {
-	clock_ll_set_source_divisor(&clk_rst->clk_src_uarta, 3,
-		CLK_UART_DIV_OVERRIDE | CLK_DIVIDER(clock_get_osc_khz(), 1800));
+	write32(CLK_M << CLK_SOURCE_SHIFT | CLK_UART_DIV_OVERRIDE |
+		CLK_DIVIDER(TEGRA_CLK_M_KHZ, 1800), &clk_rst->clk_src_uarta);
 	setbits_le32(&clk_rst->clk_out_enb_l, CLK_L_UARTA);
 	udelay(2);
 	clrbits_le32(&clk_rst->rst_dev_l, CLK_L_UARTA);
@@ -332,7 +322,7 @@ void clock_config(void)
 	/* TODO: can (should?) we use the _SET and _CLR registers here? */
 	setbits_le32(&clk_rst->clk_out_enb_l,
 		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1 |
-		     CLK_L_SDMMC4);
+		     CLK_L_SDMMC4 | CLK_L_DISP1 | CLK_L_HOST1X);
 	setbits_le32(&clk_rst->clk_out_enb_h,
 		     CLK_H_EMC | CLK_H_I2C2 | CLK_H_I2C5 | CLK_H_SBC1 |
 		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
@@ -341,43 +331,37 @@ void clock_config(void)
 	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_MSELECT | CLK_V_I2C4);
 	setbits_le32(&clk_rst->clk_out_enb_w, CLK_W_DVFS);
 
-	/*
-	 * Set MSELECT clock source as PLLP (00)_REG, and ask for a clock
-	 * divider that would set the MSELECT clock at 102MHz for a
-	 * PLLP base of 408MHz.
-	 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_mselect, 0,
-		CLK_DIVIDER(TEGRA_PLLP_KHZ, 102000));
-
 	/* Give clock time to stabilize */
 	udelay(IO_STABILIZATION_DELAY);
 
-	/* I2C1 gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c1, 3, 16);
-	/* I2C2 gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c2, 3, 16);
-	/* I2C3 (cam) gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c3, 3, 16);
-	/* I2C4 (ddc) gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c4, 3, 16);
-	/* I2C5 (PMU) gets CLK_M and a divisor of 17 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c5, 3, 16);
+	clock_configure_source(mselect, PLLP, 102000);
 
-	/* UARTA gets PLLP, deactivate CLK_UART_DIV_OVERRIDE */
-	writel(0 << CLK_SOURCE_SHIFT, &clk_rst->clk_src_uarta);
+	/* TODO: is the 1.333MHz correct? This may have always been bogus... */
+	clock_configure_source(i2c1, CLK_M, 1333);
+	clock_configure_source(i2c2, CLK_M, 1333);
+	clock_configure_source(i2c3, CLK_M, 1333);
+	clock_configure_source(i2c4, CLK_M, 1333);
+	clock_configure_source(i2c5, CLK_M, 1333);
+
+	/* Move UARTA to PLLP and remove the CLK_UART_DIV_OVERRIDE */
+	write32(PLLP << CLK_SOURCE_SHIFT, &clk_rst->clk_src_uarta);
 
 	/* MMC3 and MMC4: Set base clock frequency for SD Clock to Tegra MMC's
 	 * maximum speed (48MHz) so we can change SDCLK by second stage divisor
 	 * in payloads, without touching base clock.
-	 *
-	 * Note, parent clock source for MMC3/4 is PLLP_OUT0. MMC clock source
-	 * should be specified in 3 bits, but since PLLP_OUT0 is #0, it's OK to
-	 * simply call clock_ll_set_source_divisor (2 bits).
 	 */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_sdmmc3, 0,
-				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 48000));
-	clock_ll_set_source_divisor(&clk_rst->clk_src_sdmmc4, 0,
-				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 48000));
+	clock_configure_source(sdmmc3, PLLP, 48000);
+	clock_configure_source(sdmmc4, PLLP, 48000);
+
+	/* PLLP and PLLM are switched for HOST1x for no apparent reason. */
+	write32(4 /* PLLP! */ << CLK_SOURCE_SHIFT |
+		/* TODO(rminnich): The divisor isn't accurate enough to get to
+		 * 144MHz (it goes to 163 instead). What should we do here? */
+		CLK_DIVIDER(TEGRA_PLLP_KHZ, 144000),
+		&clk_rst->clk_src_host1x);
+
+	/* DISP1 doesn't support a divisor. Use PLLC which runs at 600MHz. */
+	clock_configure_source(disp1, PLLC, 600000);
 
 	/* Give clock time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
@@ -386,7 +370,7 @@ void clock_config(void)
 
 	clrbits_le32(&clk_rst->rst_dev_l,
 		     CLK_L_CACHE2 | CLK_L_GPIO | CLK_L_TMR | CLK_L_I2C1 |
-		     CLK_L_SDMMC4);
+		     CLK_L_SDMMC4 | CLK_L_DISP1 | CLK_L_HOST1X);
 	clrbits_le32(&clk_rst->rst_dev_h,
 		     CLK_H_EMC | CLK_H_I2C2 | CLK_H_I2C5 | CLK_H_SBC1 |
 		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);

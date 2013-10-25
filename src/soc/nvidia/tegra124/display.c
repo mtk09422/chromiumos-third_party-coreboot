@@ -32,11 +32,8 @@
 #include <cbmem.h>
 #include <soc/clock.h>
 #include <soc/nvidia/tegra/dc.h>
-#include "clk_rst.h"
 #include "chip.h"
 #include <soc/display.h>
-
-static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 
 static const u32 rgb_enb_tab[PIN_REG_COUNT] = {
 	0x00000000,
@@ -281,20 +278,6 @@ void display_startup(device_t dev)
 	 * The panel_vdd is done in the romstage, so we need only
 	 * light things up here once we're sure it's all working.
 	 */
-	setbits_le32(&clk_rst->rst_dev_l, CLK_L_DISP1 | CLK_L_HOST1X);
-
-	clock_ll_set_source_divisor(&clk_rst->clk_src_host1x, 4,
-				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 144000));
-
-	/* DISP1 doesn't support a divisor. Use PLLC which runs at 600MHz. */
-	val = readl(&clk_rst->clk_src_disp1);
-	val &= ~CLK_SOURCE3_MASK;
-	val |= (4 << CLK_SOURCE3_SHIFT);
-	writel(val, &clk_rst->clk_src_disp1);
-
-	udelay(2);
-
-	clrbits_le32(&clk_rst->rst_dev_l, CLK_L_DISP1|CLK_L_HOST1X);
 
 	writel(0x00000100, &dc->cmd.gen_incr_syncpt_ctrl);
 	writel(0x0000011a, &dc->cmd.cont_syncpt_vsync);

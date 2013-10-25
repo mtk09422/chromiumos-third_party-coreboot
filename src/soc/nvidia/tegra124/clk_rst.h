@@ -425,24 +425,10 @@ enum {
 #define OSC_XOFS_MASK			(0x3F << OSC_XOFS_SHIFT)
 #define OSC_DRIVE_STRENGTH		7
 
-/*
- * CLK_RST_CONTROLLER_CLK_SOURCE_x_OUT_0 - the mask here is normally 8 bits
- * but can be 16. We could use knowledge we have to restrict the mask in
- * the 8-bit cases (the divider_bits value returned by
- * get_periph_clock_source()) but it does not seem worth it since the code
- * already checks the ranges of values it is writing, in clk_get_divider().
- */
-#define CLK_DIVISOR_SHIFT		0
-#define CLK_DIVISOR_MASK		(0xffff << CLK_DIVISOR_SHIFT)
+#define CLK_DIVISOR_MASK		(0xffff)
 
-#define CLK_SOURCE_SHIFT		30
-#define CLK_SOURCE_MASK			(3U << CLK_SOURCE_SHIFT)
-
-#define CLK_SOURCE3_SHIFT		29
-#define CLK_SOURCE3_MASK		(7U << CLK_SOURCE3_SHIFT)
-
-#define CLK_SOURCE4_SHIFT		28
-#define CLK_SOURCE4_MASK		(15U << CLK_SOURCE4_SHIFT)
+#define CLK_SOURCE_SHIFT		29
+#define CLK_SOURCE_MASK			(0x7 << CLK_SOURCE_SHIFT)
 
 #define CLK_UART_DIV_OVERRIDE		(1 << 24)
 

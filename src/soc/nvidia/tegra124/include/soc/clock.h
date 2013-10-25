@@ -155,7 +155,20 @@ enum {
 /* Calculate clock frequency value from reference and clock divider value */
 #define CLK_FREQUENCY(REF, REG)	(((REF) * 2) / (REG + 2))
 
+enum clock_source {  /* Careful: Not true for all sources, always check TRM! */
+	PLLP = 0,
+	PLLC2 = 1,
+	PLLC = 2,
+	PLLD = 2,
+	PLLC3 = 3,
+	PLLA = 3,
+	PLLM = 4,
+	PLLD2 = 5,
+	CLK_M = 6,
+};
+
 /* soc-specific */
+#define TEGRA_CLK_M_KHZ	 clock_get_osc_khz()
 #define TEGRA_PLLX_KHZ   (1900000)
 #define TEGRA_PLLP_KHZ   (408000)
 #define TEGRA_PLLC_KHZ   (600000)
@@ -167,5 +180,4 @@ void clock_early_uart(void);
 void clock_cpu0_config_and_reset(void * entry);
 void clock_config(void);
 void clock_init(void);
-void clock_ll_set_source_divisor(u32 *reg, u32 source, u32 divisor);
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */
