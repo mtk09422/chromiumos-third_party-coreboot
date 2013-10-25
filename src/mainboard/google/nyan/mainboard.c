@@ -26,6 +26,7 @@
 #include <soc/nvidia/tegra124/clk_rst.h>
 #include <soc/nvidia/tegra124/gpio.h>
 #include <soc/nvidia/tegra124/pmc.h>
+#include <soc/nvidia/tegra124/spi.h>
 
 static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 
@@ -180,6 +181,17 @@ static void setup_kernel_info(void)
 	writel(0x80080000, &pmc->odmdata);
 }
 
+static void setup_ec_spi(void)
+{
+	struct tegra_spi_channel *spi;
+
+	spi = tegra_spi_init(CONFIG_EC_GOOGLE_CHROMEEC_SPI_BUS);
+
+	/* Set frame header for use by CrOS EC */
+	spi->frame_header = 0xec;
+	spi->rx_frame_header_enable = 1;
+}
+
 static void mainboard_init(device_t dev)
 {
 	setup_pinmux();
@@ -199,6 +211,7 @@ static void mainboard_init(device_t dev)
 
 	setup_kernel_info();
 	clock_init_arm_generic_timer();
+	setup_ec_spi();
 }
 
 static void mainboard_enable(device_t dev)
