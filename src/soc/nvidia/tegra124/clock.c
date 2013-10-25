@@ -338,7 +338,7 @@ void clock_config(void)
 		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
 	setbits_le32(&clk_rst->clk_out_enb_u,
 		     CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3);
-	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_MSELECT);
+	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_MSELECT | CLK_V_I2C4);
 	setbits_le32(&clk_rst->clk_out_enb_w, CLK_W_DVFS);
 
 	/*
@@ -358,6 +358,8 @@ void clock_config(void)
 	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c2, 3, 16);
 	/* I2C3 (cam) gets CLK_M and a divisor of 17 */
 	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c3, 3, 16);
+	/* I2C4 (ddc) gets CLK_M and a divisor of 17 */
+	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c3, 4, 16);
 	/* I2C5 (PMU) gets CLK_M and a divisor of 17 */
 	clock_ll_set_source_divisor(&clk_rst->clk_src_i2c5, 3, 16);
 
@@ -390,6 +392,6 @@ void clock_config(void)
 		     CLK_H_PMC | CLK_H_APBDMA | CLK_H_MEM);
 	clrbits_le32(&clk_rst->rst_dev_u,
 		     CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3);
-	clrbits_le32(&clk_rst->rst_dev_v, CLK_V_MSELECT);
+	clrbits_le32(&clk_rst->rst_dev_v, CLK_V_MSELECT | CLK_V_I2C4);
 	clrbits_le32(&clk_rst->rst_dev_w, CLK_W_DVFS);
 }

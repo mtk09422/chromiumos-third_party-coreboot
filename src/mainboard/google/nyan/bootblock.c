@@ -49,6 +49,12 @@ void bootblock_mainboard_init(void)
 	// I2C3 (cam) data.
 	pinmux_set_config(PINMUX_CAM_I2C_SDA_INDEX,
 			  PINMUX_CAM_I2C_SDA_FUNC_I2C3 | PINMUX_INPUT_ENABLE);
+	// I2C4 (DDC) clock.
+	pinmux_set_config(PINMUX_DDC_SCL_INDEX,
+			  PINMUX_DDC_SCL_FUNC_I2C4 | PINMUX_INPUT_ENABLE);
+	// I2C4 (DDC) data.
+	pinmux_set_config(PINMUX_DDC_SDA_INDEX,
+			  PINMUX_DDC_SDA_FUNC_I2C4 | PINMUX_INPUT_ENABLE);
 	// I2C5 (PMU) clock.
 	pinmux_set_config(PINMUX_PWR_I2C_SCL_INDEX,
 			  PINMUX_PWR_I2C_SCL_FUNC_I2CPMU | PINMUX_INPUT_ENABLE);
@@ -59,6 +65,7 @@ void bootblock_mainboard_init(void)
 	i2c_init(0);
 	i2c_init(1);
 	i2c_init(2);
+	i2c_init(3);
 	i2c_init(4);
 
 	pmic_init(4);
