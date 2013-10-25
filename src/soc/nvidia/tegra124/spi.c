@@ -673,12 +673,17 @@ int spi_xfer(struct spi_slave *slave, const void *dout,
 	u8 *out_buf = (u8 *)dout;
 	u8 *in_buf = (u8 *)din;
 	unsigned int todo;
-	int ret = 0;
+	int ret = 0, frame_started = 1;
 
 	ASSERT(bitsout % 8 == 0 && bitsin % 8 == 0);
 
 	/* tegra bus numbers start at 1 */
 	ASSERT(slave->bus >= 1 && slave->bus <= ARRAY_SIZE(tegra_spi_channels));
+
+	if (spi->rx_frame_header_enable) {
+		memset(in_buf, ~spi->frame_header, in_bytes);
+		frame_started = 0;
+	}
 
 	while (out_bytes || in_bytes) {
 		int x = 0;
@@ -715,6 +720,11 @@ int spi_xfer(struct spi_slave *slave, const void *dout,
 			}
 		}
 
+		/*
+		 * Note: Some devices (such as Chrome EC) are sensitive to
+		 * delays, so be careful when adding debug prints not to
+		 * cause timeouts between transfers.
+		 */
 		xfer_start(spi);
 		xfer_wait(spi);
 		if (xfer_finish(spi)) {
@@ -726,14 +736,37 @@ int spi_xfer(struct spi_slave *slave, const void *dout,
 		 * Post-processing. For output, we only need to increment
 		 * the buffer and decrement the counter. Same for input if
 		 * there is no frame header to be concerned with.
+		 *
+		 * If a frame header is used and is found, the input buffer
+		 * is shifted so that the header starts at offset 0, and
+		 * in_bytes and in_buf are incremented/decremented according
+		 * to the offset where the header was originally found.
 		 */
 		if (out_bytes) {
 			out_bytes -= x;
 			out_buf += x;
 		}
 		if (in_bytes) {
-			in_bytes -= x;
-			in_buf += x;
+			if (spi->rx_frame_header_enable && !frame_started) {
+				int i;
+
+				for (i = 0; i < x; i++) {
+					if (in_buf[i] == spi->frame_header) {
+						frame_started = 1;
+						i++; /* discard frame header */
+						break;
+					}
+				}
+
+				if (frame_started) {
+					memmove(&in_buf[0], &in_buf[i], x - i);
+					in_bytes -= x - i;
+					in_buf += x - i;
+				}
+			} else {
+				in_bytes -= x;
+				in_buf += x;
+			}
 		}
 	}
 
