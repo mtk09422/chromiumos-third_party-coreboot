@@ -285,11 +285,12 @@ void display_startup(device_t dev)
 
 	clock_ll_set_source_divisor(&clk_rst->clk_src_host1x, 4,
 				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 144000));
-	/* u-boot uses PLLC for DISP1.
-	 * But the u-boot code does not work and we don't set up PLLC anyway.
-	 * PLLP seems quite good enough, so run with that for now.  */
-	clock_ll_set_source_divisor(&clk_rst->clk_src_disp1, 0 /* 4 */,
-				    CLK_DIVIDER(TEGRA_PLLP_KHZ, 600000));
+
+	/* DISP1 doesn't support a divisor. Use PLLC which runs at 600MHz. */
+	val = readl(&clk_rst->clk_src_disp1);
+	val &= ~CLK_SOURCE3_MASK;
+	val |= (4 << CLK_SOURCE3_SHIFT);
+	writel(val, &clk_rst->clk_src_disp1);
 
 	udelay(2);
 
