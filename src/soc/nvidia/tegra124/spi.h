@@ -66,6 +66,6 @@ int initialize_tegra_spi_cbfs_media(struct cbfs_media *media,
 				     void *buffer_address,
 				     size_t buffer_size);
 
-void tegra_spi_init(unsigned int bus);
+struct tegra_spi_channel *tegra_spi_init(unsigned int bus);
 
 #endif	/* __NVIDIA_TEGRA124_SPI_H__ */

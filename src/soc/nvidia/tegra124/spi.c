@@ -157,29 +157,30 @@ enum spi_direction {
 	SPI_RECEIVE,
 };
 
-void tegra_spi_init(unsigned int bus)
+struct tegra_spi_channel *tegra_spi_init(unsigned int bus)
 {
 	int i;
+	struct tegra_spi_channel *spi = NULL;
 
 	for (i = 0; i < ARRAY_SIZE(tegra_spi_channels); i++) {
-		struct tegra_spi_regs *regs;
-
-		if (tegra_spi_channels[i].slave.bus == bus)
-			regs = tegra_spi_channels[i].regs;
-		else
-			continue;
-
-		/* software drives chip-select, set value to high */
-		setbits_le32(&regs->command1,
-				SPI_CMD1_CS_SW_HW | SPI_CMD1_CS_SW_VAL);
-
-		/* 8-bit transfers, unpacked mode, most significant bit first */
-		clrbits_le32(&regs->command1,
-				SPI_CMD1_BIT_LEN_MASK | SPI_CMD1_PACKED);
-		setbits_le32(&regs->command1, 7 << SPI_CMD1_BIT_LEN_SHIFT);
+		if (tegra_spi_channels[i].slave.bus == bus) {
+			spi = &tegra_spi_channels[i];
+			break;
+		}
 	}
-	printk(BIOS_INFO, "Tegra SPI bus %d initialized.\n", bus);
+	if (!spi)
+		return NULL;
 
+	/* software drives chip-select, set value to high */
+	setbits_le32(&spi->regs->command1,
+			SPI_CMD1_CS_SW_HW | SPI_CMD1_CS_SW_VAL);
+
+	/* 8-bit transfers, unpacked mode, most significant bit first */
+	clrbits_le32(&spi->regs->command1,
+			SPI_CMD1_BIT_LEN_MASK | SPI_CMD1_PACKED);
+	setbits_le32(&spi->regs->command1, 7 << SPI_CMD1_BIT_LEN_SHIFT);
+
+	return spi;
 }
 
 static struct tegra_spi_channel * const to_tegra_spi(int bus) {
