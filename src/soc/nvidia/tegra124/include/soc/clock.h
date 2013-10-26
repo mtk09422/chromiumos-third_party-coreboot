@@ -180,4 +180,5 @@ void clock_early_uart(void);
 void clock_cpu0_config_and_reset(void * entry);
 void clock_config(void);
 void clock_init(void);
+void clock_init_arm_generic_timer(void);
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */

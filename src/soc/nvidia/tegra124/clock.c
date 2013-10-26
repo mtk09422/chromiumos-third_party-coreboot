@@ -22,6 +22,7 @@
 #include "cpug.h"
 #include "flow.h"
 #include "pmc.h"
+#include "sysctr.h"
 
 /* Warning: Some devices just use different bits for the same sources for no
  * apparent reason. *Always* double-check the TRM before trusting this macro. */
@@ -32,7 +33,8 @@
 
 static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 static struct flow_ctlr *flow = (void *)TEGRA_FLOW_BASE;
-static struct tegra_pmc_regs *pmc = (void*)TEGRA_PMC_BASE;
+static struct tegra_pmc_regs *pmc = (void *)TEGRA_PMC_BASE;
+static struct sysctr_regs *sysctr = (void *)TEGRA_SYSCTR0_BASE;
 
 struct pll_dividers {
 	u32	n : 10;
@@ -162,6 +164,20 @@ static u32 clock_get_osc_bits(void)
 int clock_get_osc_khz(void)
 {
 	return osc_table[clock_get_osc_bits()].khz;
+}
+
+void clock_init_arm_generic_timer(void)
+{
+	uint32_t freq = clock_get_osc_khz() * 1000;
+	// Set the cntfrq register.
+	__asm__ __volatile__("mcr p15, 0, %0, c14, c0, 0\n" :: "r"(freq));
+
+	// Record the system timer frequency.
+	write32(freq, &sysctr->cntfid0);
+	// Enable the system counter.
+	uint32_t cntcr = read32(&sysctr->cntcr);
+	cntcr |= SYSCTR_CNTCR_EN | SYSCTR_CNTCR_HDBG;
+	write32(cntcr, &sysctr->cntcr);
 }
 
 static void adjust_pllp_out_freqs(void)
