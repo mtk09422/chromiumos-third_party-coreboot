@@ -21,6 +21,7 @@
 #include <device/device.h>
 #include <boot/coreboot_tables.h>
 #include <soc/addressmap.h>
+#include <soc/clock.h>
 #include <soc/nvidia/tegra124/gpio.h>
 #include <soc/nvidia/tegra124/pmc.h>
 
@@ -126,6 +127,7 @@ static void mainboard_init(device_t dev)
 {
 	setup_pinmux();
 	setup_kernel_info();
+	clock_init_arm_generic_timer();
 }
 
 static void mainboard_enable(device_t dev)
