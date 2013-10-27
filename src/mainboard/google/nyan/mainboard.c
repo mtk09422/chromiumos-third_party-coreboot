@@ -22,8 +22,40 @@
 #include <boot/coreboot_tables.h>
 #include <soc/addressmap.h>
 #include <soc/clock.h>
+#include <soc/nvidia/tegra/i2c.h>
+#include <soc/nvidia/tegra124/clk_rst.h>
 #include <soc/nvidia/tegra124/gpio.h>
 #include <soc/nvidia/tegra124/pmc.h>
+
+static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
+
+static void set_clock_sources(void)
+{
+	clock_configure_source(i2c1, CLK_M, 1333);
+	clock_configure_source(i2c2, CLK_M, 1333);
+	clock_configure_source(i2c3, CLK_M, 1333);
+	clock_configure_source(i2c4, CLK_M, 1333);
+
+	clock_configure_source(sbc1, PLLP, 5000);
+
+	/*
+	 * MMC3 and MMC4: Set base clock frequency for SD Clock to Tegra MMC's
+	 * maximum speed (48MHz) so we can change SDCLK by second stage divisor
+	 * in payloads, without touching base clock.
+	 */
+	clock_configure_source(sdmmc3, PLLP, 48000);
+	clock_configure_source(sdmmc4, PLLP, 48000);
+
+	/* PLLP and PLLM are switched for HOST1x for no apparent reason. */
+	write32(4 /* PLLP! */ << CLK_SOURCE_SHIFT |
+		/* TODO(rminnich): The divisor isn't accurate enough to get to
+		 * 144MHz (it goes to 163 instead). What should we do here? */
+		CLK_DIVIDER(TEGRA_PLLP_KHZ, 144000),
+		&clk_rst->clk_src_host1x);
+
+	/* DISP1 doesn't support a divisor. Use PLLC which runs at 600MHz. */
+	clock_configure_source(disp1, PLLC, 600000);
+}
 
 static void setup_pinmux(void)
 {
@@ -56,6 +88,31 @@ static void setup_pinmux(void)
 	pinmux_set_config(PINMUX_ULPI_STP_INDEX, PINMUX_ULPI_STP_FUNC_SPI1 |
 						 PINMUX_PULL_NONE |
 						 PINMUX_INPUT_ENABLE);
+
+	// I2C1 clock.
+	pinmux_set_config(PINMUX_GEN1_I2C_SCL_INDEX,
+			  PINMUX_GEN1_I2C_SCL_FUNC_I2C1 | PINMUX_INPUT_ENABLE);
+	// I2C1 data.
+	pinmux_set_config(PINMUX_GEN1_I2C_SDA_INDEX,
+			  PINMUX_GEN1_I2C_SDA_FUNC_I2C1 | PINMUX_INPUT_ENABLE);
+	// I2C2 clock.
+	pinmux_set_config(PINMUX_GEN2_I2C_SCL_INDEX,
+			  PINMUX_GEN2_I2C_SCL_FUNC_I2C2 | PINMUX_INPUT_ENABLE);
+	// I2C2 data.
+	pinmux_set_config(PINMUX_GEN2_I2C_SDA_INDEX,
+			  PINMUX_GEN2_I2C_SDA_FUNC_I2C2 | PINMUX_INPUT_ENABLE);
+	// I2C3 (cam) clock.
+	pinmux_set_config(PINMUX_CAM_I2C_SCL_INDEX,
+			  PINMUX_CAM_I2C_SCL_FUNC_I2C3 | PINMUX_INPUT_ENABLE);
+	// I2C3 (cam) data.
+	pinmux_set_config(PINMUX_CAM_I2C_SDA_INDEX,
+			  PINMUX_CAM_I2C_SDA_FUNC_I2C3 | PINMUX_INPUT_ENABLE);
+	// I2C4 (DDC) clock.
+	pinmux_set_config(PINMUX_DDC_SCL_INDEX,
+			  PINMUX_DDC_SCL_FUNC_I2C4 | PINMUX_INPUT_ENABLE);
+	// I2C4 (DDC) data.
+	pinmux_set_config(PINMUX_DDC_SDA_INDEX,
+			  PINMUX_DDC_SDA_FUNC_I2C4 | PINMUX_INPUT_ENABLE);
 
 	// TODO(hungte) Revice pinmux setup, make nice little SoC functions for
 	// every single logical thing instead of dumping a wall of code below.
@@ -126,6 +183,20 @@ static void setup_kernel_info(void)
 static void mainboard_init(device_t dev)
 {
 	setup_pinmux();
+	set_clock_sources();
+
+	clock_enable_clear_reset(CLK_L_GPIO | CLK_L_I2C1 | CLK_L_SDMMC4,
+				 CLK_H_EMC | CLK_H_I2C2 | CLK_H_SBC1 |
+				 CLK_H_PMC | CLK_H_MEM,
+				 CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3,
+				 CLK_V_I2C4,
+				 CLK_W_DVFS);
+
+	i2c_init(0);
+	i2c_init(1);
+	i2c_init(2);
+	i2c_init(3);
+
 	setup_kernel_info();
 	clock_init_arm_generic_timer();
 }
