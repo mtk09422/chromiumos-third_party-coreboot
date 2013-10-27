@@ -155,6 +155,13 @@ enum {
 /* Calculate clock frequency value from reference and clock divider value */
 #define CLK_FREQUENCY(REF, REG)	(((REF) * 2) / (REG + 2))
 
+/* Warning: Some devices just use different bits for the same sources for no
+ * apparent reason. *Always* double-check the TRM before trusting this macro. */
+#define clock_configure_source(device, src, freq) \
+	clrsetbits_le32(&clk_rst->clk_src_##device, \
+		CLK_SOURCE_MASK | CLK_DIVISOR_MASK, \
+		src << CLK_SOURCE_SHIFT | CLK_DIVIDER(TEGRA_##src##_KHZ, freq));
+
 enum clock_source {  /* Careful: Not true for all sources, always check TRM! */
 	PLLP = 0,
 	PLLC2 = 1,
@@ -178,7 +185,7 @@ enum clock_source {  /* Careful: Not true for all sources, always check TRM! */
 int clock_get_osc_khz(void);
 void clock_early_uart(void);
 void clock_cpu0_config_and_reset(void * entry);
-void clock_config(void);
+void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w);
 void clock_init(void);
 void clock_init_arm_generic_timer(void);
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */
