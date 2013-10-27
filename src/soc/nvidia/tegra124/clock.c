@@ -327,19 +327,18 @@ void clock_init(void)
 
 void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w)
 {
-	/* TODO: can (should?) we use the _SET and _CLR registers here? */
-	setbits_le32(&clk_rst->clk_out_enb_l, l);
-	setbits_le32(&clk_rst->clk_out_enb_h, h);
-	setbits_le32(&clk_rst->clk_out_enb_u, u);
-	setbits_le32(&clk_rst->clk_out_enb_v, v);
-	setbits_le32(&clk_rst->clk_out_enb_w, w);
+	if (l) writel(l, &clk_rst->clk_enb_l_set);
+	if (h) writel(h, &clk_rst->clk_enb_h_set);
+	if (u) writel(u, &clk_rst->clk_enb_u_set);
+	if (v) writel(v, &clk_rst->clk_enb_v_set);
+	if (w) writel(w, &clk_rst->clk_enb_w_set);
 
 	/* Give clocks time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
 
-	clrbits_le32(&clk_rst->rst_dev_l, l);
-	clrbits_le32(&clk_rst->rst_dev_h, h);
-	clrbits_le32(&clk_rst->rst_dev_u, u);
-	clrbits_le32(&clk_rst->rst_dev_v, v);
-	clrbits_le32(&clk_rst->rst_dev_w, w);
+	if (l) writel(l, &clk_rst->rst_dev_l_clr);
+	if (h) writel(h, &clk_rst->rst_dev_h_clr);
+	if (u) writel(u, &clk_rst->rst_dev_u_clr);
+	if (v) writel(v, &clk_rst->rst_dev_v_clr);
+	if (w) writel(w, &clk_rst->rst_dev_w_clr);
 }
