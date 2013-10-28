@@ -377,7 +377,7 @@ int i915lightup(unsigned int pphysbase, unsigned int piobase,
 		(void *)graphics, FRAME_BUFFER_BYTES);
 	memset((void *)graphics, 0, FRAME_BUFFER_BYTES);
 	printk(BIOS_SPEW, "%ld microseconds\n", globalmicroseconds());
-	set_vbe_mode_info_valid(&edid, graphics);
+	set_vbe_mode_info_valid(&edid, (uintptr_t)graphics);
 	i915_init_done = 1;
 	oprom_is_loaded = 1;
 	return 0;
