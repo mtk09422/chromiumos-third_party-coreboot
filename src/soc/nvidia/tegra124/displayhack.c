@@ -382,13 +382,6 @@ void init_sor_regs(void)
 	WRITEL(0x0, (void *)(0x60006000 + 0x414));	// CLK_SOURCE_SOR0 = PLLP
 
 	//WRITEL(0xc000c000, (0x60006000 + 0x414)); // CLK_SOURCE_SOR0 = CLK_M
-#if 0
-	u32 reg_val;
-	reg_val = READL((void *)(0x60006000 + 0x414));
-	reg_val &= ~(0x7 << 29);
-	reg_val |= (0x4 << 29);	// PLLC
-	WRITEL(reg_val, (void *)(0x60006000 + 0x414));	// CLK_SOURCE_SOR0 = PLLC
-#endif
 
 #if 1
 #define SOR_WRITE(reg, val) \
@@ -752,6 +745,22 @@ static int dpaux_check(u32 bytes, u32 data, u32 mask)
 	return -1;
 }
 
+/* Modify the drive parameters for DP.  There are up to four DP
+ * lanes. In principle, each lane can have different current,
+ * pre-emphasis, and postcur values. Nobody individualizes them; every
+ * single driver I've seen drives all the lanes to the same value
+ * (across x86 and ARM code). Actualy adjusting them individually and
+ * getting it all to work is probably a PhD thesis anyway. So, rather
+ * than the very complex code we see many places, the people who wrote
+ * this code realize: we can represent the 'volume' as a number in the
+ * range 0..3, with '0' as the base and '3' as being 'not to exceed'.
+ *
+ * So they abstract the values away, take care of the proper values,
+ * and set it all in one blow. Very nice. By far the easiest one of
+ * these functions we've seen. Sure, they could have constants, but
+ * nobody knows what PRE_EMPHASIS_3_5 and the other values actually
+ * *mean* anyway. Well, the hardware guys might.
+ */
 static void pattern_level(u32 current, u32 preemph, u32 postcur)
 {
 	printk(BIOS_SPEW, "set level:%d %d %d\n", current, preemph, postcur);
@@ -785,7 +794,9 @@ static void pattern_level(u32 current, u32 preemph, u32 postcur)
 
 static int dp_training(u32 level, u32 check, u32 speed)
 {
-
+	/* The levels are one of four choices. This code
+	 * packs them into the three lowest nibl's. We may change this.
+	 */
 	u32 dc_lv = level & 0x0f;
 	u32 pe_lv = (level >> 4) & 0x0f;
 	u32 pc_lv = (level >> 8) & 0x0f;
@@ -880,11 +891,7 @@ void dp_link_training(u32 lanes, u32 speed)
 	//REG(CLK_RST_CONTROLLER_CLK_SOURCE_SOR0_0,SOR0_CLK_SEL0, 1) //sor clk=pad macro output
 	reg_val = readl((void *)(0x60006000 + 0x414));
 	reg_val |= SOR0_CLK_SEL0;
-#if 0	// pllp_debug
-	reg_val &= ~(0x7 << 29);
-	reg_val |= (0x6 << 29);
-	reg_val |= (SOR0_CLK_SEL0 | SOR0_CLK_SEL1);
-#endif
+
 	writel(reg_val, (void *)(0x60006000 + 0x414));
 
 	SOR_WRITE(SOR_NV_PDISP_SOR_DP_LINKCTL0_0,
@@ -971,18 +978,7 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 	//  720x480:   27.00 , 594/22, dp   CEA
 	//  640x480:   23.75 , 475/20, dp   VESA
 
-#if 0
-	//LG 12.85",  285.25MHz,  neg hsync/vsync
-	// 2560 x 1700
-	//hfrontporch=48, hsyncwidth=32, hbackporch=80
-	//vfrontporch=3,  vsyncwidth=10,  vbackporch=36
-	%PLL_FREQ = 570
-		% PLL_DIV = 2
-		% SYNC_WIDTH = (10 << 16) | 32
-		% BACK_PORCH = (36 << 16) | 80
-		% FRONT_PORCH = (3 << 16) | 48 % HSYNC_NEG = 1 % VSYNC_NEG = 1
-#endif
-		u32 PLL_FREQ = 570;
+	u32 PLL_FREQ = 570;
 	u32 PLL_DIV = 2;
 	u32 SYNC_WIDTH = (10 << 16) | 32;
 	u32 BACK_PORCH = (36 << 16) | 80;
@@ -1009,7 +1005,7 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 			   __func__, panel_id, width, height);
 		return pclk_freq;
 	}
-#if 1	// jz
+
 //    clock(plld2, %PLL_FREQ)   // PLL_FREQ = 570
 	writel(0, (void *)(0x60006000 + 0x4bc));	// plld2_misc
 	writel(0x13400000, (void *)(0x60006000 + 0x570));	// plld2_ss_cfg
@@ -1030,7 +1026,7 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 	reg_val |= PLLD2_OUT0;
 	writel(reg_val, (void *)(0x60006000 + 0x138));
 	udelay(10);
-#endif
+
 	PLL_FREQ = PLL_FREQ * 1000000;
 	pclk_freq = PLL_FREQ / PLL_DIV;
 	PLL_FREQ_I = PLL_FREQ / 1000000;
@@ -1039,7 +1035,7 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 	PCLK_FREQ_F = div_f(PLL_FREQ, PLL_DIV * 1000000, 100);
 	FRATE_I = PLL_FREQ / (PLL_DIV * TOTAL_PIXELS);
 	FRATE_F = div_f(PLL_FREQ, (PLL_DIV * TOTAL_PIXELS), 100);
-	//bug 1021453  
+	//bug 1021453
 	BACK_PORCH = BACK_PORCH - 0x10000;
 	FRONT_PORCH = FRONT_PORCH + 0x10000;
 
@@ -1105,61 +1101,7 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 					 SOR_NV_PDISP_SOR_STATE1_0_ASY_OWNER_FIELD,
 					 (SOR_NV_PDISP_SOR_STATE1_0_ASY_OWNER_HEAD0 <<
 					  SOR_NV_PDISP_SOR_STATE1_0_ASY_OWNER_SHIFT));
-#if 0	// ts
-
-	%SHIFT_CLK_DIVIDER = %PLL_DIV * 2 - 2
-		% DISP_ACTIVE = (%HEIGHT << 16) | %WIDTH
-		% DISP_TOTAL = %DISP_ACTIVE + %SYNC_WIDTH + %BACK_PORCH + %FRONT_PORCH
-		% SYNC_END = %SYNC_WIDTH - 0x10001
-		% BLANK_END = %SYNC_END + %BACK_PORCH
-		% BLANK_START = %BLANK_END + %DISP_ACTIVE
-		% TOTAL_PIXELS = (%DISP_TOTAL & 0xffff) * (%DISP_TOTAL >> 16)
-
-		% pclk_freq = %PLL_FREQ / %PLL_DIV
-		% PLL_FREQ_I = %PLL_FREQ / 1000000
-		% PLL_FREQ_F = div_f(%PLL_FREQ, 1000000, 100)
-		% PCLK_FREQ_I = %PLL_FREQ / (%PLL_DIV * 1000000)
-		% PCLK_FREQ_F = div_f(%PLL_FREQ, %PLL_DIV * 1000000, 100)
-		% FRATE_I = %PLL_FREQ / (%PLL_DIV * %TOTAL_PIXELS)
-		% FRATE_F = div_f(%PLL_FREQ, (%PLL_DIV * %TOTAL_PIXELS), 100)
-		//bug 1021453  
-		% BACK_PORCH = %BACK_PORCH - 0x10000
-		% FRONT_PORCH = %FRONT_PORCH + 0x10000
-		printk(BIOS_SPEW, "ACTIVE:            %dx%d\n", (%DISP_ACTIVE & 0xFFFF),
-			   (%DISP_ACTIVE >> 16))
-		printk(BIOS_SPEW, "TOTAL:             %dx%d\n", (%DISP_TOTAL & 0xffff),
-			   (%DISP_TOTAL >> 16))
-		printk(BIOS_SPEW, "PLL Freq:          %d.%d MHz\n", %PLL_FREQ_I,
-			   %PLL_FREQ_F)
-		printk(BIOS_SPEW, "Pclk Freq:         %d.%d MHz\n", %PCLK_FREQ_I,
-			   %PCLK_FREQ_F)
-		printk(BIOS_SPEW, "Frame Rate:        %d.%d Hz\n", %FRATE_I, %FRATE_F)
-		printk(BIOS_SPEW, "\n")
-
-		REG(DC_CMD_STATE_ACCESS_0, 0x00000004)
-		REG(DC_DISP_DISP_CLOCK_CONTROL_0, %SHIFT_CLK_DIVIDER)
-		//Raster Timing
-		REG(DC_DISP_DISP_TIMING_OPTIONS_0, 0x00000001)
-		REG(DC_DISP_REF_TO_SYNC_0, 0x00010001)
-		REG(DC_DISP_SYNC_WIDTH_0, %SYNC_WIDTH)
-		REG(DC_DISP_BACK_PORCH_0, %BACK_PORCH)
-		REG(DC_DISP_DISP_ACTIVE_0, %DISP_ACTIVE)
-		REG(DC_DISP_FRONT_PORCH_0, %FRONT_PORCH)
-
-		REG(DC_DISP_DISP_WIN_OPTIONS_0, SOR_ENABLE, 1)
-		REG(SOR_NV_PDISP_HEAD_STATE1_0, %DISP_TOTAL)
-		REG(SOR_NV_PDISP_HEAD_STATE2_0, %SYNC_END)
-		REG(SOR_NV_PDISP_HEAD_STATE3_0, %BLANK_END)
-		REG(SOR_NV_PDISP_HEAD_STATE4_0, %BLANK_START)
-		REG(SOR_NV_PDISP_SOR_STATE1_0, ASY_HSYNCPOL, %HSYNC_NEG)
-		REG(SOR_NV_PDISP_SOR_STATE1_0, ASY_VSYNCPOL, %VSYNC_NEG)
-		REG(SOR_NV_PDISP_SOR_STATE1_0, ASY_PROTOCOL, DP_A)
-		REG(SOR_NV_PDISP_SOR_STATE1_0, ASY_CRCMODE, COMPLETE_RASTER)
-		REG(SOR_NV_PDISP_SOR_STATE1_0, ASY_SUBOWNER, NONE)
-		REG(SOR_NV_PDISP_SOR_STATE1_0, ASY_OWNER, HEAD0)
-		return (%pclk_freq)
-#endif
-		printk(BIOS_SPEW, "%s: exit\n", __func__);
+	printk(BIOS_SPEW, "%s: exit\n", __func__);
 	return pclk_freq;
 }
 
@@ -1302,14 +1244,6 @@ void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
 				 (SOR_NV_PDISP_SOR_STATE1_0_ASY_PIXELDEPTH_BPP_24_444 <<
 				  SOR_NV_PDISP_SOR_STATE1_0_ASY_PIXELDEPTH_SHIFT));
 	}
-#if 0
-#define DC_B_WIN_BD_SIZE_0		0xd84
-#define DC_B_WIN_BD_PRESCALED_SIZE_0	0xd86
-#define DC_B_WIN_BD_LINE_STRIDE_0	0xd8a
-#define DC_B_WIN_BD_COLOR_DEPTH_0	0xd83
-#define DC_B_WINBUF_BD_START_ADDR_0	0xdc0
-#define DC_B_WIN_BD_DDA_INCREMENT_0	0xd89
-#endif
 
 #define SRC_BPP		16
 #define COLORDEPTH	0x6
@@ -1341,9 +1275,7 @@ void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
 	DCA_WRITE(DC_CMD_DISPLAY_COMMAND_0, 0x00000020);
 	SOR_WRITE(SOR_NV_PDISP_SOR_DP_AUDIO_VBLANK_SYMBOLS_0, 0x00000e48);
 
-	//AuxPrint(0x200, 16)
 
-	//  %d = (%enhanced_framing << 7) | %lanes
 	dpaux_write(0x101, 1, (enhanced_framing << 7) | lane_count);
 	if (panel_edp)
 		dpaux_write(0x10A, 1, 1);
@@ -1364,7 +1296,7 @@ void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
 	SOR_WRITE(SOR_NV_PDISP_SOR_PWR_0, 0x80000001);
 	printk(BIOS_SPEW, "Polling SOR_NV_PDISP_SOR_PWR_0.DONE\n");
 	dp_poll_register((void *)0x54540054, 0x00000000, 0x80000000, 1000);
-	//SOR_NV_PDISP_SOR_PWR_0 
+	//SOR_NV_PDISP_SOR_PWR_0
 	//sor_update
 	SOR_WRITE(SOR_NV_PDISP_SOR_STATE0_0, 0x00000000);
 	SOR_WRITE(SOR_NV_PDISP_SOR_SUPER_STATE1_0, 0x00000006);
@@ -1389,56 +1321,13 @@ void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
 	DCA_WRITE(DC_CMD_STATE_ACCESS_0, 4);
 	DCA_WRITE(DC_CMD_STATE_CONTROL_0, 0x0000ffff);
 	/* enable win_b */
-#if 1
+
 	DCA_READ_M_WRITE(DC_B_WIN_BD_WIN_OPTIONS_0,
 			 DC_B_WIN_BD_WIN_OPTIONS_0_BD_WIN_ENABLE_FIELD,
 			 (DC_B_WIN_BD_WIN_OPTIONS_0_BD_WIN_ENABLE_ENABLE <<
 			  DC_B_WIN_BD_WIN_OPTIONS_0_BD_WIN_ENABLE_SHIFT));
-#endif
+
 
 	printk(BIOS_SPEW, "JZ: %s: f_ret @ line %d\n", __func__, __LINE__);
 }
 
-static inline void dc_act(void)
-{
-	DCA_WRITE(DC_CMD_STATE_CONTROL_0, 0x0000ffff);
-}
-
-void dp_test(void);
-void dp_test(void)
-{
-	u32 color = BLACK;
-	u32 final = GREY;
-	u32 i;
-
-	printk(BIOS_SPEW, "%s: entry\n", __func__);
-
-	for (i = 0; i < 10; ++i) {
-		printk(BIOS_SPEW, "TEST %d\n", i);
-		switch (i % 3) {
-			case 0:
-				color = RED;
-			case 1:
-				color = GREEN;
-			case 2:
-				color = BLUE;
-		}
-
-		DCA_WRITE(DC_DISP_BLEND_BACKGROUND_COLOR_0, color);
-		dc_act();
-		delay(5);
-	}
-
-	DCA_WRITE(DC_DISP_BLEND_BACKGROUND_COLOR_0, final);
-	dc_act();
-	udelay(1500);
-
-//      DCA_WRITE (DC_DISP_BLEND_BACKGROUND_COLOR_0, BLACK);
-//          dc_act();
-//          udelay(1500);
-
-	DCA_WRITE(DC_CMD_STATE_ACCESS_0, 4);
-	dc_act();
-
-	printk(BIOS_SPEW, "%s: exit\n", __func__);
-}

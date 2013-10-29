@@ -29,7 +29,7 @@
 // this is really broken. #include <soc/ardpaux.h>
 #include <soc/nvidia/tegra/displayport.h>
 
-#undef DEBUG
+
 extern int dump;
 unsigned long READL(void* p);
 void WRITEL(unsigned long value, void* p);
@@ -38,11 +38,6 @@ static inline u32 tegra_dpaux_readl(struct tegra_dc_dp_data *dp, u32 reg)
 {
 	void *addr = dp->aux_base + (u32)(reg <<2);
 	u32 reg_val = READL(addr);
-#ifdef DEBUG
-
-	printk(BIOS_SPEW, "JZ: %s: reg: %p, val: %#x\n", __func__, 
-		addr, reg_val);
-#endif
 	return reg_val;
 }
 
@@ -50,10 +45,6 @@ static inline void tegra_dpaux_writel(struct tegra_dc_dp_data *dp,
 	u32 reg, u32 val)
 {
 	void *addr = dp->aux_base + (u32)(reg <<2);
-#ifdef DEBUG
-	printk(BIOS_SPEW, "JZ: %s: reg: %p, val: %#x\n", __func__, 
-		addr, val);
-#endif
 	WRITEL(val, addr);
 }
 
@@ -154,9 +145,7 @@ static int tegra_dc_dpaux_write_chunk(struct tegra_dc_dp_data *dp, u32 cmd,
 			printk(BIOS_SPEW,"dp: aux write transaction timeout\n");
 
 		*aux_stat = tegra_dpaux_readl(dp, DPAUX_DP_AUXSTAT);
-	//	printk(BIOS_SPEW, "dp: %s: aux stat: 0x%08x\n", __func__, *aux_stat);
 
-		/* Ignore I2C errors on fpga */
 		if ((*aux_stat & DPAUX_DP_AUXSTAT_TIMEOUT_ERROR_PENDING) ||
 			(*aux_stat & DPAUX_DP_AUXSTAT_RX_ERROR_PENDING) ||
 			(*aux_stat & DPAUX_DP_AUXSTAT_SINKSTAT_ERROR_PENDING) ||
@@ -256,12 +245,12 @@ static int tegra_dc_dpaux_read_chunk(struct tegra_dc_dp_data *dp, u32 cmd,
 		return -1;
 	}
 
-if (0){
-	*aux_stat = tegra_dpaux_readl(dp, DPAUX_DP_AUXSTAT);
-	if (!(*aux_stat & DPAUX_DP_AUXSTAT_HPD_STATUS_PLUGGED)) {
-		printk(BIOS_SPEW,"dp: HPD is not detected\n");
-		//return EFAULT;
-	}
+	if (0){
+		*aux_stat = tegra_dpaux_readl(dp, DPAUX_DP_AUXSTAT);
+		if (!(*aux_stat & DPAUX_DP_AUXSTAT_HPD_STATUS_PLUGGED)) {
+			printk(BIOS_SPEW,"dp: HPD is not detected\n");
+			//return EFAULT;
+		}
 	}
 
 	tegra_dpaux_writel(dp, DPAUX_DP_AUXADDR, addr);
@@ -397,45 +386,6 @@ static int tegra_dc_dp_dpcd_read(struct tegra_dc_dp_data *dp, u32 cmd,
 	return ret;
 }
 
-#if 0
-static void tegra_dc_dpaux_enable(struct tegra_dc_dp_data *dp)
-{
-	/* clear interrupt */
-	tegra_dpaux_writel(dp, DPAUX_INTR_AUX, 0xffffffff);
-	/* do not enable interrupt for now. Enable them when Isr in place */
-	tegra_dpaux_writel(dp, DPAUX_INTR_EN_AUX, 0x0);
-
-	tegra_dpaux_writel(dp, DPAUX_HYBRID_PADCTL,
-		DPAUX_HYBRID_PADCTL_AUX_DRVZ_OHM_50 |
-		DPAUX_HYBRID_PADCTL_AUX_CMH_V0_70 |
-		0x18 << DPAUX_HYBRID_PADCTL_AUX_DRVI_SHIFT |
-		DPAUX_HYBRID_PADCTL_AUX_INPUT_RCV_ENABLE);
-}
-
-static int tegra_dc_dp_lower_config(struct tegra_dc_dp_data *dp,
-	struct tegra_dc_dp_link_config *cfg)
-{
-	if (cfg->link_bw == SOR_LINK_SPEED_G1_62) {
-		if (cfg->max_link_bw > SOR_LINK_SPEED_G1_62)
-			cfg->link_bw = SOR_LINK_SPEED_G2_7;
-		cfg->lane_count /= 2;
-	} else if (cfg->link_bw == SOR_LINK_SPEED_G2_7)
-		cfg->link_bw = SOR_LINK_SPEED_G1_62;
-	else if (cfg->link_bw == SOR_LINK_SPEED_G5_4) {
-		if (cfg->lane_count == 1) {
-			cfg->link_bw = SOR_LINK_SPEED_G2_7;
-			cfg->lane_count = cfg->max_lane_count;
-		} else
-			cfg->lane_count /= 2;
-	} else {
-		printk(BIOS_ERR, 
-			"dp: Error link rate %d\n", cfg->link_bw);
-		return 0;
-	}
-	return (cfg->lane_count > 0);
-}
-
-#endif
 static int tegra_dc_dp_init_max_link_cfg(struct tegra_dc_dp_data *dp,
 	struct tegra_dc_dp_link_config *cfg)
 {
@@ -495,84 +445,10 @@ static int tegra_dc_dp_init_max_link_cfg(struct tegra_dc_dp_data *dp,
 	cfg->lane_count	      = cfg->max_lane_count;
 	cfg->link_bw	      = cfg->max_link_bw;
 	cfg->enhanced_framing = cfg->support_enhanced_framing;
-
-#if 0 // jz
-	tegra_dc_dp_calc_config(dp, dp->mode, cfg);
 	return 0;
-#else
-//	return -1;	// do link_training
-	return 0;	// do link_training
-#endif // jz
 }
 
 
-#if 0
-static int tegra_dc_dp_explore_link_cfg(struct tegra_dc_dp_data *dp,
-	struct tegra_dc_dp_link_config *cfg, struct tegra_dc_mode *mode)
-{
-	struct tegra_dc_dp_link_config temp_cfg;
-#if 0
-	/* kernel thing. */
-	if (!mode->pclk || !mode->h_active || !mode->v_active) {
-		dev_err(&dp->dc->ndev->dev,
-			"dp: error mode configuration");
-		return -EINVAL;
-	}
-#endif
-	if (!cfg->max_link_bw || !cfg->max_lane_count) {
-		printk(BIOS_SPEW, 
-			"dp: error link configuration");
-		return -1;
-	}
-
-	cfg->is_valid = 0;
-	memcpy(&temp_cfg, cfg, sizeof(temp_cfg));
-
-	temp_cfg.link_bw    = temp_cfg.max_link_bw;
-	temp_cfg.lane_count = temp_cfg.max_lane_count;
-
-	while (tegra_dc_dp_calc_config(dp, mode, &temp_cfg) &&
-		tegra_dp_link_config(dp, &temp_cfg)) {
-		/* current link cfg is doable */
-		memcpy(cfg, &temp_cfg, sizeof(temp_cfg));
-
-		/* try to lower the config */
-		if (!tegra_dc_dp_lower_config(dp, &temp_cfg))
-			break;
-	}
-
-	return cfg->is_valid ? 0 : -1;
-}
-#endif
-#if 0
-static long tegra_dc_dp_setup_clk(struct tegra_dc *dc, struct clk *clk)
-{
-	struct tegra_dc_dp_data *dp = tegra_dc_get_outdata(dc);
-	struct clk		*sor_clk = dp->sor->sor_clk;
-	struct clk		*parent_clk;
-
-        if (clk == dc->clk) {
-		parent_clk = clk_get_sys(NULL,
-					 dc->out->parent_clk ? : "pll_d_out0");
-		if (clk_get_parent(clk) != parent_clk)
-			clk_set_parent(clk, parent_clk);
-	}
-
-	tegra_dc_sor_setup_clk(dp->sor, clk, false);
-
-	parent_clk = clk_get(NULL, "pll_dp");
-
-	if (clk_get_parent(sor_clk) != parent_clk)
-		clk_set_parent(sor_clk, parent_clk);
-	clk_set_rate(parent_clk, 270000000);
-
-	if (!tegra_is_clk_enabled(parent_clk))
-		clk_prepare_enable(parent_clk);
-
-	return tegra_dc_pclk_round_rate(dc, dp->sor->dc->mode.pclk);
-}
-
-#endif
 //struct tegra_dc	dc_data = {0};
 struct tegra_dc_sor_data sor_data = {0};
 struct tegra_dc_dp_data	dp_data = {0};
@@ -624,10 +500,6 @@ void dp_bringup(u32 winb_addr)
 
 	if (tegra_dc_dp_init_max_link_cfg(dp, &dp->link_cfg))
 		printk(BIOS_SPEW,"dp: failed to init link configuration\n");
-#if 0
-	if (tegra_dc_dp_link_training(dp, &dp->link_cfg))
-		printk(BIOS_SPEW,"dp: failed to do lt\n");
-#endif
 
 	dp_link_training((u32)(dp->link_cfg.lane_count), 
 			 (u32)(dp->link_cfg.link_bw));
@@ -647,18 +519,8 @@ void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
 			(u32)dp->link_cfg.alt_scramber_reset_cap,
 			pclk_freq,
 			dp->link_cfg.link_bw * 27);
-	void dp_test(void);
-	//dp_test();
 
 
-#if 0 // jz, next
-	else if (tegra_dc_dp_explore_link_cfg(dp, &dp->link_cfg,
-			dp->mode))
-		printk(BIOS_SPEW,"dp irq: cannot get working config\n");
-
-//	if (tegra_dp_link_config(dp, &dp->link_cfg))
-//		printk(BIOS_SPEW,"dp: failed to set link configuration\n");
-#endif // rgm
 }
 
 void debug_dpaux_print(u32 addr, u32 size)
