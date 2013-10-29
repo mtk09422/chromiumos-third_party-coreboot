@@ -44,7 +44,7 @@ config DRAM_SIZE_MB
 
 config DRAM_DMA_START
 	hex
-	default 0x83000000
+	default 0x90000000
 
 config DRAM_DMA_SIZE
 	hex
