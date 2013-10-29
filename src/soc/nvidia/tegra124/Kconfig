@@ -79,7 +79,7 @@ config CBFS_CACHE_ADDRESS
 
 config CBFS_CACHE_SIZE
 	hex "size of CBFS cache data"
-	default 0x00013000
+	default 0x00020000
 
 choice CONSOLE_SERIAL_TEGRA124_UART_CHOICES
 	prompt "Serial Console UART"
