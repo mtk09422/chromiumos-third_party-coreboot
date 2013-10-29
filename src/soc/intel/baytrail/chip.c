@@ -21,6 +21,7 @@
 #include <device/device.h>
 #include <device/pci.h>
 
+#include <baytrail/pci_devs.h>
 #include <baytrail/ramstage.h>
 #include "chip.h"
 
@@ -51,13 +52,17 @@ static struct device_operations cpu_bus_ops = {
 
 static void enable_dev(device_t dev)
 {
-	printk(BIOS_DEBUG, "enable_dev(%s, %d)\n",
-	       dev_name(dev), dev->path.type);
 	/* Set the operations if it is a special bus type */
 	if (dev->path.type == DEVICE_PATH_DOMAIN) {
 		dev->ops = &pci_domain_ops;
 	} else if (dev->path.type == DEVICE_PATH_CPU_CLUSTER) {
 		dev->ops = &cpu_bus_ops;
+	} else if (dev->path.type == DEVICE_PATH_PCI) {
+		/* Handle south cluster enablement. */
+		if (PCI_SLOT(dev->path.pci.devfn) > GFX_DEV &&
+		    (dev->ops == NULL || dev->ops->enable == NULL)) {
+			southcluster_enable_dev(dev);
+		}
 	}
 }
 
