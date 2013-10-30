@@ -239,5 +239,9 @@ void clock_cpu0_config_and_reset(void * entry);
 void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x);
 void clock_init(void);
 void clock_init_arm_generic_timer(void);
+void sor_clock_stop(void);
+void sor_clock_start(void);
+void graphics_clock(void);
+
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */
 

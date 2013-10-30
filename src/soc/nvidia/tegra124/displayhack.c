@@ -647,7 +647,7 @@ void dp_io_powerup(void)
 
 //  struct clk_rst_ctlr *clkrst =
 //          (struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE;
-	u32 reg_val;
+
 
 	printk(BIOS_SPEW, "%s: entry\n", __func__);
 
@@ -655,26 +655,8 @@ void dp_io_powerup(void)
 	printk(BIOS_SPEW, "JZ: %s: %d: do nothing, ret\n", __func__, __LINE__);
 	return;
 #endif
-
-#define SOR0_CLK_SEL0			(1 << 14)
-#define SOR0_CLK_SEL1			(1 << 15)
-//    REG(CLK_RST_CONTROLLER_CLK_SOURCE_SOR0_0, SOR0_CLK_SEL1, 0);
-//    REG(CLK_RST_CONTROLLER_CLK_SOURCE_SOR0_0, SOR0_CLK_SEL0, 0);//sor safe clock
-	reg_val = READL((void *)(0x60006000 + 0x414));
-	reg_val &= ~(SOR0_CLK_SEL0 | SOR0_CLK_SEL1);
-	WRITEL(reg_val, (void *)(0x60006000 + 0x414));
-
-//    clock(PLLDP, 270)
-	WRITEL(0, (void *)(0x60006000 + 0x594));	// plldp_misc
-	WRITEL(0x11400000, (void *)(0x60006000 + 0x598));	// plldp_ss_cfg
-	WRITEL(0x80305a01, (void *)(0x60006000 + 0x590));// plldp_base, 12 * 90 / 4 = 270
-	WRITEL(0x11400000, (void *)(0x60006000 + 0x598));	// plldp_ss_cfg
-	WRITEL(0x40000000, (void *)(0x60006000 + 0x594));	// misc: enable lock
-	WRITEL(0xc0305a01, (void *)(0x60006000 + 0x590));	// base: enable
-	WRITEL(0xd8305a01, (void *)(0x60006000 + 0x590));	// base: check lock
-	WRITEL(0x58305a01, (void *)(0x60006000 + 0x590));	// base: disable bypass
-	WRITEL(0x11000000, (void *)(0x60006000 + 0x598));	// release clamp
-	udelay(10);	// wait for plldp ready
+	sor_clock_stop();
+	graphics_clock();
 
 	SOR_WRITE(SOR_NV_PDISP_SOR_CLK_CNTRL_0, (6 << 2) | 2);//select PLLDP,  lowest speed(6x)
 	SOR_WRITE(SOR_NV_PDISP_SOR_DP_PADCTL0_0, 0x00800000);	//set PDCAL
@@ -888,11 +870,12 @@ void dp_link_training(u32 lanes, u32 speed)
 	SOR_WRITE(SOR_NV_PDISP_SOR_CLK_CNTRL_0, ((speed << 2) | 2));
 	udelay(100);
 
-	//REG(CLK_RST_CONTROLLER_CLK_SOURCE_SOR0_0,SOR0_CLK_SEL0, 1) //sor clk=pad macro output
+	sor_clock_start();
+#if 0
 	reg_val = readl((void *)(0x60006000 + 0x414));
 	reg_val |= SOR0_CLK_SEL0;
-
 	writel(reg_val, (void *)(0x60006000 + 0x414));
+#endif
 
 	SOR_WRITE(SOR_NV_PDISP_SOR_DP_LINKCTL0_0,
 			  (((0xF >> (4 - lanes)) << 16) | 1));

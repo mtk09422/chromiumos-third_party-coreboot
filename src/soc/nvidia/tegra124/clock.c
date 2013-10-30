@@ -79,7 +79,8 @@ union __attribute__((transparent_union)) pll_fields {
 /* This table defines the frequency dividers for every PLL to turn the external
  * OSC clock into the frequencies defined by TEGRA_PLL*_KHZ in soc/clock.h.
  * All PLLs have three dividers (N, M and P), with the governing formula for
- * the output frequency being OUT = (IN / m) * N / (2^P). */
+ * the output frequency being OUT = (IN / m) * N / (2^P).
+ * Yes, it really is one equation with three unknowns ... */
 struct {
 	int khz;
 	struct pllcx_dividers	pllx;	/* target: 1900 MHz */
@@ -87,6 +88,7 @@ struct {
 	struct pllcx_dividers	pllc;	/* target:  600 MHz */
 	struct pllpad_dividers	plld;	/* target:  925 MHz */
 	struct pllu_dividers	pllu;	/* target;  960 MHz */
+	struct pllcx_dividers	plldp;	/* target;  270 MHz */
 } static const osc_table[16] = {
 	[OSC_FREQ_OSC12]{
 		.khz = 12000,
@@ -95,6 +97,7 @@ struct {
 		.pllc = {.n =  50, .m =  1, .p = 0},
 		.plld = {.n = 925, .m = 12, .p = 0, .cpcon = 12},
 		.pllu = {.n =  80, .m =  1, .p = 0, .cpcon = 3},
+		.plldp = {.n = 90, .m =  1, .p = 3},		/* 270 MHz */
 	},
 	[OSC_FREQ_OSC13]{
 		.khz = 13000,
@@ -103,6 +106,7 @@ struct {
 		.pllc = {.n = 231, .m =  5, .p = 0},		 /* 600.6 MHz */
 		.plld = {.n = 925, .m = 13, .p = 0, .cpcon = 12},
 		.pllu = {.n = 960, .m = 13, .p = 0, .cpcon = 12},
+		.plldp = {.n = 83, .m =  1, .p = 3},		/* 269.75 MHz */
 	},
 	[OSC_FREQ_OSC16P8]{
 		.khz = 16800,
@@ -111,6 +115,7 @@ struct {
 		.pllc = {.n = 250, .m =  7, .p = 0},
 		.plld = {.n = 936, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
 		.pllu = {.n = 400, .m =  7, .p = 0, .cpcon = 8},
+		.plldp = {.n = 67, .m =  1, .p = 3},		/* 268 MHz */
 	},
 	[OSC_FREQ_OSC19P2]{
 		.khz = 19200,
@@ -119,6 +124,7 @@ struct {
 		.pllc = {.n = 125, .m =  4, .p = 0},
 		.plld = {.n = 819, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
 		.pllu = {.n =  50, .m =  1, .p = 0, .cpcon = 2},
+		.plldp = {.n = 57, .m =  1, .p = 3},		/* 270.75 MHz */
 	},
 	[OSC_FREQ_OSC26]{
 		.khz = 26000,
@@ -127,6 +133,7 @@ struct {
 		.pllc = {.n =  23, .m =  1, .p = 0},		   /* 598 MHz */
 		.plld = {.n = 925, .m = 26, .p = 0, .cpcon = 12},
 		.pllu = {.n = 480, .m = 13, .p = 0, .cpcon = 8},
+		.plldp = {.n = 41, .m =  1, .p = 3},		/* 266.50 MHz */
 	},
 	[OSC_FREQ_OSC38P4]{
 		.khz = 38400,
@@ -135,6 +142,7 @@ struct {
 		.pllc = {.n = 125, .m =  4, .p = 0},
 		.plld = {.n = 819, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
 		.pllu = {.n =  50, .m =  1, .p = 0, .cpcon = 2},
+		.plldp = {.n = 28, .m =  1, .p = 3},		/* 266 MHz */
 	},
 	[OSC_FREQ_OSC48]{
 		.khz = 48000,
@@ -143,6 +151,7 @@ struct {
 		.pllc = {.n =  50, .m =  1, .p = 0},
 		.plld = {.n = 925, .m = 12, .p = 0, .cpcon = 12},
 		.pllu = {.n =  80, .m =  1, .p = 0, .cpcon = 3},
+		.plldp = {.n = 22, .m =  1, .p = 3},		/* 264 MHz */
 	},
 };
 
@@ -189,6 +198,23 @@ static void adjust_pllp_out_freqs(void)
 	writel(reg, &clk_rst->pllp_outb);
 }
 
+#define SOR0_CLK_SEL0			(1 << 14)
+#define SOR0_CLK_SEL1			(1 << 15)
+
+void sor_clock_stop(void)
+{
+	/* The Serial Output Resource clock has to be off
+	 * before we start the plldp. Learned the hard way.
+	 * FIXME: this has to be cleaned up a bit more.
+	 * Waiting on some new info from Nvidia.
+	 */
+	clrbits_le32(&clk_rst->clk_src_sor, SOR0_CLK_SEL0 | SOR0_CLK_SEL1);
+}
+
+void sor_clock_start(void)
+{
+	setbits_le32(&clk_rst->clk_src_sor, SOR0_CLK_SEL0 | SOR0_CLK_SEL1);
+}
 static void init_pll(u32 *base, u32 *misc, const union pll_fields pll)
 {
 	u32 dividers =  pll.div.n << PLL_BASE_DIVN_SHIFT |
@@ -197,7 +223,6 @@ static void init_pll(u32 *base, u32 *misc, const union pll_fields pll)
 
 	/* Write dividers but BYPASS the PLL while we're messing with it. */
 	writel(dividers | PLL_BASE_BYPASS, base);
-
 	/* Set CPCON field (defaults to 0 if it doesn't exist for this PLL) */
 	writel(pll.div.cpcon << PLL_MISC_CPCON_SHIFT, misc);
 
@@ -235,6 +260,32 @@ static void init_utmip_pll(void)
 		0, &clk_rst->utmip_pll_cfg2);
 
 	setbits_le32(&clk_rst->utmip_pll_cfg2, 1 << 30); /* PHY_XTAL_CLKEN */
+}
+
+/* Graphics just has to be different. There's a few more bits we
+ * need to set in here, but it makes sense just to restrict all the
+ * special bits to this one function.
+ */
+void graphics_clock(void)
+{
+	int osc = clock_get_osc_bits();
+	u32 *cfg = &clk_rst->plldp_ss_cfg;
+	/* the vendor code sets the dither bit (28)
+	 * an undocumented bit (24)
+	 * and clamp while we mess with it (22)
+	 * Dither is pretty important to display port
+	 * so we really do need to handle these bits.
+	 * I'm not willing to not clamp it, even if
+	 * it might "mostly work" with it not set,
+	 * I don't want to find out in a few months
+	 * that it is needed.
+	 */
+	u32 scfg = (1<<28) | (1<<24) | (1<<22);
+	writel(scfg, cfg);
+	init_pll(&clk_rst->plldp_base, &clk_rst->plldp_misc, osc_table[osc].plldp);
+	/* leave dither and undoc bits set, release clamp */
+	scfg = (1<<28) | (1<<24);
+	writel(scfg, cfg);
 }
 
 /* Initialize the UART and put it on CLK_M so we can use it during clock_init().
