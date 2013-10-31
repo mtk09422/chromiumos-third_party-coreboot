@@ -269,11 +269,11 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 _rsv31;			/*                          0x554 */
 	u32 super_gr3d_clk_div;		/* _SUPER_GR3D_CLK_DIVIDER, 0x558 */
 	u32 spare_reg0;			/* _SPARE_REG0,             0x55c */
-	u32 _rsv32[11];			/*                      0x560-58c */
+	u32 _rsv32[12];			/*                      0x560-58c */
 	u32 plldp_base;			/* _PLLDP_BASE,             0x590 */
 	u32 plldp_misc;			/* _PLLDP_MISC,             0x594 */
 	u32 plldp_ss_cfg;		/* _PLLDP_SS_CFG,           0x598 */
-	u32 _rsrv321[26];
+	u32 _rsrv321[25];
 	u32 clk_src_xusb_core_host;	/* _CLK_SOURCE_XUSB_CORE_HOST 0x600 */
 	u32 clk_src_xusb_falcon;	/* _CLK_SOURCE_XUSB_FALCON  0x604 */
 	u32 clk_src_xusb_fs;		/* _CLK_SOURCE_XUSB_FS      0x608 */
