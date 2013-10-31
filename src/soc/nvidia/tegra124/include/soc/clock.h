@@ -142,7 +142,22 @@ enum {
 	CLK_W_DVFS = 0x1 << 27,
 	CLK_W_XUSB_SS = 0x1 << 28,
 	CLK_W_MC1 = 0x1 << 30,
-	CLK_W_EMC1 = 0x1 << 31
+	CLK_W_EMC1 = 0x1 << 31,
+
+	CLK_X_AMX1 = 0x1 << 25,
+	CLK_X_GPU = 0x1 << 24,
+	CLK_X_SOR0 = 0x1 << 22,
+	CLK_X_DPAUX = 0x1 << 21,
+	CLK_X_ADX1 = 0x1 << 20,
+	CLK_X_VIC = 0x1 << 18,
+	CLK_X_CLK72MHZ = 0x1 << 17,
+	CLK_X_HDMI_AUDIO = 0x1 << 16,
+	CLK_X_EMC_DLL = 0x1 << 14,
+	CLK_X_VIM2_CLK = 0x1 << 11,
+	CLK_X_I2C6 = 0x1 << 6,
+	CLK_X_CAM_MCLK2 = 0x1 << 5,
+	CLK_X_CAM_MCLK = 0x1 << 4,
+	CLK_X_SPARE = 0x1 << 0,
 };
 
 /* PLL stabilization delay in usec */
