@@ -191,21 +191,6 @@ void clock_init_arm_generic_timer(void)
 	write32(cntcr, &sysctr->cntcr);
 }
 
-static void adjust_pllp_out_freqs(void)
-{
-	u32 reg;
-	/* Set T30 PLLP_OUT1, 2, 3 & 4 freqs to 9.6, 48, 102 & 204MHz */
-	reg = readl(&clk_rst->pllp_outa); // OUTA contains OUT2 / OUT1
-	reg |= (IN_408_OUT_48_DIVISOR << PLLP_OUT2_RATIO) | PLLP_OUT2_OVR
-		| (IN_408_OUT_9_6_DIVISOR << PLLP_OUT1_RATIO) | PLLP_OUT1_OVR;
-	writel(reg, &clk_rst->pllp_outa);
-
-	reg = readl(&clk_rst->pllp_outb);   // OUTB, contains OUT4 / OUT3
-	reg |= (IN_408_OUT_204_DIVISOR << PLLP_OUT4_RATIO) | PLLP_OUT4_OVR
-		| (IN_408_OUT_102_DIVISOR << PLLP_OUT3_RATIO) | PLLP_OUT3_OVR;
-	writel(reg, &clk_rst->pllp_outb);
-}
-
 #define SOR0_CLK_SEL0			(1 << 14)
 #define SOR0_CLK_SEL1			(1 << 15)
 
@@ -328,6 +313,9 @@ void clock_cpu0_config_and_reset(void *entry)
 	write32((uintptr_t)entry, &cpug_entry_point);
 	write32((uintptr_t)&cpug_setup, evp_cpu_reset);
 
+	/* Set active CPU cluster to G */
+	clrbits_le32(&flow->cluster_control, 1);
+
 	// Set up cclk_brst and divider.
 	write32((CRC_CCLK_BRST_POL_PLLX_OUT0 << 0) |
 		(CRC_CCLK_BRST_POL_PLLX_OUT0 << 4) |
@@ -364,67 +352,63 @@ void clock_cpu0_config_and_reset(void *entry)
 		&clk_rst->rst_cpug_cmplx_clr);
 }
 
-/**
- * The T124 requires some special clock initialization, including setting up
- * the DVC I2C, turning on MSELECT and selecting the G CPU cluster
- */
 void clock_init(void)
 {
-	u32 val;
 	u32 osc = clock_get_osc_bits();
-
-	/*
-	 * On poweron, AVP clock source (also called system clock) is set to
-	 * PLLP_out0 with frequency set at 1MHz. Before initializing PLLP, we
-	 * need to move the system clock's source to CLK_M temporarily. And
-	 * then switch it to PLLP_out4 (204MHz) at a later time.
-	 */
-	val = (SCLK_SOURCE_CLKM << SCLK_SWAKEUP_FIQ_SOURCE_SHIFT) |
-		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_IRQ_SOURCE_SHIFT) |
-		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_RUN_SOURCE_SHIFT) |
-		(SCLK_SOURCE_CLKM << SCLK_SWAKEUP_IDLE_SOURCE_SHIFT) |
-		(SCLK_SYS_STATE_RUN << SCLK_SYS_STATE_SHIFT);
-	writel(val, &clk_rst->sclk_brst_pol);
-	udelay(2);
-
-	/* Set active CPU cluster to G */
-	clrbits_le32(&flow->cluster_control, 1);
-
-	/* Change the oscillator drive strength */
-	val = readl(&clk_rst->osc_ctrl);
-	val &= ~OSC_XOFS_MASK;
-	val |= (OSC_DRIVE_STRENGTH << OSC_XOFS_SHIFT);
-	writel(val, &clk_rst->osc_ctrl);
-
-	/* Ambiguous quote from u-boot. TODO: what's this mean?
-	 * "should update same value in PMC_OSC_EDPD_OVER XOFS
-	   field for warmboot "*/
-	val = readl(&pmc->osc_edpd_over);
-	val &= ~PMC_OSC_EDPD_OVER_XOFS_MASK;
-	val |= (OSC_DRIVE_STRENGTH << PMC_OSC_EDPD_OVER_XOFS_SHIFT);
-	writel(val, &pmc->osc_edpd_over);
-
-	/* Disable IDDQ for PLLX before we set it up (from U-Boot -- why?) */
-	val = readl(&clk_rst->pllx_misc3);
-	val &= ~PLLX_IDDQ_MASK;
-	writel(val, &clk_rst->pllx_misc3);
-	udelay(2);
 
 	/* Set PLLC dynramp_step A to 0x2b and B to 0xb (from U-Boot -- why? */
 	writel(0x2b << 17 | 0xb << 9, &clk_rst->pllc_misc2);
 
-	adjust_pllp_out_freqs();
+	/* Max out the AVP clock before everything else (need PLLC for that). */
+	init_pll(&clk_rst->pllc_base, &clk_rst->pllc_misc, osc_table[osc].pllc);
+
+	/* Be more careful with processor clock, wait for the lock. (~10us) */
+	setbits_le32(&clk_rst->pllc_misc, PLLC_MISC_LOCK_ENABLE);
+	while (!(read32(&clk_rst->pllc_base) & PLL_BASE_LOCK)) /* wait */;
+
+	/* APB pclk and AHB hclk derive from sclk, let's not overkill them */
+	write32(3 << HCLK_DIVISOR_SHIFT | 3 << PCLK_DIVISOR_SHIFT,
+		&clk_rst->clk_sys_rate);	/* pclk = hclk/4 = sclk/16 */
+	write32(0 << SCLK_DIVIDEND_SHIFT |
+		(div_round_up(TEGRA_PLLC_KHZ, 300000) - 1) << SCLK_DIVISOR_SHIFT
+		| SCLK_DIV_ENB, &clk_rst->super_sclk_div);
+	write32(SCLK_SYS_STATE_RUN << SCLK_SYS_STATE_SHIFT |
+		SCLK_SOURCE_PLLC_OUT0 << SCLK_RUN_SHIFT,
+		&clk_rst->sclk_brst_pol);		/* sclk = 300 MHz */
+
+	/* Change the oscillator drive strength (from U-Boot -- why?) */
+	clrsetbits_le32(&clk_rst->osc_ctrl, OSC_XOFS_MASK,
+			OSC_DRIVE_STRENGTH << OSC_XOFS_SHIFT);
+
+	/*
+	 * Ambiguous quote from u-boot. TODO: what's this mean?
+	 * "should update same value in PMC_OSC_EDPD_OVER XOFS
+	 * field for warmboot "
+	 */
+	clrsetbits_le32(&pmc->osc_edpd_over, PMC_OSC_EDPD_OVER_XOFS_MASK,
+			OSC_DRIVE_STRENGTH << PMC_OSC_EDPD_OVER_XOFS_SHIFT);
+
+	/* Disable IDDQ for PLLX before we set it up (from U-Boot -- why?) */
+	clrbits_le32(&clk_rst->pllx_misc3, PLLX_IDDQ_MASK);
+
+	/* Set up PLLP_OUT(1|2|3|4) divisor to generate (9.6|48|102|204)MHz */
+	write32((CLK_DIVIDER(TEGRA_PLLP_KHZ, 9600) << PLL_OUT_RATIO_SHIFT |
+		 PLL_OUT_OVR | PLL_OUT_CLKEN | PLL_OUT_RSTN) << PLL_OUT1_SHIFT |
+		(CLK_DIVIDER(TEGRA_PLLP_KHZ, 48000) << PLL_OUT_RATIO_SHIFT |
+		 PLL_OUT_OVR | PLL_OUT_CLKEN | PLL_OUT_RSTN) << PLL_OUT2_SHIFT,
+		&clk_rst->pllp_outa);
+	write32((CLK_DIVIDER(TEGRA_PLLP_KHZ, 102000) << PLL_OUT_RATIO_SHIFT |
+		 PLL_OUT_OVR | PLL_OUT_CLKEN | PLL_OUT_RSTN) << PLL_OUT3_SHIFT |
+		(CLK_DIVIDER(TEGRA_PLLP_KHZ, 204000) << PLL_OUT_RATIO_SHIFT |
+		 PLL_OUT_OVR | PLL_OUT_CLKEN | PLL_OUT_RSTN) << PLL_OUT4_SHIFT,
+		&clk_rst->pllp_outb);
 
 	init_pll(&clk_rst->pllx_base, &clk_rst->pllx_misc, osc_table[osc].pllx);
 	init_pll(&clk_rst->pllp_base, &clk_rst->pllp_misc, osc_table[osc].pllp);
-	init_pll(&clk_rst->pllc_base, &clk_rst->pllc_misc, osc_table[osc].pllc);
 	init_pll(&clk_rst->plld_base, &clk_rst->plld_misc, osc_table[osc].plld);
 	init_pll(&clk_rst->pllu_base, &clk_rst->pllu_misc, osc_table[osc].pllu);
 	init_utmip_pll();
 	graphics_pll();
-
-	val = (1 << CLK_SYS_RATE_AHB_RATE_SHIFT);
-	writel(val, &clk_rst->clk_sys_rate);
 }
 
 void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x)
