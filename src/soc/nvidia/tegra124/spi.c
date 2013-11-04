@@ -408,13 +408,16 @@ static void setup_dma_params(struct tegra_spi_channel *spi,
 				struct apb_dma_channel *dma)
 {
 	/* APB bus width = 8-bits, address wrap for each word */
-	clrbits_le32(&dma->regs->apb_seq, 0x7 << 28);
+	clrbits_le32(&dma->regs->apb_seq,
+			AHB_BUS_WIDTH_MASK << AHB_BUS_WIDTH_SHIFT);
 	/* AHB 1 word burst, bus width = 32 bits (fixed in hardware),
 	 * no address wrapping */
 	clrsetbits_le32(&dma->regs->ahb_seq,
-			(0x7 << 24) | (0x7 << 16), 0x4 << 24);
+			(AHB_BURST_MASK << AHB_BURST_SHIFT) |
+			(AHB_SEQ_WRAP_MASK << AHB_SEQ_WRAP_SHIFT),
+			AHB_BURST_MASK << AHB_BURST_SHIFT);
 	/* Set ONCE mode to transfer one "blocK" at a time (64KB). */
-	setbits_le32(&dma->regs->csr, 1 << 27);
+	setbits_le32(&dma->regs->csr, APB_CSR_ONCE);
 }
 
 static int tegra_spi_dma_prepare(struct tegra_spi_channel *spi,
@@ -447,7 +450,7 @@ static int tegra_spi_dma_prepare(struct tegra_spi_channel *spi,
 
 		write32((u32)&spi->regs->tx_fifo, &spi->dma_out->regs->apb_ptr);
 		write32((u32)spi->out_buf, &spi->dma_out->regs->ahb_ptr);
-		setbits_le32(&spi->dma_out->regs->csr, APBDMACHAN_CSR_DIR);
+		setbits_le32(&spi->dma_out->regs->csr, APB_CSR_DIR);
 		setup_dma_params(spi, spi->dma_out);
 		write32(wcount, &spi->dma_out->regs->wcount);
 	} else {
@@ -460,7 +463,7 @@ static int tegra_spi_dma_prepare(struct tegra_spi_channel *spi,
 
 		write32((u32)&spi->regs->rx_fifo, &spi->dma_in->regs->apb_ptr);
 		write32((u32)spi->in_buf, &spi->dma_in->regs->ahb_ptr);
-		clrbits_le32(&spi->dma_in->regs->csr, APBDMACHAN_CSR_DIR);
+		clrbits_le32(&spi->dma_in->regs->csr, APB_CSR_DIR);
 		setup_dma_params(spi, spi->dma_in);
 		write32(wcount, &spi->dma_in->regs->wcount);
 	}
