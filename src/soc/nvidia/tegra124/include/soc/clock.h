@@ -236,7 +236,8 @@ enum clock_source {  /* Careful: Not true for all sources, always check TRM! */
 int clock_get_osc_khz(void);
 void clock_early_uart(void);
 void clock_cpu0_config_and_reset(void * entry);
-void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w);
+void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x);
 void clock_init(void);
 void clock_init_arm_generic_timer(void);
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */
+

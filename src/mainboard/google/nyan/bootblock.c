@@ -49,7 +49,7 @@ void bootblock_mainboard_init(void)
 
 	clock_enable_clear_reset(CLK_L_CACHE2 | CLK_L_TMR,
 				 CLK_H_I2C5 | CLK_H_APBDMA,
-				 0, CLK_V_MSELECT, 0);
+				 0, CLK_V_MSELECT, 0, 0);
 
 	// I2C5 (PMU) clock.
 	pinmux_set_config(PINMUX_PWR_I2C_SCL_INDEX,

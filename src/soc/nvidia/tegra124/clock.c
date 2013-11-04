@@ -358,13 +358,14 @@ void clock_init(void)
 	writel(val, &clk_rst->clk_sys_rate);
 }
 
-void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w)
+void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x)
 {
 	if (l) writel(l, &clk_rst->clk_enb_l_set);
 	if (h) writel(h, &clk_rst->clk_enb_h_set);
 	if (u) writel(u, &clk_rst->clk_enb_u_set);
 	if (v) writel(v, &clk_rst->clk_enb_v_set);
 	if (w) writel(w, &clk_rst->clk_enb_w_set);
+	if (x) writel(x, &clk_rst->clk_enb_x_set);
 
 	/* Give clocks time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
@@ -374,4 +375,5 @@ void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w)
 	if (u) writel(u, &clk_rst->rst_dev_u_clr);
 	if (v) writel(v, &clk_rst->rst_dev_v_clr);
 	if (w) writel(w, &clk_rst->rst_dev_w_clr);
+	if (x) writel(x, &clk_rst->rst_dev_x_clr);
 }

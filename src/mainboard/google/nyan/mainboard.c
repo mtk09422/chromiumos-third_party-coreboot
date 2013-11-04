@@ -207,7 +207,7 @@ static void mainboard_init(device_t dev)
 				 CLK_H_PMC | CLK_H_MEM | CLK_H_USB3,
 				 CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3,
 				 CLK_V_I2C4,
-				 CLK_W_DVFS);
+				 CLK_W_DVFS, 0);
 
 	usb_setup_utmip1();
 	/* USB2 is the camera, we don't need it in firmware */
