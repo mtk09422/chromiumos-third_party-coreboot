@@ -129,26 +129,32 @@ static struct tegra_spi_channel tegra_spi_channels[] = {
 	{
 		.slave = { .bus = 1, },
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI1_BASE,
+		.req_sel = APBDMA_SLAVE_SL2B1,
 	},
 	{
 		.slave = { .bus = 2, },
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI2_BASE,
+		.req_sel = APBDMA_SLAVE_SL2B2,
 	},
 	{
 		.slave = { .bus = 3, },
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI3_BASE,
+		.req_sel = APBDMA_SLAVE_SL2B3,
 	},
 	{
 		.slave = { .bus = 4, },
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI4_BASE,
+		.req_sel = APBDMA_SLAVE_SL2B4,
 	},
 	{
 		.slave = { .bus = 5, },
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI5_BASE,
+		.req_sel = APBDMA_SLAVE_SL2B5,
 	},
 	{
 		.slave = { .bus = 6, },
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI6_BASE,
+		.req_sel = APBDMA_SLAVE_SL2B6,
 	},
 };
 
@@ -416,8 +422,13 @@ static void setup_dma_params(struct tegra_spi_channel *spi,
 			(AHB_BURST_MASK << AHB_BURST_SHIFT) |
 			(AHB_SEQ_WRAP_MASK << AHB_SEQ_WRAP_SHIFT),
 			AHB_BURST_MASK << AHB_BURST_SHIFT);
-	/* Set ONCE mode to transfer one "blocK" at a time (64KB). */
-	setbits_le32(&dma->regs->csr, APB_CSR_ONCE);
+
+	/* Set ONCE mode to transfer one "block" at a time (64KB) and enable
+	 * flow control. */
+	clrbits_le32(&dma->regs->csr,
+			APB_CSR_REQ_SEL_MASK << APB_CSR_REQ_SEL_SHIFT);
+	setbits_le32(&dma->regs->csr, APB_CSR_ONCE | APB_CSR_FLOW |
+			(spi->req_sel << APB_CSR_REQ_SEL_SHIFT));
 }
 
 static int tegra_spi_dma_prepare(struct tegra_spi_channel *spi,
