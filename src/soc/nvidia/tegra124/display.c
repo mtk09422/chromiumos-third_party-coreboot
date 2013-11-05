@@ -87,7 +87,7 @@ static const u32 rgb_sel_tab[PIN_OUTPUT_SEL_COUNT] = {
 };
 
 static int update_display_mode(struct dc_disp_reg *disp,
-							   struct soc_nvidia_tegra124_config *config)
+			       struct soc_nvidia_tegra124_config *config)
 {
 	u32 val;
 	u32 rate;
