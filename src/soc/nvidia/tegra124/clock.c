@@ -213,8 +213,9 @@ void sor_clock_stop(void)
 
 void sor_clock_start(void)
 {
-	setbits_le32(&clk_rst->clk_src_sor, SOR0_CLK_SEL0 | SOR0_CLK_SEL1);
+	setbits_le32(&clk_rst->clk_src_sor, SOR0_CLK_SEL0);
 }
+
 static void init_pll(u32 *base, u32 *misc, const union pll_fields pll)
 {
 	u32 dividers =  pll.div.n << PLL_BASE_DIVN_SHIFT |

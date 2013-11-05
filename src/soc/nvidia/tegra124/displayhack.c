@@ -50,29 +50,9 @@ int dpaux_read(u32 addr, u32 size, u8 * data);
 
 void init_dca_regs(void)
 {
-	struct clk_rst_ctlr *clkrst = (struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE;
 //  u32 val;
 
 	printk(BIOS_SPEW, "JZ: %s: entry\n", __func__);
-
-#define SWR_DISP1_RST				(1 << 27)
-#define SWR_HOST1X_RST				(1 << 28)
-#define CLK_ENB_DISP1				SWR_DISP1_RST
-#define CLK_ENB_HOST1X				SWR_HOST1X_RST
-//    REG(CLK_RST_CONTROLLER_RST_DEVICES_L_0,    SWR_DISP1_RST, 1);
-//    REG(CLK_RST_CONTROLLER_RST_DEVICES_L_0,    SWR_DISP1_RST, 0);
-//    REG(CLK_RST_CONTROLLER_CLK_OUT_ENB_L_0,    CLK_ENB_DISP1, 1);
-	/* enable disp1 */
-	setbits_le32(&clkrst->rst_dev_l, SWR_DISP1_RST);	// Set Reset
-	clrbits_le32(&clkrst->rst_dev_l, SWR_DISP1_RST);	// Clear Reset
-	setbits_le32(&clkrst->clk_out_enb_l, CLK_ENB_DISP1);	// Set Enable
-	WRITEL(0x00000000, (void *)(0x60006000 + 0x138));	// CLK_SOURCE_DISP1 = PLLP
-//  WRITEL(0x40000000, (void *)(0x60006000 + 0x138));   // CLK_SOURCE_DISP1 = PLLD
-	/* enable host1x */
-	clrbits_le32(&clkrst->rst_dev_l, SWR_HOST1X_RST);	// Clear Reset
-	setbits_le32(&clkrst->clk_out_enb_l, CLK_ENB_HOST1X);	// Set Enable
-	WRITEL(0x80000000, (void *)(0x60006000 + 0x180));	// CLK_SOURCE_HOST1X = PLLP
-//  WRITEL(0x40000000, (0x60006000 + 0x180));   // CLK_SOURCE_HOST1X = PLLC
 
 #if 1
 #define DCA_WRITE(reg, val) \

@@ -48,11 +48,10 @@ static void set_clock_sources(void)
 	clock_configure_source(sdmmc3, PLLP, 48000);
 	clock_configure_source(sdmmc4, PLLP, 48000);
 
-	/* PLLP and PLLM are switched for HOST1x for no apparent reason. */
+	/* PLLP and PLLM are switched for HOST1x for no apparent reason.
+	 * Hence, we do not use the constants. */
 	write32(4 /* PLLP! */ << CLK_SOURCE_SHIFT |
-		/* TODO(rminnich): The divisor isn't accurate enough to get to
-		 * 144MHz (it goes to 163 instead). What should we do here? */
-		CLK_DIVIDER(TEGRA_PLLP_KHZ, 144000),
+		CLK_DIVIDER(TEGRA_PLLP_KHZ, 408000),
 		&clk_rst->clk_src_host1x);
 
 	/* DISP1 doesn't support a divisor. Use PLLC which runs at 600MHz. */
@@ -202,7 +201,8 @@ static void mainboard_init(device_t dev)
 {
 	set_clock_sources();
 	clock_enable_clear_reset(CLK_L_GPIO | CLK_L_I2C1 |
-				 CLK_L_SDMMC4 | CLK_L_USBD,
+				 CLK_L_SDMMC4 | CLK_L_USBD |
+				 CLK_L_DISP1 | CLK_L_HOST1X,
 				 CLK_H_EMC | CLK_H_I2C2 | CLK_H_SBC1 |
 				 CLK_H_PMC | CLK_H_MEM | CLK_H_USB3,
 				 CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3,
