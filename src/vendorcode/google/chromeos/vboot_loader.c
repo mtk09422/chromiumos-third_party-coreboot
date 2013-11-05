@@ -23,7 +23,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <console/vtxprintf.h>
-#include <pc80/tpm.h>
+#include <tpm.h>
 #include <reset.h>
 #include <romstage_handoff.h>
 #include <rmodule.h>
