@@ -241,7 +241,6 @@ void clock_init(void);
 void clock_init_arm_generic_timer(void);
 void sor_clock_stop(void);
 void sor_clock_start(void);
-void graphics_clock(void);
 
 #endif /* __SOC_NVIDIA_TEGRA124_CLOCK_H__ */
 

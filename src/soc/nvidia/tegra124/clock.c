@@ -89,6 +89,7 @@ struct {
 	struct pllpad_dividers	plld;	/* target:  925 MHz */
 	struct pllu_dividers	pllu;	/* target;  960 MHz */
 	struct pllcx_dividers	plldp;	/* target;  270 MHz */
+	struct pllcx_dividers	plld2;	/* target;  570 MHz */
 } static const osc_table[16] = {
 	[OSC_FREQ_OSC12]{
 		.khz = 12000,
@@ -98,6 +99,7 @@ struct {
 		.plld = {.n = 925, .m = 12, .p = 0, .cpcon = 12},
 		.pllu = {.n =  80, .m =  1, .p = 0, .cpcon = 3},
 		.plldp = {.n = 90, .m =  1, .p = 3},		/* 270 MHz */
+		.plld2 = {.n = 95, .m =  1, .p = 1},		/* 570 MHz */
 	},
 	[OSC_FREQ_OSC13]{
 		.khz = 13000,
@@ -107,6 +109,7 @@ struct {
 		.plld = {.n = 925, .m = 13, .p = 0, .cpcon = 12},
 		.pllu = {.n = 960, .m = 13, .p = 0, .cpcon = 12},
 		.plldp = {.n = 83, .m =  1, .p = 3},		/* 269.75 MHz */
+		.plld2 = {.n = 88, .m =  1, .p = 1},		/* 572 MHz */
 	},
 	[OSC_FREQ_OSC16P8]{
 		.khz = 16800,
@@ -115,7 +118,8 @@ struct {
 		.pllc = {.n = 250, .m =  7, .p = 0},
 		.plld = {.n = 936, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
 		.pllu = {.n = 400, .m =  7, .p = 0, .cpcon = 8},
-		.plldp = {.n = 67, .m =  1, .p = 3},		/* 268 MHz */
+		.plldp = {.n = 64, .m =  1, .p = 3},		/* 268.8 MHz */
+		.plld2 = {.n = 68, .m =  1, .p = 1},		/* 571.2  MHz */
 	},
 	[OSC_FREQ_OSC19P2]{
 		.khz = 19200,
@@ -124,7 +128,8 @@ struct {
 		.pllc = {.n = 125, .m =  4, .p = 0},
 		.plld = {.n = 819, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
 		.pllu = {.n =  50, .m =  1, .p = 0, .cpcon = 2},
-		.plldp = {.n = 57, .m =  1, .p = 3},		/* 270.75 MHz */
+		.plldp = {.n = 56, .m =  1, .p = 3},		/* 270.75 MHz */
+		.plld2 = {.n = 59, .m =  1, .p = 1},		/* 570 MHz */
 	},
 	[OSC_FREQ_OSC26]{
 		.khz = 26000,
@@ -133,7 +138,8 @@ struct {
 		.pllc = {.n =  23, .m =  1, .p = 0},		   /* 598 MHz */
 		.plld = {.n = 925, .m = 26, .p = 0, .cpcon = 12},
 		.pllu = {.n = 480, .m = 13, .p = 0, .cpcon = 8},
-		.plldp = {.n = 41, .m =  1, .p = 3},		/* 266.50 MHz */
+		.plldp = {.n = 83, .m =  2, .p = 3},		/* 266.50 MHz */
+		.plld2 = {.n = 88, .m =  2, .p = 1},		/* 570 MHz */
 	},
 	[OSC_FREQ_OSC38P4]{
 		.khz = 38400,
@@ -142,7 +148,8 @@ struct {
 		.pllc = {.n = 125, .m =  4, .p = 0},
 		.plld = {.n = 819, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
 		.pllu = {.n =  50, .m =  1, .p = 0, .cpcon = 2},
-		.plldp = {.n = 28, .m =  1, .p = 3},		/* 266 MHz */
+		.plldp = {.n = 56, .m =  2, .p = 3},		/* 268 MHz */
+		.plld2 = {.n = 59, .m =  2, .p = 1},		/* 566 MHz */
 	},
 	[OSC_FREQ_OSC48]{
 		.khz = 48000,
@@ -151,7 +158,8 @@ struct {
 		.pllc = {.n =  50, .m =  1, .p = 0},
 		.plld = {.n = 925, .m = 12, .p = 0, .cpcon = 12},
 		.pllu = {.n =  80, .m =  1, .p = 0, .cpcon = 3},
-		.plldp = {.n = 22, .m =  1, .p = 3},		/* 264 MHz */
+		.plldp = {.n = 90, .m =  4, .p = 3},		/* 264 MHz */
+		.plld2 = {.n = 95, .m =  4, .p = 1},		/* 570 MHz */
 	},
 };
 
@@ -213,6 +221,7 @@ void sor_clock_stop(void)
 
 void sor_clock_start(void)
 {
+	/* uses PLLP, has a non-standard bit layout. */
 	setbits_le32(&clk_rst->clk_src_sor, SOR0_CLK_SEL0);
 }
 
@@ -267,7 +276,7 @@ static void init_utmip_pll(void)
  * need to set in here, but it makes sense just to restrict all the
  * special bits to this one function.
  */
-void graphics_clock(void)
+static void graphics_pll(void)
 {
 	int osc = clock_get_osc_bits();
 	u32 *cfg = &clk_rst->plldp_ss_cfg;
@@ -287,6 +296,13 @@ void graphics_clock(void)
 	/* leave dither and undoc bits set, release clamp */
 	scfg = (1<<28) | (1<<24);
 	writel(scfg, cfg);
+
+	/* a few more undocumented bits. Sorry. */
+	writel(0x13400000, &clk_rst->plld2_ss_cfg); // undocumented
+	init_pll(&clk_rst->plld2_base, &clk_rst->plld2_misc, osc_table[osc].plld2);
+	writel(0x13800000, &clk_rst->plld2_ss_cfg); // undocumented
+	udelay(10);	// wait for plld2 ready
+
 }
 
 /* Initialize the UART and put it on CLK_M so we can use it during clock_init().
@@ -405,6 +421,7 @@ void clock_init(void)
 	init_pll(&clk_rst->plld_base, &clk_rst->plld_misc, osc_table[osc].plld);
 	init_pll(&clk_rst->pllu_base, &clk_rst->pllu_misc, osc_table[osc].pllu);
 	init_utmip_pll();
+	graphics_pll();
 
 	val = (1 << CLK_SYS_RATE_AHB_RATE_SHIFT);
 	writel(val, &clk_rst->clk_sys_rate);

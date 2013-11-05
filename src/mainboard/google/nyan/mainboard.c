@@ -54,8 +54,10 @@ static void set_clock_sources(void)
 		CLK_DIVIDER(TEGRA_PLLP_KHZ, 408000),
 		&clk_rst->clk_src_host1x);
 
-	/* DISP1 doesn't support a divisor. Use PLLC which runs at 600MHz. */
-	clock_configure_source(disp1, PLLC, 600000);
+	/* DISP1 doesn't support a divisor. Use PLLD2_OUT0 which runs at 570MHz. */
+	clrsetbits_le32(&clk_rst->clk_src_disp1,
+			CLK_SOURCE_MASK | CLK_DIVISOR_MASK,
+			5 /*PLLD2_OUT0 */ << CLK_SOURCE_SHIFT);
 }
 
 static void setup_pinmux(void)
@@ -207,7 +209,7 @@ static void mainboard_init(device_t dev)
 				 CLK_H_PMC | CLK_H_MEM | CLK_H_USB3,
 				 CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3,
 				 CLK_V_I2C4,
-				 CLK_W_DVFS, 0);
+				 CLK_W_DVFS, CLK_X_DPAUX | CLK_X_SOR0);
 
 	usb_setup_utmip1();
 	/* USB2 is the camera, we don't need it in firmware */

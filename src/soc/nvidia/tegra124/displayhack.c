@@ -50,9 +50,7 @@ int dpaux_read(u32 addr, u32 size, u8 * data);
 
 void init_dca_regs(void)
 {
-//  u32 val;
-
-	printk(BIOS_SPEW, "JZ: %s: entry\n", __func__);
+	printk(BIOS_SPEW, "%s: entry\n", __func__);
 
 #if 1
 #define DCA_WRITE(reg, val) \
@@ -346,22 +344,8 @@ void init_dca_regs(void)
 
 void init_sor_regs(void)
 {
-	struct clk_rst_ctlr *clkrst = (struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE;
 
 	printk(BIOS_SPEW, "JZ: %s: entry\n", __func__);
-
-#define SWR_SOR0_RST			(1 << 22)
-#define CLK_ENB_SOR0			SWR_SOR0_RST
-//    REG(CLK_RST_CONTROLLER_RST_DEVICES_X_0,   SWR_SOR0_RST,  1)
-//    REG(CLK_RST_CONTROLLER_RST_DEVICES_X_0,   SWR_SOR0_RST,  0)
-//    REG(CLK_RST_CONTROLLER_CLK_OUT_ENB_X_0,   CLK_ENB_SOR0,  1)
-//    REG(CLK_RST_CONTROLLER_CLK_SOURCE_SOR0_0, 0) //0x60006414
-	setbits_le32(&clkrst->rst_devices_x, SWR_SOR0_RST);	// Set Reset
-	clrbits_le32(&clkrst->rst_devices_x, SWR_SOR0_RST);	// Clear Reset
-	setbits_le32(&clkrst->clk_out_enb_x, CLK_ENB_SOR0);	// Set Enable
-	WRITEL(0x0, (void *)(0x60006000 + 0x414));	// CLK_SOURCE_SOR0 = PLLP
-
-	//WRITEL(0xc000c000, (0x60006000 + 0x414)); // CLK_SOURCE_SOR0 = CLK_M
 
 #if 1
 #define SOR_WRITE(reg, val) \
@@ -508,19 +492,8 @@ void init_sor_regs(void)
 
 void init_dpaux_regs(void)
 {
-	struct clk_rst_ctlr *clkrst = (struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE;
-//  u32 val;
 
-	printk(BIOS_SPEW, "JZ: %s: entry\n", __func__);
-
-#define SWR_DPAUX_RST			(1 << 21)
-#define CLK_ENB_DPAUX			SWR_DPAUX_RST
-//    REG(CLK_RST_CONTROLLER_RST_DEVICES_X_0, SWR_DPAUX_RST, 1)
-//    REG(CLK_RST_CONTROLLER_RST_DEVICES_X_0, SWR_DPAUX_RST, 0)
-//    REG(CLK_RST_CONTROLLER_CLK_OUT_ENB_X_0, CLK_ENB_DPAUX, 1)
-	setbits_le32(&clkrst->rst_devices_x, SWR_DPAUX_RST);	// Set Reset
-	clrbits_le32(&clkrst->rst_devices_x, SWR_DPAUX_RST);	// Clear Reset
-	setbits_le32(&clkrst->clk_out_enb_x, CLK_ENB_DPAUX);	// Set Enable
+	printk(BIOS_SPEW, "%s: entry\n", __func__);
 
 #if 1
 #define DPAUX_WRITE(reg, val) \
@@ -614,29 +587,7 @@ static void dp_io_set_dpd(u32 power_down)
 void dp_io_powerup(void)
 {
 
-//E_DPD  = PMC.dpd2_status[25]
-//PDBG   = SOR_NV_PDISP_SOR_PLL2_0.AUX6(1) | SEQ.POWERDOWN_MACRO(1) &
-//SOR_NV_PDISP_SOR_PLL2_0.AUX2(0)
-//PDPLL  = SOR_NV_PDISP_SOR_PLL0_0.PWR(1)  | SEQ.PDPLL(0)  & ~ SOR_NV_PDISP_SOR_PLL2_0.AUX1(0)
-//VCOPD  = SOR_NV_PDISP_SOR_PLL0_0.VCOPD(1)
-//CAPPD  = SOR_NV_PDISP_SOR_PLL2_0.AUX8(1) | SEQ.ASSERT_PLL_RESET(0) &
-//~ SOR_NV_PDISP_SOR_PLL2_0.AUX1(0)
-//PDPORT = SOR_NV_PDISP_SOR_PLL2_0.AUX7(1) | SEQ.PDPORT(1) &
-//~ SOR_NV_PDISP_SOR_DP_LINKCTL0_0.ENABLE(0)
-//PDCAL  = SOR_NV_PDISP_SOR_DP_PADCTL0_0.PAD_CAL_PD(1)
-
-//  struct clk_rst_ctlr *clkrst =
-//          (struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE;
-
-
 	printk(BIOS_SPEW, "%s: entry\n", __func__);
-
-#if 0
-	printk(BIOS_SPEW, "JZ: %s: %d: do nothing, ret\n", __func__, __LINE__);
-	return;
-#endif
-	sor_clock_stop();
-	graphics_clock();
 
 	SOR_WRITE(SOR_NV_PDISP_SOR_CLK_CNTRL_0, (6 << 2) | 2);//select PLLDP,  lowest speed(6x)
 	SOR_WRITE(SOR_NV_PDISP_SOR_DP_PADCTL0_0, 0x00800000);	//set PDCAL
@@ -645,7 +596,6 @@ void dp_io_powerup(void)
 	SOR_WRITE(SOR_NV_PDISP_SOR_PLL2_0, 0x01C20000);	//set AUX1,6,7,8; clr AUX2
 	SOR_WRITE(SOR_NV_PDISP_SOR_PLL3_0, 0x38002220);
 
-	//REG(SOR_NV_PDISP_SOR_PLL3_0,PLLVDD_MODE, V1_8)
 	dp_io_set_dpd(0);
 	udelay(1);	//Deassert E_DPD to enable core logic circuits, and wait for > 5us
 
@@ -690,8 +640,6 @@ static int dpaux_check(u32 bytes, u32 data, u32 mask)
 		printk(BIOS_SPEW, "******AuxRead Error:%04x: status %08x\n", 0x202,
 			   status);
 	else {
-		//temp = (buf[3] << 24) | (buf[2] << 16) | (buf[1] << 8) | buf[0] ;
-		//memcpy(&temp, buf, 4);
 		temp = DPAUX_READ(DPAUX_DP_AUXDATA_READ_W0);
 		if ((temp & mask) != (data & mask)) {
 			printk(BIOS_SPEW, "AuxCheck ERROR:(r_data) %08x & (mask) %08x != "
@@ -765,7 +713,6 @@ static int dp_training(u32 level, u32 check, u32 speed)
 	u32 cnt = 0;
 	u32 cfg, cfg_d = 0;
 	u32 wcfg;
-//    u32 status = 0;
 	u8 buf[16];
 
 	while (cnt <= 5) {
@@ -851,11 +798,6 @@ void dp_link_training(u32 lanes, u32 speed)
 	udelay(100);
 
 	sor_clock_start();
-#if 0
-	reg_val = readl((void *)(0x60006000 + 0x414));
-	reg_val |= SOR0_CLK_SEL0;
-	writel(reg_val, (void *)(0x60006000 + 0x414));
-#endif
 
 	SOR_WRITE(SOR_NV_PDISP_SOR_DP_LINKCTL0_0,
 			  (((0xF >> (4 - lanes)) << 16) | 1));
@@ -870,10 +812,6 @@ void dp_link_training(u32 lanes, u32 speed)
 	printk(BIOS_SPEW, "set link rate and lane number: %dMHz, %d lanes\n",
 		   (speed * 27), lanes);
 
-//    printk(BIOS_SPEW,"JZ: dbg ret\n");
-//    return;
-
-//    %d = (%lanes<<8) | %speed
 	dpaux_write(0x100, 2, ((lanes << 8) | speed));
 	printk(BIOS_SPEW, "precharge lane 10us\n");
 	reg_val = SOR_READ(SOR_NV_PDISP_SOR_DP_PADCTL0_0);
@@ -926,7 +864,6 @@ static u32 div_f(u32 a, u32 b, u32 one)
 u32 dp_setup_timing(u32 panel_id, u32 width, u32 height);
 u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 {
-	u32 reg_val;
 	u32 pclk_freq = 0;
 
 	///////////////////////////////////////////
@@ -968,27 +905,6 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 			   __func__, panel_id, width, height);
 		return pclk_freq;
 	}
-
-//    clock(plld2, %PLL_FREQ)   // PLL_FREQ = 570
-	writel(0, (void *)(0x60006000 + 0x4bc));	// plld2_misc
-	writel(0x13400000, (void *)(0x60006000 + 0x570));	// plld2_ss_cfg
-	writel(0x8008010c, (void *)(0x60006000 + 0x4b8));	// plld2_base
-	writel(0x80105F01, (void *)(0x60006000 + 0x4b8));// plld2_base: 12 * 95 / 2 = 570
-	writel(0x40000000, (void *)(0x60006000 + 0x4bc));	// misc: enable lock
-	writel(0x80105f01, (void *)(0x60006000 + 0x4b8));	// base: enable
-	writel(0xc0105f01, (void *)(0x60006000 + 0x4b8));	// base: check lock
-	writel(0x58105f01, (void *)(0x60006000 + 0x4b8));	// base: disable bypass
-	writel(0x13800000, (void *)(0x60006000 + 0x570));	// plld2_ss_cfg
-	udelay(10);	// wait for plld2 ready
-
-// REG(CLK_RST_CONTROLLER_CLK_SOURCE_DISP1_0, DISP1_CLK_SRC, PLLD2_OUT0)
-#define DISP1_CLK_SRC			(0x7 << 29)
-#define PLLD2_OUT0			(0x5 << 29)
-	reg_val = readl((void *)(0x60006000 + 0x138));
-	reg_val &= ~DISP1_CLK_SRC;
-	reg_val |= PLLD2_OUT0;
-	writel(reg_val, (void *)(0x60006000 + 0x138));
-	udelay(10);
 
 	PLL_FREQ = PLL_FREQ * 1000000;
 	pclk_freq = PLL_FREQ / PLL_DIV;
