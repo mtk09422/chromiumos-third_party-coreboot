@@ -20,5 +20,6 @@
 romstage-$(CONFIG_CHROMEOS) += chromeos.c
 ramstage-$(CONFIG_CHROMEOS) += chromeos.c
 ramstage-$(CONFIG_CHROMEOS) += gpio.c
+ramstage-y += irqroute.c
 
 smm-$(CONFIG_HAVE_SMI_HANDLER) += mainboard_smi.c
