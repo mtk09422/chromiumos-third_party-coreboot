@@ -2,7 +2,7 @@
  * This file is part of the coreboot project.
  *
  * Copyright (C) 2007-2009 coresystems GmbH
- * Copyright (C) 2011 Google Inc.
+ * Copyright (C) 2013 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,38 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define ENABLE_TPM
-
-DefinitionBlock(
-	"dsdt.aml",
-	"DSDT",
-	0x02,		// DSDT revision: ACPI v2.0
-	"COREv4",	// OEM id
-	"COREBOOT",	// OEM table id
-	0x20110725	// OEM revision
-)
+// PCI Interrupt Routing
+Method(_PRT)
 {
-	// Some generic macros
-	#include <soc/intel/baytrail/acpi/platform.asl>
-
-	// global NVS and variables
-	#include <soc/intel/baytrail/acpi/globalnvs.asl>
-
-	//#include "acpi/thermal.asl"
-
-	#include <soc/intel/baytrail/acpi/cpu.asl>
-
-	Scope (\_SB) {
-		Device (PCI0)
-		{
-			//#include <soc/intel/baytrail/acpi/northcluster.asl>
-			#include <soc/intel/baytrail/acpi/southcluster.asl>
-		}
+	If (PICM) {
+		Return (Package() {
+			#undef PIC_MODE
+			#include <soc/intel/baytrail/acpi/irq_helper.h>
+			PCI_DEV_PIRQ_ROUTES
+		})
+	} Else {
+		Return (Package() {
+			#define PIC_MODE
+			#include <soc/intel/baytrail/acpi/irq_helper.h>
+			PCI_DEV_PIRQ_ROUTES
+		})
 	}
-
-	#include "acpi/chromeos.asl"
-	#include <vendorcode/google/chromeos/acpi/chromeos.asl>
-
-	/* Chipset specific sleep states */
-	#include <soc/intel/baytrail/acpi/sleepstates.asl>
 }
