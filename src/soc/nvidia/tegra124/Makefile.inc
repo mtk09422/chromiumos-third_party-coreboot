@@ -4,10 +4,10 @@ bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
 bootblock-y += cbfs.c
 bootblock-y += clock.c
-bootblock-y += cpug.S
 bootblock-y += dma.c
 bootblock-y += i2c.c
 bootblock-y += dma.c
+bootblock-y += maincpu.S
 bootblock-y += monotonic_timer.c
 bootblock-y += power.c
 bootblock-y += spi.c
@@ -37,11 +37,11 @@ endif
 
 ramstage-y += cbfs.c
 ramstage-y += cbmem.c
-ramstage-y += cpug.S
 ramstage-y += clock.c
 ramstage-y += display.c displayhack.c
 ramstage-y += dma.c
 ramstage-y += i2c.c
+ramstage-y += maincpu.S
 ramstage-y += monotonic_timer.c
 ramstage-y += soc.c
 ramstage-y += sor.c

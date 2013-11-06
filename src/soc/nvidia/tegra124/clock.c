@@ -20,8 +20,8 @@
 #include <soc/clock.h>
 #include <stdlib.h>
 #include "clk_rst.h"
-#include "cpug.h"
 #include "flow.h"
+#include "maincpu.h"
 #include "pmc.h"
 #include "sysctr.h"
 
@@ -309,9 +309,9 @@ void clock_cpu0_config_and_reset(void *entry)
 {
 	void * const evp_cpu_reset = (uint8_t *)TEGRA_EVP_BASE + 0x100;
 
-	write32(CONFIG_STACK_TOP, &cpug_stack_pointer);
-	write32((uintptr_t)entry, &cpug_entry_point);
-	write32((uintptr_t)&cpug_setup, evp_cpu_reset);
+	write32(CONFIG_STACK_TOP, &maincpu_stack_pointer);
+	write32((uintptr_t)entry, &maincpu_entry_point);
+	write32((uintptr_t)&maincpu_setup, evp_cpu_reset);
 
 	/* Set active CPU cluster to G */
 	clrbits_le32(&flow->cluster_control, 1);
