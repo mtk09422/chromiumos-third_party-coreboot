@@ -24,7 +24,6 @@
 #include <soc/addressmap.h>
 #include <soc/nvidia/tegra/i2c.h>
 #include <soc/nvidia/tegra/dc.h>
-/* shit. This is broken. */
 #include "sor.h"
 #include <soc/nvidia/tegra/displayport.h>
 
@@ -51,13 +50,11 @@ static inline u32 tegra_dc_dpaux_poll_register(struct tegra_dc_dp_data *dp,
 											   u32 poll_interval_us,
 											   u32 timeout_ms)
 {
-//  unsigned long   timeout_jf = jiffies + msecs_to_jiffies(timeout_ms);
 	u32 reg_val = 0;
 
 	printk(BIOS_SPEW, "JZ: %s: enter, poll_reg: %#x: timeout: 0x%x\n",
 		   __func__, reg * 4, timeout_ms);
 	do {
-//      udelay(poll_interval_us);
 		udelay(1);
 		reg_val = tegra_dpaux_readl(dp, reg);
 	} while (((reg_val & mask) != exp_val) && (--timeout_ms > 0));
@@ -439,9 +436,7 @@ static int tegra_dc_dp_init_max_link_cfg(struct tegra_dc_dp_data *dp,
 	return 0;
 }
 
-//struct tegra_dc   dc_data = {0};
-struct tegra_dc_sor_data sor_data = { 0 };
-struct tegra_dc_dp_data dp_data = { 0 };
+struct tegra_dc_dp_data dp_data;
 
 static int tegra_dc_dpcd_read_rev(struct tegra_dc_dp_data *dp, u8 * rev)
 {
@@ -466,20 +461,13 @@ void dp_bringup(u32 winb_addr)
 
 	u32 dpcd_rev;
 	u32 pclk_freq;
-//  int ret;
 
 	printk(BIOS_SPEW, "JZ: %s: entry\n", __func__);
 
-	dp->sor = &sor_data;
-//  dp->sor->dc     = dc;
-	dp->sor->base = (void *)TEGRA_ARM_SOR;
-//  dp->sor->base_res   = base_res;
-//  dp->sor->sor_clk    = clk;
-	dp->sor->link_cfg = &dp->link_cfg;
-	dp->sor->portnum = 0;
+	dp->sor.base = (void *)TEGRA_ARM_SOR;
+	dp->sor.portnum = 0;
 
 	dp->aux_base = (void *)TEGRA_ARM_DPAUX;
-	/*	dp->mode = 0;	*//* ???? */
 
 	/* read panel info */
 	if (!tegra_dc_dpcd_read_rev(dp, (u8 *) & dpcd_rev)) {
@@ -497,7 +485,6 @@ void dp_bringup(u32 winb_addr)
 	pclk_freq = dp_setup_timing(5, 2560, 1700);	// W: 2560, H: 1700, use_plld2: 1
 	printk(BIOS_SPEW, "JZ: %s: pclk_freq: %d\n", __func__, pclk_freq);
 
-//  void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr)
 	void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
 						 u32 lane_count, u32 enhanced_framing, u32 panel_edp,
 						 u32 pclkfreq, u32 linkfreq);
