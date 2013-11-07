@@ -27,6 +27,7 @@
 #include <console/console.h>
 #include "soc/nvidia/tegra124/chip.h"
 #include <soc/display.h>
+#include <timestamp.h>
 
 // Convenient shorthand (in MB)
 #define DRAM_START	(CONFIG_SYS_SDRAM_BASE >> 20)
@@ -73,6 +74,10 @@ static void configure_l2actlr(void)
 
 void main(void)
 {
+#if CONFIG_COLLECT_TIMESTAMPS
+	uint64_t romstage_start_time = timestamp_get();
+#endif
+
 	// Globally disable MMU, caches and branch prediction (these should
 	// already be disabled by default on reset).
 	uint32_t sctlr = read_sctlr();
@@ -119,7 +124,15 @@ void main(void)
 
 	cbmem_initialize_empty();
 
+#if CONFIG_COLLECT_TIMESTAMPS
+	timestamp_init(0);
+	timestamp_add(TS_START_ROMSTAGE, romstage_start_time);
+	timestamp_add(TS_START_COPYRAM, timestamp_get());
+#endif
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 				      "fallback/coreboot_ram");
+#if CONFIG_COLLECT_TIMESTAMPS
+	timestamp_add(TS_END_COPYRAM, timestamp_get());
+#endif
 	stage_exit(entry);
 }
