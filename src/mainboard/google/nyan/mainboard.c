@@ -181,6 +181,21 @@ static void setup_pinmux(void)
 	 * but it doesn't. Go with GPIOs for now and solve the problem later. */
 	gpio_output_open_drain(GPIO(N4), 1);	/* USB VBUS EN0 */
 	gpio_output_open_drain(GPIO(N5), 1);	/* USB VBUS EN1 */
+
+	/* Clock output 1 (for external peripheral) */
+	pinmux_set_config(PINMUX_DAP_MCLK1_INDEX,
+			  PINMUX_DAP_MCLK1_FUNC_EXTPERIPH1 | PINMUX_PULL_NONE);
+
+	/* I2S1 */
+	pinmux_set_config(PINMUX_DAP2_DIN_INDEX,
+			  PINMUX_DAP2_DIN_FUNC_I2S1 | PINMUX_TRISTATE |
+			  PINMUX_INPUT_ENABLE);
+	pinmux_set_config(PINMUX_DAP2_DOUT_INDEX,
+			  PINMUX_DAP2_DOUT_FUNC_I2S1 | PINMUX_INPUT_ENABLE);
+	pinmux_set_config(PINMUX_DAP2_FS_INDEX,
+			  PINMUX_DAP2_FS_FUNC_I2S1 | PINMUX_INPUT_ENABLE);
+	pinmux_set_config(PINMUX_DAP2_SCLK_INDEX,
+			  PINMUX_DAP2_SCLK_FUNC_I2S1 | PINMUX_INPUT_ENABLE);
 }
 
 static void setup_kernel_info(void)
