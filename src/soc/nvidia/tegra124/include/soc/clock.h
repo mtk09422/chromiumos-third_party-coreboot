@@ -206,12 +206,16 @@ enum {
  */
 #define CLK_FREQUENCY(REF, REG)	(((REF) * 2) / (REG + 2))
 
+#define clock_configure_irregular_source(device, src, freq, src_id) \
+	clrsetbits_le32(&clk_rst->clk_src_##device, \
+		CLK_SOURCE_MASK | CLK_DIVISOR_MASK, \
+		src_id << CLK_SOURCE_SHIFT | \
+		CLK_DIVIDER(TEGRA_##src##_KHZ, freq));
+
 /* Warning: Some devices just use different bits for the same sources for no
  * apparent reason. *Always* double-check the TRM before trusting this macro. */
 #define clock_configure_source(device, src, freq) \
-	clrsetbits_le32(&clk_rst->clk_src_##device, \
-		CLK_SOURCE_MASK | CLK_DIVISOR_MASK, \
-		src << CLK_SOURCE_SHIFT | CLK_DIVIDER(TEGRA_##src##_KHZ, freq));
+	clock_configure_irregular_source(device, src, freq, src);
 
 enum clock_source {  /* Careful: Not true for all sources, always check TRM! */
 	PLLP = 0,

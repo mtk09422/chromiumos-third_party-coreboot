@@ -48,11 +48,8 @@ static void set_clock_sources(void)
 	clock_configure_source(sdmmc3, PLLP, 48000);
 	clock_configure_source(sdmmc4, PLLP, 48000);
 
-	/* PLLP and PLLM are switched for HOST1x for no apparent reason.
-	 * Hence, we do not use the constants. */
-	write32(4 /* PLLP! */ << CLK_SOURCE_SHIFT |
-		CLK_DIVIDER(TEGRA_PLLP_KHZ, 408000),
-		&clk_rst->clk_src_host1x);
+	/* Note source id of PLLP for HOST1x is 4. */
+	clock_configure_irregular_source(host1x, PLLP, 408000, 4);
 
 	/* DISP1 doesn't support a divisor. Use PLLD2_OUT0 which runs at 570MHz. */
 	clrsetbits_le32(&clk_rst->clk_src_disp1,
