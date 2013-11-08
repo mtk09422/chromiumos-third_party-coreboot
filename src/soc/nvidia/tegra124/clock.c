@@ -305,6 +305,26 @@ void clock_early_uart(void)
 	clrbits_le32(&clk_rst->rst_dev_l, CLK_L_UARTA);
 }
 
+/* Enable output clock (CLK1~3) for external peripherals. */
+void clock_external_output(int clk_id)
+{
+	switch (clk_id) {
+	case 1:
+		setbits_le32(&pmc->clk_out_cntrl, 1 << 2);
+		break;
+	case 2:
+		setbits_le32(&pmc->clk_out_cntrl, 1 << 10);
+		break;
+	case 3:
+		setbits_le32(&pmc->clk_out_cntrl, 1 << 18);
+		break;
+	default:
+		printk(BIOS_CRIT, "ERROR: Unknown output clock id %d\n",
+		       clk_id);
+		break;
+	}
+}
+
 void clock_cpu0_config_and_reset(void *entry)
 {
 	void * const evp_cpu_reset = (uint8_t *)TEGRA_EVP_BASE + 0x100;
