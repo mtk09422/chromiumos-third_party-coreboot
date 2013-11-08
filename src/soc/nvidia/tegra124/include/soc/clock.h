@@ -129,6 +129,7 @@ enum {
 	CLK_V_HDA2CODEC_2X = 0x1 << 15,
 	CLK_V_ATOMICS = 0x1 << 16,
 	CLK_V_ACTMON = 0x1 << 23,
+	CLK_V_EXTPERIPH1 = 0x1 << 24,
 	CLK_V_SATA = 0x1 << 28,
 	CLK_V_HDA = 0x1 << 29,
 
@@ -144,6 +145,12 @@ enum {
 	CLK_W_MC1 = 0x1 << 30,
 	CLK_W_EMC1 = 0x1 << 31,
 
+	CLK_X_AFC0 = 0x1 << 31,
+	CLK_X_AFC1 = 0x1 << 30,
+	CLK_X_AFC2 = 0x1 << 29,
+	CLK_X_AFC3 = 0x1 << 28,
+	CLK_X_AFC4 = 0x1 << 27,
+	CLK_X_AFC5 = 0x1 << 26,
 	CLK_X_AMX1 = 0x1 << 25,
 	CLK_X_GPU = 0x1 << 24,
 	CLK_X_SOR0 = 0x1 << 22,

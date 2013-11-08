@@ -48,6 +48,16 @@ static void set_clock_sources(void)
 	clock_configure_source(sdmmc3, PLLP, 48000);
 	clock_configure_source(sdmmc4, PLLP, 48000);
 
+	/* External peripheral 1: audio codec (max98090) using 12MHz CLK1.
+	 * Note the source id of CLK_M for EXTPERIPH1 is 3. */
+	clock_configure_irregular_source(extperiph1, CLK_M, 12000, 3);
+
+	/*
+	 * I2S1 can use either PLLP or PLLA. Using PLLP is sufficient now since
+	 * we only need 4.8MHz. Note the source id of PLLP for I2S is 4.
+	 */
+	clock_configure_irregular_source(i2s1, PLLP, 4800, 4);
+
 	/* Note source id of PLLP for HOST1x is 4. */
 	clock_configure_irregular_source(host1x, PLLP, 408000, 4);
 
@@ -199,14 +209,35 @@ static void setup_ec_spi(void)
 static void mainboard_init(device_t dev)
 {
 	set_clock_sources();
-	clock_enable_clear_reset(CLK_L_GPIO | CLK_L_I2C1 |
-				 CLK_L_SDMMC4 | CLK_L_USBD |
-				 CLK_L_DISP1 | CLK_L_HOST1X,
+
+	clock_external_output(1); /* For external MAX98090 audio codec. */
+
+	/*
+	 * Confirmed by NVIDIA hardware team, we need to take ALL audio devices
+	 * conntected to AHUB (AUDIO, APBIF, I2S, DAM, AMX, ADX, SPDIF, AFC) out
+	 * of reset and clock-enabled, otherwise reading AHUB devices (In our
+	 * case, I2S/APBIF/AUDIO<XBAR>) will hang.
+	 */
+	clock_enable_clear_reset(CLK_L_GPIO | CLK_L_I2C1 | CLK_L_SDMMC4 |
+				 CLK_L_I2S0 | CLK_L_I2S1 | CLK_L_I2S2 |
+				 CLK_L_SPDIF | CLK_L_USBD | CLK_L_DISP1 |
+				 CLK_L_HOST1X,
+
 				 CLK_H_EMC | CLK_H_I2C2 | CLK_H_SBC1 |
 				 CLK_H_PMC | CLK_H_MEM | CLK_H_USB3,
+
 				 CLK_U_I2C3 | CLK_U_CSITE | CLK_U_SDMMC3,
-				 CLK_V_I2C4,
-				 CLK_W_DVFS, CLK_X_DPAUX | CLK_X_SOR0);
+
+				 CLK_V_I2C4 | CLK_V_EXTPERIPH1 | CLK_V_APBIF |
+				 CLK_V_AUDIO | CLK_V_I2S3 | CLK_V_I2S4 |
+				 CLK_V_DAM0 | CLK_V_DAM1 | CLK_V_DAM2,
+
+				 CLK_W_DVFS | CLK_W_AMX0 | CLK_W_ADX0,
+
+				 CLK_X_DPAUX | CLK_X_SOR0 | CLK_X_AMX1 |
+				 CLK_X_ADX1 | CLK_X_AFC0 | CLK_X_AFC1 |
+				 CLK_X_AFC2 | CLK_X_AFC3 | CLK_X_AFC4 |
+				 CLK_X_AFC5);
 
 	usb_setup_utmip1();
 	/* USB2 is the camera, we don't need it in firmware */
