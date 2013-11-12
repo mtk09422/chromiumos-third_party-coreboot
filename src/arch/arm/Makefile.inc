@@ -82,7 +82,7 @@ ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 ################################################################################
 # Common recipes for all stages
 
-CFLAGS += -ffixed-r8 -mno-unaligned-access
+CFLAGS += -mno-unaligned-access
 
 $(objcbfs)/%.bin: $(objcbfs)/%.elf
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
@@ -162,7 +162,7 @@ $(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(boo
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD) -m armelf_linux_eabi -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -include $(obj)/config.h -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
+	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
 endif
 
 ################################################################################
