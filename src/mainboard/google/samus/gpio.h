@@ -32,7 +32,7 @@ const struct pch_lp_gpio_map mainboard_gpio_map[] = {
 	LP_GPIO_NATIVE,        /* 6: NATIVE: I2C1_SDA_GPIO6 */
 	LP_GPIO_NATIVE,        /* 7: NATIVE: I2C1_SCL_GPIO7 */
 	LP_GPIO_ACPI_SCI,      /* 8: PCH_LTE_WAKE_L */
-	LP_GPIO_PIRQ,          /* 9: NFC_INT (PIRQJ) */
+	LP_GPIO_IRQ_EDGE,      /* 9: NFC_INT (GPIO IRQ) */
 	LP_GPIO_ACPI_SCI,      /* 10: PCH_WLAN_WAKE_L */
 	LP_GPIO_UNUSED,        /* 11: UNUSED */
 	LP_GPIO_UNUSED,        /* 12: UNUSED */
@@ -87,7 +87,7 @@ const struct pch_lp_gpio_map mainboard_gpio_map[] = {
 	LP_GPIO_NATIVE,        /* 61: NATIVE: PCH_SUS_STAT */
 	LP_GPIO_NATIVE,        /* 62: NATIVE: PCH_SUSCLK */
 	LP_GPIO_NATIVE,        /* 63: NATIVE: PCH_SLP_S5_L */
-	LP_GPIO_OUT_HIGH,      /* 64: NFC_FW_UPDATE */
+	LP_GPIO_OUT_LOW,       /* 64: NFC_FW_UPDATE */
 	LP_GPIO_INPUT,         /* 65: MINIDP_PWR_FLT_L */
 	LP_GPIO_OUT_HIGH,      /* 66: MINIDP_PWR_EN */
 	LP_GPIO_INPUT,         /* 67: RAM_ID0 */
