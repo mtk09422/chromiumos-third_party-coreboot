@@ -227,6 +227,7 @@ int cbfs_image_from_file(struct cbfs_image *image, const char *filename)
 		cbfs_image_delete(image);
 		return -1;
 	}
+	arch = ntohl(image->header->architecture);
 	cbfs_fix_legacy_size(image);
 
 	return 0;
@@ -493,13 +494,14 @@ int cbfs_print_header_info(struct cbfs_image *image)
 	char *name = strdup(image->buffer.name);
 	assert(image && image->header);
 	printf("%s: %zd kB, bootblocksize %d, romsize %d, offset 0x%x\n"
-	       "alignment: %d bytes\n\n",
+	       "alignment: %d bytes, architecture: %s\n\n",
 	       basename(name),
 	       image->buffer.size / 1024,
 	       ntohl(image->header->bootblocksize),
 	       ntohl(image->header->romsize),
 	       ntohl(image->header->offset),
-	       ntohl(image->header->align));
+	       ntohl(image->header->align),
+	       arch_to_string(ntohl(image->header->architecture)));
 	free(name);
 	return 0;
 }
