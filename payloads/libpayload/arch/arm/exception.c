@@ -34,6 +34,8 @@
 void exception_test(void);
 
 static int test_abort;
+uint8_t exception_stack[0x100] __attribute__((aligned(8)));
+extern void *exception_stack_end;
 
 void exception_undefined_instruction(uint32_t *);
 void exception_software_interrupt(uint32_t *);
@@ -167,6 +169,7 @@ void exception_init(void)
 
 	extern uint32_t exception_table[];
 	set_vbar((uintptr_t)exception_table);
+	exception_stack_end = exception_stack + sizeof(exception_stack);
 
 	test_abort = 1;
 	exception_test();

@@ -27,11 +27,9 @@
  * SUCH DAMAGE.
  */
 
-exception_stack:
-	.align 5
-	.skip 0x2000, 0xa5
+	.global exception_stack_end
 exception_stack_end:
-	.word	exception_stack_end
+	.word 0
 
 exception_handler:
 	.word 0
