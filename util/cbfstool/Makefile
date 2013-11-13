@@ -1,8 +1,11 @@
 obj ?= $(shell pwd)
 
-HOSTCC   ?= gcc
-CFLAGS   ?= -g -Wall -Werror
-CFLAGS   += -D_7ZIP_ST
+HOSTCC ?= gcc
+CFLAGS ?= -g
+CFLAGS += -D_7ZIP_ST
+CFLAGS += -Wall -Wundef -Wstrict-prototypes -Wmissing-prototypes
+CFLAGS += -Wwrite-strings -Wredundant-decls -Wno-trigraphs
+CFLAGS += -Wstrict-aliasing -Wshadow -Werror
 
 BINARY:=$(obj)/cbfstool
 

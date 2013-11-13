@@ -68,7 +68,8 @@ static int cbfs_add_component(const char *cbfs_name,
 			      const char *name,
 			      uint32_t type,
 			      uint32_t offset,
-			      convert_buffer_t convert) {
+			      convert_buffer_t convert)
+{
 	struct cbfs_image image;
 	struct buffer buffer;
 
@@ -129,7 +130,8 @@ static int cbfs_add_component(const char *cbfs_name,
 	return 0;
 }
 
-static int cbfstool_convert_mkstage(struct buffer *buffer, uint32_t *offset) {
+static int cbfstool_convert_mkstage(struct buffer *buffer, uint32_t *offset)
+{
 	struct buffer output;
 	if (parse_elf_to_stage(buffer, &output, param.algo, offset) != 0)
 		return -1;
@@ -139,7 +141,9 @@ static int cbfstool_convert_mkstage(struct buffer *buffer, uint32_t *offset) {
 	return 0;
 }
 
-static int cbfstool_convert_mkpayload(struct buffer *buffer, uint32_t *offset) {
+static int cbfstool_convert_mkpayload(struct buffer *buffer,
+						unused uint32_t *offset)
+{
 	struct buffer output;
 	int ret;
 	/* per default, try and see if payload is an ELF binary */
@@ -162,7 +166,8 @@ static int cbfstool_convert_mkpayload(struct buffer *buffer, uint32_t *offset) {
 }
 
 static int cbfstool_convert_mkflatpayload(struct buffer *buffer,
-					  uint32_t *offset) {
+					  unused uint32_t *offset)
+{
 	struct buffer output;
 	if (parse_flat_binary_to_payload(buffer, &output,
 					 param.loadaddress,

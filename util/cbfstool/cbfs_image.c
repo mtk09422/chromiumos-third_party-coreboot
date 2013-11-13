@@ -69,18 +69,8 @@ static uint32_t align_up(uint32_t value, uint32_t align)
 	return value;
 }
 
-uint32_t lookup_type_by_name(const struct typedesc_t *desc, const char *name,
-			     uint32_t default_value)
-{
-	int i;
-	for (i = 0; desc[i].name; i++)
-		if (strcmp(desc[i].name, name) == 0)
-			return desc[i].type;
-	return default_value;
-}
-
-const char *lookup_name_by_type(const struct typedesc_t *desc, uint32_t type,
-				const char *default_value)
+static const char *lookup_name_by_type(const struct typedesc_t *desc,
+				uint32_t type, const char *default_value)
 {
 	int i;
 	for (i = 0; desc[i].name; i++)
@@ -89,19 +79,9 @@ const char *lookup_name_by_type(const struct typedesc_t *desc, uint32_t type,
 	return default_value;
 }
 
-uint32_t get_cbfs_entry_type(const char *name, uint32_t default_value)
-{
-	return lookup_type_by_name(types_cbfs_entry, name, default_value);
-}
-
-const char *get_cbfs_entry_type_name(uint32_t type)
+static const char *get_cbfs_entry_type_name(uint32_t type)
 {
 	return lookup_name_by_type(types_cbfs_entry, type, "(unknown)");
-}
-
-uint32_t get_cbfs_compression(const char *name, uint32_t unknown)
-{
-	return lookup_type_by_name(types_cbfs_compression, name, unknown);
 }
 
 /* CBFS image */
@@ -139,7 +119,7 @@ static int cbfs_fix_legacy_size(struct cbfs_image *image)
 }
 
 int cbfs_image_create(struct cbfs_image *image,
-		      uint32_t arch,
+		      uint32_t architecture,
 		      size_t size,
 		      uint32_t align,
 		      struct buffer *bootblock,
@@ -206,7 +186,7 @@ int cbfs_image_create(struct cbfs_image *image,
 	header->bootblocksize = htonl(bootblock->size);
 	header->align = htonl(align);
 	header->offset = htonl(entries_offset);
-	header->architecture = htonl(arch);
+	header->architecture = htonl(architecture);
 
 	// Prepare entries
 	if (align_up(entries_offset, align) != entries_offset) {
@@ -474,7 +454,7 @@ int cbfs_export_entry(struct cbfs_image *image, const char *entry_name,
 
 	buffer.data = CBFS_SUBHEADER(entry);
 	buffer.size = ntohl(entry->len);
-	buffer.name = "(cbfs_export_entry)";
+	buffer.name = (char *)"(cbfs_export_entry)";
 	if (buffer_write_file(&buffer, filename) != 0) {
 		ERROR("Failed to write %s into %s.\n",
 		      entry_name, filename);
@@ -777,16 +757,6 @@ int cbfs_is_valid_entry(struct cbfs_image *image, struct cbfs_file *entry)
 			image->buffer.data + image->buffer.size &&
 		memcmp(entry->magic, CBFS_FILE_MAGIC,
 		       sizeof(entry->magic)) == 0);
-}
-
-int cbfs_init_entry(struct cbfs_file *entry,
-		    struct buffer *buffer)
-{
-	memset(entry, 0, sizeof(*entry));
-	memcpy(entry->magic, CBFS_FILE_MAGIC, sizeof(entry->magic));
-	entry->len = htonl(buffer->size);
-	entry->offset = htonl(sizeof(*entry) + strlen(buffer->name) + 1);
-	return 0;
 }
 
 int cbfs_create_empty_entry(struct cbfs_image *image, struct cbfs_file *entry,
