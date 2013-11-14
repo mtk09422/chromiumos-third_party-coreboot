@@ -94,6 +94,8 @@ void main(void)
 	configure_l2ctlr();
 	configure_l2actlr();
 
+	console_init();
+
 	mmu_init();
 	mmu_config_range(0, DRAM_START, DCACHE_OFF);
 	mmu_config_range(DRAM_START, DRAM_SIZE, DCACHE_WRITEBACK);
