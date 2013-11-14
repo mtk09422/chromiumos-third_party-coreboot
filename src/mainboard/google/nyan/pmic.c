@@ -43,11 +43,11 @@ void pmic_init(unsigned bus)
 	 * Don't write LDCONTROL - it's already 0xFF, i.e. all LDOs enabled.
 	 */
 
-	/* First set VDD_CPU to 1.0V, then enable the VDD_CPU regulator. */
+	/* First set VDD_CPU to 1.2V, then enable the VDD_CPU regulator. */
 	if (CONFIG_NYAN_IN_A_PIXEL)
-		pmic_write_reg(bus, 0x00, 0x28);
-	else
 		pmic_write_reg(bus, 0x00, 0x3c);
+	else
+		pmic_write_reg(bus, 0x00, 0x50);
 
 	/* First set VDD_GPU to 1.0V, then enable the VDD_GPU regulator. */
 	pmic_write_reg(bus, 0x06, 0x28);
