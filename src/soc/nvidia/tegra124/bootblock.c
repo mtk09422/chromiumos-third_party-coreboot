@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/exception.h>
 #include <arch/hlt.h>
 #include <bootblock_common.h>
 #include <cbfs.h>
@@ -39,8 +40,10 @@ void main(void)
 						 PINMUX_TRISTATE |
 						 PINMUX_INPUT_ENABLE);
 
-	if (CONFIG_BOOTBLOCK_CONSOLE)
+	if (CONFIG_BOOTBLOCK_CONSOLE) {
 		console_init();
+		exception_init();
+	}
 
 	clock_init();
 

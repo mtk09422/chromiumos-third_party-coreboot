@@ -33,6 +33,8 @@ endif
 bootblock-$(CONFIG_ARM_BOOTBLOCK_SIMPLE) += bootblock_simple.c
 bootblock-$(CONFIG_ARM_BOOTBLOCK_NORMAL) += bootblock_normal.c
 bootblock-y += cache.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += exception.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += exception_asm.S
 bootblock-y += mmu.c
 
 bootblock-c-ccopts += $(armv7_flags)

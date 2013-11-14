@@ -22,6 +22,7 @@
  * C Bootstrap code for the coreboot
  */
 
+#include <arch/exception.h>
 #include <bootstate.h>
 #include <console/console.h>
 #include <console/post_codes.h>
@@ -462,6 +463,7 @@ void main(void)
 
 	post_code(POST_CONSOLE_BOOT_MSG);
 
+	exception_init();
 	threads_initialize();
 
 	/* Schedule the static boot state entries. */

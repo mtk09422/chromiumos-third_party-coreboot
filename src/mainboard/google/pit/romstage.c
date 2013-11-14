@@ -26,6 +26,7 @@
 #include <timestamp.h>
 
 #include <arch/cache.h>
+#include <arch/exception.h>
 #include <soc/samsung/exynos5420/i2c.h>
 #include <soc/samsung/exynos5420/clk.h>
 #include <soc/samsung/exynos5420/cpu.h>
@@ -250,6 +251,7 @@ void main(void)
 
 	exynos_pinmux_uart3();
 	console_init();
+	exception_init();
 
 	if (power_init_failed)
 		die("Failed to intialize power.\n");
