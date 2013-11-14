@@ -88,4 +88,8 @@ config EC_GOOGLE_CHROMEEC_SPI_BUS
 	hex
 	default 1
 
+config NYAN_IN_A_PIXEL
+	bool
+	default n
+
 endif # BOARD_GOOGLE_NYAN
