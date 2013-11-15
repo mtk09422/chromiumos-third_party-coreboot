@@ -419,9 +419,8 @@ static void setup_dma_params(struct tegra_spi_channel *spi,
 	/* AHB 1 word burst, bus width = 32 bits (fixed in hardware),
 	 * no address wrapping */
 	clrsetbits_le32(&dma->regs->ahb_seq,
-			(AHB_BURST_MASK << AHB_BURST_SHIFT) |
-			(AHB_SEQ_WRAP_MASK << AHB_SEQ_WRAP_SHIFT),
-			AHB_BURST_MASK << AHB_BURST_SHIFT);
+			(AHB_BURST_MASK << AHB_BURST_SHIFT),
+			4 << AHB_BURST_SHIFT);
 
 	/* Set ONCE mode to transfer one "block" at a time (64KB) and enable
 	 * flow control. */
