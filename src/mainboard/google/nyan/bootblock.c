@@ -41,6 +41,10 @@ static void set_clock_sources(void)
 
 	/* TODO: is the 1.333MHz correct? This may have always been bogus... */
 	clock_configure_source(i2c5, CLK_M, 1333);
+
+	/* TODO: We should be able to set this to 50MHz, but that did not seem
+	 * reliable. */
+	clock_configure_source(sbc4, PLLP, 33333);
 }
 
 void bootblock_mainboard_init(void)
