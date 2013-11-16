@@ -103,12 +103,3 @@ set_vbar:
 	mcr	p15, 0, r0, c12, c0, 0
 	bx	lr
 
-	.global exception_test
-	.thumb_func
-exception_test:
-	mov	r1, $1
-	mov	r0, pc
-	add	r0, $3
-	ldr	r1, [r1]
-	bx	lr
-
