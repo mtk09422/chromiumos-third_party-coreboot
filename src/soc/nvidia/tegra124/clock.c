@@ -372,6 +372,15 @@ void clock_cpu0_config_and_reset(void *entry)
 		&clk_rst->rst_cpug_cmplx_clr);
 }
 
+void clock_halt_avp(void)
+{
+	for (;;) {
+		write32(FLOW_EVENT_JTAG | FLOW_EVENT_LIC_IRQ |
+			FLOW_EVENT_GIC_IRQ | FLOW_MODE_WAITEVENT,
+			&flow->halt_cop_events);
+	}
+}
+
 void clock_init(void)
 {
 	u32 osc = clock_get_osc_bits();

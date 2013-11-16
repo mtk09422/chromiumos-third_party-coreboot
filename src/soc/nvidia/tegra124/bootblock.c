@@ -63,5 +63,5 @@ void main(void)
 	if (entry)
 		clock_cpu0_config_and_reset(entry);
 
-	hlt();
+	clock_halt_avp();
 }

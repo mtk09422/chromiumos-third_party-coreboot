@@ -248,6 +248,7 @@ int clock_get_osc_khz(void);
 void clock_early_uart(void);
 void clock_external_output(int clk_id);
 void clock_cpu0_config_and_reset(void * entry);
+void clock_halt_avp(void);
 void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x);
 void clock_init(void);
 void clock_init_arm_generic_timer(void);
