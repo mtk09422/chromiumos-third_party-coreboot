@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "boardid.h"
 #include "pmic.h"
 
 enum {
@@ -44,7 +45,7 @@ void pmic_init(unsigned bus)
 	 */
 
 	/* First set VDD_CPU to 1.2V, then enable the VDD_CPU regulator. */
-	if (CONFIG_NYAN_IN_A_PIXEL)
+	if (board_id() == 0)
 		pmic_write_reg(bus, 0x00, 0x3c);
 	else
 		pmic_write_reg(bus, 0x00, 0x50);
