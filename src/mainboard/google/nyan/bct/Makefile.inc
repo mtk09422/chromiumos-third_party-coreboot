@@ -20,4 +20,8 @@
 bct-cfg-$(CONFIG_BCT_CFG_EMMC) += emmc.cfg
 bct-cfg-$(CONFIG_BCT_CFG_SPI) += spi.cfg
 bct-cfg-y += odmdata.cfg
-bct-cfg-y += sdram.cfg
+ifeq ($(CONFIG_NYAN_IN_A_PIXEL),y)
+	bct-cfg-y += sdram-924.cfg
+else
+	bct-cfg-y += sdram-792.cfg
+endif
