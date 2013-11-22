@@ -59,6 +59,8 @@ static void tegra124_uart_init(void)
 
 	// Disable interrupts.
 	write8(0, &uart_ptr->ier);
+	// Force DTR and RTS to high.
+	write8(UART8250_MCR_DTR | UART8250_MCR_RTS, &uart_ptr->mcr);
 	// Set line configuration, access divisor latches.
 	write8(UART8250_LCR_DLAB | line_config, &uart_ptr->lcr);
 	// Set the divisor.
