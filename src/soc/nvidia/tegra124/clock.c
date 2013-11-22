@@ -395,9 +395,10 @@ void clock_init(void)
 	setbits_le32(&clk_rst->pllc_misc, PLLC_MISC_LOCK_ENABLE);
 	while (!(read32(&clk_rst->pllc_base) & PLL_BASE_LOCK)) /* wait */;
 
-	/* APB pclk and AHB hclk derive from sclk, let's not overkill them */
-	write32(3 << HCLK_DIVISOR_SHIFT | 3 << PCLK_DIVISOR_SHIFT,
-		&clk_rst->clk_sys_rate);	/* pclk = hclk/4 = sclk/16 */
+	/* Typical ratios are 1:2:2 or 1:2:3 sclk:hclk:pclk (See: APB DMA
+	 * features section in the TRM). */
+	write32(1 << HCLK_DIVISOR_SHIFT | 0 << PCLK_DIVISOR_SHIFT,
+		&clk_rst->clk_sys_rate);	/* pclk = hclk = sclk/2 */
 	write32(0 << SCLK_DIVIDEND_SHIFT |
 		(div_round_up(TEGRA_PLLC_KHZ, 300000) - 1) << SCLK_DIVISOR_SHIFT
 		| SCLK_DIV_ENB, &clk_rst->super_sclk_div);
