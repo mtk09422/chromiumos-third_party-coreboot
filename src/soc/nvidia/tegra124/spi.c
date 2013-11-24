@@ -857,7 +857,6 @@ static void *tegra_spi_cbfs_map(struct cbfs_media *media, size_t offset,
 	void *map;
 	DEBUG_SPI("tegra_spi_cbfs_map\n");
 	map = cbfs_simple_buffer_map(&spi->buffer, media, offset, count);
-	printk(BIOS_INFO, "%s: map: 0x%p\n", __func__, map);
 	return map;
 }
 
