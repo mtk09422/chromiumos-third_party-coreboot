@@ -1,11 +1,8 @@
 # Warning: This file is included whether or not the if is here.
 # The if controls how the evaluation occurs.
 # (See also src/Kconfig)
-if ARCH_ARM
 
 source src/cpu/armltd/Kconfig
-
-endif	# ARCH_ARM
 
 if ARCH_X86
 

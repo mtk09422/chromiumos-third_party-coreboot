@@ -113,6 +113,7 @@ else
 
 include $(HAVE_DOTCONFIG)
 
+ARCHDIR-$(CONFIG_ARCH_AARCH64)   := aarch64
 ARCHDIR-$(CONFIG_ARCH_ARM)   := arm
 ARCHDIR-$(CONFIG_ARCH_X86)     := x86
 

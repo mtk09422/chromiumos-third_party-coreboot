@@ -1,1 +1,2 @@
 source src/cpu/armltd/cortex-a9/Kconfig
+source src/cpu/armltd/armv8/Kconfig
