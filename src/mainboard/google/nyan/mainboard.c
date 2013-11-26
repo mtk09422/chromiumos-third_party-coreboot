@@ -82,6 +82,9 @@ static void setup_pinmux(void)
 	// EC in RW.
 	gpio_input_pullup(GPIO(U4));
 
+	// SOC and TPM reset GPIO, active low.
+	gpio_output(GPIO(I5), 1);
+
 	// SPI1 MOSI
 	pinmux_set_config(PINMUX_ULPI_CLK_INDEX, PINMUX_ULPI_CLK_FUNC_SPI1 |
 						 PINMUX_PULL_UP |
