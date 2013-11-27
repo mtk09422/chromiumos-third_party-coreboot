@@ -30,10 +30,45 @@ enum {
 	AS3722_I2C_ADDR = 0x40
 };
 
+struct as3722_init_reg {
+	u8 reg;
+	u8 val;
+};
+
+static struct as3722_init_reg init_list[] = {
+	{AS3722_SDO0, 0x3C},
+	{AS3722_SDO1, 0x32},
+	{AS3722_SDO2, 0x3C},
+	{AS3722_SDO3, 0x00},
+	{AS3722_SDO4, 0x00},
+	{AS3722_SDO5, 0x50},
+	{AS3722_SDO6, 0x28},
+	{AS3722_LDO0, 0x8A},
+	{AS3722_LDO1, 0x00},
+	{AS3722_LDO2, 0x10},
+	{AS3722_LDO3, 0x59},
+	{AS3722_LDO4, 0x00},
+	{AS3722_LDO5, 0x00},
+	{AS3722_LDO6, 0x3F},
+	{AS3722_LDO7, 0x00},
+	{AS3722_LDO9, 0x00},
+	{AS3722_LDO10, 0x00},
+	{AS3722_LDO11, 0x00},
+};
+#define AS3722_INIT_REG_LEN ARRAY_SIZE(init_list)
+
 static void pmic_write_reg(unsigned bus, uint8_t reg, uint8_t val)
 {
 	i2c_write(bus, AS3722_I2C_ADDR, reg, 1, &val, 1);
 	udelay(10 * 1000);
+}
+
+static void pmic_slam_defaults(unsigned bus)
+{
+	int i;
+
+	for (i = 0; i < AS3722_INIT_REG_LEN; i++)
+		pmic_write_reg(bus, init_list[i].reg, init_list[i].val);
 }
 
 void pmic_init(unsigned bus)
@@ -43,6 +78,9 @@ void pmic_init(unsigned bus)
 	 * Don't write SDCONTROL - it's already 0x7F, i.e. all SDs enabled.
 	 * Don't write LDCONTROL - it's already 0xFF, i.e. all LDOs enabled.
 	 */
+
+	/* Restore PMIC POR defaults, in case kernel changed 'em */
+	pmic_slam_defaults(bus);
 
 	/* First set VDD_CPU to 1.2V, then enable the VDD_CPU regulator. */
 	if (board_id() == 0)
