@@ -27,7 +27,7 @@
 ## SUCH DAMAGE.
 ##
 
-CFLAGS += -mfloat-abi=hard -marm -mabi=aapcs-linux
+CFLAGS += -mfloat-abi=hard -marm -mabi=aapcs-linux -march=armv7-a
 
 head.o-y += head.S
 libc-y += main.c sysinfo.c
