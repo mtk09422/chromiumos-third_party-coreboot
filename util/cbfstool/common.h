@@ -102,5 +102,16 @@ int parse_elf_to_stage(const struct buffer *input, struct buffer *output,
 /* lzma/lzma.c */
 void do_lzma_compress(char *in, int in_len, char *out, int *out_len);
 void do_lzma_uncompress(char *dst, int dst_len, char *src, int src_len);
+/* xdr.c */
+struct xdr {
+	uint16_t (*get16)(struct buffer *input);
+	uint32_t (*get32)(struct buffer *input);
+	uint64_t (*get64)(struct buffer *input);
+	void (*put16)(struct buffer *input, uint16_t val);
+	void (*put32)(struct buffer *input, uint32_t val);
+	void (*put64)(struct buffer *input, uint64_t val);
+};
+
+extern struct xdr xdr_le, xdr_be;
 
 #endif
