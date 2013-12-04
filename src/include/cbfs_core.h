@@ -150,8 +150,10 @@ struct cbfs_stage {
 	uint32_t memlen;	   /** total length of object in memory */
 } __attribute__((packed));
 
-/** this is the sub-header for payload components.  Payloads
-    are loaded by coreboot at the end of the boot process */
+/** this is the sub-header for payload components.  Payloads are
+ *    loaded by coreboot or other payloads at the end of the boot
+ *    process
+ */
 
 struct cbfs_payload_segment {
 	uint32_t type;
@@ -164,6 +166,19 @@ struct cbfs_payload_segment {
 
 struct cbfs_payload {
 	struct cbfs_payload_segment segments;
+};
+
+/* for returning payload info to (e.g.) bayou.
+ * Return the file header, payload header, and name.
+ * It must be done this way because we can't
+ * assume file headers and names are contiguous.
+ * Walking the headers can be expensive, so we get all
+ * the information we can.
+ */
+struct cbfs_payload_info {
+	struct cbfs_file file;
+	struct cbfs_payload payload;
+	const char *name;
 };
 
 #define PAYLOAD_SEGMENT_CODE   0x45444F43
@@ -213,6 +228,14 @@ struct cbfs_media {
 
 /* returns pointer to a file entry inside CBFS or NULL */
 struct cbfs_file *cbfs_get_file(struct cbfs_media *media, const char *name);
+
+/* Fills the pointer info with an array of payload file info structs.
+ * Reads at most maxentries items.
+ * Returns number we found.
+ */
+int cbfs_payload_headers(struct cbfs_media *media,
+			 struct cbfs_payload_info *info,
+			 int maxentries);
 
 /* returns pointer to file content inside CBFS after if type is correct */
 void *cbfs_get_file_content(struct cbfs_media *media, const char *name,

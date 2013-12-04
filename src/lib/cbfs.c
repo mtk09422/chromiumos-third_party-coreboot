@@ -226,6 +226,108 @@ int cbfs_execute_stage(struct cbfs_media *media, const char *name)
 	return run_address((void *)(uintptr_t)ntohll(stage->entry));
 }
 
+/* Get all the payload headers.
+ * One might be tempted to implement cbfs operations as
+ * - get all headers into memory
+ * - scan the headers we got for a [payload, stage, file name]
+ *
+ * But: FLASH IO can be a very expensive operation on some systems.
+ * For that reason, we keep this operation separate from anything else.
+ * In other words, it is not intended to be a building block; in fact
+ * the only current use is for the payload choose (Bayou) which does need
+ * to scan all payloads. In future, we might decide we want to return all
+ * the headers, but realistically we only need this for payloads right now
+ * and it makes the bayou code less complex to just return payloads.
+ * Return a count of the payloads found, up to maxentries payloads.
+ */
+int cbfs_payload_headers(struct cbfs_media *media,
+		struct cbfs_payload_info *info,
+		int maxentries)
+{
+	int cur;
+	const char *file_name;
+	uint32_t offset, align, romsize, name_len;
+	const struct cbfs_header *header;
+	struct cbfs_file file;
+	struct cbfs_media default_media;
+
+	cur = 0;
+
+	if (media == CBFS_DEFAULT_MEDIA) {
+		media = &default_media;
+		if (init_default_cbfs_media(media) != 0) {
+			ERROR("Failed to initialize default media.\n");
+			return 0;
+		}
+	}
+	if (CBFS_HEADER_INVALID_ADDRESS == (header = cbfs_get_header(media)))
+		return 0;
+
+	// Logical offset (for source media) of first file.
+	offset = ntohl(header->offset);
+	align = ntohl(header->align);
+	romsize = ntohl(header->romsize);
+
+	// TODO Add a "size" in CBFS header for a platform independent way to
+	// determine the end of CBFS data.
+
+	DEBUG("CBFS location: 0x%x~0x%x, align: %d\n", offset, romsize, align);
+
+	media->open(media);
+	while (cur < maxentries && offset < romsize &&
+		media->read(media, &file, offset, sizeof(file))
+					== sizeof(file)) {
+		DEBUG("cur %d offset %08x\n", cur, offset);
+		if (memcmp(CBFS_FILE_MAGIC, file.magic,
+				sizeof(file.magic))) {
+			uint32_t new_align = align;
+			if (offset % align)
+				new_align += align - (offset % align);
+			ERROR("ERROR: No file header found at 0x%xx - "
+				"try next aligned address: 0x%x.\n", offset,
+				offset + new_align);
+			offset += new_align;
+			continue;
+		}
+
+		// load file name (arbitrary length).
+		// Do it here so we can debug if we want. It's not expensive.
+		name_len = ntohl(file.offset) - sizeof(file);
+		file_name = (const char*)media->map(
+				media, offset + sizeof(file), name_len);
+		if (file_name == CBFS_MEDIA_INVALID_MAP_ADDRESS) {
+			DEBUG("ERROR: Failed to get filename: 0x%x.\n", offset);
+			continue;
+		}
+		DEBUG("Check :%s: type %x\n", file_name, ntohl(file.type));
+		if (ntohl(file.type) == CBFS_TYPE_PAYLOAD){
+			DEBUG(" - add entry 0x%x file name (%d bytes)...\n",
+							offset, name_len);
+
+			info[cur].file = file;
+			info[cur].name = file_name;
+			/* we need the metadata too. */
+			if (media->read(media, &info[cur].payload, offset,
+				sizeof(info[cur].payload)) !=
+						sizeof(info[cur].payload)){
+				ERROR("ERROR: Failed to get payload"
+					"info for %s@0x%x.\n",
+					file_name, offset);
+				continue;
+			}
+			cur++;
+		}
+		// Move to next file.
+		offset += ntohl(file.len) + ntohl(file.offset);
+		DEBUG("offset moves to %08x\n", offset);
+		if (offset % align)
+			offset += align - (offset % align);
+	}
+	media->close(media);
+
+	return cur;
+}
+
 #if !CONFIG_ALT_CBFS_LOAD_PAYLOAD && !defined(__BOOT_BLOCK__)
 void *cbfs_load_payload(struct cbfs_media *media, const char *name)
 {
