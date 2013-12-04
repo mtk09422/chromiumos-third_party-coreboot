@@ -153,8 +153,8 @@ static inline void *xmalloc_work(size_t size, const char *file,
 				 const char *func, int line)
 {
 	void *ret = malloc(size);
-	if (!ret) {
-		die_work(file, func, line, "Failed to malloc %zd bytes.\n",
+	if (!ret && size) {
+		die_work(file, func, line, "Failed to malloc %zu bytes.\n",
 			 size);
 	}
 	return ret;
