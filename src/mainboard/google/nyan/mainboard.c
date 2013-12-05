@@ -180,10 +180,10 @@ static void setup_pinmux(void)
 	pinmux_set_config(PINMUX_SDMMC4_DAT7_INDEX,
 			  PINMUX_SDMMC4_DAT7_FUNC_SDMMC4 | pin_up);
 
-	/* TODO: This is supposed to work with the USB special function pinmux,
-	 * but it doesn't. Go with GPIOs for now and solve the problem later. */
-	gpio_output_open_drain(GPIO(N4), 1);	/* USB VBUS EN0 */
-	gpio_output_open_drain(GPIO(N5), 1);	/* USB VBUS EN1 */
+	/* We pull the USB VBUS signals up but keep them as inputs since the
+	 * voltage source likes to drive them low on overcurrent conditions */
+	gpio_input_pullup(GPIO(N4));	/* USB VBUS EN0 */
+	gpio_input_pullup(GPIO(N5));	/* USB VBUS EN1 */
 
 	/* Clock output 1 (for external peripheral) */
 	pinmux_set_config(PINMUX_DAP_MCLK1_INDEX,
