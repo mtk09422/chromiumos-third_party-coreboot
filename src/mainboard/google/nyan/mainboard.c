@@ -25,6 +25,7 @@
 #include <soc/nvidia/tegra/i2c.h>
 #include <soc/nvidia/tegra124/clk_rst.h>
 #include <soc/nvidia/tegra124/gpio.h>
+#include <soc/nvidia/tegra124/mc.h>
 #include <soc/nvidia/tegra124/pmc.h>
 #include <soc/nvidia/tegra124/spi.h>
 #include <soc/nvidia/tegra124/usb.h>
@@ -211,6 +212,12 @@ static void setup_kernel_info(void)
 	// value defined in BCT.
 	struct tegra_pmc_regs *pmc = (void*)TEGRA_PMC_BASE;
 	writel(0x80080000, &pmc->odmdata);
+
+	// Not strictly info, but kernel graphics driver needs this region locked down
+	struct tegra_mc_regs *mc = (void *)TEGRA_MC_BASE;
+	writel(0, &mc->mc_vpr_bom);
+	writel(0, &mc->mc_vpr_size);
+	writel(1, &mc->mc_vpr_ctrl);
 }
 
 static void setup_ec_spi(void)
