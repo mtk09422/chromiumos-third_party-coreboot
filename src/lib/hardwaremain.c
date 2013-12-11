@@ -222,15 +222,53 @@ static boot_state_t bs_write_tables(void *arg)
 	return BS_PAYLOAD_LOAD;
 }
 
+/* This is something we don't want to use most of the time.
+ * It is for debug only. Hence, it is not a config variable.
+ * It is done this way so people can control it from
+ * build or at runtime via gdb/jtag. The amount of code it
+ * adds is insignificant.
+ */
+static int chooser = 0;
+
 static boot_state_t bs_payload_load(void *arg)
 {
-	void *payload;
+	void *payload = NULL;
 	void *entry;
+	const char *payload_name =  CONFIG_CBFS_PREFIX "/payload";
 
 	timestamp_add_now(TS_LOAD_PAYLOAD);
 
-	payload = cbfs_load_payload(CBFS_DEFAULT_MEDIA,
-				    CONFIG_CBFS_PREFIX "/payload");
+	if (chooser) {
+		static char chosen[128];
+		static struct cbfs_payload_info info[16];
+		int i;
+		int npayloads;
+
+		printk(BIOS_SPEW, "Payloads:\n");
+		npayloads = cbfs_payload_headers(CBFS_DEFAULT_MEDIA,
+						 info, ARRAY_SIZE(info));
+		for(i = 0; i < npayloads; i++)
+			printk(BIOS_INFO, "%s\n", info[i].name);
+		while (! payload) {
+			printk(BIOS_SPEW, "Pick one>");
+			for(i = 0; i < sizeof(chosen); i++) {
+				chosen[i] = console_rx_byte();
+				console_tx_byte(chosen[i]);
+				if ((chosen[i] == '\n') || (chosen[i] == '\r')) {
+					chosen[i] = 0;
+					break;
+				}
+			}
+			printk(BIOS_SPEW, "Try to get :%s:\n", chosen);
+			payload_name = chosen;
+			payload = cbfs_load_payload(CBFS_DEFAULT_MEDIA,
+						    payload_name);
+		}
+	}
+
+	if (! payload)
+		payload = cbfs_load_payload(CBFS_DEFAULT_MEDIA,
+				   payload_name);
 	if (! payload)
 		die("Could not find a payload\n");
 
