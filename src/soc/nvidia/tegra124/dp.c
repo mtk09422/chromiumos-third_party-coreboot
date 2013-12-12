@@ -412,7 +412,7 @@ static int tegra_dc_dp_init_max_link_cfg(struct tegra_dc_dp_data *dp,
 
 	// jz, changed
 	// cfg->bits_per_pixel = dp->dc->pdata->default_out->depth;
-	cfg->bits_per_pixel = 24;
+	cfg->bits_per_pixel = 18;
 
 	/* TODO: need to come from the board file */
 	/* Venice2 settings */
@@ -431,7 +431,7 @@ static int tegra_dc_dp_init_max_link_cfg(struct tegra_dc_dp_data *dp,
 		   __func__, cfg->alt_scramber_reset_cap, cfg->only_enhanced_framing);
 
 	cfg->lane_count = cfg->max_lane_count;
-	cfg->link_bw = cfg->max_link_bw;
+	cfg->link_bw = NV_SOR_LINK_SPEED_G1_62;
 	cfg->enhanced_framing = cfg->support_enhanced_framing;
 	return 0;
 }
@@ -462,6 +462,9 @@ void dp_bringup(u32 winb_addr)
 	u32 dpcd_rev;
 	u32 pclk_freq;
 
+	u32 xres = 1366;	/* norrin display */
+	u32 yres = 768;
+
 	printk(BIOS_SPEW, "JZ: %s: entry\n", __func__);
 
 	dp->sor.base = (void *)TEGRA_ARM_SOR;
@@ -482,7 +485,7 @@ void dp_bringup(u32 winb_addr)
 	dp_link_training((u32) (dp->link_cfg.lane_count),
 					 (u32) (dp->link_cfg.link_bw));
 
-	pclk_freq = dp_setup_timing(5, 2560, 1700);	// W: 2560, H: 1700, use_plld2: 1
+	pclk_freq = dp_setup_timing(5, xres, yres);
 	printk(BIOS_SPEW, "JZ: %s: pclk_freq: %d\n", __func__, pclk_freq);
 
 	void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
@@ -490,7 +493,7 @@ void dp_bringup(u32 winb_addr)
 						 u32 pclkfreq, u32 linkfreq);
 
 	dp_misc_setting(dp->link_cfg.bits_per_pixel,
-					2560, 1700, winb_addr,
+					xres, yres, winb_addr,
 					(u32) dp->link_cfg.lane_count,
 					(u32) dp->link_cfg.enhanced_framing,
 					(u32) dp->link_cfg.alt_scramber_reset_cap,

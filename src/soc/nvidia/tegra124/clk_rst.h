@@ -383,8 +383,10 @@ check_member(clk_rst_ctlr, clk_src_soc_therm, 0x644);
 #define PLL_MISC_LFCON_MASK		(0xfU << PLL_MISC_LFCON_SHIFT)
 
 /* This bit is different all over the place. Oh joy... */
+#define PLLDPD2_MISC_LOCK_ENABLE	(1 << 30)
 #define PLLC_MISC_LOCK_ENABLE		(1 << 24)
 #define PLLUD_MISC_LOCK_ENABLE		(1 << 22)
+#define PLLD_MISC_CLK_ENABLE		(1 << 30)
 #define PLLPAXS_MISC_LOCK_ENABLE	(1 << 18)
 #define PLLE_MISC_LOCK_ENABLE		(1 << 9)
 

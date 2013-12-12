@@ -40,6 +40,7 @@
 #include <soc/ardisplay.h>
 #include <soc/arsor.h>
 #include <soc/ardpaux.h>
+
 //#include <soc/nvidia/tegra/displayport.h>
 extern int dump;
 unsigned long READL(void *p);
@@ -878,11 +879,11 @@ u32 dp_setup_timing(u32 panel_id, u32 width, u32 height)
 	//  720x480:   27.00 , 594/22, dp   CEA
 	//  640x480:   23.75 , 475/20, dp   VESA
 
-	u32 PLL_FREQ = 570;
+	u32 PLL_FREQ = (12 / 12 * 283) / 1 / 2;	/* 141.5 */
 	u32 PLL_DIV = 2;
-	u32 SYNC_WIDTH = (10 << 16) | 32;
-	u32 BACK_PORCH = (36 << 16) | 80;
-	u32 FRONT_PORCH = (3 << 16) | 48;
+	u32 SYNC_WIDTH = (8 << 16) | 46;
+	u32 BACK_PORCH = (6 << 16) | 44;
+	u32 FRONT_PORCH = (6 << 16) | 44;
 	u32 HSYNC_NEG = 1;
 	u32 VSYNC_NEG = 1;
 

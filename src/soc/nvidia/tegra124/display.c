@@ -315,7 +315,7 @@ void display_startup(device_t dev)
 
 	{  u16 *cp = (void *)(framebuffer_base_mb*MiB); 
 		for(i = 0; i < 1048576*8; i++)
-			if (i %(2560/2) < 1280/2)
+			if (i % (1376 / 2) < 688 / 2)
 				cp[i] = 0x222;
 			else
 				cp[i] = 0x888;
@@ -324,9 +324,9 @@ void display_startup(device_t dev)
 	/* tell depthcharge ...
 	 */
 	struct edid edid;
-	edid.x_resolution = 2560;
-	edid.y_resolution = 1700;
-	edid.bytes_per_line = 2560 * 2;
+	edid.x_resolution = 1376;
+	edid.y_resolution = 768;
+	edid.bytes_per_line = 1376 * 2;
 	edid.framebuffer_bits_per_pixel = 16;
 	set_vbe_mode_info_valid(&edid, (uintptr_t)(framebuffer_base_mb*MiB));
 

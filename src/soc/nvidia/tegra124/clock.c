@@ -96,7 +96,7 @@ struct {
 		.pllx = {.n = 158, .m =  1, .p = 0},		  /* 1896 MHz */
 		.pllp = {.n =  34, .m =  1, .p = 0, .cpcon = 2},
 		.pllc = {.n =  50, .m =  1, .p = 0},
-		.plld = {.n = 925, .m = 12, .p = 0, .cpcon = 12},
+		.plld = {.n = 283, .m = 12, .p = 0, .cpcon = 8}, /* 283 MHz */
 		.pllu = {.n =  80, .m =  1, .p = 0, .cpcon = 3},
 		.plldp = {.n = 90, .m =  1, .p = 3},		/* 270 MHz */
 		.plld2 = {.n = 95, .m =  1, .p = 1},		/* 570 MHz */
@@ -106,7 +106,7 @@ struct {
 		.pllx = {.n = 146, .m =  1, .p = 0},		  /* 1898 MHz */
 		.pllp = {.n = 408, .m = 13, .p = 0, .cpcon = 8},
 		.pllc = {.n = 231, .m =  5, .p = 0},		 /* 600.6 MHz */
-		.plld = {.n = 925, .m = 13, .p = 0, .cpcon = 12},
+		.plld = {.n = 283, .m = 13, .p = 0, .cpcon = 8}, /* 283 MHz*/
 		.pllu = {.n = 960, .m = 13, .p = 0, .cpcon = 12},
 		.plldp = {.n = 83, .m =  1, .p = 3},		/* 269.75 MHz */
 		.plld2 = {.n = 88, .m =  1, .p = 1},		/* 572 MHz */
@@ -116,7 +116,7 @@ struct {
 		.pllx = {.n = 113, .m =  1, .p = 0},		/* 1898.4 MHz */
 		.pllp = {.n = 170, .m =  7, .p = 0, .cpcon = 4},
 		.pllc = {.n = 250, .m =  7, .p = 0},
-		.plld = {.n = 936, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
+		.plld = {.n = 286, .m = 17, .p = 0, .cpcon = 8}, /* 282.6 MHz*/
 		.pllu = {.n = 400, .m =  7, .p = 0, .cpcon = 8},
 		.plldp = {.n = 64, .m =  1, .p = 3},		/* 268.8 MHz */
 		.plld2 = {.n = 68, .m =  1, .p = 1},		/* 571.2  MHz */
@@ -126,7 +126,7 @@ struct {
 		.pllx = {.n =  98, .m =  1, .p = 0},		/* 1881.6 MHz */
 		.pllp = {.n =  85, .m =  4, .p = 0, .cpcon = 3},
 		.pllc = {.n = 125, .m =  4, .p = 0},
-		.plld = {.n = 819, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
+		.plld = {.n = 251, .m = 17, .p = 0, .cpcon = 8}, /* 283.5 MHz */
 		.pllu = {.n =  50, .m =  1, .p = 0, .cpcon = 2},
 		.plldp = {.n = 56, .m =  1, .p = 3},		/* 270.75 MHz */
 		.plld2 = {.n = 59, .m =  1, .p = 1},		/* 570 MHz */
@@ -136,7 +136,7 @@ struct {
 		.pllx = {.n =  73, .m =  1, .p = 0},		  /* 1898 MHz */
 		.pllp = {.n = 204, .m = 13, .p = 0, .cpcon = 5},
 		.pllc = {.n =  23, .m =  1, .p = 0},		   /* 598 MHz */
-		.plld = {.n = 925, .m = 26, .p = 0, .cpcon = 12},
+		.plld = {.n = 283, .m = 26, .p = 0, .cpcon = 8}, /* 283 MHz */
 		.pllu = {.n = 480, .m = 13, .p = 0, .cpcon = 8},
 		.plldp = {.n = 83, .m =  2, .p = 3},		/* 266.50 MHz */
 		.plld2 = {.n = 88, .m =  2, .p = 1},		/* 570 MHz */
@@ -146,7 +146,7 @@ struct {
 		.pllx = {.n =  98, .m =  1, .p = 0},		/* 1881.6 MHz */
 		.pllp = {.n =  85, .m =  4, .p = 0, .cpcon = 3},
 		.pllc = {.n = 125, .m =  4, .p = 0},
-		.plld = {.n = 819, .m = 17, .p = 0, .cpcon = 12},/* 924.9 MHz */
+		.plld = {.n = 125, .m = 17, .p = 0, .cpcon = 8}, /* 282.4 MHz */
 		.pllu = {.n =  50, .m =  1, .p = 0, .cpcon = 2},
 		.plldp = {.n = 56, .m =  2, .p = 3},		/* 268 MHz */
 		.plld2 = {.n = 59, .m =  2, .p = 1},		/* 566 MHz */
@@ -156,7 +156,7 @@ struct {
 		.pllx = {.n = 158, .m =  1, .p = 0},		  /* 1896 MHz */
 		.pllp = {.n =  24, .m =  1, .p = 0, .cpcon = 2},
 		.pllc = {.n =  50, .m =  1, .p = 0},
-		.plld = {.n = 925, .m = 12, .p = 0, .cpcon = 12},
+		.plld = {.n = 71, .m = 12, .p = 0, .cpcon = 8}, /* 284 MHz */
 		.pllu = {.n =  80, .m =  1, .p = 0, .cpcon = 3},
 		.plldp = {.n = 90, .m =  4, .p = 3},		/* 264 MHz */
 		.plld2 = {.n = 95, .m =  4, .p = 1},		/* 570 MHz */
@@ -281,13 +281,15 @@ static void graphics_pll(void)
 	/* leave dither and undoc bits set, release clamp */
 	scfg = (1<<28) | (1<<24);
 	writel(scfg, cfg);
+	/* set lock bit */
+	setbits_le32(&clk_rst->plldp_misc, PLLDPD2_MISC_LOCK_ENABLE);
 
-	/* a few more undocumented bits. Sorry. */
-	writel(0x13400000, &clk_rst->plld2_ss_cfg); // undocumented
-	init_pll(&clk_rst->plld2_base, &clk_rst->plld2_misc, osc_table[osc].plld2);
-	writel(0x13800000, &clk_rst->plld2_ss_cfg); // undocumented
-	udelay(10);	// wait for plld2 ready
-
+	/* init clock source for disp1 */
+	/* init plld (the actual output is plld_out0 that is 1/2 of plld. */
+	init_pll(&clk_rst->plld_base, &clk_rst->plld_misc, osc_table[osc].plld);
+	setbits_le32(&clk_rst->plld_misc, PLLUD_MISC_LOCK_ENABLE);
+	setbits_le32(&clk_rst->plld_misc, PLLD_MISC_CLK_ENABLE);
+	udelay(10);	/* wait for plld ready */
 }
 
 /* Initialize the UART and put it on CLK_M so we can use it during clock_init().
@@ -435,7 +437,6 @@ void clock_init(void)
 
 	init_pll(&clk_rst->pllx_base, &clk_rst->pllx_misc, osc_table[osc].pllx);
 	init_pll(&clk_rst->pllp_base, &clk_rst->pllp_misc, osc_table[osc].pllp);
-	init_pll(&clk_rst->plld_base, &clk_rst->plld_misc, osc_table[osc].plld);
 	init_pll(&clk_rst->pllu_base, &clk_rst->pllu_misc, osc_table[osc].pllu);
 	init_utmip_pll();
 	graphics_pll();

@@ -62,10 +62,11 @@ static void set_clock_sources(void)
 	/* Note source id of PLLP for HOST1x is 4. */
 	clock_configure_irregular_source(host1x, PLLP, 408000, 4);
 
-	/* DISP1 doesn't support a divisor. Use PLLD2_OUT0 which runs at 570MHz. */
+	/* Use PLLD_OUT0 as clock source for disp1 */
 	clrsetbits_le32(&clk_rst->clk_src_disp1,
 			CLK_SOURCE_MASK | CLK_DIVISOR_MASK,
-			5 /*PLLD2_OUT0 */ << CLK_SOURCE_SHIFT);
+			2 /*PLLD_OUT0 */ << CLK_SOURCE_SHIFT);
+
 }
 
 static void setup_pinmux(void)
