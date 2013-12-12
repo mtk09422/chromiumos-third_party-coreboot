@@ -27,6 +27,14 @@ config BOOTBLOCK_CPU_INIT
 # 0x00000 Combined bootblock and BCT blob
 # 0x18000 Master CBFS header.
 # 0x18080 Free for CBFS data.
+#
+# iRAM (256k) layout.
+# 0x4000_0000 BootROM runtime data/stack area, can be reclaimed after BootROM.
+#       +0000 (BootROM) Boot Information Table.
+#       +0100 (BootROM) BCT.
+# 0x4000_E000 Valid for anything to be executed after BootROM (effective entry
+#             point address specified in BCT).
+# 0x4003_FFFF End of iRAM.
 
 config BOOTBLOCK_ROM_OFFSET
 	hex
