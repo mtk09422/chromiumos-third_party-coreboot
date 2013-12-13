@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ARCH_ARM_LIBGCC_H__
-#define __ARCH_ARM_LIBGCC_H__
+#ifndef __ARM_ASM_H
+#define __ARM_ASM_H
 
 #if defined __arm__
 #  define ARM(x...)	x
@@ -44,4 +44,4 @@
 #define END(name) \
 	.size name, .-name
 
-#endif	/* __ARCH_ARM_LIBGCC_H__ */
+#endif	/* __ARM_ASM_H */

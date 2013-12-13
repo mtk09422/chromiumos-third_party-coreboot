@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 #if defined __GNUC__
 
-#include "macros.h"
+#include <arch/asm.h>
 
 .macro ARM_DIV_BODY dividend, divisor, result, curbit
 

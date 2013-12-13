@@ -28,7 +28,7 @@
    Boston, MA 02110-1301, USA.  */
 
 
-#include "macros.h"
+#include <arch/asm.h>
 
 #ifdef __ARMEB__
 #define xxh r0

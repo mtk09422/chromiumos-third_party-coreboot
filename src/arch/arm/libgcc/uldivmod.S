@@ -33,16 +33,13 @@
  * Software Foundation.
  */
 
+#include <arch/asm.h>
+
 /*
  * A, Q = r0 + (r1 << 32)
  * B, R = r2 + (r3 << 32)
  * A / B = Q ... R
  */
-
-	.text
-	.global	__aeabi_uldivmod
-	.type	__aeabi_uldivmod, function
-	.align	0
 
 A_0	.req	r0
 A_1	.req	r1
@@ -58,7 +55,7 @@ Q_1	.req	r1
 R_0	.req	r2
 R_1	.req	r3
 
-__aeabi_uldivmod:
+ENTRY(__aeabi_uldivmod)
 	stmfd	sp!, {r4, r5, r6, r7, lr}
 	@ Test if B == 0
 	orrs	ip, B_0, B_1		@ Z set -> B == 0
@@ -258,3 +255,4 @@ L_div_by_0:
 	mov	R_0, #0
 	mov	R_1, #0
 	ldmfd	sp!, {r4, r5, r6, r7, pc}
+ENDPROC(__aeabi_uldivmod)

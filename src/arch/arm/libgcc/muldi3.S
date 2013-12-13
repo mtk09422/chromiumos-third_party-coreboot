@@ -12,7 +12,7 @@
 
 #if defined __GNUC__
 
-#include "macros.h"
+#include <arch/asm.h>
 
 #ifdef __ARMEB__
 #define xh r0

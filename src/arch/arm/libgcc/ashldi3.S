@@ -28,7 +28,7 @@ Boston, MA 02110-1301, USA.  */
 
 #if defined __GNUC__
 
-#include "macros.h"
+#include <arch/asm.h>
 
 #ifdef __ARMEB__
 #define al r1
