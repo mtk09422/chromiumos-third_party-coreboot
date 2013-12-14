@@ -22,6 +22,11 @@
 /* We use ELF as output format. So that we can debug the code in some form. */
 INCLUDE ldoptions
 
+PHDRS
+{
+	to_load PT_LOAD;
+}
+
 ENTRY(stage_entry)
 
 SECTIONS
@@ -38,7 +43,7 @@ SECTIONS
 		*(.text.*);
 		. = ALIGN(16);
 		_etext = .;
-	}
+	} : to_load
 
 	.ctors : {
 		. = ALIGN(0x100);

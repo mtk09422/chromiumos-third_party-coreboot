@@ -23,6 +23,11 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 INCLUDE ldoptions
 
+PHDRS
+{
+	to_load PT_LOAD;
+}
+
 ENTRY(_start)
 TARGET(binary)
 SECTIONS
@@ -42,7 +47,7 @@ SECTIONS
 		*(.bss.*);
 		*(.sbss);
 		*(.sbss.*);
-	} = 0xff
+	} : to_load = 0xff
 
 	/DISCARD/ : {
 		*(.comment)

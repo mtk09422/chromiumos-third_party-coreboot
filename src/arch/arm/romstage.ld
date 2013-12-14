@@ -29,6 +29,11 @@ OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 INCLUDE ldoptions
 
+PHDRS
+{
+	to_load PT_LOAD;
+}
+
 ENTRY(stage_entry)
 
 SECTIONS
@@ -41,7 +46,7 @@ SECTIONS
 		*(.text.startup);
 		*(.text);
 		*(.text.*);
-	}
+	} : to_load
 
 	.romdata . : {
 		*(.rodata);
