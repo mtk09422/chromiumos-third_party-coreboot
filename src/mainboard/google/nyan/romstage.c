@@ -107,12 +107,15 @@ void main(void)
 	dcache_invalidate_all();
 	dcache_mmu_enable();
 
-	/* for quality of the user interface, it's important to get
+	/* For quality of the user experience, it's important to get
 	 * the video going ASAP. Because there are long delays in some
 	 * of the powerup steps, we do some very early setup here in
-	 * romstage. We don't do this in the bootblock because video
-	 * setup is finicky and subject to change; hence, we do it as
-	 * early as we can in the RW stage, but never in the RO stage.
+	 * romstage. The only thing setup_display does is manage
+	 * 4 GPIOs, under control of the config struct members.
+	 * In general, it is safe to enable panel power, and disable
+	 * anything related to the backlight. If we get something wrong,
+	 * we can easily fix it in ramstage by further GPIO manipulation,
+	 * so we feel it is ok to do some setting at this point.
 	 */
 
 	const struct device *soc = dev_find_slot(DEVICE_PATH_CPU_CLUSTER, 0);
