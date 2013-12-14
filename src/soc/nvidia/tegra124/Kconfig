@@ -37,8 +37,8 @@ config BOOTBLOCK_CPU_INIT
 #       +4000 (Coreboot) Stack.
 # 0x4000_E000 Valid for anything to be executed after BootROM (effective entry
 #             point address specified in BCT).
-#       +0000 (Coreboot) Bootblock (max 40k).
-#       +A000 (Coreboot) ROM stage (max 32k).
+#       +0000 (Coreboot) Bootblock (max 36k).
+#       +9000 (Coreboot) ROM stage (max 36k).
 # 0x4002_0000 (Coreboot) Cache of CBFS.
 # 0x4003_FFFF End of iRAM.
 
@@ -62,10 +62,9 @@ config BOOTBLOCK_BASE
 	hex
 	default 0x4000e000
 
-# Note ROMSTAGE_BASE must be aligned to 0x8000.
 config ROMSTAGE_BASE
 	hex
-	default 0x40018000
+	default 0x40017000
 
 config RAMSTAGE_BASE
 	hex
