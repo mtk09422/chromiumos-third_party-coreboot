@@ -23,16 +23,16 @@
 /* Control TDP Settings */
 #define CTL_TDP_SENSOR_ID		0	/* PECI */
 #define CTL_TDP_POWER_LIMIT		12	/* 12W */
-#define CTL_TDP_THRESHOLD_OFF		85	/* Normal at 85C */
-#define CTL_TDP_THRESHOLD_ON		90	/* Limited at 90C */
+#define CTL_TDP_THRESHOLD_OFF		80	/* Normal at 80C */
+#define CTL_TDP_THRESHOLD_ON		85	/* Limited at 85C */
 
 /* Temperature which OS will shutdown at */
-#define CRITICAL_TEMPERATURE		104
+#define CRITICAL_TEMPERATURE		99
 
 /* Temperature which OS will throttle CPU */
-#define PASSIVE_TEMPERATURE		100
+#define PASSIVE_TEMPERATURE		95
 
 /* Tj_max value for calculating PECI CPU temperature */
-#define MAX_TEMPERATURE			105
+#define MAX_TEMPERATURE			100
 
 #endif
