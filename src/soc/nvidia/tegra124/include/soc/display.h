@@ -177,9 +177,18 @@
 /* ardpaux.h */
 #define DPAUX_DP_AUXDATA_READ_W0				0x19
 
+#define DP_LVDS_SHIFT	25
+#define DP_LVDS		(1 << DP_LVDS_SHIFT)
+
+#define SRC_BPP		16
+#define COLORDEPTH	0x6
+#define COLOR_WHITE	0xFFFFFF
+
 void setup_display(struct soc_nvidia_tegra124_config *config);
 void init_dca_regs(void);
-void init_dpaux_regs(void);
-void init_sor_regs(void);
 void dp_io_powerup(void);
+u32 dp_setup_timing(u32 width, u32 height);
+void dp_misc_setting(u32 panel_bpp, u32 width, u32 height, u32 winb_addr,
+		     u32 lane_count, u32 enhanced_framing, u32 panel_edp,
+		     u32 pclkfreq, u32 linkfreq);
 #endif /* __SOC_NVIDIA_TEGRA124_INCLUDE_SOC_DISPLAY_H__ */

@@ -301,25 +301,12 @@ void display_startup(device_t dev)
 
 	/* init dc_a */
 	init_dca_regs();
-	/* init sor */
-	init_sor_regs();
-
-	/* init dpaux */
-	init_dpaux_regs();
 
 	/* power up perip */
 	dp_io_powerup();
 
 	/* bringup dp */
 	dp_bringup(framebuffer_base_mb*MiB);
-
-	{  u16 *cp = (void *)(framebuffer_base_mb*MiB); 
-		for(i = 0; i < 1048576*8; i++)
-			if (i % (1376 / 2) < 688 / 2)
-				cp[i] = 0x222;
-			else
-				cp[i] = 0x888;
-	}
 
 	/* tell depthcharge ...
 	 */
