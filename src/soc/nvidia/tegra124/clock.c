@@ -401,11 +401,10 @@ void clock_init(void)
 	 * features section in the TRM). */
 	write32(1 << HCLK_DIVISOR_SHIFT | 0 << PCLK_DIVISOR_SHIFT,
 		&clk_rst->clk_sys_rate);	/* pclk = hclk = sclk/2 */
-	write32(0 << SCLK_DIVIDEND_SHIFT |
-		(div_round_up(TEGRA_PLLC_KHZ, 300000) - 1) << SCLK_DIVISOR_SHIFT
-		| SCLK_DIV_ENB, &clk_rst->super_sclk_div);
+	write32(CLK_DIVIDER(TEGRA_PLLC_KHZ, 300000) << PLL_OUT_RATIO_SHIFT |
+		PLL_OUT_CLKEN | PLL_OUT_RSTN, &clk_rst->pllc_out);
 	write32(SCLK_SYS_STATE_RUN << SCLK_SYS_STATE_SHIFT |
-		SCLK_SOURCE_PLLC_OUT0 << SCLK_RUN_SHIFT,
+		SCLK_SOURCE_PLLC_OUT1 << SCLK_RUN_SHIFT,
 		&clk_rst->sclk_brst_pol);		/* sclk = 300 MHz */
 
 	/* Change the oscillator drive strength (from U-Boot -- why?) */
