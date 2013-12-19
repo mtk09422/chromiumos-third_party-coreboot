@@ -357,6 +357,7 @@ void clock_cpu0_config_and_reset(void *entry)
 	// Enable other CPU related clocks.
 	setbits_le32(&clk_rst->clk_out_enb_l, CLK_L_CPU);
 	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_CPUG);
+	setbits_le32(&clk_rst->clk_out_enb_v, CLK_V_CPULP);
 
 	// Disable the reset on the non-CPU parts of the fast cluster.
 	write32(CRC_RST_CPUG_CLR_NONCPU,
@@ -372,6 +373,15 @@ void clock_cpu0_config_and_reset(void *entry)
 		CRC_RST_CPUG_CLR_CX2 | CRC_RST_CPUG_CLR_CX3 |
 		CRC_RST_CPUG_CLR_L2 | CRC_RST_CPUG_CLR_PDBG,
 		&clk_rst->rst_cpug_cmplx_clr);
+
+	// Disable the reset on the non-CPU parts of the slow cluster.
+	write32(CRC_RST_CPULP_CLR_NONCPU,
+		&clk_rst->rst_cpulp_cmplx_clr);
+	// Disable the various resets on the LP CPU.
+	write32(CRC_RST_CPULP_CLR_CPU0 | CRC_RST_CPULP_CLR_DBG0 |
+		CRC_RST_CPULP_CLR_CORE0 | CRC_RST_CPULP_CLR_CX0 |
+		CRC_RST_CPULP_CLR_L2 | CRC_RST_CPULP_CLR_PDBG,
+		&clk_rst->rst_cpulp_cmplx_clr);
 }
 
 void clock_halt_avp(void)
