@@ -89,11 +89,11 @@ static void setup_pinmux(void)
 
 	// SPI1 MOSI
 	pinmux_set_config(PINMUX_ULPI_CLK_INDEX, PINMUX_ULPI_CLK_FUNC_SPI1 |
-						 PINMUX_PULL_UP |
+						 PINMUX_PULL_NONE |
 						 PINMUX_INPUT_ENABLE);
 	// SPI1 MISO
 	pinmux_set_config(PINMUX_ULPI_DIR_INDEX, PINMUX_ULPI_DIR_FUNC_SPI1 |
-						 PINMUX_PULL_UP |
+						 PINMUX_PULL_NONE |
 						 PINMUX_INPUT_ENABLE);
 	// SPI1 SCLK
 	pinmux_set_config(PINMUX_ULPI_NXT_INDEX, PINMUX_ULPI_NXT_FUNC_SPI1 |
