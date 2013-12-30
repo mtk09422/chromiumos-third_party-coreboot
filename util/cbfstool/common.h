@@ -112,6 +112,7 @@ struct xdr {
 	void (*put64)(struct buffer *input, uint64_t val);
 };
 
+/* xdr.c */
 extern struct xdr xdr_le, xdr_be;
 
 #endif
