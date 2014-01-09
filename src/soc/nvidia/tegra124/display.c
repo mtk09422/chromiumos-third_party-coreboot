@@ -308,6 +308,10 @@ void display_startup(device_t dev)
 	/* bringup dp */
 	dp_bringup(framebuffer_base_mb*MiB);
 
+	/* init frame buffer */
+	memset((void *)(framebuffer_base_mb*MiB), 0x00,
+			framebuffer_size_mb*MiB);
+
 	/* tell depthcharge ...
 	 */
 	struct edid edid;
