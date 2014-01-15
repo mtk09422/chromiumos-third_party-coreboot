@@ -35,6 +35,7 @@ endif
 bootblock-$(CONFIG_ARM_BOOTBLOCK_SIMPLE) += bootblock_simple.c
 bootblock-$(CONFIG_ARM_BOOTBLOCK_NORMAL) += bootblock_normal.c
 bootblock-y += cache.c
+bootblock-y += cpu.S
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += exception.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += exception_asm.S
 bootblock-y += mmu.c
@@ -49,6 +50,7 @@ endif
 ifeq ($(CONFIG_ARM_ROMSTAGE_ARMV7),y)
 
 romstage-y += cache.c
+romstage-y += cpu.S
 romstage-y += exception.c
 romstage-y += exception_asm.S
 romstage-y += mmu.c
@@ -63,6 +65,7 @@ endif
 ifeq ($(CONFIG_ARM_RAMSTAGE_ARMV7),y)
 
 ramstage-y += cache.c
+ramstage-y += cpu.S
 ramstage-y += exception.c
 ramstage-y += exception_asm.S
 ramstage-y += mmu.c
