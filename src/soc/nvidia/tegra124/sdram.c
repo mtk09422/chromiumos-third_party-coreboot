@@ -600,6 +600,8 @@ void sdram_init(const struct sdram_params *param)
 	sdram_set_refresh(param, emc);
 	sdram_enable_arbiter(param);
 	sdram_lock_carveouts(param, mc);
+
+	sdram_lp0_save_params(param);
 }
 
 uint32_t sdram_get_ram_code(void)
