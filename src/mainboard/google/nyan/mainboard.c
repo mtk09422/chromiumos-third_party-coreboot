@@ -216,9 +216,9 @@ static void setup_kernel_info(void)
 
 	// Not strictly info, but kernel graphics driver needs this region locked down
 	struct tegra_mc_regs *mc = (void *)TEGRA_MC_BASE;
-	writel(0, &mc->mc_vpr_bom);
-	writel(0, &mc->mc_vpr_size);
-	writel(1, &mc->mc_vpr_ctrl);
+	writel(0, &mc->video_protect_bom);
+	writel(0, &mc->video_protect_size_mb);
+	writel(1, &mc->video_protect_reg_ctrl);
 }
 
 static void setup_ec_spi(void)
