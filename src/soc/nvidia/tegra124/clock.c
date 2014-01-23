@@ -327,6 +327,63 @@ void clock_external_output(int clk_id)
 	}
 }
 
+/* Start PLLM for SDRAM. */
+void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 ph45, u32 ph90,
+		 u32 ph135, u32 kvco, u32 kcp, u32 stable_time, u32 emc_source,
+		 u32 same_freq)
+{
+	u32 misc1 = ((setup << PLLM_MISC1_SETUP_SHIFT) |
+		     (ph45 << PLLM_MISC1_PD_LSHIFT_PH45_SHIFT) |
+		     (ph90 << PLLM_MISC1_PD_LSHIFT_PH90_SHIFT) |
+		     (ph135 << PLLM_MISC1_PD_LSHIFT_PH135_SHIFT)),
+	    misc2 = ((kvco << PLLM_MISC2_KVCO_SHIFT) |
+		     (kcp << PLLM_MISC2_KCP_SHIFT)),
+	    base;
+
+	if (same_freq)
+		emc_source |= CLK_SOURCE_EMC_MC_EMC_SAME_FREQ;
+	else
+		emc_source &= ~CLK_SOURCE_EMC_MC_EMC_SAME_FREQ;
+
+	/*
+	 * Note PLLM_BASE.PLLM_OUT1_RSTN must be in RESET_ENABLE mode, and
+	 * PLLM_BASE.ENABLE must be in DISABLE state (both are the default
+	 * values after coldboot reset).
+	 */
+
+	writel(misc1, &clk_rst->pllm_misc1);
+	writel(misc2, &clk_rst->pllm_misc2);
+
+	/* PLLM.BASE needs BYPASS=0, different from general init_pll */
+	base = readl(&clk_rst->pllm_base);
+	base &= ~(PLLCMX_BASE_DIVN_MASK | PLLCMX_BASE_DIVM_MASK |
+		  PLLM_BASE_DIVP_MASK | PLL_BASE_BYPASS);
+	base |= ((m << PLL_BASE_DIVM_SHIFT) | (n << PLL_BASE_DIVN_SHIFT) |
+		 (p << PLL_BASE_DIVP_SHIFT));
+	writel(base, &clk_rst->pllm_base);
+
+	setbits_le32(&clk_rst->pllm_base, PLL_BASE_ENABLE);
+	/* stable_time is required, before we can start to check lock. */
+	udelay(stable_time);
+
+	while (!(readl(&clk_rst->pllm_base) & PLL_BASE_LOCK)) {
+		udelay(1);
+	}
+	/*
+	 * After PLLM reports being locked, we have to delay 10us before
+	 * enabling PLLM_OUT.
+	 */
+	udelay(10);
+
+	/* Put OUT1 out of reset state (start to output). */
+	setbits_le32(&clk_rst->pllm_out, PLLM_OUT1_RSTN_RESET_DISABLE);
+
+	/* Enable and start MEM(MC) and EMC. */
+	clock_enable_clear_reset(0, CLK_H_MEM | CLK_H_EMC, 0, 0, 0, 0);
+	writel(emc_source, &clk_rst->clk_src_emc);
+	udelay(IO_STABILIZATION_DELAY);
+}
+
 void clock_cpu0_config_and_reset(void *entry)
 {
 	void * const evp_cpu_reset = (uint8_t *)TEGRA_EVP_BASE + 0x100;
