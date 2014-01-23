@@ -92,9 +92,12 @@ config EC_GOOGLE_CHROMEEC_SPI_BUS
 
 choice
 	prompt "BCT sdram configuration"
-	default NYAN_BIG_BCT_SDRAM_792
+	default NYAN_BIG_BCT_SDRAM_204
 	help
 	  The SDRAM configuration to put in the BCT.
+
+config NYAN_BIG_BCT_SDRAM_204
+	bool "204 MHz"
 
 config NYAN_BIG_BCT_SDRAM_792
 	bool "792 MHz"
