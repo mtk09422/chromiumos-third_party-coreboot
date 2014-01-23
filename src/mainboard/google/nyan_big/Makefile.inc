@@ -32,5 +32,6 @@ bootblock-y += bootblock.c
 bootblock-y += pmic.c
 
 romstage-y += romstage.c
+romstage-y += sdram_configs.c
 
 ramstage-y += mainboard.c
