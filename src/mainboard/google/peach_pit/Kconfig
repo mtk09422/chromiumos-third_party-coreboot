@@ -17,7 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
-if BOARD_GOOGLE_PIT
+if BOARD_GOOGLE_PEACH_PIT
 
 config BOARD_SPECIFIC_OPTIONS # dummy
 	def_bool y
@@ -35,11 +35,11 @@ config BOARD_SPECIFIC_OPTIONS # dummy
 
 config MAINBOARD_DIR
 	string
-	default google/pit
+	default google/peach_pit
 
 config MAINBOARD_PART_NUMBER
 	string
-	default "Pit"
+	default "Peach Pit"
 
 config DRAM_SIZE_MB
 	int
@@ -49,4 +49,4 @@ config EC_GOOGLE_CHROMEEC_SPI_BUS
 	hex
 	default 2
 
-endif # BOARD_GOOGLE_PIT
+endif # BOARD_GOOGLE_PEACH_PIT
