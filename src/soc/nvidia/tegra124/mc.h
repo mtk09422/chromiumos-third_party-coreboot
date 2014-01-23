@@ -114,7 +114,14 @@ struct tegra_mc_regs {
 	uint32_t sec_carveout_adr_hi;		/* 0x9d4 */
 };
 
+enum {
+	MC_EMEM_ARB_MISC0_MC_EMC_SAME_FREQ_SHIFT = 27,
+	MC_EMEM_ARB_MISC0_MC_EMC_SAME_FREQ_MASK = 1 << 27,
 
+	MC_EMEM_CFG_ACCESS_CTRL_WRITE_ACCESS_DISABLED = 1,
+
+	MC_TIMING_CONTROL_TIMING_UPDATE = 1,
+};
 
 check_member(tegra_mc_regs, sec_carveout_adr_hi, 0x9d4);
 
