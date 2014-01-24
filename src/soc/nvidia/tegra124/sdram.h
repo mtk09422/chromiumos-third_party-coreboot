@@ -22,6 +22,7 @@
 
 #include "sdram_param.h"
 
+uint32_t sdram_get_ram_code(void);
 void sdram_init(const struct sdram_params *param);
 
 #endif /* __SOC_NVIDIA_TEGRA124_SDRAM_H__ */

@@ -244,7 +244,9 @@ struct tegra_pmc_regs {
 	u32 cntrl2;
 	u8 _rsv3[0x18];
 	u32 io_dpd3_req;
-	u8 _rsv4[0x1a0];
+	u32 io_dqd3_status;
+	u32 strapping_opt_a;
+	u8 _rsv4[0x198];
 	u32 scratch56;
 	u32 scratch57;
 	u32 scratch58;
@@ -376,6 +378,12 @@ enum {
 	PMC_OSC_EDPD_OVER_XOFS_SHIFT = 1,
 	PMC_OSC_EDPD_OVER_XOFS_MASK =
 		0x3f << PMC_OSC_EDPD_OVER_XOFS_SHIFT
+};
+
+enum {
+	PMC_STRAPPING_OPT_A_RAM_CODE_SHIFT = 4,
+	PMC_STRAPPING_OPT_A_RAM_CODE_MASK =
+		0xf << PMC_STRAPPING_OPT_A_RAM_CODE_SHIFT,
 };
 
 #endif	/* _TEGRA124_PMC_H_ */
