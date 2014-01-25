@@ -19,6 +19,7 @@
 
 #include <console/console.h>
 #include <soc/nvidia/tegra124/gpio.h>
+#include <stdlib.h>
 
 #include "boardid.h"
 
@@ -27,11 +28,17 @@ uint8_t board_id(void)
 	static int id = -1;
 
 	if (id < 0) {
-		id = gpio_get_in_value(GPIO(Q3)) << 0 |
-		     gpio_get_in_value(GPIO(T1)) << 1 |
-		     gpio_get_in_value(GPIO(X1)) << 2 |
-		     gpio_get_in_value(GPIO(X4)) << 3;
-		printk(BIOS_SPEW, "Board ID: %#x.\n", id);
+		gpio_t gpio[] = {GPIO(Q3), GPIO(T1), GPIO(X1), GPIO(X4)};
+		int value[ARRAY_SIZE(gpio)];
+
+		gpio_get_in_tristate_values(gpio, ARRAY_SIZE(gpio), value);
+
+		/* A gpio state is encoded in every two-bit */
+		id = value[0] << 0 |
+		     value[1] << 2 |
+		     value[2] << 4 |
+		     value[3] << 6;
+		printk(BIOS_SPEW, "Board TRISTATE ID: %#x.\n", id);
 	}
 
 	return id;
