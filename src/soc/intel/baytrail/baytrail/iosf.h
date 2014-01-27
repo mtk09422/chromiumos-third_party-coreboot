@@ -331,4 +331,11 @@ void iosf_ssus_write(int reg, uint32_t val);
 #define USHPHY_REE_DAC_CONTROL			0x80b8
 #define USHPHY_CDN_U1_POWER_STATE_DEF		0x0000
 
+/*
+ * LPE Registers
+ */
+#define LPE_PCICFGCTR1			0x0500
+# define LPE_PCICFGCTR1_PCI_CFG_DIS		(1 << 0)
+# define LPE_PCICFGCTR1_ACPI_INT_EN		(1 << 1)
+
 #endif /* _BAYTRAIL_IOSF_H_ */
