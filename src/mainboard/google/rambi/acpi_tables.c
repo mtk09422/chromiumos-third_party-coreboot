@@ -34,8 +34,6 @@
 #include <baytrail/nvs.h>
 #include <baytrail/iomap.h>
 
-#include "thermal.h"
-
 extern const unsigned char AmlCode[];
 
 static void acpi_create_gnvs(global_nvs_t *gnvs)
@@ -54,9 +52,6 @@ static void acpi_create_gnvs(global_nvs_t *gnvs)
 	gnvs->tpmp = 1;
 
 	/* Enable DPTF */
-	gnvs->tcrt = CRITICAL_TEMPERATURE;
-	gnvs->tpsv = PASSIVE_TEMPERATURE;
-	gnvs->tact = ACTIVE_TEMPERATURE;
 	gnvs->dpte = 1;
 }
 
