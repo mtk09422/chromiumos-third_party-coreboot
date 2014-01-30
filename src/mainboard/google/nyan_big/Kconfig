@@ -40,10 +40,6 @@ config MAINBOARD_PART_NUMBER
 	string
 	default "Nyan Big"
 
-config DRAM_SIZE_MB
-	int
-	default 2048
-
 config DRAM_DMA_START
 	hex
 	default 0x90000000

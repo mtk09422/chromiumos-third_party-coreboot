@@ -22,6 +22,7 @@
 #include <console/console.h>
 #include <device/device.h>
 #include <soc/nvidia/tegra/dc.h>
+#include <soc/nvidia/tegra124/sdram.h>
 #include <soc/addressmap.h>
 
 /* this sucks, but for now, fb size/location are hardcoded.
@@ -30,10 +31,11 @@
  */
 static void soc_enable(device_t dev)
 {
+	u32 lcdbase = fb_base_mb();
 	unsigned long fb_size = FB_SIZE_MB;
-	u32 lcdbase = FB_BASE_MB;
+
 	ram_resource(dev, 0, CONFIG_SYS_SDRAM_BASE/KiB,
-		(CONFIG_DRAM_SIZE_MB - fb_size)*KiB);
+		(sdram_size_mb() - fb_size)*KiB);
 	mmio_resource(dev, 1, lcdbase*KiB, fb_size*KiB);
 }
 

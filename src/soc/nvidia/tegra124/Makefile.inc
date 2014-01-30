@@ -45,6 +45,7 @@ ramstage-y += dma.c
 ramstage-y += i2c.c
 ramstage-y += maincpu.S
 ramstage-y += monotonic_timer.c
+ramstage-y += sdram.c
 ramstage-y += soc.c
 ramstage-y += sor.c
 ramstage-y += spi.c
