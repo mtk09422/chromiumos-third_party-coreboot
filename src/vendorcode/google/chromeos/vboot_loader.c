@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <arch/stages.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -353,15 +354,7 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 
 	timestamp_add_now(TS_END_COPYRAM);
 
-#if CONFIG_ARCH_X86
-	__asm__ volatile (
-		"movl $0, %%ebp\n"
-		"jmp  *%%edi\n"
-		:: "D"(rmod_load.entry)
-	);
-#elif CONFIG_ARCH_ARM
 	stage_exit(rmod_load.entry);
-#endif
 }
 #else /* CONFIG_RELOCATABLE_RAMSTAGE */
 static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
@@ -408,15 +401,7 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 
 	timestamp_add_now(TS_END_COPYRAM);
 
-#if CONFIG_ARCH_X86
-	__asm__ volatile (
-		"movl $0, %%ebp\n"
-		"jmp  *%%edi\n"
-		:: "D"(stage->entry)
-	);
-#elif CONFIG_ARCH_ARM
 	stage_exit((void *)(uintptr_t)stage->entry);
-#endif
 }
 #endif /* CONFIG_RELOCATABLE_RAMSTAGE */
 
