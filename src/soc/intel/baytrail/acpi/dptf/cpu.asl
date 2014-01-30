@@ -144,4 +144,18 @@ Device (TCPU)
 			1000	// StepSize
 		}
 	})
+
+#ifdef DPTF_CPU_CRITICAL
+	Method (_CRT)
+	{
+		Return (^^CTOK (DPTF_CPU_CRITICAL))
+	}
+#endif
+
+#ifdef DPTF_CPU_PASSIVE
+	Method (_PSV)
+	{
+		Return (^^CTOK (DPTF_CPU_PASSIVE))
+	}
+#endif
 }
