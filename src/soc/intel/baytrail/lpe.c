@@ -27,7 +27,9 @@
 
 #include <baytrail/iomap.h>
 #include <baytrail/iosf.h>
+#include <baytrail/lpc.h>
 #include <baytrail/nvs.h>
+#include <baytrail/pattrs.h>
 #include <baytrail/pci_devs.h>
 #include <baytrail/pmc.h>
 #include <baytrail/ramstage.h>
@@ -38,8 +40,19 @@
  * address. Just take 1MiB @ 512MiB. */
 #define FIRMWARE_PHYS_BASE (512 << 20)
 #define FIRMWARE_PHYS_LENGTH (1 << 20)
-#define FIRMWARE_REG_BASE 0xa8
-#define FIRMWARE_REG_LENGTH 0xac
+#define FIRMWARE_PCI_REG_BASE 0xa8
+#define FIRMWARE_PCI_REG_LENGTH 0xac
+#define FIRMWARE_REG_BASE_C0 0x144000
+#define FIRMWARE_REG_LENGTH_C0 (FIRMWARE_REG_BASE_C0 + 4)
+
+static void assign_device_nvs(device_t dev, u32 *field, unsigned index)
+{
+	struct resource *res;
+
+	res = find_resource(dev, index);
+	if (res)
+		*field = res->base;
+}
 
 static void lpe_enable_acpi_mode(device_t dev)
 {
@@ -53,7 +66,6 @@ static void lpe_enable_acpi_mode(device_t dev)
 			    LPE_PCICFGCTR1_ACPI_INT_EN),
 		REG_SCRIPT_END
 	};
-	struct resource *bar;
 	global_nvs_t *gnvs;
 
 	/* Find ACPI NVS to update BARs */
@@ -63,17 +75,10 @@ static void lpe_enable_acpi_mode(device_t dev)
 		return;
 	}
 
-	/* Save BAR0 and BAR1 to ACPI NVS */
-	bar = find_resource(dev, PCI_BASE_ADDRESS_0);
-	if (bar)
-		gnvs->dev.lpe_bar0 = (u32)bar->base;
-
-	bar = find_resource(dev, PCI_BASE_ADDRESS_1);
-	if (bar)
-		gnvs->dev.lpe_bar1 = (u32)bar->base;
-
-	/* Save reserved firmware region */
-	gnvs->dev.lpe_fw = (u32)FIRMWARE_REG_BASE;
+	/* Save BAR0, BAR1, and firmware base  to ACPI NVS */
+	assign_device_nvs(dev, &gnvs->dev.lpe_bar0, PCI_BASE_ADDRESS_0);
+	assign_device_nvs(dev, &gnvs->dev.lpe_bar1, PCI_BASE_ADDRESS_1);
+	assign_device_nvs(dev, &gnvs->dev.lpe_fw, FIRMWARE_PCI_REG_BASE);
 
 	/* Device is enabled in ACPI mode */
 	gnvs->dev.lpe_en = 1;
@@ -120,9 +125,35 @@ static void setup_codec_clock(device_t dev)
 	write32(clk_reg, (read32(clk_reg) & ~0x7) | reg);
 }
 
+static void lpe_stash_firmware_info(device_t dev)
+{
+	struct resource *res;
+	struct resource *mmio;
+	const struct pattrs *pattrs = pattrs_get();
+
+	res = find_resource(dev, FIRMWARE_PCI_REG_BASE);
+	if (res == NULL) {
+		printk(BIOS_DEBUG, "LPE Firmware memory not found.\n");
+		return;
+	}
+
+	/* Continue using old way of informing firmware address / size. */
+	pci_write_config32(dev, FIRMWARE_PCI_REG_BASE, res->base);
+	pci_write_config32(dev, FIRMWARE_PCI_REG_LENGTH, res->size);
+
+	/* C0 and later steppings use an offset in the MMIO space. */
+	if (pattrs->stepping >= STEP_C0) {
+		mmio = find_resource(dev, PCI_BASE_ADDRESS_0);
+		write32(mmio->base + FIRMWARE_REG_BASE_C0, res->base);
+		write32(mmio->base + FIRMWARE_REG_LENGTH_C0, res->size);
+	}
+}
+
 static void lpe_init(device_t dev)
 {
 	struct soc_intel_baytrail_config *config = dev->chip_info;
+
+	lpe_stash_firmware_info(dev);
 
 	setup_codec_clock(dev);
 
@@ -134,29 +165,14 @@ static void lpe_read_resources(device_t dev)
 {
 	pci_dev_read_resources(dev);
 
-	reserved_ram_resource(dev, FIRMWARE_REG_BASE,
+	reserved_ram_resource(dev, FIRMWARE_PCI_REG_BASE,
 			      FIRMWARE_PHYS_BASE >> 10,
 			      FIRMWARE_PHYS_LENGTH >> 10);
 }
 
-static void lpe_set_resources(device_t dev)
-{
-	struct resource *res;
-
-	pci_dev_set_resources(dev);
-
-	res = find_resource(dev, FIRMWARE_REG_BASE);
-	if (res == NULL) {
-		printk(BIOS_DEBUG, "LPE Firmware memory not found.\n");
-		return;
-	}
-	pci_write_config32(dev, FIRMWARE_REG_BASE, res->base);
-	pci_write_config32(dev, FIRMWARE_REG_LENGTH, res->size);
-}
-
 static const struct device_operations device_ops = {
 	.read_resources		= lpe_read_resources,
-	.set_resources		= lpe_set_resources,
+	.set_resources		= pci_dev_set_resources,
 	.enable_resources	= pci_dev_enable_resources,
 	.init			= lpe_init,
 	.enable			= NULL,
