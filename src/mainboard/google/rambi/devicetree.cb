@@ -33,6 +33,7 @@ chip soc/intel/baytrail
 
 	# Enable devices in ACPI mode
 	register "scc_acpi_mode" = "1"
+	register "lpss_acpi_mode" = "1"
 
 	# Enable PIPEA as DP_C
 	register "gpu_pipea_hotplug" = "6"		# 6ms Pulse
