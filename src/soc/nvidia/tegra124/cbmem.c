@@ -18,7 +18,7 @@
  */
 
 #include <cbmem.h>
-#include <soc/addressmap.h>
+#include <soc/display.h>
 #include <soc/nvidia/tegra124/sdram.h>
 
 void *cbmem_top(void)

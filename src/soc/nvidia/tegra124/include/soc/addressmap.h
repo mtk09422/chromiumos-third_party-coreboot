@@ -80,6 +80,4 @@ enum {
 	TEGRA_I2C_BASE_COUNT = 6,
 };
 
-#define FB_SIZE_MB (32)
-
 #endif /* __SOC_NVIDIA_TEGRA124_INCLUDE_SOC_ADDRESS_MAP_H__ */

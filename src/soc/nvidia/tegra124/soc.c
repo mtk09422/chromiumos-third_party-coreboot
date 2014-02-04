@@ -23,7 +23,7 @@
 #include <device/device.h>
 #include <soc/nvidia/tegra/dc.h>
 #include <soc/nvidia/tegra124/sdram.h>
-#include <soc/addressmap.h>
+#include <soc/display.h>
 
 /* this sucks, but for now, fb size/location are hardcoded.
  * Will break if we get 2. Sigh.
