@@ -51,6 +51,7 @@ romstage-y += stage_cache.c
 ramstage-$(CONFIG_ELOG) += elog.c
 ramstage-y += hda.c
 ramstage-y += hda_verb.c
+ramstage-$(CONFIG_ALT_CBFS_LOAD_PAYLOAD) += spi_loading.c
 
 # Remove as ramstage gets fleshed out
 ramstage-y += placeholders.c
