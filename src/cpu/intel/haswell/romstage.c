@@ -36,9 +36,7 @@
 #include <ramstage_cache.h>
 #include <romstage_handoff.h>
 #include <reset.h>
-#if CONFIG_CHROMEOS
 #include <vendorcode/google/chromeos/chromeos.h>
-#endif
 #if CONFIG_EC_GOOGLE_CHROMEEC
 #include <ec/google/chromeec/ec.h>
 #endif
@@ -327,9 +325,7 @@ void romstage_after_car(void)
 
 	prepare_for_resume(handoff);
 
-#if CONFIG_VBOOT_VERIFY_FIRMWARE
 	vboot_verify_firmware(handoff);
-#endif
 
 	/* Load the ramstage. */
 	copy_and_run();

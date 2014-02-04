@@ -25,11 +25,7 @@
 #include <cbfs.h>
 #include <console/console.h>
 #include <cpu/x86/smm.h>
-#if CONFIG_VBOOT_VERIFY_FIRMWARE
 #include <vendorcode/google/chromeos/chromeos.h>
-#else
-static inline void *vboot_get_payload(int *len) { return NULL; }
-#endif
 
 #define CACHELINE_SIZE 64
 #define INTRA_CACHELINE_MASK (CACHELINE_SIZE - 1)

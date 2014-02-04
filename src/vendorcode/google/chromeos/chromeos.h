@@ -21,6 +21,7 @@
 #define __CHROMEOS_H__
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* functions implemented per mainboard: */
 int get_developer_mode_switch(void);
@@ -53,6 +54,11 @@ void *vboot_get_payload(int *len);
 int vboot_get_handoff_info(void **addr, uint32_t *size);
 #else
 static inline void vboot_verify_firmware(struct romstage_handoff *h) {}
+static inline void *vboot_get_payload(int *len) { return NULL; }
+static inline int vboot_get_handoff_info(void **addr, uint32_t *size)
+{
+	return -1;
+}
 #endif
 
 #endif

@@ -63,11 +63,7 @@
 
 #include "cbfs_core.c"
 
-#if CONFIG_VBOOT_VERIFY_FIRMWARE
 #include <vendorcode/google/chromeos/chromeos.h>
-#else
-static inline void *vboot_get_payload(int *len) { return NULL; }
-#endif
 
 #ifndef __SMM__
 static inline int tohex4(unsigned int c)
