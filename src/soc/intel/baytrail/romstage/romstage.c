@@ -84,9 +84,19 @@ static void program_base_addresses(void)
 
 static void spi_init(void)
 {
+	const unsigned long scs = SPI_BASE_ADDRESS + SCS;
 	const unsigned long bcr = SPI_BASE_ADDRESS + BCR;
-	/* Enable caching and prefetching in the SPI controller. */
-	write32(bcr, (read32(bcr) & ~SRC_MASK) | SRC_CACHE_PREFETCH);
+	uint32_t reg;
+
+	/* Disable generating SMI when setting WPD bit. */
+	write32(scs, read32(scs) & ~SMIWPEN);
+	/*
+	 * Enable caching and prefetching in the SPI controller. Disable
+	 * the SMM-only BIOS write and set WPD bit.
+	 */
+	reg = (read32(bcr) & ~SRC_MASK) | SRC_CACHE_PREFETCH | BCR_WPD;
+	reg &= ~EISS;
+	write32(bcr, reg);
 }
 
 static inline void mark_ts(struct romstage_params *rp, uint64_t ts)
@@ -254,21 +264,8 @@ void romstage_common(struct romstage_params *params)
 	timestamp_add(TS_AFTER_INITRAM, params->ts.times[3]);
 }
 
-static void open_up_spi(void)
-{
-	const uintptr_t sbase = SPI_BASE_ADDRESS;
-
-	/* Disable generating SMI when setting WPD bit. */
-	write32(sbase + 0xf8, read32(sbase + 0xf8) & ~(1 << 7));
-	/* Disable the SMM-only BIOS write and set WPD bit. */
-	write32(sbase + 0xfc, 1 | (read32(sbase + 0xfc) & ~(1 << 5)));
-}
-
 void asmlinkage romstage_after_car(void)
 {
-	/* Allow BIOS to program SPI part. */
-	open_up_spi();
-
 	timestamp_add_now(TS_END_ROMSTAGE);
 
 	/* Run vboot verification if configured. */
