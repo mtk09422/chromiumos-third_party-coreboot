@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <getopt.h>
 #include "common.h"
-#include "elf.h"
 #include "cbfs.h"
 #include "cbfs_image.h"
 #include "fit.h"
@@ -37,7 +36,6 @@ struct command {
 	int (*function) (void);
 };
 
-int verbose = 0;
 static struct param {
 	char *cbfs_name;
 	char *name;

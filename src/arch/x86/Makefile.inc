@@ -74,7 +74,13 @@ $(obj)/coreboot.pre1: $(CBFSTOOL)
 	mv $(obj)/coreboot.rom $@
 endif
 
-$(obj)/coreboot.rom: $(obj)/coreboot.pre $(objcbfs)/coreboot_ram.elf $(CBFSTOOL) $(call strip_quotes,$(COREBOOT_ROM_DEPENDENCIES)) $$(INTERMEDIATE) $$(VBOOT_STUB_ELF)
+ifeq ($(CONFIG_HAVE_REFCODE_BLOB),y)
+REFCODE_BLOB=$(obj)/refcode.rmod
+$(REFCODE_BLOB): $(RMODTOOL)
+	$(RMODTOOL) -i $(CONFIG_REFCODE_BLOB_FILE) -o $@
+endif
+
+$(obj)/coreboot.rom: $(obj)/coreboot.pre $(objcbfs)/coreboot_ram.elf $(CBFSTOOL) $(call strip_quotes,$(COREBOOT_ROM_DEPENDENCIES)) $$(INTERMEDIATE) $$(VBOOT_STUB) $(REFCODE_BLOB)
 	@printf "    CBFS       $(subst $(obj)/,,$(@))\n"
 	cp $(obj)/coreboot.pre $@.tmp
 	$(CBFSTOOL) $@.tmp add-stage -f $(objcbfs)/coreboot_ram.elf -n $(CONFIG_CBFS_PREFIX)/coreboot_ram -c $(CBFS_COMPRESS_FLAG)
@@ -105,10 +111,10 @@ ifeq ($(CONFIG_INCLUDE_CONFIG_FILE),y)
 	$(CBFSTOOL) $@.tmp add -f $(obj)/config.tmp -n config -t raw; rm -f $(obj)/config.tmp ; fi
 endif
 ifeq ($(CONFIG_VBOOT_VERIFY_FIRMWARE),y)
-	$(CBFSTOOL) $@.tmp add-stage -f $(VBOOT_STUB_ELF) -n $(CONFIG_CBFS_PREFIX)/vboot -c $(CBFS_COMPRESS_FLAG)
+	$(CBFSTOOL) $@.tmp add-stage -f $(VBOOT_STUB) -n $(CONFIG_CBFS_PREFIX)/vboot -c $(CBFS_COMPRESS_FLAG)
 endif
 ifeq ($(CONFIG_HAVE_REFCODE_BLOB),y)
-	$(CBFSTOOL) $@.tmp add-stage -f $(CONFIG_REFCODE_BLOB_FILE) -n $(CONFIG_CBFS_PREFIX)/refcode -c $(CBFS_COMPRESS_FLAG)
+	$(CBFSTOOL) $@.tmp add-stage -f $(REFCODE_BLOB) -n $(CONFIG_CBFS_PREFIX)/refcode -c $(CBFS_COMPRESS_FLAG)
 endif
 ifeq ($(CONFIG_PXE_ROM),y)
 	$(CBFSTOOL) $@.tmp add -f $(CONFIG_PXE_ROM_FILE) -n pci$(CONFIG_PXE_ROM_ID).rom -t raw
@@ -169,6 +175,10 @@ $(objcbfs)/%.elf: $(objcbfs)/%.debug
 ifeq ($(CONFIG_RELOCATABLE_RAMSTAGE),y)
 
 $(eval $(call rmodule_link,$(objcbfs)/coreboot_ram.debug, $(objgenerated)/coreboot_ram.o, $(CONFIG_HEAP_SIZE)))
+
+# The rmodule_link defintion creates an elf file with .rmod extension.
+$(objcbfs)/coreboot_ram.elf: $(objcbfs)/coreboot_ram.debug.rmod
+	cp $< $@
 
 else
 

@@ -255,8 +255,12 @@ build-dirs:
 #######################################################################
 # Build the tools
 CBFSTOOL:=$(obj)/cbfstool
+RMODTOOL:=$(obj)/rmodtool
 
 $(CBFSTOOL): $(objutil)/cbfstool/cbfstool
+	cp $< $@
+
+$(RMODTOOL): $(objutil)/cbfstool/rmodtool
 	cp $< $@
 
 _WINCHECK=$(shell uname -o 2> /dev/null)
@@ -376,5 +380,5 @@ crosstools: clean-for-update
 crossgcc-clean: clean-for-update
 	$(MAKE) -C util/crossgcc clean
 
-tools: $(objutil)/kconfig/conf $(objutil)/cbfstool/cbfstool $(objutil)/nvramtool/nvramtool $(objutil)/romcc/romcc $(objutil)/sconfig/sconfig
+tools: $(objutil)/kconfig/conf $(objutil)/cbfstool/cbfstool $(objutil)/cbfstool/rmodtool $(objutil)/nvramtool/nvramtool $(objutil)/romcc/romcc $(objutil)/sconfig/sconfig
 

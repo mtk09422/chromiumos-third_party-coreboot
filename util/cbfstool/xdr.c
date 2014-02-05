@@ -25,6 +25,22 @@
 #include <stdint.h>
 #include "common.h"
 
+size_t bgets(struct buffer *input, void *output, size_t len)
+{
+	len = input->size < len ? input->size : len;
+	memmove(output, input->data, len);
+	input->data += len;
+	input->size -= len;
+	return len;
+}
+
+size_t bputs(struct buffer *b, const void *data, size_t len)
+{
+	memmove(&b->data[b->size], data, len);
+	b->size += len;
+	return len;
+}
+
 /* The assumption in all this code is that we're given a pointer to enough data.
  * Hence, we do not check for underflow.
  */
@@ -130,12 +146,12 @@ static void put64le(struct buffer *input, uint64_t val)
 }
 
 struct xdr xdr_be = {
-	get16be, get32be, get64be,
-	put16be, put32be, put64be
+	get8, get16be, get32be, get64be,
+	put8, put16be, put32be, put64be
 };
 
 struct xdr xdr_le = {
-	get16le, get32le, get64le,
-	put16le, put32le, put64le
+	get8, get16le, get32le, get64le,
+	put8, put16le, put32le, put64le
 };
 

@@ -23,11 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
-#include "elf.h"
 #include "common.h"
 #include "cbfs.h"
 
 /* Utilities */
+int verbose = 0;
 
 /* Small, OS/libc independent runtime check for endianess */
 int is_big_endian(void)
@@ -109,6 +109,15 @@ void buffer_delete(struct buffer *buffer)
 
 uint32_t arch = CBFS_ARCHITECTURE_UNKNOWN;
 
+void cbfs_file_get_header(struct buffer *buf, struct cbfs_file *file)
+{
+	bgets(buf, &file->magic, sizeof(file->magic));
+	file->len = xdr_be.get32(buf);
+	file->type = xdr_be.get32(buf);
+	file->checksum = xdr_be.get32(buf);
+	file->offset = xdr_be.get32(buf);
+}
+
 static struct {
 	uint32_t arch;
 	const char *name;
@@ -148,12 +157,6 @@ const char *arch_to_string(uint32_t a)
 
 	return ret;
 
-}
-
-int iself(unsigned char *input)
-{
-	Elf32_Ehdr *ehdr = (Elf32_Ehdr *) input;
-	return !memcmp(ehdr->e_ident, ELFMAG, 4);
 }
 
 static const struct filetypes_t {

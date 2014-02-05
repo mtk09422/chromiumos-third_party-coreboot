@@ -122,11 +122,7 @@ struct cbfs_payload {
 #define CBFS_NAME(_c) (((char *) (_c)) + sizeof(struct cbfs_file))
 #define CBFS_SUBHEADER(_p) ( (void *) ((((uint8_t *) (_p)) + ntohl((_p)->offset))) )
 
-/* elfheaders.c */
-int
-elf_headers(const struct buffer *pinput,
-	    Elf64_Ehdr *ehdr,
-	    Elf64_Phdr **pphdr,
-	    Elf64_Shdr **pshdr);
+/* common.c */
+void cbfs_file_get_header(struct buffer *buf, struct cbfs_file *file);
 
 #endif
