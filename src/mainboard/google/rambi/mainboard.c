@@ -39,8 +39,6 @@
 
 void mainboard_suspend_resume(void)
 {
-	/* Call SMM finalize() handlers before resume */
-	outb(0xcb, 0xb2);
 }
 
 #if CONFIG_PCI_ROM_RUN || CONFIG_VGA_ROM_RUN
