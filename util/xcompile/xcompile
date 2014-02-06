@@ -141,13 +141,19 @@ touch "$TMPFILE"
 trap clean_up EXIT
 
 # Architecture definition
-SUPPORTED_ARCHITECTURE="x86 arm"
+SUPPORTED_ARCHITECTURE="x86 arm aarch64"
 
 # ARM Architecture
 TARCH_arm="arm"
 TBFDARCH_arm="littlearm"
 TCLIST_arm="armv7a"
 TWIDTH_arm="32"
+
+# AARCH64 Architecture
+TARCH_aarch64="aarch64"
+TBFDARCH_aarch64="littleaarch64"
+TCLIST_aarch64="aarch64"
+TWIDTH_aarch64="64"
 
 # X86 Architecture
 TARCH_x86="i386"
