@@ -15,10 +15,11 @@
 
 #include <delay.h>
 
-void udelay(unsigned int n) {
+void udelay(unsigned int n)
+{
 	/* TODO provide delay here. */
 }
 
-int init_timer(void) {
-	return 0;
+void init_timer(void)
+{
 }

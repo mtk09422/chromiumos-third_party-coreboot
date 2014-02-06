@@ -22,7 +22,7 @@
 
 #include <types.h>
 #include <arch/byteorder.h>
-#include <barrier.h>
+#include <arch/barrier.h>
 
 /*
  * Generic IO read/write.  These perform native-endian accesses.
@@ -86,9 +86,9 @@ static inline u64 __raw_readq(const volatile void *addr)
  * ordering rules but do not guarantee any ordering relative to Normal memory
  * accesses.
  */
-#define readb_relaxed(c)	({ u8  __v = __raw_readb(c); __v; })
-#define readw_relaxed(c)	({ u16 __v = le16_to_cpu((__force __le16)__raw_readw(c)); __v; })
-#define readl_relaxed(c)	({ u32 __v = le32_to_cpu((__force __le32)__raw_readl(c)); __v; })
+#define readb_relaxed(c)	({ u8  __u = __raw_readb(c); __u; })
+#define readw_relaxed(c)	({ u16 __u = le16_to_cpu((__force __le16)__raw_readw(c)); __u; })
+#define readl_relaxed(c)	({ u32 __u = le32_to_cpu((__force __le32)__raw_readl(c)); __u; })
 
 #define writeb_relaxed(v,c)	((void)__raw_writeb((v),(c)))
 #define writew_relaxed(v,c)	((void)__raw_writew((__force u16)cpu_to_le16(v),(c)))
@@ -107,39 +107,6 @@ static inline u64 __raw_readq(const volatile void *addr)
 #define writew(v,c)		({ __iowmb(); writew_relaxed((v),(c)); })
 #define writel(v,c)		({ __iowmb(); writel_relaxed((v),(c)); })
 
-/*
- *  I/O port access primitives.
- */
-static inline u8 inb(unsigned long addr)
-{
-	return readb(addr + CONFIG_PCI_IOBASE);
-}
-
-static inline u16 inw(unsigned long addr)
-{
-	return readw(addr + CONFIG_PCI_IOBASE);
-}
-
-static inline u32 inl(unsigned long addr)
-{
-	return readl(addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void outb(u8 b, unsigned long addr)
-{
-	writeb(b, addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void outw(u16 b, unsigned long addr)
-{
-	writew(b, addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void outl(u32 b, unsigned long addr)
-{
-	writel(b, addr + CONFIG_PCI_IOBASE);
-}
-
 #define inb_p(addr)	inb(addr)
 #define inw_p(addr)	inw(addr)
 #define inl_p(addr)	inl(addr)
@@ -147,48 +114,6 @@ static inline void outl(u32 b, unsigned long addr)
 #define outb_p(x, addr)	outb((x), (addr))
 #define outw_p(x, addr)	outw((x), (addr))
 #define outl_p(x, addr)	outl((x), (addr))
-
-static inline void insb(unsigned long addr, void *buffer, int count)
-{
-	u8 *buf = buffer;
-	while (count--)
-		*buf++ = __raw_readb(addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void insw(unsigned long addr, void *buffer, int count)
-{
-	u16 *buf = buffer;
-	while (count--)
-		*buf++ = __raw_readw(addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void insl(unsigned long addr, void *buffer, int count)
-{
-	u32 *buf = buffer;
-	while (count--)
-		*buf++ = __raw_readl(addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void outsb(unsigned long addr, const void *buffer, int count)
-{
-	const u8 *buf = buffer;
-	while (count--)
-		__raw_writeb(*buf++, addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void outsw(unsigned long addr, const void *buffer, int count)
-{
-	const u16 *buf = buffer;
-	while (count--)
-		__raw_writew(*buf++, addr + CONFIG_PCI_IOBASE);
-}
-
-static inline void outsl(unsigned long addr, const void *buffer, int count)
-{
-	const u32 *buf = buffer;
-	while (count--)
-		__raw_writel(*buf++, addr + CONFIG_PCI_IOBASE);
-}
 
 #define insb_p(port,to,len)	insb(port,to,len)
 #define insw_p(port,to,len)	insw(port,to,len)
