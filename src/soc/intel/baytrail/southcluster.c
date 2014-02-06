@@ -23,6 +23,7 @@
 #include <bootstate.h>
 #include <cbmem.h>
 #include <console/console.h>
+#include <cpu/x86/smm.h>
 #include <device/device.h>
 #include <device/pci.h>
 #include <device/pci_ids.h>
@@ -440,6 +441,9 @@ static void finalize_chipset(void *unused)
 
 	/*  Set the CF9 lock. */
 	write32(etr, read32(etr) | CF9LOCK);
+
+	printk(BIOS_DEBUG, "Finalizing SMM.\n");
+	outb(APM_CNT_FINALIZE, APM_CNT);
 }
 
 BOOT_STATE_INIT_ENTRIES(finalize_bscb) = {
