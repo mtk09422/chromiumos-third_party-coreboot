@@ -16,16 +16,29 @@
 #include <console/console.h>
 #include <uart.h>
 
-static void pl011_init_dev(void) {
+#define FOUNDATION_UART0_IO_ADDRESS	(0x1C090000)
+
+#define PL011_UARTCR_OFFSET		(0x030)
+
+static void pl011_init_dev(void)
+{
+	static volatile uint32_t *uartcr_address =
+		(uint32_t *)(FOUNDATION_UART0_IO_ADDRESS + PL011_UARTCR_OFFSET);
+
+	/* Enable TX and UART */
+	*uartcr_address = *uartcr_address | (1 << 8) | (1 << 0);
 }
 
-static void pl011_uart_tx_byte(unsigned char data) {
-	static volatile unsigned int *uart0_address = (void *)0;
+static void pl011_uart_tx_byte(uint8_t data)
+{
+	static volatile uint32_t *uart0_address =
+		(uint32_t *)FOUNDATION_UART0_IO_ADDRESS;
 
-	*uart0_address = (unsigned int)data;
+	*uart0_address = (uint32_t)data;
 }
 
-static void pl011_uart_tx_flush(void) {
+static void pl011_uart_tx_flush(void)
+{
 }
 
 #if !defined(__PRE_RAM__)
@@ -38,7 +51,7 @@ static const struct console_driver pl011_uart_console __console = {
 
 uint32_t uartmem_getbaseaddr(void)
 {
-	return 0;
+	return FOUNDATION_UART0_IO_ADDRESS;
 }
 
 #else
@@ -52,7 +65,8 @@ void uart_tx_byte(unsigned char data)
 	pl011_uart_tx_byte(data);
 }
 
-void uart_tx_flush(void) {
+void uart_tx_flush(void)
+{
 	pl011_uart_tx_flush();
 }
 #endif
