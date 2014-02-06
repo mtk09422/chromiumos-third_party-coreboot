@@ -104,14 +104,6 @@ $(objcbfs)/%.elf: $(objcbfs)/%.debug
 	$(OBJCOPY) --add-gnu-debuglink=$< $@.tmp
 	mv $@.tmp $@
 
-stages_c = $(src)/arch/aarch64/stages.c
-stages_o = $(obj)/arch/aarch64/stages.o
-
-$(stages_o): $(stages_c) $(obj)/config.h
-	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -I. $(INCLUDES) -c -o $@ $<
-
-
 ################################################################################
 # Build the coreboot_ram (stage 2)
 
@@ -149,16 +141,23 @@ $(obj)/mainboard/$(MAINBOARDDIR)/romstage.pre.inc: $(src)/mainboard/$(MAINBOARDD
 ramstage-y += exception.c
 #ramstage-y += exception_asm.S
 
-#bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
-#bootblock-y += cache.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
+bootblock-y += cache.c
+bootblock-y += cpu.S
 
-#romstage-y += cache.c
+romstage-y += cache.c
+romstage-y += cpu.S
 #romstage-y += div0.c
-#romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
+romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
+
+bootblock-y += stages.c
+romstage-y += stages.c
+ramstage-y += stages.c
 
 #ramstage-y += div0.c
 #ramstage-y += interrupts.c
-#ramstage-y += cache.c
+ramstage-y += cache.c
+ramstage-y += cpu.S
 #ramstage-y += mmu.c
 
 #romstage-y += eabi_compat.c

@@ -3,6 +3,7 @@ menu "Architecture (aarch64)"
 config ARM_AARCH64_OPTIONS
 	bool
 	default y
+	select BOOTBLOCK_CONSOLE
 #	select HAVE_ARCH_MEMSET
 #	select HAVE_ARCH_MEMCPY
 #	select HAVE_ARCH_MEMMOVE

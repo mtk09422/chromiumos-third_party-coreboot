@@ -27,13 +27,14 @@
  * SUCH DAMAGE.
  */
 
-#include <console/console.h>
-#include <arch/exception.h>
 #include <stdint.h>
+#include <types.h>
+#include <arch/cache.h>
+#include <arch/exception.h>
+#include <console/console.h>
 
-void exception_test(void);
-
-static int test_abort;
+uint8_t exception_stack[0x100] __attribute__((aligned(8)));
+extern void *exception_stack_end;
 
 void exception_undefined_instruction(uint32_t *);
 void exception_software_interrupt(uint32_t *);
@@ -46,14 +47,14 @@ void exception_fiq(uint32_t *);
 static void print_regs(uint32_t *regs)
 {
 	int i;
-	// XXX
+
 	for (i = 0; i < 16; i++) {
 		if (i == 15)
 			printk(BIOS_ERR, "PC");
 		else if (i == 14)
-			continue; /* LR */
+			printk(BIOS_ERR, "LR");
 		else if (i == 13)
-			continue; /* SP */
+			printk(BIOS_ERR, "SP");
 		else if (i == 12)
 			printk(BIOS_ERR, "IP");
 		else
@@ -85,13 +86,8 @@ void exception_prefetch_abort(uint32_t *regs)
 
 void exception_data_abort(uint32_t *regs)
 {
-	if (test_abort) {
-		regs[15] = regs[0];
-		return;
-	} else {
-		printk(BIOS_ERR, "exception _data_abort\n");
-		print_regs(regs);
-	}
+	printk(BIOS_ERR, "exception _data_abort\n");
+	print_regs(regs);
 	die("exception");
 }
 
@@ -104,27 +100,31 @@ void exception_not_used(uint32_t *regs)
 
 void exception_irq(uint32_t *regs)
 {
+	printk(BIOS_ERR, "exception _irq\n");
+	print_regs(regs);
+	die("exception");
 }
 
 void exception_fiq(uint32_t *regs)
 {
-}
-
-static inline uint32_t get_sctlr(void)
-{
-	return 0;
-}
-
-static inline void set_sctlr(uint32_t val)
-{
+	printk(BIOS_ERR, "exception _fiq\n");
+	print_regs(regs);
+	die("exception");
 }
 
 void exception_init(void)
 {
-	test_abort = 1;
-	printk(BIOS_ERR, "Testing exceptions\n");
-	//exception_test();
-	//test_abort = 0;
-	printk(BIOS_ERR, "Testing exceptions: DONE\n");
+	uint32_t sctlr = read_sctlr();
+	/* Handle exceptions in ARM mode. */
+	//sctlr &= ~SCTLR_TE;
+	/* Set V=0 in SCTLR so VBAR points to the exception vector table. */
+	//sctlr &= ~SCTLR_V;
+	/* Enforce alignment temporarily. */
+	write_sctlr(sctlr);
 
+	//extern uint32_t exception_table[];
+	//set_vbar((uintptr_t)exception_table);
+	//exception_stack_end = exception_stack + sizeof(exception_stack);
+
+	printk(BIOS_DEBUG, "Exception handlers installed.\n");
 }

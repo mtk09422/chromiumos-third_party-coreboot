@@ -20,13 +20,11 @@
  */
 
 #include <bootblock_common.h>
-//#include <arch/cache.h>
+#include <arch/cache.h>
 #include <arch/hlt.h>
 #include <arch/stages.h>
 #include <cbfs.h>
 #include <console/console.h>
-
-//#include "stages.c"
 
 static int boot_cpu(void)
 {
@@ -45,6 +43,7 @@ void main(void)
 
 	/* Globally disable MMU, caches, and branch prediction (these should
 	 * be disabled by default on reset) */
+	dcache_mmu_disable();
 
 	/*
 	 * Re-enable icache and branch prediction. MMU and dcache will be
@@ -61,15 +60,13 @@ void main(void)
 
 #ifdef CONFIG_BOOTBLOCK_CONSOLE
 	console_init();
+	//exception_init();
 #endif
 
-#if 0
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
 
-#endif
 	printk(BIOS_SPEW, "stage_name %s, entry %p\n", stage_name, entry);
-#if 0
+
 	if (entry) stage_exit(entry);
 	hlt();
-#endif
 }

@@ -38,7 +38,37 @@ reset:
 	 * before logging is turned on and may crash the machine, but at least
 	 * the problem will show up near the code that causes it.
 	 */
-	b	reset
+	/* FIXME: Not using supervisor mode, does it apply for aarch64? */
+
+	msr	daifclr, #0xc /* Unmask Debug and System exceptions */
+	msr	daifset, #0x3 /* Mask IRQ, FIQ */
+
+	bl	arm_init_caches
+
+	/*
+	 * Initialize the stack to a known value. This is used to check for
+	 * stack overflow later in the boot process.
+	 */
+	ldr	x0, .Stack
+	ldr	x1, .Stack_size
+	sub	x0, x0, x1
+	ldr	x1, .Stack
+	ldr	x2, =0xdeadbeefdeadbeef
+init_stack_loop:
+	str	x2, [x0]
+	add	x0, x0, #8
+	cmp	x0, x1
+	bne	init_stack_loop
+
+/* Set stackpointer in internal RAM to call bootblock main() */
+call_bootblock:
+	ldr	x0, .Stack /* Set up stack pointer */
+	mov	sp, x0
+	ldr	x0, =0x00000000
+
+	sub	sp, sp, #16
+
+	bl	main
 
 .align 3
 .Stack:
@@ -59,7 +89,7 @@ part:
 .long __id_end - ver  /* Reverse offset to the vendor id */
 .long __id_end - vendor  /* Reverse offset to the vendor id */
 .long __id_end - part    /* Reverse offset to the part number */
-.long CONFIG_ROM_SIZE                               /* Size of this romimage */
+.long CONFIG_ROM_SIZE    /* Size of this romimage */
 	.globl __id_end
 
 __id_end:

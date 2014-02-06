@@ -34,6 +34,7 @@
  */
 
 #include <arch/stages.h>
+#include <arch/cache.h>
 
 void stage_entry(void)
 {
@@ -52,10 +53,6 @@ void stage_exit(void *addr)
 	 * unified caches.
 	 */
 
-	/* Because most stages copy code to memory, it's a safe and
-	 * hygienic thing to flush the icache here.  If we knew how
-	 * on this architecture :-)
-	 */
-	//icache_invalidate_all();
+	cache_sync_instructions();
 	doit();
 }
