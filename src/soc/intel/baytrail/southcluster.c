@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include <arch/io.h>
+#include <bootstate.h>
 #include <cbmem.h>
 #include <console/console.h>
 #include <device/device.h>
@@ -35,6 +36,7 @@
 #include <baytrail/pci_devs.h>
 #include <baytrail/pmc.h>
 #include <baytrail/ramstage.h>
+#include <baytrail/spi.h>
 #include "chip.h"
 
 static inline void
@@ -418,4 +420,31 @@ static const struct pci_driver southcluster __pci_driver = {
 	.ops		= &device_ops,
 	.vendor		= PCI_VENDOR_ID_INTEL,
 	.device		= LPC_DEVID,
+};
+
+static void finalize_chipset(void *unused)
+{
+	const unsigned long bcr = SPI_BASE_ADDRESS + BCR;
+	const unsigned long gcs = RCBA_BASE_ADDRESS + GCS;
+	const unsigned long gen_pmcon2 = PMC_BASE_ADDRESS + GEN_PMCON2;
+	const unsigned long etr = PMC_BASE_ADDRESS + ETR;
+
+	/* Set the lock enable on the BIOS control register. */
+	write32(bcr, read32(bcr) | BCR_LE);
+
+	/* Set BIOS lock down bit controlling boot block size and swapping. */
+	write32(gcs, read32(gcs) | BILD);
+
+	/* Lock sleep stretching policy and set SMI lock. */
+	write32(gen_pmcon2, read32(gen_pmcon2) | SLPSX_STR_POL_LOCK | SMI_LOCK);
+
+	/*  Set the CF9 lock. */
+	write32(etr, read32(etr) | CF9LOCK);
+}
+
+BOOT_STATE_INIT_ENTRIES(finalize_bscb) = {
+	BOOT_STATE_INIT_ENTRY(BS_OS_RESUME, BS_ON_ENTRY,
+	                      finalize_chipset, NULL),
+	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
+	                      finalize_chipset, NULL),
 };
