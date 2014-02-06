@@ -25,6 +25,7 @@
 #include <cbfs.h>
 #include <cbmem.h>
 #include <console/console.h>
+#include "sdram_configs.h"
 #include "soc/nvidia/tegra124/chip.h"
 #include "soc/nvidia/tegra124/sdram.h"
 #include <soc/display.h>
@@ -80,6 +81,8 @@ static void __attribute__((noinline)) romstage(void)
 
 	console_init();
 	exception_init();
+
+	sdram_init(get_sdram_config());
 
 	/* used for MMU and CBMEM setup */
 	dram_size_mb = sdram_size_mb();
