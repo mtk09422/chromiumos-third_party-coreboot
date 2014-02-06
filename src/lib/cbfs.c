@@ -175,22 +175,23 @@ void * cbfs_load_stage(struct cbfs_media *media, const char *name)
 		cbfs_get_file_content(media, name, CBFS_TYPE_STAGE);
 	/* this is a mess. There is no ntohll. */
 	/* for now, assume compatible byte order until we solve this. */
-	uint32_t entry;
+	uintptr_t entry;
 
 	if (stage == NULL)
 		return (void *) -1;
 
-	LOG("loading stage %s @ 0x%x (%d bytes), entry @ 0x%llx\n",
+	LOG("loading stage %s @ 0x%llx (%d bytes), entry @ 0x%llx\n",
 			name,
-			(uint32_t) stage->load, stage->memlen,
+			stage->load, stage->memlen,
 			stage->entry);
+
 	/* Stages rely the below clearing so that the bss is initialized. */
-	memset((void *) (uint32_t) stage->load, 0, stage->memlen);
+	memset((void *) (uintptr_t) stage->load, 0, stage->memlen);
 
 	if (cbfs_decompress(stage->compression,
 			     ((unsigned char *) stage) +
 			     sizeof(struct cbfs_stage),
-			     (void *) (uint32_t) stage->load,
+			     (void *) (uintptr_t) stage->load,
 			     stage->len))
 		return (void *) -1;
 
@@ -217,8 +218,7 @@ int cbfs_execute_stage(struct cbfs_media *media, const char *name)
 		return 1;
 	}
 
-	/* FIXME: This isn't right */
-	LOG("run @ %p\n", (void *) ntohl((uint32_t) stage->entry));
+	LOG("run @ %p\n", (void *) (uintptr_t) ntohll(stage->entry));
 	return run_address((void *)(uintptr_t)ntohll(stage->entry));
 }
 
