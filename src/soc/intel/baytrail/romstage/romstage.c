@@ -235,14 +235,16 @@ void romstage_common(struct romstage_params *params)
 
 	mark_ts(params, timestamp_get());
 
-#if CONFIG_ELOG_BOOT_COUNT
-	boot_count_increment();
-#endif
-
 	ps = fill_power_state();
 	prev_sleep_state = chipset_prev_sleep_state(ps);
 
 	printk(BIOS_DEBUG, "prev_sleep_state = S%d\n", prev_sleep_state);
+
+#if CONFIG_ELOG_BOOT_COUNT
+	if (prev_sleep_state != 3)
+		boot_count_increment();
+#endif
+
 
 	/* Initialize RAM */
 	raminit(params->mrc_params, prev_sleep_state);
