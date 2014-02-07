@@ -23,25 +23,25 @@
 
 /*
  * Note for board bring up, we've temporarily filled SDRAM table with
- * 0001-204-2GB configuration (except the 0100-204-4GB entry).
+ * hynix-2GB-204 configuration (except the hynix-4GB-204 entry for 0100).
  */
 static struct sdram_params sdram_configs[] = {
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0100-204-4GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
-#include "bct/sdram-0001-204-2GB.inc"
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0000 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0001 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0010 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0011 */
+#include "bct/sdram-hynix-4GB-204.inc"			/* ram_code = 0100 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0101 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0110 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 0111 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1000 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1001 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1010 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1011 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1100 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1101 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1110 */
+#include "bct/sdram-hynix-2GB-204.inc"			/* ram_code = 1111 */
 };
 
 const struct sdram_params *get_sdram_config()
@@ -54,7 +54,7 @@ const struct sdram_params *get_sdram_config()
 
 	printk(BIOS_SPEW, "%s: RAMCODE=%d\n", __func__, ramcode);
 	if (ramcode >= sizeof(sdram_configs) / sizeof(sdram_configs[0]) ||
-	    sdram_configs[ramcode].AhbArbitrationXbarCtrlMemInitDone == 0) {
+	    sdram_configs[ramcode].MemoryType == NvBootMemoryType_Unused) {
 		die("Invalid RAMCODE.");
 	}
 

@@ -51,7 +51,9 @@ enum {
 	NvBootMemoryType_Ddr3,
 
 	NvBootMemoryType_Num,
-	NvBootMemoryType_Force32 = 0X7FFFFFF,
+
+	/* Specifies an entry in the ram_code table that's not in use */
+	NvBootMemoryType_Unused = 0X7FFFFFF,
 };
 
 enum {

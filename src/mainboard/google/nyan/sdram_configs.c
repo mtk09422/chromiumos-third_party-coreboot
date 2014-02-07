@@ -22,22 +22,22 @@
 #include "sdram_configs.h"
 
 static struct sdram_params sdram_configs[] = {
-#include "bct/sdram-0000.inc"
-#include "bct/sdram-0001.inc"
-#include "bct/sdram-0010.inc"
-#include "bct/sdram-0011.inc"
-#include "bct/sdram-0100.inc"
-#include "bct/sdram-0101.inc"
-#include "bct/sdram-0110.inc"
-#include "bct/sdram-0111.inc"
-#include "bct/sdram-1000.inc"
-#include "bct/sdram-1001.inc"
-#include "bct/sdram-1010.inc"
-#include "bct/sdram-1011.inc"
-#include "bct/sdram-1100.inc"
-#include "bct/sdram-1101.inc"
-#include "bct/sdram-1110.inc"
-#include "bct/sdram-1111.inc"
+#include "bct/sdram-hynix-2GB-792.inc"			/* ram_code = 0000 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0001 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0010 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0011 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0100 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0101 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0110 */
+#include "bct/sdram-unused.inc"				/* ram_code = 0111 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1000 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1001 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1010 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1011 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1100 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1101 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1110 */
+#include "bct/sdram-unused.inc"				/* ram_code = 1111 */
 };
 
 const struct sdram_params *get_sdram_config()
@@ -50,7 +50,7 @@ const struct sdram_params *get_sdram_config()
 
 	printk(BIOS_SPEW, "%s: RAMCODE=%d\n", __func__, ramcode);
 	if (ramcode >= sizeof(sdram_configs) / sizeof(sdram_configs[0]) ||
-	    sdram_configs[ramcode].AhbArbitrationXbarCtrlMemInitDone == 0) {
+	    sdram_configs[ramcode].MemoryType == NvBootMemoryType_Unused) {
 		die("Invalid RAMCODE.");
 	}
 

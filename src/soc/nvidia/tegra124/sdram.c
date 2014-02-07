@@ -568,6 +568,13 @@ void sdram_init(const struct sdram_params *param)
 	struct tegra_mc_regs *mc = (struct tegra_mc_regs*)TEGRA_MC_BASE;
 	struct tegra_emc_regs *emc = (struct tegra_emc_regs*)TEGRA_EMC_BASE;
 
+	printk(BIOS_DEBUG, "Initializing SDRAM of type %d with %dKHz\n",
+		param->MemoryType, clock_get_osc_khz() *
+		param->PllMFeedbackDivider / param->PllMInputDivider /
+		(1 + param->PllMSelectDiv2));
+	if (param->MemoryType != NvBootMemoryType_Ddr3)
+		die("Unsupported memory type!\n");
+
 	sdram_configure_pmc(param, pmc);
 	sdram_patch(param->EmcBctSpare0, param->EmcBctSpare1);
 
