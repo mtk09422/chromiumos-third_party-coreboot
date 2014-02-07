@@ -53,6 +53,8 @@ tarballs/
 # Ignore Kdevelop project file
 .kdev4
 
+3rdparty/
+
 util/*/.dependencies
 util/*/.test
 util/cbfstool/cbfstool
