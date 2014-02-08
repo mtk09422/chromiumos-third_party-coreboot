@@ -17,11 +17,17 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <console/console.h>
+#include <arch/cache.h>
 #include <arch/stages.h>
+#include <cbmem.h>
+#include <console/console.h>
 
 void jmp_to_elf_entry(void *entry, unsigned long buffer, unsigned long size)
 {
+	void (*doit)(void *) = entry;
+	void *cb_tables = cbmem_find(CBMEM_ID_CBTABLE);
+
 	printk(BIOS_SPEW, "entry    = %p\n", entry);
-	stage_exit(entry);
+	cache_sync_instructions();
+	doit(cb_tables);
 }
