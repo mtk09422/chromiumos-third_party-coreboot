@@ -72,7 +72,7 @@ config ID_SECTION_BASE
 
 config ROMSTAGE_BASE
 	hex
-	default 0x20000
+	default 0x4000000
 
 config ROMSTAGE_SIZE
 	hex
@@ -100,7 +100,7 @@ config XIP_ROM_SIZE
 
 config SYS_SDRAM_BASE
 	hex "SDRAM base address"
-	default 0x01000000
+	default 0x80000000
 
 config SYS_TEXT_BASE
 	hex "Executable code section"
@@ -113,14 +113,14 @@ config RAMBASE
 # according to stefan, this is RAMBASE + 1M.
 config RAMTOP
 	hex
-	default 0x01100000
+	default 0x80100000
 
 config STACK_TOP
 	hex
-	default 0x8000ff00
+	default 0x90000000
 
 config STACK_SIZE
 	hex
-	default 0x00001000
+	default 0x00010000
 
 endif #  BOARD_EMULATION_FOUNDATION_ARMV8
