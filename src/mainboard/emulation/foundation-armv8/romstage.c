@@ -19,11 +19,11 @@
 
 void main(void)
 {
-        void *entry;
+	void *entry;
 
 	console_init();
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/coreboot_ram");
 
-	stage_exit(entry);
+	//stage_exit(entry);
 }

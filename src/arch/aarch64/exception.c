@@ -33,98 +33,93 @@
 #include <arch/exception.h>
 #include <console/console.h>
 
-uint8_t exception_stack[0x100] __attribute__((aligned(8)));
-extern void *exception_stack_end;
+void exception_sync_el0(uint64_t *regs, uint64_t esr);
+void exception_irq_el0(uint64_t *regs, uint64_t esr);
+void exception_fiq_el0(uint64_t *regs, uint64_t esr);
+void exception_serror_el0(uint64_t *regs, uint64_t esr);
+void exception_sync(uint64_t *regs, uint64_t esr);
+void exception_irq(uint64_t *regs, uint64_t esr);
+void exception_fiq(uint64_t *regs, uint64_t esr);
+void exception_serror(uint64_t *regs, uint64_t esr);
 
-void exception_undefined_instruction(uint32_t *);
-void exception_software_interrupt(uint32_t *);
-void exception_prefetch_abort(uint32_t *);
-void exception_data_abort(uint32_t *);
-void exception_not_used(uint32_t *);
-void exception_irq(uint32_t *);
-void exception_fiq(uint32_t *);
-
-static void print_regs(uint32_t *regs)
+static void print_regs(uint64_t *regs)
 {
 	int i;
 
-	for (i = 0; i < 16; i++) {
-		if (i == 15)
-			printk(BIOS_ERR, "PC");
-		else if (i == 14)
-			printk(BIOS_ERR, "LR");
-		else if (i == 13)
-			printk(BIOS_ERR, "SP");
-		else if (i == 12)
-			printk(BIOS_ERR, "IP");
-		else
-			printk(BIOS_ERR, "R%d", i);
-		printk(BIOS_ERR, " = 0x%08x\n", regs[i]);
+	for (i = 0; i < 31; i+=2) {
+		printk(BIOS_ERR, "X%02d = 0x%016llx        ", i, regs[i]);
+		printk(BIOS_ERR, "X%02d = 0x%016llx\n", i + 1, regs[i + 1]);
 	}
 }
 
-void exception_undefined_instruction(uint32_t *regs)
+void exception_sync_el0(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _undefined_instruction\n");
+	printk(BIOS_ERR, "exception _sync_el0 (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
-void exception_software_interrupt(uint32_t *regs)
+void exception_irq_el0(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _software_interrupt\n");
+	printk(BIOS_ERR, "exception _irq_el0 (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
-void exception_prefetch_abort(uint32_t *regs)
+void exception_fiq_el0(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _prefetch_abort\n");
+	printk(BIOS_ERR, "exception _fiq_el0 (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
-void exception_data_abort(uint32_t *regs)
+void exception_serror_el0(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _data_abort\n");
+	printk(BIOS_ERR, "exception _serror_el0 (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
-void exception_not_used(uint32_t *regs)
+void exception_sync(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _not_used\n");
+	printk(BIOS_ERR, "exception _sync (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
-void exception_irq(uint32_t *regs)
+void exception_irq(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _irq\n");
+	printk(BIOS_ERR, "exception _irq (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
-void exception_fiq(uint32_t *regs)
+void exception_fiq(uint64_t *regs, uint64_t esr)
 {
-	printk(BIOS_ERR, "exception _fiq\n");
+	printk(BIOS_ERR, "exception _fiq (ESR = 0x%08llx)\n", esr);
+	print_regs(regs);
+	die("exception");
+}
+
+void exception_serror(uint64_t *regs, uint64_t esr)
+{
+	printk(BIOS_ERR, "exception _serror (ESR = 0x%08llx)\n", esr);
 	print_regs(regs);
 	die("exception");
 }
 
 void exception_init(void)
 {
-	uint32_t sctlr = read_sctlr();
+	//uint32_t sctlr = read_sctlr();
 	/* Handle exceptions in ARM mode. */
 	//sctlr &= ~SCTLR_TE;
 	/* Set V=0 in SCTLR so VBAR points to the exception vector table. */
 	//sctlr &= ~SCTLR_V;
 	/* Enforce alignment temporarily. */
-	write_sctlr(sctlr);
+	//write_sctlr(sctlr);
 
-	//extern uint32_t exception_table[];
-	//set_vbar((uintptr_t)exception_table);
-	//exception_stack_end = exception_stack + sizeof(exception_stack);
+	extern uint32_t exception_table[];
+	set_vbar((uintptr_t)exception_table);
 
-	printk(BIOS_DEBUG, "Exception handlers installed.\n");
+	printk(0, "Exception handlers installed.\n");
 }

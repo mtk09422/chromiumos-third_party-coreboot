@@ -123,7 +123,7 @@ else
 	$(CC) $(CFLAGS) -nostdlib -r -o $@ -Wl,--start-group $(stages_o) $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
 endif
 
-CFLAGS += \
+CFLAGS += -mstrict-align \
 
 ldscripts =
 ldscripts += $(src)/arch/aarch64/romstage.ld
@@ -139,15 +139,19 @@ $(obj)/mainboard/$(MAINBOARDDIR)/romstage.pre.inc: $(src)/mainboard/$(MAINBOARDD
 
 # Things that appear in every board
 ramstage-y += exception.c
-#ramstage-y += exception_asm.S
+ramstage-y += exception_asm.S
 
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += cache.c
 bootblock-y += cpu.S
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += exception.c
+bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += exception_asm.S
 
 romstage-y += cache.c
 romstage-y += cpu.S
 #romstage-y += div0.c
+romstage-y += exception.c
+romstage-y += exception_asm.S
 romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 
 bootblock-y += stages.c

@@ -35,6 +35,7 @@
 
 #include <arch/stages.h>
 #include <arch/cache.h>
+#include <console/console.h>
 
 void stage_entry(void)
 {

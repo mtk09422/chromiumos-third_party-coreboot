@@ -23,6 +23,7 @@
 #include <arch/cache.h>
 #include <arch/hlt.h>
 #include <arch/stages.h>
+#include <arch/exception.h>
 #include <cbfs.h>
 #include <console/console.h>
 
@@ -44,6 +45,7 @@ void main(void)
 	/* Globally disable MMU, caches, and branch prediction (these should
 	 * be disabled by default on reset) */
 	dcache_mmu_disable();
+	write_sctlr(read_sctlr() & ~(SCTLR_A));
 
 	/*
 	 * Re-enable icache and branch prediction. MMU and dcache will be
@@ -60,7 +62,7 @@ void main(void)
 
 #ifdef CONFIG_BOOTBLOCK_CONSOLE
 	console_init();
-	//exception_init();
+	exception_init();
 #endif
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
