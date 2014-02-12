@@ -18,17 +18,20 @@
 
 #define VEXPRESS_UART0_IO_ADDRESS	(0x10009000)
 
-static void pl011_init_dev(void) {
+static void pl011_init_dev(void)
+{
 }
 
-static void pl011_uart_tx_byte(unsigned char data) {
-	static volatile unsigned int *uart0_address =
-			(unsigned int *)VEXPRESS_UART0_IO_ADDRESS;
+static void pl011_uart_tx_byte(uint8_t data)
+{
+	static volatile uint32_t *uart0_address =
+			(uint32_t *)VEXPRESS_UART0_IO_ADDRESS;
 
-	*uart0_address = (unsigned int)data;
+	*uart0_address = (uint32_t)data;
 }
 
-static void pl011_uart_tx_flush(void) {
+static void pl011_uart_tx_flush(void)
+{
 }
 
 #if !defined(__PRE_RAM__)
@@ -54,7 +57,8 @@ void uart_tx_byte(unsigned char data)
 	pl011_uart_tx_byte(data);
 }
 
-void uart_tx_flush(void) {
+void uart_tx_flush(void)
+{
 	pl011_uart_tx_flush();
 }
 #endif
