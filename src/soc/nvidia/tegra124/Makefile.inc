@@ -15,6 +15,7 @@ bootblock-y += ../tegra/gpio.c
 bootblock-y += ../tegra/i2c.c
 bootblock-y += ../tegra/pingroup.c
 bootblock-y += ../tegra/pinmux.c
+bootblock-y += ../tegra/apbmisc.c
 bootblock-y += timer.c
 ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
