@@ -79,6 +79,7 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 		.mainboard = {
 			.dram_type = DRAM_DDR3L,
 			.dram_info_location = DRAM_INFO_SPD_MEM,
+			.weaker_odt_settings = 1,
 		},
 	};
 
