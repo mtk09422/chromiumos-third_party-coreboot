@@ -26,6 +26,7 @@
  *	Flush the whole D-cache.
  *
  *	Corrupted registers: x0-x7, x9-x11
+ * 	From: Linux arch/arm64/mm/cache.S
  */
 ENTRY(flush_dcache_all)
 	dsb	sy		// ensure ordering with previous memory accesses
@@ -106,3 +107,22 @@ ENTRY(arm_init_caches)
 
 	ret	x8
 ENDPROC(arm_init_caches)
+
+/* From u-boot transition.S */
+ENTRY(switch_el3_to_el2)
+	mov	x0, #0x5b1	/* Non-secure EL0/EL1 | HVC | 64bit EL2 */
+	msr	scr_el3, x0
+	msr	cptr_el3, xzr	/* Disable coprocessor traps to EL3 */
+	mov	x0, #0x33ff
+	msr	cptr_el2, x0	/* Disable coprocessor traps to EL2 */
+
+	/* Return to the EL2_SP2 mode from EL3 */
+	mov	x0, sp
+	msr	sp_el2, x0	/* Migrate SP */
+	mrs	x0, vbar_el3
+	msr	vbar_el2, x0	/* Migrate VBAR */
+	mov	x0, #0x3c9
+	msr	spsr_el3, x0	/* EL2_SP2 | D | A | I | F */
+	msr	elr_el3, x30
+	eret
+ENDPROC(switch_el3_to_el2)

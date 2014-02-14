@@ -80,11 +80,11 @@ ENTRY(exception_prologue)
 	stp	x3, x4, [sp, #-16]!
 	stp	x1, x2, [sp, #-16]!
 
-	/* FIXME: Don't assume always running in EL3 */
-	mrs	x1, elr_el3
+	/* FIXME: Don't assume always running in EL2 */
+	mrs	x1, elr_el2
 	stp	x1, x0, [sp, #-16]!
 
-	mrs	x1, esr_el3
+	mrs	x1, esr_el2
 	mov	x0, sp
 
 	ret
@@ -99,5 +99,5 @@ exception_handler:
 
 	.global set_vbar
 set_vbar:
-	msr	vbar_el3, x0
+	msr	vbar_el2, x0
 	ret

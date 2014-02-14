@@ -68,6 +68,11 @@ call_bootblock:
 
 	sub	sp, sp, #16
 
+	/*
+	 * Switch to EL2 already because Linux requires to be
+	 * in EL1 or EL2, see its "Booting AArch64 Linux" doc
+	 */
+	bl	switch_el3_to_el2
 	bl	main
 
 .align 3
