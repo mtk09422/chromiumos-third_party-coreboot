@@ -50,6 +50,7 @@ static struct cbmem_id_to_name {
 	{ CBMEM_ID_REFCODE,		"REFCODE    " },
 	{ CBMEM_ID_REFCODE_CACHE,	"REFCODE $  " },
 	{ CBMEM_ID_POWER_STATE,		"POWER STATE" },
+	{ CBMEM_ID_RAM_OOPS,		"RAMOOPS    " },
 };
 
 void cbmem_print_entry(int n, u32 id, u64 base, u64 size)
