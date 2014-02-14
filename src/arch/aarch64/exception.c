@@ -46,9 +46,13 @@ static void print_regs(uint64_t *regs)
 {
 	int i;
 
-	for (i = 0; i < 31; i+=2) {
-		printk(BIOS_ERR, "X%02d = 0x%016llx        ", i, regs[i]);
-		printk(BIOS_ERR, "X%02d = 0x%016llx\n", i + 1, regs[i + 1]);
+	/* ELR contains the restart PC at target exception level */
+	printk(BIOS_ERR, "ELR = 0x%016llx        ", regs[0]);
+	printk(BIOS_ERR, "X00 = 0x%016llx\n", regs[1]);
+
+	for (i = 2; i < 31; i+=2) {
+		printk(BIOS_ERR, "X%02d = 0x%016llx        ", i - 1, regs[i]);
+		printk(BIOS_ERR, "X%02d = 0x%016llx\n", i, regs[i + 1]);
 	}
 }
 
@@ -121,5 +125,5 @@ void exception_init(void)
 	extern uint32_t exception_table[];
 	set_vbar((uintptr_t)exception_table);
 
-	printk(0, "Exception handlers installed.\n");
+	printk(BIOS_DEBUG, "Exception handlers installed.\n");
 }
