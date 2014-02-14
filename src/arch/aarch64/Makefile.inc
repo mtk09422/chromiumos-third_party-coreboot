@@ -153,6 +153,7 @@ romstage-y += cpu.S
 romstage-y += exception.c
 romstage-y += exception_asm.S
 romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
+romstage-y += cbmem.c
 
 bootblock-y += stages.c
 romstage-y += stages.c
@@ -170,6 +171,7 @@ ramstage-y += cpu.S
 
 ramstage-y += boot.c
 ramstage-y += tables.c
+ramstage-y += cbmem.c
 
 #romstage-y += memset.S
 #ramstage-y += memset.S
