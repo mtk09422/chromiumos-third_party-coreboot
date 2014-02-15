@@ -24,6 +24,7 @@ enum {
 	CLK_RST_BASE = 0X60006000,
 	FLOW_CTLR_BASE = 0X60007000,
 	TEGRA_EVP_BASE = 0x6000f000,
+	APB_MISC_BASE = 0x70000000,
 	PMC_CTLR_BASE = 0X7000e400,
 	MC_CTLR_BASE = 0X70019000,
 	SYSCTR_CTLR_BASE = 0X700f0000
@@ -37,6 +38,12 @@ enum {
 	UP_TAG_AVP = 0xaaaaaaaa
 };
 
+
+/*  APB Misc JTAG Configuration Register */
+static uint32_t *misc_pp_config_ctl_ptr = (void *)(APB_MISC_BASE + 0x24);
+enum {
+	PP_CONFIG_CTL_JTAG = 0x1 << 6
+};
 
 
 /* Timer registers. */
@@ -315,6 +322,12 @@ static unsigned get_osc_freq(void)
 }
 
 
+/* Jtag configuration. */
+
+static void enable_jtag(void)
+{
+	write32(PP_CONFIG_CTL_JTAG, misc_pp_config_ctl_ptr);
+}
 
 /* Clock configuration. */
 
@@ -542,6 +555,9 @@ void lp0_resume(void)
 	// If not on the AVP, reset.
 	if (read32(up_tag_ptr) != UP_TAG_AVP)
 		reset();
+
+	// Enable JTAG
+	enable_jtag();
 
 	config_oscillator();
 
