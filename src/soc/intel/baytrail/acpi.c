@@ -73,7 +73,7 @@ static acpi_cstate_t cstate_map[] = {
 		/* C6FS with full L2 shrink */
 		.ctype = 3, /* ACPI C3 */
 		.latency = 1500, /* 1.5ms worst case */
-		.power = 10,
+		.power = 1,
 		.resource = MWAIT_RES(5, 2),
 	}
 };
