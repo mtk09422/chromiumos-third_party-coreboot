@@ -168,6 +168,11 @@ config 8250_SERIAL_CONSOLE
 	default y if ARCH_X86
 	default n if !ARCH_X86
 
+config PL011_SERIAL_CONSOLE
+	bool "PL011 compatible serial port driver"
+	depends on 8250_SERIAL_CONSOLE
+	default n
+
 config SERIAL_IOBASE
 	## This default is currently not used on non-x86 systems.
 	hex "Default I/O base for the serial port (default 0x3f8)"
