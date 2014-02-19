@@ -90,13 +90,14 @@ ENTRY(arm_init_caches)
 	mrs	x4, sctlr_el3
 
 	/* FIXME: How to enable branch prediction on ARMv8? */
-	msr	sctlr_el3, x4
 
 	/* Flush and invalidate dcache */
 	bl	flush_dcache_all
 
 	/* Deactivate MMU (0), Alignment Check (1) and DCache (2) */
 	and	x4, x4, # ~(1 << 0) & ~(1 << 1) & ~(1 << 2)
+	/* Activate ICache (12) already for speed */
+	orr	x4, x4, #(1 << 12)
 	msr	sctlr_el3, x4
 
 	/* Invalidate icache and TLB for good measure */
@@ -108,7 +109,7 @@ ENTRY(arm_init_caches)
 	ret	x8
 ENDPROC(arm_init_caches)
 
-/* From u-boot transition.S */
+/* Based on u-boot transition.S */
 ENTRY(switch_el3_to_el2)
 	mov	x0, #0x5b1	/* Non-secure EL0/EL1 | HVC | 64bit EL2 */
 	msr	scr_el3, x0
@@ -121,6 +122,8 @@ ENTRY(switch_el3_to_el2)
 	msr	sp_el2, x0	/* Migrate SP */
 	mrs	x0, vbar_el3
 	msr	vbar_el2, x0	/* Migrate VBAR */
+	mrs	x0, sctlr_el3
+	msr	sctlr_el2, x0	/* Migrate SCTLR */
 	mov	x0, #0x3c9
 	msr	spsr_el3, x0	/* EL2_SP2 | D | A | I | F */
 	msr	elr_el3, x30
