@@ -186,7 +186,7 @@ ramstage-y += cbmem.c
 $(obj)/arch/aarch64/coreboot_table.ramstage.o : $(OPTION_TABLE_H)
 
 romstage-srcs += $(objgenerated)/crt0.s
-#ramstage-srcs += $(wildcard src/mainboard/$(MAINBOARDDIR)/mainboard.c)
+ramstage-srcs += $(wildcard src/mainboard/$(MAINBOARDDIR)/mainboard.c)
 
 ifeq ($(CONFIG_BOARD_HAS_HARD_RESET),y)
 #ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/reset.c

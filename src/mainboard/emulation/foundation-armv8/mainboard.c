@@ -19,9 +19,13 @@
 static void mainboard_enable(device_t dev)
 {
 	printk(BIOS_INFO, "Enable foundation/armv8 device...\n");
+
+	ram_resource(dev, 0, CONFIG_RAMBASE / KiB,
+	             (CONFIG_RAMTOP - CONFIG_RAMBASE) / KiB);
 }
 
 struct chip_operations mainboard_ops = {
+	CHIP_NAME("Foundation ARMv8 Model")
 	.enable_dev = mainboard_enable,
 };
 

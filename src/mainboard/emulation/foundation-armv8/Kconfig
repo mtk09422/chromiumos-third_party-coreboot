@@ -111,10 +111,9 @@ config RAMBASE
 	hex
 	default SYS_SDRAM_BASE
 
-# according to stefan, this is RAMBASE + 1M.
 config RAMTOP
 	hex
-	default 0x80100000
+	default 0x81000000
 
 config STACK_TOP
 	hex

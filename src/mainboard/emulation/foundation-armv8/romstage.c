@@ -25,5 +25,5 @@ void main(void)
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/coreboot_ram");
 
-	//stage_exit(entry);
+	stage_exit(entry);
 }
