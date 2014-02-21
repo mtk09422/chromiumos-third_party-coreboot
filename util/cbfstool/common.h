@@ -76,7 +76,7 @@ uint32_t string_to_arch(const char *arch_string);
 
 int iself(unsigned char *input);
 
-typedef void (*comp_func_ptr) (char *, int, char *, int *);
+typedef int (*comp_func_ptr) (char *, int, char *, int *);
 typedef enum { CBFS_COMPRESS_NONE = 0, CBFS_COMPRESS_LZMA = 1 } comp_algo;
 
 comp_func_ptr compression_function(comp_algo algo);
@@ -100,8 +100,8 @@ int parse_elf_to_stage(const struct buffer *input, struct buffer *output,
 
 
 /* lzma/lzma.c */
-void do_lzma_compress(char *in, int in_len, char *out, int *out_len);
-void do_lzma_uncompress(char *dst, int dst_len, char *src, int src_len);
+int do_lzma_compress(char *in, int in_len, char *out, int *out_len);
+int do_lzma_uncompress(char *dst, int dst_len, char *src, int src_len);
 /* xdr.c */
 struct xdr {
 	uint16_t (*get16)(struct buffer *input);
