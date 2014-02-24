@@ -119,7 +119,7 @@ static inline void *get_root(void)
 	if (pointer->magic != CBMEM_POINTER_MAGIC)
 		return NULL;
 
-	return (void *)pointer->root;
+	return (void *)(uintptr_t)pointer->root;
 }
 
 static inline void cbmem_entry_assign(struct cbmem_entry *entry,
@@ -200,9 +200,9 @@ static inline int cbmem_fail_recovery(void)
 static int validate_entries(struct cbmem_root *root)
 {
 	unsigned int i;
-	u32 current_end;
+	uintptr_t current_end;
 
-	current_end = (u32)get_top_aligned();
+	current_end = (uintptr_t)get_top_aligned();
 
 	printk(BIOS_DEBUG, "CBMEM: recovering %d/%d entries from root @ %p\n",
 	       root->num_entries, root->max_entries, root);
@@ -272,14 +272,14 @@ int cbmem_initialize(void)
 static void *cbmem_base(void)
 {
 	struct cbmem_root *root;
-	u32 low_addr;
+	uintptr_t low_addr;
 
 	root = get_root();
 
 	if (root == NULL)
 		return NULL;
 
-	low_addr = (u32)root;
+	low_addr = (uintptr_t)root;
 
 	/* Assume the lowest address is the last one added. */
 	if (root->num_entries > 0) {
@@ -413,7 +413,7 @@ u64 cbmem_entry_size(const struct cbmem_entry *entry)
 
 void *cbmem_entry_start(const struct cbmem_entry *entry)
 {
-	return (void *)entry->start;
+	return (void *)(uintptr_t)entry->start;
 }
 
 
