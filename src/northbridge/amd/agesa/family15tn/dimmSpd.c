@@ -27,9 +27,14 @@
 #include "dimmSpd.h"
 #include "chip.h"
 
+#if CONFIG_DDR3_SOLDERED_DOWN
+#include CONFIG_PATH_TO_DDR3_SPD
+AGESA_STATUS calc_fake_spd_crc( UINT8 *SPDPtr, UINT16 *crc );
+#endif
 
 #define DIMENSION(array)(sizeof (array)/ sizeof (array [0]))
 
+#if !CONFIG_DDR3_SOLDERED_DOWN
 /*-----------------------------------------------------------------------------
  *
  * readSmbusByteData - read a single SPD byte from any offset
@@ -158,3 +163,70 @@ AGESA_STATUS AmdMemoryReadSPD (UINT32 unused1, UINT32 unused2, AGESA_READ_SPD_PA
 	setupFch (ioBase);
 	return readspd (ioBase, spdAddress, (void *) info->Buffer, 128);
 }
+
+#else // CONFIG_DDR3_SOLDERED_DOWN
+/*
+ * Get the SPD from the mainboard
+ */
+AGESA_STATUS AmdMemoryReadSPD (UINT32 unused1, UINT32 unused2, AGESA_READ_SPD_PARAMS *info)
+{
+	UINT8 *spd_ptr;
+	UINT16 index, crc;
+
+	ROMSTAGE_CONST struct device *dev = dev_find_slot(0, PCI_DEVFN(0x18, 2));
+
+	if ((dev == 0) || (dev->chip_info == 0))
+		return AGESA_ERROR;
+
+	if (info->MemChannelId > CONFIG_DDR3_CHANNEL_MAX) return AGESA_ERROR;
+	if (info->SocketId     != 0)  return AGESA_ERROR;
+	if (info->DimmId       != 0)  return AGESA_ERROR;
+
+	/* read the bytes from the table */
+	spd_ptr = (UINT8 *)info->Buffer;
+	for (index = 0; index < 128; index++)
+		spd_ptr[index] = ddr3_fake_spd[index];
+
+	/* If CRC bytes are zeroes, calculate and store the CRC of the fake table */
+	if ((spd_ptr[126] == 0) && (spd_ptr[127] == 0)) {
+		calc_fake_spd_crc( spd_ptr, &crc );
+		spd_ptr[126] = (UINT8)(crc & 0xFF);
+		spd_ptr[127] = (UINT8)(crc>>8);
+	}
+
+	/* print out the table */
+	printk(BIOS_SPEW, "\nDump the fake SPD for Channel %d\n",info->MemChannelId);
+	for (index = 0; index < 128; index++) {
+		if((index&0x0F)==0x00) printk(BIOS_SPEW, "%02x:  ",index);
+		printk(BIOS_SPEW, "%02x ", spd_ptr[index]);
+		if((index&0x0F)==0x0F) printk(BIOS_SPEW, "\n");
+	}
+	return AGESA_SUCCESS;
+}
+
+AGESA_STATUS calc_fake_spd_crc( UINT8 *SPDPtr, UINT16 *crc )
+{
+	INT16 i;
+	INT16 j;
+	INT16 jmax;
+
+	/* should the CRC be done on bytes 0-116 or 0-125 ? */
+	if (SPDPtr[0] & 0x80)
+		 jmax = 117;
+	else jmax = 126;
+
+	*crc = 0; /* zero out the CRC */
+
+	for (j = 0; j < jmax; j++) {
+		*crc = *crc ^ ((UINT16)SPDPtr[j] << 8);
+		for (i = 0; i < 8; i++) {
+			if (*crc & 0x8000) {
+				*crc = (*crc << 1) ^ 0x1021;
+			} else {
+				*crc = (*crc << 1);
+			}
+		}
+	}
+	return TRUE;
+}
+#endif
