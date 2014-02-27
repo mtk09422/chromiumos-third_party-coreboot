@@ -334,7 +334,7 @@ struct gpio_bank {
 	const u8 gpio_f1_range_end;
 };
 
-void setup_soc_gpios(struct soc_gpio_config *config);
+void setup_soc_gpios(struct soc_gpio_config *config, u8 enable_xdp_tap);
 /* This function is weak and can be overridden by a mainboard function. */
 struct soc_gpio_config* mainboard_get_gpios(void);
 

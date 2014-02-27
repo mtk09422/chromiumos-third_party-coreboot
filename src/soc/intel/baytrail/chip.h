@@ -26,9 +26,10 @@
 #include <stdint.h>
 
 struct soc_intel_baytrail_config {
-        uint8_t sata_port_map;
-        uint8_t sata_ahci;
-        uint8_t ide_legacy_combined;
+	uint8_t enable_xdp_tap;
+	uint8_t sata_port_map;
+	uint8_t sata_ahci;
+	uint8_t ide_legacy_combined;
 	uint8_t clkreq_enable;
 
 	/* VR low power settings -- enable PS2 mode for gfx and core */
