@@ -51,6 +51,24 @@ void set_cbmem_toc(struct cbmem_entry *toc)
 }
 #endif
 
+#if CONFIG_HAVE_ACPI_RESUME
+unsigned long get_top_of_ram(void);
+unsigned long get_top_of_ram(void)
+{
+	u32 xdata = 0;
+	int xnvram_pos = 0xf8, xi;
+	if (acpi_get_sleep_type() != 3)
+		return 0;
+	for (xi = 0; xi<4; xi++) {
+		outb(xnvram_pos, BIOSRAM_INDEX);
+		xdata &= ~(0xff << (xi * 8));
+		xdata |= inb(BIOSRAM_DATA) << (xi *8);
+		xnvram_pos++;
+	}
+	return (unsigned long) xdata;
+}
+#endif
+
 struct cbmem_entry *get_cbmem_toc(void)
 {
 	u32 xdata = 0;
