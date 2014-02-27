@@ -53,4 +53,8 @@ config UPDATE_IMAGE
 	  is a suitable file for further processing.
 	  The bootblock will not be modified.
 
+config ARM_LPAE
+	bool "Enable LPAE"
+	default n
+
 endmenu
