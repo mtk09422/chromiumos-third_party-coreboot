@@ -1,0 +1,16 @@
+if VENDOR_GIZMOSPHERE
+
+choice
+	prompt "Mainboard model"
+
+config BOARD_GIZMOSPHERE_GIZMO
+	bool "Gizmo"
+
+endchoice
+
+source "src/mainboard/gizmosphere/gizmo/Kconfig"
+config MAINBOARD_VENDOR
+	string
+	default "GizmoSphere"
+
+endif # VENDOR_GIZMOSPHERE
