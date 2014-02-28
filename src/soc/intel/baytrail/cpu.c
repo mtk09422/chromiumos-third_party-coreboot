@@ -30,6 +30,7 @@
 #include <cpu/x86/smm.h>
 #include <reg_script.h>
 
+#include <baytrail/iosf.h>
 #include <baytrail/msr.h>
 #include <baytrail/pattrs.h>
 #include <baytrail/ramstage.h>
@@ -103,6 +104,7 @@ void baytrail_init_cpus(device_t dev)
 	struct bus *cpu_bus = dev->link_list;
 	const struct pattrs *pattrs = pattrs_get();
 	struct mp_params mp_params;
+	uint32_t bsmrwac;
 
 	/* Set up MTRRs based on physical address size. */
 	x86_setup_fixed_mtrrs();
@@ -115,6 +117,15 @@ void baytrail_init_cpus(device_t dev)
 	mp_params.flight_plan = &mp_steps[0];
 	mp_params.num_records = ARRAY_SIZE(mp_steps);
 	mp_params.microcode_pointer = pattrs->microcode_patch;
+
+
+	/*
+	 * Configure the BUNIT to allow dirty cache line evictions in non-SMM
+	 * mode for the lines that were dirtied while in SMM mode. Otherwise
+	 * the writes would be silently dropped.
+	 */
+	bsmrwac = iosf_bunit_read(BUNIT_SMRWAC) | SAI_IA_UNTRUSTED;
+	iosf_bunit_write(BUNIT_SMRWAC, bsmrwac);
 
 	/* Set package MSRs */
 	reg_script_run(package_msr_script);
