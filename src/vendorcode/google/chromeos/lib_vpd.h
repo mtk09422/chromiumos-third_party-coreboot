@@ -18,6 +18,7 @@ enum {
 enum {
   VPD_TYPE_TERMINATOR = 0,
   VPD_TYPE_STRING,
+  VPD_TYPE_INFO                = 0xfe,
   VPD_TYPE_IMPLICIT_TERMINATOR = 0xff,
 };
 

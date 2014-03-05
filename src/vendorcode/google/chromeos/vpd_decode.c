@@ -51,6 +51,7 @@ int decodeVpdString(
 
   type = input_buf[*consumed];
   switch (type) {
+    case VPD_TYPE_INFO:
     case VPD_TYPE_STRING:
       (*consumed)++;
 
@@ -75,7 +76,10 @@ int decodeVpdString(
       value = &input_buf[*consumed];
       *consumed += value_len;
 
-      return callback(key, key_len, value, value_len, callback_arg);
+      if (type == VPD_TYPE_STRING)
+        return callback(key, key_len, value, value_len, callback_arg);
+
+      return VPD_OK;
 
     default:
       return VPD_FAIL;
