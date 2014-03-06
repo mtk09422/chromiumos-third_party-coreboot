@@ -105,6 +105,7 @@ void baytrail_init_cpus(device_t dev)
 	const struct pattrs *pattrs = pattrs_get();
 	struct mp_params mp_params;
 	uint32_t bsmrwac;
+	void *default_smm_area;
 
 	/* Set up MTRRs based on physical address size. */
 	x86_setup_fixed_mtrrs();
@@ -118,6 +119,7 @@ void baytrail_init_cpus(device_t dev)
 	mp_params.num_records = ARRAY_SIZE(mp_steps);
 	mp_params.microcode_pointer = pattrs->microcode_patch;
 
+	default_smm_area = backup_default_smm_area();
 
 	/*
 	 * Configure the BUNIT to allow dirty cache line evictions in non-SMM
@@ -136,6 +138,8 @@ void baytrail_init_cpus(device_t dev)
 	if (mp_init(cpu_bus, &mp_params)) {
 		printk(BIOS_ERR, "MP initialization failure.\n");
 	}
+
+	restore_default_smm_area(default_smm_area);
 }
 
 static void baytrail_core_init(device_t cpu)

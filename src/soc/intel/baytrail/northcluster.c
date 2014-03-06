@@ -89,14 +89,8 @@ static void nc_read_resources(device_t dev)
 	mmconf = iosf_bunit_read(BUNIT_MMCONF_REG) & ~((1 << 28) - 1);
 	mmio_resource(dev, BUNIT_MMCONF_REG, RES_IN_KiB(mmconf), 256 * 1024);
 
-	/* 0 -> SMM_DEFAULT_BASE cacheable ram. */
-	ram_resource(dev, index++, 0, RES_IN_KiB(SMM_DEFAULT_BASE));
-	/* Default SMM region is cacheable but reserved for coreboot */
-	reserved_ram_resource(dev, index++, RES_IN_KiB(SMM_DEFAULT_BASE),
-	                      RES_IN_KiB(SMM_DEFAULT_SIZE));
-
-	/* SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE - > 0xa0000 */
-	base_k = RES_IN_KiB(SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE);
+	/* 0 -> 0xa0000 */
+	base_k = RES_IN_KiB(0);
 	size_k = RES_IN_KiB(0xa0000) - base_k;
 	ram_resource(dev, index++, base_k, size_k);
 
