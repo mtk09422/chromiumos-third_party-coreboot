@@ -21,26 +21,75 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arch/byteorder.h>
+#include <boot/coreboot_tables.h>
 #include <cbmem.h>
 #include <cbfs.h>
 #include <console/console.h>
-#include <cpu/x86/smm.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #define CACHELINE_SIZE 64
 #define INTRA_CACHELINE_MASK (CACHELINE_SIZE - 1)
 #define CACHELINE_MASK (~INTRA_CACHELINE_MASK)
 
+static void *find_mirror_buffer(int len)
+{
+	int nentries;
+	int i;
+	struct lb_memory *mem;
+	void *buffer;
+
+	len = ALIGN(len, 4096);
+
+	mem = get_lb_mem();
+	nentries = (mem->size - sizeof(*mem)) / sizeof(mem->map[0]);
+
+	/*
+	 * Find the highest RAM entry that accommodates the lenth provide
+	 * while falling below 4GiB.
+	 */
+	buffer = NULL;
+	for (i = 0; i < nentries; i++) {
+		const uint64_t max_addr = 1ULL << 32;
+		uint64_t start;
+		uint64_t size;
+		struct lb_memory_range *r;
+
+		r = &mem->map[i];
+
+		if (r->type != LB_MEM_RAM)
+			continue;
+
+		start = unpack_lb64(r->start);
+		if (start >= max_addr)
+			continue;
+
+		size = unpack_lb64(r->size);
+		if (size < len)
+			continue;
+
+		/* Adjust size of buffer if range exceeds max address. */
+		if (start + size > max_addr)
+			size = max_addr - start;
+
+		if (size < len)
+			continue;
+
+		buffer = (void *)(uintptr_t)(start + size - len);
+	}
+
+	return buffer;
+}
+
 /*
  * Mirror the payload file to the default SMM location if it is small enough.
  * The default SMM region can be used since no one is using the memory at this
  * location at this stage in the boot.
  */
-static inline void *spi_mirror(void *file_start, int file_len)
+static void *spi_mirror(void *file_start, int file_len)
 {
 	int alignment_diff;
 	char *src;
-	char *dest = (void *)SMM_DEFAULT_BASE;
+	char *dest;
 
 	alignment_diff = (INTRA_CACHELINE_MASK & (long)file_start);
 
@@ -56,11 +105,13 @@ static inline void *spi_mirror(void *file_start, int file_len)
 
 	printk(BIOS_DEBUG, "Payload aligned size: 0x%x\n", file_len);
 
+	dest = find_mirror_buffer(file_len);
+
 	/*
-	 * Just pass back the pointer to ROM space if the file is larger
-	 * than the RAM mirror region.
+	 * Just pass back the pointer to ROM space if a buffer could not
+	 * be found to mirror into.
 	 */
-	if (file_len > SMM_DEFAULT_SIZE)
+	if (dest == NULL)
 		return file_start;
 
 	src = (void *)(CACHELINE_MASK & (long)file_start);
