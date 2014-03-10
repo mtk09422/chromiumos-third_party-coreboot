@@ -42,7 +42,7 @@ endif
 ramstage-y += cbfs.c
 ramstage-y += cbmem.c
 ramstage-y += clock.c
-ramstage-y += display.c displayhack.c
+ramstage-y += display.c
 ramstage-y += dma.c
 ramstage-y += i2c.c
 ramstage-y += maincpu.S
