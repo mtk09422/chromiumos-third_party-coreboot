@@ -36,6 +36,9 @@ chip soc/intel/baytrail
 	register "lpss_acpi_mode" = "1"
 	register "scc_acpi_mode" = "1"
 
+	# Allow PCIe devices to wake system from suspend
+	register "pcie_wake_enable" = "1"
+
 	# Enable PIPEA as DP_C
 	register "gpu_pipea_hotplug" = "6"		# 6ms Pulse
 	register "gpu_pipea_port_select" = "2"		# DP_C
