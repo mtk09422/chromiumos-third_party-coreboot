@@ -47,6 +47,9 @@ int recovery_mode_enabled(void);
 void init_chromeos(int bootmode);
 
 struct romstage_handoff;
+
+/* TODO(shawnn): Remove these CONFIGs and define default weak functions
+ * that can be overridden in the platform / MB code. */
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
 void vboot_verify_firmware(struct romstage_handoff *handoff);
 void *vboot_get_payload(int *len);
@@ -60,6 +63,7 @@ static inline int vboot_get_handoff_info(void **addr, uint32_t *size)
 	return -1;
 }
 #endif
+int vboot_get_sw_write_protect(void);
 
 #include "gnvs.h"
 struct device;

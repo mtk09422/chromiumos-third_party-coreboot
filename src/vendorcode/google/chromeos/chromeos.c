@@ -86,6 +86,12 @@ void __attribute__((weak)) save_chromeos_gpios(void)
 {
 	// Can be implemented by a mainboard
 }
+
+int __attribute((weak)) vboot_get_sw_write_protect(void)
+{
+	// Can be implemented by a platform / mainboard
+	return 0;
+}
 #endif
 
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
