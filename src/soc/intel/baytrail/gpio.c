@@ -192,7 +192,7 @@ static void setup_gpio_route(const struct soc_gpio_map *sus,
 			route_reg |= ROUTE_SCI << (2 * (i + 8));
 		}
 	}
-	southcluster_smm_save_gpio_route(route_reg);
+	southcluster_smm_save_param(SMM_SAVE_PARAM_GPIO_ROUTE, route_reg);
 }
 
 static void setup_dirqs(const u8 dirq[GPIO_MAX_DIRQS],

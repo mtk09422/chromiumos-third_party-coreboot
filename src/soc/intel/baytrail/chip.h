@@ -69,6 +69,9 @@ struct soc_intel_baytrail_config {
 	int scc_acpi_mode;
 	int lpe_acpi_mode;
 
+	/* Allow PCIe devices to wake system from suspend. */
+	int pcie_wake_enable;
+
 	/*
 	 * Digital Port Hotplug Enable:
 	 *  0x04 = Enabled, 2ms short pulse
