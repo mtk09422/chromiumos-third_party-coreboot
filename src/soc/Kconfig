@@ -3,5 +3,6 @@ source src/soc/intel/Kconfig
 endif
 if ARCH_ARM
 source src/soc/nvidia/Kconfig
+source src/soc/qualcomm/Kconfig
 source src/soc/samsung/Kconfig
 endif
