@@ -38,6 +38,7 @@ config BOARD_SPECIFIC_OPTIONS # dummy
 	select GFXUMA_CONFIGURABLE
 	select DDR3_SOLDERED_DOWN
 	select EARLY_CBMEM_INIT
+	select CHROMEOS
 
 config GFXUMA
 	bool
