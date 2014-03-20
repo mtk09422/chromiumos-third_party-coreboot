@@ -114,6 +114,29 @@ device_t dev_find_lapic(unsigned apic_id)
 }
 
 /**
+ * Find a PNP device of given port and device ID.
+ *
+ * @param port A PNP port ID.
+ * @param device A PNP device ID.
+ * @return Pointer to the device struct.
+ */
+struct device *dev_find_pnp(unsigned int port, unsigned int device)
+{
+	struct device *dev, *result;
+
+	result = NULL;
+	for (dev = all_devices; dev; dev = dev->next) {
+		if ((dev->path.type == DEVICE_PATH_PNP) &&
+		    (dev->path.pnp.port == port) &&
+		    (dev->path.pnp.device == device)) {
+			result = dev;
+			break;
+		}
+	}
+	return result;
+}
+
+/**
  * Find a device of a given vendor and type.
  *
  * @param vendor A PCI vendor ID (e.g. 0x8086 for Intel).

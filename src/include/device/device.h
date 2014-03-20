@@ -159,6 +159,7 @@ device_t dev_find_class (unsigned int class, device_t from);
 device_t dev_find_slot (unsigned int bus, unsigned int devfn);
 device_t dev_find_slot_on_smbus (unsigned int bus, unsigned int addr);
 device_t dev_find_lapic(unsigned apic_id);
+device_t dev_find_pnp(unsigned int port, unsigned int device);
 int dev_count_cpu(void);
 
 void remap_bsp_lapic(struct bus *cpu_bus);
