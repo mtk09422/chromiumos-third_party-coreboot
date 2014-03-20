@@ -145,7 +145,8 @@ $(obj)/lib/uart8250.smm.o : $(OPTION_TABLE_H)
 
 ifeq ($(CONFIG_RELOCATABLE_MODULES),y)
 ramstage-y += rmodule.c
-romstage-$(CONFIG_RELOCATABLE_RAMSTAGE) += rmodule.c
+# Include rmodule.c in romstage if vboot verification is selected.
+romstage-$(CONFIG_VBOOT_VERIFY_FIRMWARE) += rmodule.c
 
 RMODULE_LDSCRIPT := $(src)/lib/rmodule.ld
 
