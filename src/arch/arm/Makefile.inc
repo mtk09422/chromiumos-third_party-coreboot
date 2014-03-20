@@ -132,7 +132,7 @@ $(obj)/coreboot.pre1: $(CBFSTOOL)
 	mv $(obj)/coreboot.rom $@
 endif
 
-$(obj)/coreboot.rom: $(obj)/coreboot.pre $(objcbfs)/coreboot_ram.elf $(CBFSTOOL) $(call strip_quotes,$(COREBOOT_ROM_DEPENDENCIES))
+$(obj)/coreboot.rom: $(obj)/coreboot.pre $(objcbfs)/coreboot_ram.elf $(CBFSTOOL) $(call strip_quotes,$(COREBOOT_ROM_DEPENDENCIES)) $$(VBOOT_STUB)
 	@printf "    CBFS       $(subst $(obj)/,,$(@))\n"
 	cp $(obj)/coreboot.pre $@.tmp
 	$(CBFSTOOL) $@.tmp add-stage -f $(objcbfs)/coreboot_ram.elf -n $(CONFIG_CBFS_PREFIX)/coreboot_ram -c $(CBFS_COMPRESS_FLAG)
@@ -149,6 +149,9 @@ ifeq ($(CONFIG_INCLUDE_CONFIG_FILE),y)
 	echo "# This image was built using git revision" `git rev-parse HEAD` > $(obj)/config.tmp ; \
 	sed -e '/^#/d' -e '/^ *$$/d' $(DOTCONFIG) >> $(obj)/config.tmp ; \
 	$(CBFSTOOL) $@.tmp add -f $(obj)/config.tmp -n config -t raw; rm -f $(obj)/config.tmp ; fi
+endif
+ifeq ($(CONFIG_VBOOT_VERIFY_FIRMWARE),y)
+	$(CBFSTOOL) $@.tmp add-stage -f $(VBOOT_STUB) -n $(CONFIG_CBFS_PREFIX)/vboot -c $(CBFS_COMPRESS_FLAG)
 endif
 	mv $@.tmp $@
 	@printf "    CBFSPRINT  $(subst $(obj)/,,$(@))\n\n"
