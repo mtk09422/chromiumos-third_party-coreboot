@@ -24,6 +24,13 @@ config SPI_FLASH
 	  Select this option if your chipset driver needs to store certain
 	  data in the SPI flash.
 
+config SPI_FLASH_MEMORY_MAPPED
+	bool
+	default y if ARCH_X86
+	default n if !ARCH_X86
+	help
+	  Inform system if SPI is memory-mapped or not.
+
 config SPI_FLASH_SMM
 	bool "SPI flash driver support in SMM"
 	default n

@@ -51,6 +51,13 @@ struct romstage_handoff;
 /* TODO(shawnn): Remove these CONFIGs and define default weak functions
  * that can be overridden in the platform / MB code. */
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
+/*
+ * This is a dual purpose routine. If dest is non-NULL the region at
+ * offset_addr will be read into the area pointed to by dest.  If dest
+ * is NULL,the region will be mapped to a memory location. NULL is
+ * returned on error else the location of the requested region.
+ */
+void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest);
 void vboot_verify_firmware(struct romstage_handoff *handoff);
 void *vboot_get_payload(int *len);
 /* Returns 0 on success < 0 on error. */

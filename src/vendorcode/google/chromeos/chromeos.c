@@ -18,11 +18,13 @@
  */
 
 #include <stddef.h>
+#include <string.h>
 #include "chromeos.h"
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
 #include "vboot_handoff.h"
 #endif
 #include <boot/coreboot_tables.h>
+#include <cbfs.h>
 #include <cbmem.h>
 #include <console/console.h>
 
@@ -95,6 +97,33 @@ int __attribute((weak)) vboot_get_sw_write_protect(void)
 #endif
 
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
+void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest)
+{
+	if (IS_ENABLED(CONFIG_SPI_FLASH_MEMORY_MAPPED)) {
+		if (dest != NULL)
+			return memcpy(dest, (void *)offset_addr, size);
+		else
+			return (void *)offset_addr;
+	} else {
+		struct cbfs_media default_media, *media = &default_media;
+		void *cache;
+
+		init_default_cbfs_media(media);
+		media->open(media);
+		if (dest != NULL) {
+			cache = dest;
+			if (media->read(media, dest, offset_addr, size) != size)
+				cache = NULL;
+		} else {
+			cache = media->map(media, offset_addr, size);
+			if (cache == CBFS_MEDIA_INVALID_MAP_ADDRESS)
+				cache = NULL;
+		}
+		media->close(media);
+		return cache;
+	}
+}
+
 void *vboot_get_payload(int *len)
 {
 	struct vboot_handoff *vboot_handoff;
@@ -113,13 +142,18 @@ void *vboot_get_payload(int *len)
 
 	fwc = &vboot_handoff->components[CONFIG_VBOOT_BOOT_LOADER_INDEX];
 
+	/* If payload size is zero fall back to cbfs path. */
+	if (fwc->size == 0)
+		return NULL;
+
 	if (len != NULL)
 		*len = fwc->size;
 
 	printk(BIOS_DEBUG, "Booting 0x%x byte payload at 0x%08x.\n",
 	       fwc->size, fwc->address);
 
-	return (void *)fwc->address;
+	/* This will leak a mapping. */
+	return vboot_get_region(fwc->address, fwc->size, NULL);
 }
 
 int vboot_get_handoff_info(void **addr, uint32_t *size)

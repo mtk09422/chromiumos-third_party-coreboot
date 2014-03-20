@@ -46,6 +46,10 @@ ifeq ($(CONFIG_VBOOT_VERIFY_FIRMWARE),y)
 romstage-y += vboot_loader.c
 rmodules-y += vboot_wrapper.c
 
+ifneq ($(CONFIG_SPI_FLASH_MEMORY_MAPPED),y)
+VBOOT_MAKEFLAGS = REGION_READ=1
+endif
+
 VB_LIB = $(obj)/external/vboot_reference/vboot_fw.a
 VB_FIRMWARE_ARCH := $(ARCHDIR-y)
 VB_SOURCE := vboot_reference
@@ -87,6 +91,7 @@ $(VB_LIB):
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 		CFLAGS="$(VBOOT_CFLAGS)" \
 		make -C $(VB_SOURCE) \
+		$(VBOOT_MAKEFLAGS) \
 		BUILD=../$(dir $(VB_LIB)) \
 		V=$(V) \
 		fwlib
