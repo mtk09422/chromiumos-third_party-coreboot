@@ -76,6 +76,10 @@ static void mainboard_enable(device_t dev)
 
 	/* force the SATA port to GEN2 speeds */
 	RWMEM (ACPI_MMIO_BASE + PMIO_BASE + SB_PMIOA_REGDA, AccWidthUint8, 0xFB, 0x04);
+
+	/* Reserve memory for VGA ROM and ACPI RSDP table so
+	 * that Depthcharge does not wipe them away */
+	reserved_ram_resource(dev, 0, 0xc0000 / KiB, 0x40000 / KiB);
 }
 
 struct chip_operations mainboard_ops = {
