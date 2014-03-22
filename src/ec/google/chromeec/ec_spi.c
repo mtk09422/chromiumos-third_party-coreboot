@@ -18,28 +18,61 @@
  */
 
 #include <console/console.h>
-#include <spi-generic.h>
 #include "ec.h"
 #include "ec_commands.h"
+#include <spi-generic.h>
+#include <timer.h>
 
 #define CROSEC_SPI_SPEED	(500000)
+
+static const uint8_t EcFramingByte = 0xec;
 
 static int crosec_spi_io(uint8_t *write_bytes, size_t write_size,
 			 uint8_t *read_bytes, size_t read_size,
 			 void *context)
 {
 	struct spi_slave *slave = (struct spi_slave *)context;
-	int rv;
 
 	spi_claim_bus(slave);
-	rv = spi_xfer(slave, write_bytes, write_size * 8, read_bytes,
-		      read_size * 8);
-	spi_release_bus(slave);
 
-	if (rv != 0) {
-		printk(BIOS_ERR, "%s: Cannot complete SPI I/O\n", __func__);
+	if (spi_xfer(slave, write_bytes, write_size * 8, NULL, 0)) {
+		printk(BIOS_ERR, "%s: Failed to send request.\n", __func__);
+		spi_release_bus(slave);
 		return -1;
 	}
+
+	uint8_t byte;
+	struct mono_time start;
+	struct rela_time rt;
+	timer_monotonic_get(&start);
+	while (1) {
+		if (spi_xfer(slave, NULL, 0, &byte, 8)) {
+			printk(BIOS_ERR, "%s: Failed to receive byte.\n",
+			       __func__);
+			spi_release_bus(slave);
+			return -1;
+		}
+		if (byte == EcFramingByte)
+			break;
+
+		// Wait 1s for a framing byte.
+		rt = current_time_from(&start);
+		if (rela_time_in_microseconds(&rt) > 1000 * 1000) {
+			printk(BIOS_ERR,
+			       "%s: Timeout waiting for framing byte.\n",
+			       __func__);
+			spi_release_bus(slave);
+			return -1;
+		}
+	}
+
+	if (spi_xfer(slave, NULL, 0, read_bytes, read_size * 8)) {
+		printk(BIOS_ERR, "%s: Failed to receive response.\n", __func__);
+		spi_release_bus(slave);
+		return -1;
+	}
+
+	spi_release_bus(slave);
 
 	return 0;
 }
