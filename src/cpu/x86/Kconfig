@@ -128,3 +128,10 @@ config BACKUP_DEFAULT_SMM_REGION
 	help
 	 The cpu support will select this option if the default SMM region
 	 needs to be backed up for suspend/resume purposes.
+
+config BOOT_MEDIA_SPI_BUS
+	int
+	default 0
+	depends on SPI_FLASH
+	help
+	 Most x86 systems which boot from SPI flash boot using bus 0.
