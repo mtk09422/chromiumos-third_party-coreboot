@@ -33,7 +33,7 @@ static int crosec_spi_io(uint8_t *write_bytes, size_t write_size,
 
 	spi_claim_bus(slave);
 
-	if (spi_xfer(slave, write_bytes, write_size * 8, NULL, 0)) {
+	if (spi_xfer(slave, write_bytes, write_size, NULL, 0)) {
 		printk(BIOS_ERR, "%s: Failed to send request.\n", __func__);
 		spi_release_bus(slave);
 		return -1;
@@ -44,7 +44,7 @@ static int crosec_spi_io(uint8_t *write_bytes, size_t write_size,
 	struct rela_time rt;
 	timer_monotonic_get(&start);
 	while (1) {
-		if (spi_xfer(slave, NULL, 0, &byte, 8)) {
+		if (spi_xfer(slave, NULL, 0, &byte, sizeof(byte))) {
 			printk(BIOS_ERR, "%s: Failed to receive byte.\n",
 			       __func__);
 			spi_release_bus(slave);
@@ -64,7 +64,7 @@ static int crosec_spi_io(uint8_t *write_bytes, size_t write_size,
 		}
 	}
 
-	if (spi_xfer(slave, NULL, 0, read_bytes, read_size * 8)) {
+	if (spi_xfer(slave, NULL, 0, read_bytes, read_size)) {
 		printk(BIOS_ERR, "%s: Failed to receive response.\n", __func__);
 		spi_release_bus(slave);
 		return -1;

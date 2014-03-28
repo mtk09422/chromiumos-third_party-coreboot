@@ -193,12 +193,10 @@ static void spi_transfer(struct exynos_spi *regs, void *in, const void *out,
 	}
 }
 
-int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
-	     void *din, unsigned int bitsin)
+int spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bytes_out,
+	     void *din, unsigned int bytes_in)
 {
 	struct exynos_spi *regs = to_exynos_spi(slave)->regs;
-	u32 bytes_out = bitsout / 8;
-	u32 bytes_in = bitsin / 8;
 
 	if (bytes_out && bytes_in) {
 		u32 min_size = MIN(bytes_out, bytes_in);

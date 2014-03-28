@@ -715,16 +715,13 @@ static int xfer_finish(struct tegra_spi_channel *spi)
 }
 
 int spi_xfer(struct spi_slave *slave, const void *dout,
-		unsigned int bitsout, void *din, unsigned int bitsin)
+		unsigned int out_bytes, void *din, unsigned int in_bytes)
 {
-	unsigned int out_bytes = bitsout / 8, in_bytes = bitsin / 8;
 	struct tegra_spi_channel *spi = to_tegra_spi(slave->bus);
 	u8 *out_buf = (u8 *)dout;
 	u8 *in_buf = (u8 *)din;
 	unsigned int todo;
 	int ret = 0;
-
-	ASSERT(bitsout % 8 == 0 && bitsin % 8 == 0);
 
 	/* tegra bus numbers start at 1 */
 	ASSERT(slave->bus >= 1 && slave->bus <= ARRAY_SIZE(tegra_spi_channels));
@@ -852,7 +849,7 @@ static size_t tegra_spi_cbfs_read(struct cbfs_media *media, void *dest,
 	spi_claim_bus(spi->slave);
 
 	if (spi_xfer(spi->slave, spi_read_cmd,
-			read_cmd_bytes * 8, NULL, 0) < 0) {
+			read_cmd_bytes, NULL, 0) < 0) {
 		ret = -1;
 		printk(BIOS_ERR, "%s: Failed to transfer %u bytes\n",
 				__func__, sizeof(spi_read_cmd));
@@ -862,7 +859,7 @@ static size_t tegra_spi_cbfs_read(struct cbfs_media *media, void *dest,
 	if (channel->dual_mode) {
 		setbits_le32(&channel->regs->command1, SPI_CMD1_BOTH_EN_BIT);
 	}
-	if (spi_xfer(spi->slave, NULL, 0, dest, count * 8)) {
+	if (spi_xfer(spi->slave, NULL, 0, dest, count)) {
 		ret = -1;
 		printk(BIOS_ERR, "%s: Failed to transfer %u bytes\n",
 				__func__, count);
