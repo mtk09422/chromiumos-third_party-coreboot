@@ -144,16 +144,6 @@ int  spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 		void *din, unsigned int bitsin);
 
 /*-----------------------------------------------------------------------
- * Determine if a SPI chipselect is valid.
- * This function is provided by the board if the low-level SPI driver
- * needs it to determine if a given chipselect is actually valid.
- *
- * Returns: 1 if bus:cs identifies a valid chip on this board, 0
- * otherwise.
- */
-int  spi_cs_is_valid(unsigned int bus, unsigned int cs);
-
-/*-----------------------------------------------------------------------
  * Activate a SPI chipselect.
  * This function is provided by the board code when using a driver
  * that can't control its chipselects automatically (e.g.
@@ -170,14 +160,6 @@ void spi_cs_activate(struct spi_slave *slave);
  * select to the device identified by "slave".
  */
 void spi_cs_deactivate(struct spi_slave *slave);
-
-/*-----------------------------------------------------------------------
- * Set transfer speed.
- * This sets a new speed to be applied for next spi_xfer().
- *   slave:	The SPI slave
- *   hz:	The transfer speed
- */
-void spi_set_speed(struct spi_slave *slave, uint32_t hz);
 
 /*-----------------------------------------------------------------------
  * Write 8 bits, then read 8 bits.
