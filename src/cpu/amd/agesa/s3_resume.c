@@ -157,7 +157,7 @@ void OemAgesaSaveMtrr(void)
 
 	spi_init();
 
-	flash = spi_flash_probe(0, 0, 0, 0);
+	flash = spi_flash_probe(0, 0);
 	if (!flash) {
 		printk(BIOS_DEBUG, "Could not find SPI device\n");
 		return;
@@ -272,7 +272,7 @@ u32 OemAgesaSaveS3Info(S3_DATA_TYPE S3DataType, u32 DataSize, void *Data)
 	}
 
 	spi_init();
-	flash = spi_flash_probe(0, 0, 0, 0);
+	flash = spi_flash_probe(0, 0);
 	if (!flash) {
 		printk(BIOS_DEBUG, "Could not find SPI device\n");
 		/* Dont make flow stop. */

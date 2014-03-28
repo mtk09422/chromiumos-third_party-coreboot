@@ -122,8 +122,7 @@ static void exynos_spi_init(struct exynos_spi *regs)
 	spi_sw_reset(regs, 1);
 }
 
-struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
-				  unsigned int max_hz, unsigned int mode)
+struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs)
 {
 	ASSERT(bus >= 0 && bus < 3);
 	struct exynos_spi_slave *eslave = &exynos_spi_slaves[bus];

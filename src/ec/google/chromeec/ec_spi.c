@@ -23,8 +23,6 @@
 #include <spi-generic.h>
 #include <timer.h>
 
-#define CROSEC_SPI_SPEED	(500000)
-
 static const uint8_t EcFramingByte = 0xec;
 
 static int crosec_spi_io(uint8_t *write_bytes, size_t write_size,
@@ -80,12 +78,9 @@ static int crosec_spi_io(uint8_t *write_bytes, size_t write_size,
 int google_chromeec_command(struct chromeec_command *cec_command)
 {
 	static struct spi_slave *slave = NULL;
-	if (!slave) {
+	if (!slave)
 		slave = spi_setup_slave(CONFIG_EC_GOOGLE_CHROMEEC_SPI_BUS,
-					CONFIG_EC_GOOGLE_CHROMEEC_SPI_CHIP,
-					CROSEC_SPI_SPEED,
-					SPI_READ_FLAG | SPI_WRITE_FLAG);
-	}
+					CONFIG_EC_GOOGLE_CHROMEEC_SPI_CHIP);
 	return crosec_command_proto(cec_command, crosec_spi_io, slave);
 }
 

@@ -266,8 +266,7 @@ static void ich_set_bbar(uint32_t minaddr)
 	writel_(ichspi_bbar, cntlr.bbar);
 }
 
-struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
-		unsigned int max_hz, unsigned int mode)
+struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs)
 {
 	ich_spi_slave *slave = malloc(sizeof(*slave));
 
