@@ -125,24 +125,6 @@ int  spi_xfer(struct spi_slave *slave, const void *dout, unsigned int bitsout,
 		void *din, unsigned int bitsin);
 
 /*-----------------------------------------------------------------------
- * Activate a SPI chipselect.
- * This function is provided by the board code when using a driver
- * that can't control its chipselects automatically (e.g.
- * common/soft_spi.c). When called, it should activate the chip select
- * to the device identified by "slave".
- */
-void spi_cs_activate(struct spi_slave *slave);
-
-/*-----------------------------------------------------------------------
- * Deactivate a SPI chipselect.
- * This function is provided by the board code when using a driver
- * that can't control its chipselects automatically (e.g.
- * common/soft_spi.c). When called, it should deactivate the chip
- * select to the device identified by "slave".
- */
-void spi_cs_deactivate(struct spi_slave *slave);
-
-/*-----------------------------------------------------------------------
  * Write 8 bits, then read 8 bits.
  *   slave:	The SPI slave we're communicating with
  *   byte:	Byte to be written
