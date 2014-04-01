@@ -42,6 +42,7 @@ void save_vbnv(const uint8_t *vbnv_copy);
 /* functions implemented in chromeos.c: */
 int developer_mode_enabled(void);
 int recovery_mode_enabled(void);
+int vboot_skip_display_init(void);
 
 /* functions implemented in vboot.c */
 void init_chromeos(int bootmode);

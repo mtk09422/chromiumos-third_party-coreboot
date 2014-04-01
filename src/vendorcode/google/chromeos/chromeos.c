@@ -83,6 +83,22 @@ int recovery_mode_enabled(void)
 		vboot_enable_recovery();
 }
 
+int vboot_skip_display_init(void)
+{
+#if CONFIG_VBOOT_VERIFY_FIRMWARE
+	struct vboot_handoff *vbho;
+
+	vbho = cbmem_find(CBMEM_ID_VBOOT_HANDOFF);
+
+	if (vbho == NULL)
+		return 0;
+
+	return !(vbho->init_params.out_flags & VB_INIT_OUT_ENABLE_DISPLAY);
+#else
+	return 0;
+#endif
+}
+
 #ifdef __PRE_RAM__
 void __attribute__((weak)) save_chromeos_gpios(void)
 {
