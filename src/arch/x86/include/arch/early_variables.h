@@ -22,10 +22,8 @@
 
 #ifdef __PRE_RAM__
 #define CAR_GLOBAL __attribute__((section(".car.global_data,\"w\",@nobits#")))
-#define CAR_CBMEM __attribute__((section(".car.cbmem_console,\"w\",@nobits#")))
 #else
 #define CAR_GLOBAL
-#define CAR_CBMEM
 #endif
 
 #if CONFIG_CAR_MIGRATION && defined(__PRE_RAM__)

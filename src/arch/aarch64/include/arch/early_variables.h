@@ -25,7 +25,6 @@
 #endif
 
 #define CAR_GLOBAL
-#define CAR_CBMEM
 
 #define CAR_MIGRATE(migrate_fn_)
 static inline void *car_get_var_ptr(void *var) { return var; }

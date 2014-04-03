@@ -43,7 +43,7 @@ static struct cbmem_console *cbmem_console_p CAR_GLOBAL;
  * the area are defined in the config.
  */
 
-static struct cbmem_console car_cbmem_console CAR_CBMEM;
+extern struct cbmem_console preram_cbmem_console;
 
 /*
  * Once DRAM is initialized and the cache as ram mode is disabled, while still
@@ -114,7 +114,8 @@ static inline void init_console_ptr(void *storage, u32 total_space)
 void cbmemc_init(void)
 {
 #ifdef __PRE_RAM__
-	init_console_ptr(&car_cbmem_console, CONFIG_CONSOLE_CAR_BUFFER_SIZE);
+	init_console_ptr(&preram_cbmem_console,
+			 CONFIG_CONSOLE_PRERAM_BUFFER_SIZE);
 #else
 	/*
 	 * Initializing before CBMEM is available, use static buffer to store
