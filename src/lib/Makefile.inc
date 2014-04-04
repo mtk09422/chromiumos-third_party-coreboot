@@ -30,6 +30,13 @@ ifneq ($(CONFIG_HAVE_ARCH_MEMMOVE),y)
 bootblock-y += memmove.c
 endif
 
+ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
+bootblock-$(CONFIG_CONSOLE_SERIAL8250) += uart8250.c
+bootblock-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart8250mem.c
+bootblock-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
+bootblock-$(CONFIG_CONSOLE_NE2K) += ne2k.c
+endif
+
 ifneq ($(CONFIG_HAVE_ARCH_MEMSET),y)
 romstage-y += memset.c
 rmodules-y += memset.c

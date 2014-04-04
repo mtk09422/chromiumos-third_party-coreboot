@@ -117,7 +117,7 @@ void console_init(void)
 #if CONFIG_CONSOLE_NE2K
 	ne2k_init(CONFIG_CONSOLE_NE2K_IO_PORT);
 #endif
-#if CONFIG_CONSOLE_CBMEM && !defined(__BOOT_BLOCK__)
+#if CONFIG_CONSOLE_CBMEM
 	cbmemc_init();
 #endif
 	static const char console_test[] =
