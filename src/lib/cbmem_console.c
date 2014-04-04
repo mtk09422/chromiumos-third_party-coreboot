@@ -75,7 +75,8 @@ static u8 static_console[STATIC_CONSOLE_SIZE];
 
 static inline struct cbmem_console *current_console(void)
 {
-#if CONFIG_CAR_MIGRATION || !defined(__PRE_RAM__)
+#if CONFIG_CAR_MIGRATION || !defined(__PRE_RAM__) || \
+	CONFIG_CONSOLE_FIXED_PRERAM_CBMEM_BUFFER
 	return car_get_var(cbmem_console_p);
 #else
 	/*
@@ -94,7 +95,8 @@ static inline struct cbmem_console *current_console(void)
 
 static inline void current_console_set(struct cbmem_console *new_console_p)
 {
-#if CONFIG_CAR_MIGRATION || !defined(__PRE_RAM__)
+#if CONFIG_CAR_MIGRATION || !defined(__PRE_RAM__) || \
+	CONFIG_CONSOLE_FIXED_PRERAM_CBMEM_BUFFER
 	car_set_var(cbmem_console_p, new_console_p);
 #else
 	CBMEM_CONSOLE_REDIRECT = new_console_p;
@@ -108,7 +110,12 @@ static inline void init_console_ptr(void *storage, u32 total_space)
 	/* Initialize the cache-as-ram pointer and underlying structure. */
 	car_set_var(cbmem_console_p, cbm_cons_p);
 	cbm_cons_p->buffer_size = total_space - sizeof(struct cbmem_console);
+#if !CONFIG_CONSOLE_FIXED_PRERAM_CBMEM_BUFFER || \
+    ((defined __BOOT_BLOCK__ && CONFIG_BOOTBLOCK_CONSOLE) || \
+     (defined __PRE_RAM__ && !defined __BOOTBLOCK__ && \
+      CONFIG_EARLY_CONSOLE && !CONFIG_BOOTBLOCK_CONSOLE))
 	cbm_cons_p->buffer_cursor = 0;
+#endif
 }
 
 void cbmemc_init(void)

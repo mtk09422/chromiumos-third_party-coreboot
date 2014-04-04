@@ -229,6 +229,11 @@ config CONSOLE_CBMEM
 	  Enable this to save the console output in a CBMEM buffer. This would
 	  allow to see coreboot console output from Linux space.
 
+config CONSOLE_FIXED_PRERAM_CBMEM_BUFFER
+	default n if ARCH_X86
+	default y if !ARCH_X86
+	bool "Assume the preram CBMEM console buffer is in a fixed location"
+
 config CONSOLE_CBMEM_BUFFER_SIZE
 	depends on CONSOLE_CBMEM
 	hex "Room allocated for console output in CBMEM"
