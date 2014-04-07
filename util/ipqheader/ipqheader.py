@@ -1,9 +1,13 @@
+#!/usr/bin/python
 #
 # Copyright (c) 2013 The Linux Foundation. All rights reserved.
 #
 
-import sys
+import os
 import struct
+import sys
+
+PROG_NAME = os.path.basename(sys.argv[0])
 
 def create_header(base, size):
     """Returns a packed MBN header image with the specified base and size.
@@ -62,9 +66,9 @@ def usage(msg=None):
     @arg msg: string, error message if any (default: None)
     """
     if msg != None:
-        sys.stderr.write("mkheader: %s\n" % msg)
+        sys.stderr.write("%s: %s\n" % (PROG_NAME, msg))
 
-    print "Usage: mkheader.py <base-addr> <input-file> <output-file>"
+    print "Usage: %s <base-addr> <input-file> <output-file>" % PROG_NAME
 
     if msg != None:
         exit(1)
@@ -73,7 +77,7 @@ def main():
     """Main entry function"""
 
     if len(sys.argv) != 4:
-        usage("incorrect no. of arguments")
+        usage("incorrect number of arguments")
 
     try:
         base_addr = int(sys.argv[1], 0)
@@ -86,10 +90,10 @@ def main():
     try:
         mkheader(base_addr, infname, outfname)
     except IOError as e:
-        sys.stderr.write("mkheader: %s\n" % e)
+        sys.stderr.write("%s: %s\n" % (PROG_NAME, e))
         exit(1)
     except ValueError as e:
-        sys.stderr.write("mkheader: %s\n" % e)
+        sys.stderr.write("%s: %s\n" % (PROG_NAME, e))
         exit(1)
 
 if __name__ == "__main__":
