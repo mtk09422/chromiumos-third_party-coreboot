@@ -112,11 +112,6 @@ xhci_init (void *bar)
 	int i;
 
 	hci_t *const controller = new_controller();
-	if (!controller) {
-		xhci_debug("Could not create USB controller instance\n");
-		return controller;
-	}
-
 	controller->type		= XHCI;
 	controller->start		= xhci_start;
 	controller->stop		= xhci_stop;
@@ -131,18 +126,10 @@ xhci_init (void *bar)
 	controller->create_intr_queue	= xhci_create_intr_queue;
 	controller->destroy_intr_queue	= xhci_destroy_intr_queue;
 	controller->poll_intr_queue	= xhci_poll_intr_queue;
-	for (i = 0; i < 128; ++i) {
-		controller->devices[i] = NULL;
-	}
 
 	controller->reg_base = (u32)bar;
-	controller->instance = malloc(sizeof(xhci_t));
-	if (!controller->instance) {
-		xhci_debug("Out of memory creating xHCI controller instance\n");
-		goto _free_controller;
-	}
+	controller->instance = xzalloc(sizeof(xhci_t));
 	xhci_t *const xhci = (xhci_t *)controller->instance;
-	memset(xhci, 0x00, sizeof(*xhci));
 
 	init_device_entry(controller, 0);
 	xhci->roothub = controller->devices[0];
@@ -245,6 +232,7 @@ xhci_init (void *bar)
 	return controller;
 
 _free_xhci_structs:
+	free(xhci->dma_buffer);
 	if (xhci->sp_ptrs) {
 		for (i = 0; i < max_sp_bufs; ++i) {
 			if (xhci->sp_ptrs[i])
@@ -260,7 +248,6 @@ _free_xhci:
 	free(xhci->roothub);
 	free(xhci->dev);
 	free(xhci);
-_free_controller:
 	detach_controller(controller);
 	free(controller);
 	return NULL;
@@ -391,13 +378,10 @@ xhci_shutdown(hci_t *const controller)
 
 	if (controller == 0)
 		return;
-	xhci_t *const xhci = XHCI_INST(controller);
 
 	detach_controller(controller);
 
-	/* Detach device hierarchy (starting at root hub) */
-	usb_detach_device(controller, 0);
-
+	xhci_t *const xhci = XHCI_INST(controller);
 	xhci_stop(controller);
 
 	if (xhci->sp_ptrs) {
@@ -408,6 +392,7 @@ xhci_shutdown(hci_t *const controller)
 		}
 	}
 	free(xhci->sp_ptrs);
+	free(xhci->dma_buffer);
 	free(xhci->dcbaa);
 	free(xhci->dev);
 	free((void *)xhci->ev_ring_table);
