@@ -1,8 +1,11 @@
 bootblock-y += cbfs.c
+bootblock-y += gpio.c
 
 romstage-y += cbfs.c
+romstage-y += gpio.c
 
 ramstage-y += cbfs.c
+ramstage-y += gpio.c
 
 ifeq ($(CONFIG_USE_BLOBS),y)
 
