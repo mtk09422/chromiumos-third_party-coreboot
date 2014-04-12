@@ -128,20 +128,14 @@ static int macronix_write(struct spi_flash *flash,
 	unsigned long page_size;
 	size_t chunk_len;
 	size_t actual;
-	int ret;
+	int ret = 0;
 	u8 cmd[4];
 
 	page_size = min(mcx->params->page_size, CONTROLLER_PAGE_LIMIT);
 	byte_addr = offset % page_size;
 
 	flash->spi->rw = SPI_WRITE_FLAG;
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		printk(BIOS_WARNING, "SF: Unable to claim SPI bus\n");
-		return ret;
-	}
 
-	ret = 0;
 	for (actual = 0; actual < len; actual += chunk_len) {
 		chunk_len = min(len - actual, page_size - byte_addr);
 
@@ -182,7 +176,6 @@ static int macronix_write(struct spi_flash *flash,
 	      " 0x%lx\n", len, (unsigned long)(offset - len));
 #endif
 
-	spi_release_bus(flash->spi);
 	return ret;
 }
 
