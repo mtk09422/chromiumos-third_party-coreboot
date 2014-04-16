@@ -63,8 +63,4 @@ config XIP_ROM_SIZE
 	default 0x80000
 	depends on CPU_AMD_AGESA_FAMILY12
 
-config HAVE_INIT_TIMER
-	bool
-	default y
-	depends on CPU_AMD_AGESA_FAMILY12
 

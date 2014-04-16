@@ -63,11 +63,6 @@ config XIP_ROM_SIZE
 	default 0x80000
 	depends on CPU_AMD_AGESA_FAMILY14
 
-config HAVE_INIT_TIMER
-	bool
-	default y
-	depends on CPU_AMD_AGESA_FAMILY14
-
 config HIGH_SCRATCH_MEMORY_SIZE
 	hex
 	# Assume the maximum size of stack as (0xA0000 - 0x30000 + 0x1000)
