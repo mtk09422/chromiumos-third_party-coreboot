@@ -34,7 +34,7 @@ SECTIONS
 
 		/* The driver sections are to allow linking coreboot's
 		 * ramstage with the rmodule linker. Any changes made in
-		 * coreboot_ram.ld should be made here as well. */
+		 * ramstage.ld should be made here as well. */
 		console_drivers = .;
 		*(.rodata.console_drivers)
 		econsole_drivers = . ;

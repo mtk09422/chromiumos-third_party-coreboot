@@ -292,7 +292,7 @@ void main(void)
 	timestamp_add(TS_AFTER_INITRAM, after_dram_time );
 #endif
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/coreboot_ram");
+	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 	simple_spi_test();
 
 #if CONFIG_COLLECT_TIMESTAMPS

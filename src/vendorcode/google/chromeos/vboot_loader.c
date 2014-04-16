@@ -314,7 +314,7 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 	const struct firmware_component *fwc;
 	struct rmod_stage_load rmod_load = {
 		.cbmem_id = CBMEM_ID_RAMSTAGE,
-		.name = CONFIG_CBFS_PREFIX "/coreboot_ram",
+		.name = CONFIG_CBFS_PREFIX "/ramstage",
 	};
 
 	if (CONFIG_VBOOT_RAMSTAGE_INDEX >= MAX_PARSED_FW_COMPONENTS) {

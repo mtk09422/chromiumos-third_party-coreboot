@@ -98,6 +98,6 @@ ENDPROC(_thumb_start)
 .Stack:
 	.word CONFIG_STACK_TOP
 .align 2
-/* create this size the same way we do in coreboot_ram.ld: top-bottom */
+/* create this size the same way we do in ramstage.ld: top-bottom */
 .Stack_size:
 	.word CONFIG_STACK_TOP - CONFIG_STACK_BOTTOM

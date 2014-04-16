@@ -232,7 +232,7 @@ static void __attribute__((noinline)) romstage(void)
 
 	timestamp_add(TS_START_COPYRAM, timestamp_get());
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-				      "fallback/coreboot_ram");
+				      "fallback/ramstage");
 	timestamp_add(TS_END_COPYRAM, timestamp_get());
 
 	stage_exit(entry);

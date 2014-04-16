@@ -1,7 +1,7 @@
 /*
  *	Memory map:
  *
- *	CONFIG_RAMBASE		: text segment
+ *	CONFIG_RAMSTAGE_BASE	: text segment
  *				: rodata segment
  *				: data segment
  *				: bss segment
@@ -9,7 +9,6 @@
  *				: heap
  */
 /*
- * Copyright 2013 Google Inc.
  * Bootstrap code for the STPC Consumer
  * Copyright (c) 1999 by Net Insight AB. All Rights Reserved.
  */
@@ -17,29 +16,29 @@
 /*
  *	Written by Johan Rydberg, based on work by Daniel Kahlin.
  *      Rewritten by Eric Biederman
- *  2005.12 yhlu add coreboot_ram cross the vga font buffer handling
+ *  2005.12 yhlu add ramstage cross the vga font buffer handling
  */
 
 /* We use ELF as output format. So that we can debug the code in some form. */
 INCLUDE ldoptions
-
-ENTRY(stage_entry)
 
 PHDRS
 {
 	to_load PT_LOAD;
 }
 
+ENTRY(stage_entry)
+
 SECTIONS
 {
-	. = CONFIG_SYS_SDRAM_BASE;
+	. = CONFIG_RAMSTAGE_BASE;
 	/* First we place the code and read only data (typically const declared).
 	 * This could theoretically be placed in rom.
 	 */
 	.text : {
 		_text = .;
 		_start = .;
-		*(.text.stage_entry.aarch64);
+		*(.text.stage_entry.arm);
 		*(.text);
 		*(.text.*);
 		. = ALIGN(16);
@@ -49,7 +48,7 @@ SECTIONS
 	.ctors : {
 		. = ALIGN(0x100);
 		__CTOR_LIST__ = .;
-		*(.ctors);
+		KEEP(*(.ctors));
 		LONG(0);
 		__CTOR_END__ = .;
 	}
@@ -58,17 +57,17 @@ SECTIONS
 		_rodata = .;
 		. = ALIGN(4);
 		console_drivers = .;
-		*(.rodata.console_drivers)
+		KEEP(*(.rodata.console_drivers));
 		econsole_drivers = . ;
 		. = ALIGN(4);
 		pci_drivers = . ;
-		*(.rodata.pci_driver)
+		KEEP(*(.rodata.pci_driver));
 		epci_drivers = . ;
 		cpu_drivers = . ;
-		*(.rodata.cpu_driver)
+		KEEP(*(.rodata.cpu_driver));
 		ecpu_drivers = . ;
 		_bs_init_begin = .;
-		*(.bs_init)
+		KEEP(*(.bs_init));
 		_bs_init_end = .;
 		*(.rodata)
 		*(.rodata.*)
@@ -88,6 +87,7 @@ SECTIONS
 	.data : {
 		_data = .;
 		*(.data)
+		*(.data.*)
 		_edata = .;
 	}
 
@@ -95,29 +95,27 @@ SECTIONS
 	 * initialized on startup. (typically uninitialized global variables)
 	 * crt0.S fills between _bss and _ebss with zeroes.
 	 */
-	_bss = .;
 	.bss . : {
+		_bss = .;
 		*(.bss)
+		*(.bss.*)
 		*(.sbss)
-		*(COMMON)
+		*(.sbss.*)
+		_ebss = .;
 	}
-	_ebss = .;
 	_end = .;
 
 	/* coreboot really "ends" here. Only heap and stack are placed after
 	 * this line.
 	 */
 
-        _heap = .;
         .heap . : {
+        	_heap = .;
                 /* Reserve CONFIG_HEAP_SIZE bytes for the heap */
                 . = CONFIG_HEAP_SIZE ;
                 . = ALIGN(4);
+        	_eheap = .;
         }
-        _eheap = .;
-
-	_stack = CONFIG_STACK_BOTTOM;
-	_estack = CONFIG_STACK_TOP;
 
 	/* The ram segment. This includes all memory used by the memory
 	 * resident copy of coreboot, except the tables that are produced on
@@ -125,6 +123,12 @@ SECTIONS
 	 */
 	_ram_seg = _text;
 	_eram_seg = _eheap;
+
+	/* The stack lives in SRAM in a different location, so keep
+	 * it out of ram_seg
+	 */
+	_stack = CONFIG_STACK_BOTTOM;
+	_estack = CONFIG_STACK_TOP;
 
 	/* Discard the sections we don't need/want */
 

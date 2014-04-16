@@ -42,5 +42,5 @@ static void cbfs_and_run_core(const char *filename)
 
 void asmlinkage copy_and_run(void)
 {
-	cbfs_and_run_core(CONFIG_CBFS_PREFIX "/coreboot_ram");
+	cbfs_and_run_core(CONFIG_CBFS_PREFIX "/ramstage");
 }

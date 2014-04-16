@@ -9,6 +9,7 @@
  *				: heap
  */
 /*
+ * Copyright 2013 Google Inc.
  * Bootstrap code for the STPC Consumer
  * Copyright (c) 1999 by Net Insight AB. All Rights Reserved.
  */
@@ -16,28 +17,34 @@
 /*
  *	Written by Johan Rydberg, based on work by Daniel Kahlin.
  *      Rewritten by Eric Biederman
- *  2005.12 yhlu add coreboot_ram cross the vga font buffer handling
+ *  2005.12 yhlu add ramstage cross the vga font buffer handling
  */
 
 /* We use ELF as output format. So that we can debug the code in some form. */
 INCLUDE ldoptions
 
-ENTRY(_start)
+ENTRY(stage_entry)
+
+PHDRS
+{
+	to_load PT_LOAD;
+}
 
 SECTIONS
 {
-	. = CONFIG_RAMBASE;
+	. = CONFIG_SYS_SDRAM_BASE;
 	/* First we place the code and read only data (typically const declared).
 	 * This could theoretically be placed in rom.
 	 */
 	.text : {
 		_text = .;
-		*(.textfirst);
+		_start = .;
+		*(.text.stage_entry.aarch64);
 		*(.text);
 		*(.text.*);
 		. = ALIGN(16);
 		_etext = .;
-	}
+	} : to_load
 
 	.ctors : {
 		. = ALIGN(0x100);
@@ -50,10 +57,6 @@ SECTIONS
 	.rodata : {
 		_rodata = .;
 		. = ALIGN(4);
-
-		/* If any changes are made to the driver start/symbols or the
-		 * section names the equivalent changes need to made to
-		 * rmodule.ld. */
 		console_drivers = .;
 		*(.rodata.console_drivers)
 		econsole_drivers = . ;
@@ -67,7 +70,6 @@ SECTIONS
 		_bs_init_begin = .;
 		*(.bs_init)
 		_bs_init_end = .;
-
 		*(.rodata)
 		*(.rodata.*)
 		/* kevinh/Ispiri - Added an align, because the objcopy tool
@@ -100,6 +102,11 @@ SECTIONS
 		*(COMMON)
 	}
 	_ebss = .;
+	_end = .;
+
+	/* coreboot really "ends" here. Only heap and stack are placed after
+	 * this line.
+	 */
 
         _heap = .;
         .heap . : {
@@ -109,17 +116,15 @@ SECTIONS
         }
         _eheap = .;
 
+	_stack = CONFIG_STACK_BOTTOM;
+	_estack = CONFIG_STACK_TOP;
+
 	/* The ram segment. This includes all memory used by the memory
 	 * resident copy of coreboot, except the tables that are produced on
 	 * the fly, but including stack and heap.
 	 */
 	_ram_seg = _text;
 	_eram_seg = _eheap;
-
-	/* CONFIG_RAMTOP is the upper address of cached memory (among other
-	 * things). We must not exceed beyond that address, there be dragons.
-	 */
-	_bogus = ASSERT( ( _eram_seg < (CONFIG_RAMTOP)) , "Please increase CONFIG_RAMTOP");
 
 	/* Discard the sections we don't need/want */
 

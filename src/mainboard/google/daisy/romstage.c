@@ -196,7 +196,7 @@ void main(void)
 	timestamp_add(TS_AFTER_INITRAM, after_dram_time );
 #endif
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/coreboot_ram");
+	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 
 #if CONFIG_COLLECT_TIMESTAMPS
 	timestamp_add_now(TS_END_ROMSTAGE);
