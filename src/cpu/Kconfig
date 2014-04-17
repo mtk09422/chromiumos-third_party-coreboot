@@ -3,13 +3,12 @@
 # (See also src/Kconfig)
 
 source src/cpu/armltd/Kconfig
-
-if ARCH_X86
-
 source src/cpu/amd/Kconfig
 source src/cpu/intel/Kconfig
 source src/cpu/via/Kconfig
 source src/cpu/x86/Kconfig
+
+if ARCH_X86
 
 config CACHE_AS_RAM
 	bool

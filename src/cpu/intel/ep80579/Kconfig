@@ -1,3 +1,4 @@
 config CPU_INTEL_EP80579
 	bool
 	select SSE
+	select ARCH_X86

@@ -1,3 +1,5 @@
 config CPU_INTEL_MODEL_6DX
 	bool
+	select ARCH_X86
 	select SMP
+
