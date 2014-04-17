@@ -1234,7 +1234,7 @@ int decode_edid(unsigned char *edid, int size, struct edid *out)
 	}
 
 	printk(BIOS_SPEW, "Checksum\n");
-	vbe_valid = do_checksum(edid);
+	do_checksum(edid);
 
 	/* EDID v2.0 has a larger blob (256 bytes) and may have some problem in
 	 * the extension parsing loop below.  Since v2.0 was quickly deprecated
