@@ -12,5 +12,5 @@ ifneq ($(CONFIG_CPU_AMD_AGESA),y)
 	      -I$(AGESA_ROOT)/Proc/CPU/ \
 	      -I$(AGESA_ROOT)/Proc/CPU/Family
 
- CFLAGS += $(AGESA_INC)
+ CFLAGS_common += $(AGESA_INC)
 endif

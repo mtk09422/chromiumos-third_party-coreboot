@@ -53,7 +53,7 @@ PHONY+= clean-abuild coreboot lint lint-stable build-dirs
 subdirs-y := src/lib src/console src/device src/ec src/southbridge src/soc
 subdirs-y += src/northbridge src/superio src/drivers src/cpu src/vendorcode
 subdirs-y += util/cbfstool util/sconfig util/nvramtool
-subdirs-y += src/arch/$(ARCHDIR-y)
+subdirs-y += src/arch/arm src/arch/x86
 subdirs-y += src/mainboard/$(MAINBOARDDIR)
 
 subdirs-y += site-local
@@ -93,9 +93,9 @@ files-in-dir=$(filter-out $(call dir-wildcards,$(call filter-out-dirs,$(1),$(dir
 # reduce command line length by linking the objects of each
 # directory into an intermediate file
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-LINK=$(LD)
+LINK=$(LD_ramstage)
 else
-LINK=$(CC) $(CFLAGS)
+LINK=$(CC_ramstage) $(CFLAGS_ramstage)
 endif
 ramstage-postprocess=$(foreach d,$(sort $(dir $(1))), \
 	$(eval $(d)ramstage.o: $(call files-in-dir,$(d),$(1)); $$(LINK) -o $$@ -r $$^ ) \
@@ -138,10 +138,10 @@ bootblock-c-deps:=$$(OPTION_TABLE_H)
 define ramstage-objs_asl_template
 $(obj)/$(1).ramstage.o: src/$(1).asl $(obj)/config.h
 	@printf "    IASL       $$(subst $(top)/,,$$(@))\n"
-	$(CC) -x assembler-with-cpp -E -MMD -MT $$(@) -D__ACPI__ -P -include $(src)/include/kconfig.h -I$(obj) -I$(src) -I$(src)/include -I$(src)/arch/$(ARCHDIR-y)/include -I$(src)/mainboard/$(MAINBOARDDIR) $$< -o $$(basename $$@).asl
+	$(CC_ramstage) -x assembler-with-cpp -E -MMD -MT $$(@) -D__ACPI__ -P -include $(src)/include/kconfig.h -I$(obj) -I$(src) -I$(src)/include -I$(src)/arch/$(ARCHDIR-$(ARCH-RAMSTAGE-y))/include -I$(src)/mainboard/$(MAINBOARDDIR) $$< -o $$(basename $$@).asl
 	cd $$(dir $$@); $(IASL) -p $$(notdir $$@) -tc $$(notdir $$(basename $$@)).asl
 	mv $$(basename $$@).hex $$(basename $$@).c
-	$(CC) $$(CFLAGS) $$(if $$(subst dsdt,,$$(basename $$(notdir $(1)))), -DAmlCode=AmlCode_$$(basename $$(notdir $(1)))) -c -o $$@ $$(basename $$@).c
+	$(CC_ramstage) $$(CFLAGS_ramstage) $$(if $$(subst dsdt,,$$(basename $$(notdir $(1)))), -DAmlCode=AmlCode_$$(basename $$(notdir $(1)))) -c -o $$@ $$(basename $$@).c
 	# keep %.o: %.c rule from catching the temporary .c file after a make clean
 	mv $$(basename $$@).c $$(basename $$@).hex
 endef
@@ -160,7 +160,7 @@ cbfs-files-processor-nvramtool= \
 # arg2: binary file name
 cbfs-files-processor-vsa= \
 	$(eval $(2): $(1) ; \
-		printf "    CREATE     $(2) (from $(1))\n";  $(OBJCOPY) --set-start 0x20 --adjust-vma 0x60000 -I binary -O elf32-i386 -B i386 $(1) $(2).tmp && $(LD) -m elf_i386 -e 0x60020 --section-start .data=0x60000 $(2).tmp -o $(2))
+		printf "    CREATE     $(2) (from $(1))\n";  $(OBJCOPY_ramstage) --set-start 0x20 --adjust-vma 0x60000 -I binary -O elf32-i386 -B i386 $(1) $(2).tmp && $(LD_ramstage) -m elf_i386 -e 0x60020 --section-start .data=0x60000 $(2).tmp -o $(2))
 
 #######################################################################
 # Add handler for arbitrary files in CBFS
@@ -203,23 +203,23 @@ ifneq ($(CONFIG_LOCALVERSION),"")
 COREBOOT_EXTRA_VERSION := -$(call strip_quotes,$(CONFIG_LOCALVERSION))
 endif
 
-INCLUDES := -Isrc -Isrc/include -I$(obj) -Isrc/arch/$(ARCHDIR-y)/include
+INCLUDES := -Isrc -Isrc/include -I$(obj)
 INCLUDES += -Isrc/device/oprom/include
 # abspath is a workaround for romcc
 INCLUDES += -include $(src)/include/kconfig.h
 
-CFLAGS = $(INCLUDES) -pipe -g -nostdinc
-CFLAGS += -nostdlib -Wall -Wundef -Wstrict-prototypes -Wmissing-prototypes
-CFLAGS += -Wwrite-strings -Wredundant-decls -Wno-trigraphs
-CFLAGS += -Wstrict-aliasing -Wshadow
+CFLAGS_common = $(INCLUDES) -pipe -g -nostdinc
+CFLAGS_common += -nostdlib -Wall -Wundef -Wstrict-prototypes -Wmissing-prototypes
+CFLAGS_common += -Wwrite-strings -Wredundant-decls -Wno-trigraphs
+CFLAGS_common += -Wstrict-aliasing -Wshadow
 ifeq ($(CONFIG_WARNINGS_ARE_ERRORS),y)
-CFLAGS += -Werror
+CFLAGS_common += -Werror
 endif
-CFLAGS += -fno-common -ffreestanding -fno-builtin -fomit-frame-pointer
+CFLAGS_common += -fno-common -ffreestanding -fno-builtin -fomit-frame-pointer
 ifneq ($(GDB_DEBUG),)
-CFLAGS += -O0
+CFLAGS_common += -O0
 else
-CFLAGS += -Os
+CFLAGS_common += -Os
 endif
 
 additional-dirs := $(objutil)/cbfstool $(objutil)/romcc $(objutil)/ifdtool $(objutil)/options
@@ -241,9 +241,6 @@ $(obj)/build.h: .xcompile
 	printf "#define COREBOOT_BUILD_WEEKDAY_BCD 0x`LANG= date +"%w"`\n" >> $(obj)/build.ht
 	printf "#define COREBOOT_DMI_DATE \"`LANG= date +"%m/%d/%Y"`\"\n" >> $(obj)/build.ht
 	printf "\n" >> $(obj)/build.ht
-	printf "#define COREBOOT_COMPILER \"$(shell LANG= $(CC) --version | head -n1)\"\n" >> $(obj)/build.ht
-	printf "#define COREBOOT_ASSEMBLER \"$(shell LANG= $(AS) --version | head -n1)\"\n" >> $(obj)/build.ht
-	printf "#define COREBOOT_LINKER \"$(shell LANG= $(LD) --version | head -n1)\"\n" >> $(obj)/build.ht
 	printf "#define COREBOOT_COMPILE_TIME \"`LANG= date +%T`\"\n" >> $(obj)/build.ht
 	printf "#define COREBOOT_COMPILE_BY \"$(subst \,@,$(shell PATH=$$PATH:/usr/ucb whoami))\"\n" >> $(obj)/build.ht
 	printf "#define COREBOOT_COMPILE_HOST \"$(shell hostname -s 2>/dev/null || hostname 2>/dev/null)\"\n" >> $(obj)/build.ht
@@ -306,15 +303,15 @@ $(objutil)/%.o: $(objutil)/%.c
 
 $(obj)/%.ramstage.o $(abspath $(obj))/%.ramstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD $(CFLAGS) $(ramstage-c-ccopts) -c -o $@ $<
+	$(CC_ramstage) -MMD $(CFLAGS_ramstage) $(ramstage-c-ccopts) -c -o $@ $<
 
 $(obj)/%.romstage.o $(abspath $(obj))/%.romstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD $(CFLAGS) $(romstage-c-ccopts) -c -o $@ $<
+	$(CC_romstage) -MMD $(CFLAGS_romstage) $(romstage-c-ccopts) -c -o $@ $<
 
 $(obj)/%.bootblock.o $(abspath $(obj))/%.bootblock.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD $(CFLAGS) $(bootblock-c-ccopts) -c -o $@ $<
+	$(CC_bootblock) -MMD $(CFLAGS_bootblock) $(bootblock-c-ccopts) -c -o $@ $<
 
 #######################################################################
 # Clean up rules
@@ -330,7 +327,7 @@ clean-for-update-target:
 	rm -f $(obj)/mainboard/$(MAINBOARDDIR)/romstage.inc
 	rm -f $(obj)/mainboard/$(MAINBOARDDIR)/bootblock.* $(obj)/mainboard/$(MAINBOARDDIR)/dsdt.*
 	rm -f $(obj)/cpu/x86/smm/smm_bin.c $(obj)/cpu/x86/smm/smm.* $(obj)/cpu/x86/smm/smm
-	$(MAKE) -C payloads/external/SeaBIOS -f Makefile.inc clean OUT=$(abspath $(obj)) HOSTCC="$(HOSTCC)" CC="$(CC)" LD="$(LD)"
+	$(MAKE) -C payloads/external/SeaBIOS -f Makefile.inc clean OUT=$(abspath $(obj)) HOSTCC="$(HOSTCC)" CC="$(CC_x86_32)" LD="$(LD_x86_32)"
 
 clean-target:
 	rm -f $(obj)/coreboot*
@@ -392,16 +389,28 @@ tools: $(objutil)/kconfig/conf $(objutil)/cbfstool/cbfstool $(objutil)/cbfstool/
 # Common recipes for all stages
 ###############################################################################
 
+# find-substr is required for stages like romstage_null and romstage_xip to
+# eliminate the _* part of the string
+find-substr = $(word 1,$(subst _, ,$(1)))
+
+# find-class is used to identify the class from the name of the stage
+# romstage.x will return romstage, romstage.x.y will remove .x.y and return
+# romstage. Hence the recursion
+
+find-class = $(if $(filter $(1),$(basename $(1))),$(if $(CC_$(1)), $(1), $(call find-substr,$(1))),$(call find-class,$(basename $(1))))
+
 $(objcbfs)/%.bin: $(objcbfs)/%.elf
+	$(eval class := $(call find-class,$(@F)))
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(OBJCOPY) -O binary $< $@
+	$(OBJCOPY_$(class)) -O binary $< $@
 
 $(objcbfs)/%.elf: $(objcbfs)/%.debug
+	$(eval class := $(call find-class,$(@F)))
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	cp $< $@.tmp
-	$(NM) -n $@.tmp | sort > $(basename $@).map
-	$(OBJCOPY) --strip-debug $@.tmp
-	$(OBJCOPY) --add-gnu-debuglink=$< $@.tmp
+	$(NM_$(class)) -n $@.tmp | sort > $(basename $@).map
+	$(OBJCOPY_$(class)) --strip-debug $@.tmp
+	$(OBJCOPY_$(class)) --add-gnu-debuglink=$< $@.tmp
 	mv $@.tmp $@
 
 
@@ -500,10 +509,10 @@ endif
 	@printf "    CBFSPRINT  $(subst $(obj)/,,$(@))\n\n"
 	$(CBFSTOOL) $@ print
 
-ifeq ($(CONFIG_ARCH_ARM),y)
+ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM),y)
 ROMSTAGE_ELF := romstage.elf
 endif
-ifeq ($(CONFIG_ARCH_X86),y)
+ifeq ($(CONFIG_ARCH_ROMSTAGE_X86_32),y)
 ROMSTAGE_ELF := romstage_xip.elf
 endif
 

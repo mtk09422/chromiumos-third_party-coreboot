@@ -1,21 +1,20 @@
 menu "Architecture (arm)"
 
-
-config ARM_ARCH_OPTIONS
+config ARCH_BOOTBLOCK_ARM
 	bool
-	default y
-	select HAVE_ARCH_MEMSET
-	select HAVE_ARCH_MEMCPY
-	select HAVE_ARCH_MEMMOVE
+	default n
+	select ARCH_ARM
+
+config ARCH_ROMSTAGE_ARM
+	bool
+	default n
+
+config ARCH_RAMSTAGE_ARM
+	bool
+	default n
 
 source src/arch/arm/armv4/Kconfig
 source src/arch/arm/armv7/Kconfig
-
-# Maximum reboot count
-# TODO: Improve description.
-config MAX_REBOOT_CNT
-	int
-	default 3
 
 # If a custom bootblock is necessary, this option should be "select"-ed by
 # the thing that needs it, probably the CPU.

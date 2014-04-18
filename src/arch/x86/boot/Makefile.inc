@@ -1,3 +1,6 @@
+
+ifeq ($(CONFIG_ARCH_RAMSTAGE_X86_32),y)
+
 ramstage-y += boot.c
 ramstage-$(CONFIG_MULTIBOOT) += multiboot.c
 ramstage-y += gdt.c
@@ -12,3 +15,4 @@ ramstage-$(CONFIG_HAVE_ACPI_RESUME) += wakeup.S
 $(obj)/arch/x86/boot/coreboot_table.ramstage.o : $(OPTION_TABLE_H)
 $(obj)/arch/x86/boot/smbios.ramstage.o: $(obj)/build.h
 
+endif

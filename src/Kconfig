@@ -238,31 +238,9 @@ config ARCH_AARCH64
 	bool
 	default n
 
-# Warning: The file is included whether or not the if is here.
-# but the if controls how the evaluation occurs.
-if ARCH_X86
 source src/arch/x86/Kconfig
-endif
-
-if ARCH_ARM
 source src/arch/arm/Kconfig
-endif
-
-if ARCH_AARCH64
 source src/arch/aarch64/Kconfig
-endif
-
-config HAVE_ARCH_MEMSET
-	bool
-	default n
-
-config HAVE_ARCH_MEMCPY
-	bool
-	default n
-
-config HAVE_ARCH_MEMMOVE
-	bool
-	default n
 
 menu "Chipset"
 
@@ -357,7 +335,7 @@ config TIMER_QUEUE
 	def_bool n
 	depends on HAVE_MONOTONIC_TIMER
 	help
-	  Provide a timer queue for performing time-based callbacks. 
+	  Provide a timer queue for performing time-based callbacks.
 
 config COOP_MULTITASKING
 	def_bool n
@@ -1078,3 +1056,9 @@ config REG_SCRIPT
 	  Internal option that controls whether we compile in register scripts.
 
 source src/vendorcode/Kconfig
+
+# Maximum reboot count
+# TODO: Improve description.
+config MAX_REBOOT_CNT
+	int
+	default 3

@@ -1,3 +1,17 @@
+ifeq ($(CONFIG_ARCH_ROMSTAGE_X86_32),y)
+
+romstage-$(CONFIG_EARLY_CONSOLE) += romstage_console.c
+romstage-y += cbfs_and_run.c
+romstage-y += memset.c
+romstage-y += memcpy.c
+romstage-y += memmove.c
+romstage-y += rom_media.c
+romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
+
+endif
+
+ifeq ($(CONFIG_ARCH_RAMSTAGE_X86_32),y)
+
 ramstage-y += c_start.S
 ramstage-y += cpu.c
 ramstage-y += pci_ops_conf1.c
@@ -13,14 +27,6 @@ ramstage-$(CONFIG_COOP_MULTITASKING) += thread.c
 ramstage-$(CONFIG_COOP_MULTITASKING) += thread_switch.S
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
-romstage-$(CONFIG_EARLY_CONSOLE) += romstage_console.c
-romstage-y += cbfs_and_run.c
-romstage-y += memset.c
-romstage-y += memcpy.c
-romstage-y += memmove.c
-romstage-y += rom_media.c
-romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
-
 smm-y += memset.c
 smm-y += memcpy.c
 smm-y += memmove.c
@@ -31,3 +37,5 @@ rmodules-y += memcpy.c
 rmodules-y += memmove.c
 
 $(obj)/arch/x86/lib/console.ramstage.o :: $(obj)/build.h
+
+endif

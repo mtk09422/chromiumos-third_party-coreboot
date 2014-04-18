@@ -1,6 +1,9 @@
-config ARM_BOOTBLOCK_ARMV7
+config ARCH_BOOTBLOCK_ARM_V7
 	def_bool n
-config ARM_ROMSTAGE_ARMV7
+	select ARCH_BOOTBLOCK_ARM
+config ARCH_ROMSTAGE_ARM_V7
 	def_bool n
-config ARM_RAMSTAGE_ARMV7
+	select ARCH_ROMSTAGE_ARM
+config ARCH_RAMSTAGE_ARM_V7
 	def_bool n
+	select ARCH_RAMSTAGE_ARM

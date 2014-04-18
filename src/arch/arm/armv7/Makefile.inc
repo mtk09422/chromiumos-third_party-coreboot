@@ -27,7 +27,7 @@ armv7_asm_flags = $(armv7_flags) -Wa,-mthumb -Wa,-mimplicit-it=always \
 ################################################################################
 ## Bootblock
 ################################################################################
-ifeq ($(CONFIG_ARM_BOOTBLOCK_ARMV7),y)
+ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V7),y)
 
 ifneq ($(CONFIG_ARM_BOOTBLOCK_CUSTOM),y)
 bootblock-y += bootblock.S
@@ -47,7 +47,7 @@ endif
 ################################################################################
 ## ROM stage
 ################################################################################
-ifeq ($(CONFIG_ARM_ROMSTAGE_ARMV7),y)
+ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM_V7),y)
 
 romstage-y += cache.c
 romstage-y += cpu.S
@@ -62,7 +62,7 @@ endif
 ################################################################################
 ## RAM stage
 ################################################################################
-ifeq ($(CONFIG_ARM_RAMSTAGE_ARMV7),y)
+ifeq ($(CONFIG_ARCH_RAMSTAGE_ARM_V7),y)
 
 ramstage-y += cache.c
 ramstage-y += cpu.S

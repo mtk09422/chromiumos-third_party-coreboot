@@ -7,6 +7,7 @@ subdirs-y += intel
 subdirs-y += via
 subdirs-y += x86
 
+$(eval $(call create_class_compiler,cpu_microcode,x86_32))
 ################################################################################
 ## Rules for building the microcode blob in CBFS
 ################################################################################
@@ -31,13 +32,13 @@ endif
 # final microcode file.
 $(obj)/cpu_microcode_blob.o: $$(cpu_microcode-objs)
 	@printf "    LD         $(subst $(obj)/,,$(@))\n"
-	$(LD) -static --entry=0 $< -o $@
+	$(LD_cpu_microcode) -static --entry=0 $< -o $@
 
 # We have a lot of useless data in the large blob, and we are only interested in
 # the data section, so we only copy that part to the final microcode file
 $(obj)/cpu_microcode_blob.bin: $(obj)/cpu_microcode_blob.o
 	@printf "  MICROCODE    $(subst $(obj)/,,$(@))\n"
-	$(OBJCOPY) -j .data -O binary $< $@
+	$(OBJCOPY_cpu_microcode) -j .data -O binary $< $@
 
 ifeq ($(cbfs_include_ucode),y)
 # Add CPU microcode to specified rom image $(1)

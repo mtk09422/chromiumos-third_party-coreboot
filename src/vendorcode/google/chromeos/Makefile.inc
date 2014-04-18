@@ -19,11 +19,11 @@
 
 romstage-y += chromeos.c
 ramstage-y += chromeos.c
-romstage-$(CONFIG_ARCH_X86) += vbnv_cmos.c
-ramstage-$(CONFIG_ARCH_X86) += vbnv_cmos.c
-romstage-$(CONFIG_ARCH_ARM) += vbnv_ec.c
-ramstage-$(CONFIG_ARCH_ARM) += vbnv_ec.c
-romstage-$(CONFIG_ARCH_X86) += vboot.c
+romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += vbnv_cmos.c
+ramstage-$(CONFIG_ARCH_RAMSTAGE_X86_32) += vbnv_cmos.c
+romstage-$(CONFIG_ARCH_ROMSTAGE_ARM) += vbnv_ec.c
+ramstage-$(CONFIG_ARCH_RAMSTAGE_ARM) += vbnv_ec.c
+romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += vboot.c
 ramstage-y += gnvs.c
 romstage-y += fmap.c
 ramstage-y += fmap.c
@@ -37,9 +37,9 @@ romstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
 endif
 
 ifeq ($(MOCK_TPM),1)
-CFLAGS += -DMOCK_TPM=1
+CFLAGS_common += -DMOCK_TPM=1
 else
-CFLAGS += -DMOCK_TPM=0
+CFLAGS_common += -DMOCK_TPM=0
 endif
 
 ifeq ($(CONFIG_VBOOT_VERIFY_FIRMWARE),y)
@@ -51,7 +51,12 @@ VBOOT_MAKEFLAGS = REGION_READ=1
 endif
 
 VB_LIB = $(obj)/external/vboot_reference/vboot_fw.a
-VB_FIRMWARE_ARCH := $(ARCHDIR-y)
+# Currently, vboot comes into picture only during the romstage, thus
+# is compiled for being used in romstage only. Since, we are splitting
+# up all components in one of the three stages of coreboot, vboot seems
+# most logical to fall under the romstage. Thus, all references to arch
+# and other compiler stuff for vboot is using the romstage arch.
+VB_FIRMWARE_ARCH := $(ARCHDIR-$(ARCH-ROMSTAGE-y))
 VB_SOURCE := vboot_reference
 
 # Add the vboot include paths.
@@ -65,22 +70,22 @@ VBOOT_STUB_DOTO = $(VBOOT_STUB_ELF:.elf=.o)
 # Dependency for the vboot rmodules. Ordering matters.
 VBOOT_STUB_DEPS += $(obj)/vendorcode/google/chromeos/vboot_wrapper.rmodules.o
 VBOOT_STUB_DEPS += $(obj)/lib/memcmp.rmodules.o
-ifeq ($(CONFIG_ARCH_X86),y)
+ifeq ($(CONFIG_ARCH_ROMSTAGE_X86_32),y)
 VBOOT_STUB_DEPS += $(obj)/arch/x86/lib/memset.rmodules.o
 VBOOT_STUB_DEPS += $(obj)/arch/x86/lib/memcpy.rmodules.o
 endif
-ifeq ($(CONFIG_ARCH_ARM),y)
+ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM),y)
 VBOOT_STUB_DEPS += $(obj)/arch/arm/memset.rmodules.o
 VBOOT_STUB_DEPS += $(obj)/arch/arm/memcpy.rmodules.o
 endif
 VBOOT_STUB_DEPS += $(VB_LIB)
 # Remove the '-include' option since that will break vboot's build and ensure
 # vboot_reference can get to coreboot's include files.
-VBOOT_CFLAGS += $(patsubst -I%,-I../%,$(filter-out -include $(src)/include/kconfig.h, $(CFLAGS)))
+VBOOT_CFLAGS += $(patsubst -I%,-I../%,$(filter-out -include $(src)/include/kconfig.h, $(CFLAGS_romstage)))
 VBOOT_CFLAGS += -DVBOOT_DEBUG
 
 $(VBOOT_STUB_DOTO): $(VBOOT_STUB_DEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -nostdlib -r -o $@ $^
+	$(CC_romstage) $(CFLAGS_romstage) $(LDFLAGS) -nostdlib -r -o $@ $^
 
 # Link the vbootstub module with a 64KiB-byte heap.
 $(eval $(call rmodule_link,$(VBOOT_STUB_ELF), $(VBOOT_STUB_DOTO), 0x10000))
@@ -89,6 +94,7 @@ $(eval $(call rmodule_link,$(VBOOT_STUB_ELF), $(VBOOT_STUB_DOTO), 0x10000))
 $(VB_LIB):
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
+	CC="$(CC_romstage)" \
 		CFLAGS="$(VBOOT_CFLAGS)" \
 		make -C $(VB_SOURCE) \
 		$(VBOOT_MAKEFLAGS) \

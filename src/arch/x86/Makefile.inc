@@ -40,8 +40,10 @@ endif
 # X86 specific options
 ################################################################################
 
+ifeq ($(CONFIG_ARCH_ROMSTAGE_X86_32),y)
 CBFSTOOL_PRE1_OPTS = -m x86 -o $$(( $(CONFIG_ROM_SIZE) - $(CONFIG_CBFS_SIZE) ))
 CBFSTOOL_PRE_OPTS  = -b $(shell cat $(objcbfs)/base_xip.txt)
+endif
 
 stripped_vgabios_id = $(call strip_quotes,$(CONFIG_VGA_BIOS_ID))
 cbfs-files-$(CONFIG_VGA_BIOS) += pci$(stripped_vgabios_id).rom
@@ -73,6 +75,7 @@ $(obj)/cmos_layout.bin: $(NVRAMTOOL) $(top)/src/mainboard/$(MAINBOARDDIR)/cmos.l
 # bootblock
 ###############################################################################
 
+ifeq ($(CONFIG_ARCH_BOOTBLOCK_X86_32),y)
 bootblock_lds = $(src)/arch/x86/init/ldscript_failover.lb
 bootblock_lds += $(src)/cpu/x86/16bit/entry16.lds
 bootblock_lds += $(src)/cpu/x86/16bit/reset16.lds
@@ -113,31 +116,33 @@ $(objgenerated)/bootblock_inc.S: $$(bootblock_inc)
 
 $(objgenerated)/bootblock.o: $(objgenerated)/bootblock.s
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -Wa,-acdlns -c -o $@ $<  > $(basename $@).disasm
+	$(CC_bootblock) -Wa,-acdlns -c -o $@ $<  > $(basename $@).disasm
 
 $(objgenerated)/bootblock.s: $(objgenerated)/bootblock_inc.S $(obj)/config.h $(obj)/build.h
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD -x assembler-with-cpp -E -I$(src)/include -I$(src)/arch/x86/include -I$(obj) -include $(obj)/build.h -include $(obj)/config.h -I. -I$(src) $< -o $@
+	$(CC_bootblock) -MMD -x assembler-with-cpp -E -I$(src)/include -I$(src)/arch/x86/include -I$(obj) -include $(obj)/build.h -include $(obj)/config.h -I. -I$(src) $< -o $@
 
 $(objgenerated)/bootblock.inc: $(src)/arch/x86/init/$(subst ",,$(CONFIG_BOOTBLOCK_SOURCE)) $(objutil)/romcc/romcc $(OPTION_TABLE_H) $(obj)/config.h
 	@printf "    ROMCC      $(subst $(obj)/,,$(@))\n"
-	$(CC) $(INCLUDES) -MM -MT$(objgenerated)/bootblock.inc \
+	$(CC_bootblock) $(INCLUDES) $(INCLUDES_bootblock) -MM -MT$(objgenerated)/bootblock.inc \
 		$< > $(objgenerated)/bootblock.inc.d
-	$(ROMCC) -c -S $(bootblock_romccflags) -I. $(INCLUDES) $< -o $@
+	$(ROMCC) -c -S $(bootblock_romccflags) -I. $(INCLUDES) $(INCLUDES_bootblock) $< -o $@
 
 $(objcbfs)/bootblock.debug: $(objgenerated)/bootblock.o $(objgenerated)/bootblock.ld
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m elf_i386 -static -o $@.tmp -L$(obj) $< -T $(objgenerated)/bootblock.ld
+	$(LD_bootblock) -m elf_i386 -static -o $@.tmp -L$(obj) $< -T $(objgenerated)/bootblock.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/bootblock.ld $<
+	$(CC_bootblock) $(CFLAGS_bootblock) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/bootblock.ld $<
 endif
 
-
+endif
 
 ###############################################################################
 # romstage
 ###############################################################################
+
+ifeq ($(CONFIG_ARCH_ROMSTAGE_X86_32),y)
 
 crt0s = $(src)/arch/x86/init/prologue.inc
 ldscripts =
@@ -174,14 +179,26 @@ else
  ROMCCFLAGS := -mcpu=i386 -O2 # !MMX, !SSE
 endif
 
+$(objcbfs)/romstage_%.bin: $(objcbfs)/romstage_%.elf
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(OBJCOPY_romstage) -O binary $< $@
+
+$(objcbfs)/romstage_%.elf: $(objcbfs)/romstage_%.debug
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	cp $< $@.tmp
+	$(NM_romstage) -n $@.tmp | sort > $(basename $@).map
+	$(OBJCOPY_romstage) --strip-debug $@.tmp
+	$(OBJCOPY_romstage) --add-gnu-debuglink=$< $@.tmp
+	mv $@.tmp $@
+
 $(obj)/mainboard/$(MAINBOARDDIR)/romstage.inc: $(src)/mainboard/$(MAINBOARDDIR)/romstage.c $(objutil)/romcc/romcc $(OPTION_TABLE_H) $(obj)/build.h $(obj)/config.h
 	printf "    ROMCC      romstage.inc\n"
-	$(ROMCC) -c -S $(ROMCCFLAGS) -D__PRE_RAM__ -I. $(INCLUDES) $< -o $@
+	$(ROMCC) -c -S $(ROMCCFLAGS) -D__PRE_RAM__ -I. $(INCLUDES) $(INCLUDES_romstage) $< -o $@
 else
 
 $(obj)/mainboard/$(MAINBOARDDIR)/romstage.pre.inc: $(src)/mainboard/$(MAINBOARDDIR)/romstage.c $(OPTION_TABLE_H) $(obj)/build.h $(obj)/config.h
 	@printf "    CC         romstage.inc\n"
-	$(CC) -MMD $(CFLAGS) -D__PRE_RAM__ -I$(src) -I. -I$(obj) -c -S $< -o $@
+	$(CC_romstage) -MMD $(CFLAGS_romstage) -D__PRE_RAM__ -I$(src) -I. -I$(obj) -c -S $< -o $@
 
 $(obj)/mainboard/$(MAINBOARDDIR)/romstage.inc: $(obj)/mainboard/$(MAINBOARDDIR)/romstage.pre.inc
 	@printf "    POST       romstage.inc\n"
@@ -195,21 +212,21 @@ romstage-srcs += $(objgenerated)/crt0.s
 $(objcbfs)/romstage_null.debug: $$(romstage-objs) $(objgenerated)/romstage_null.ld
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(romstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(objgenerated)/romstage_null.ld
+	$(LD_romstage) -nostdlib -nostartfiles -static -o $@ -L$(obj) --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(romstage-objs) $(LIBGCC_FILE_NAME_romstage) --end-group -T $(objgenerated)/romstage_null.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_null.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC_romstage) $(CFLAGS_romstage) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_null.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME_romstage) -Wl,--end-group
 endif
-	$(NM) $@ | grep -q " [DdBb] "; if [ $$? -eq 0 ]; then \
+	$(NM_romstage) $@ | grep -q " [DdBb] "; if [ $$? -eq 0 ]; then \
 		echo "Forbidden global variables in romstage:"; \
-		$(NM) $@ | grep " [DdBb] "; test "$(CONFIG_CPU_AMD_AGESA)" = y; \
+		$(NM_romstage) $@ | grep " [DdBb] "; test "$(CONFIG_CPU_AMD_AGESA)" = y; \
 		else true; fi
 
 $(objcbfs)/romstage_xip.debug: $$(romstage-objs) $(objgenerated)/romstage_xip.ld
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -nostdlib -nostartfiles -static -o $@ -L$(obj) --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(romstage-objs) $(LIBGCC_FILE_NAME) --end-group -T $(objgenerated)/romstage_xip.ld
+	$(LD_romstage) -nostdlib -nostartfiles -static -o $@ -L$(obj) --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(romstage-objs) $(LIBGCC_FILE_NAME_romstage) --end-group -T $(objgenerated)/romstage_xip.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_xip.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC_romstage) $(CFLAGS_romstage) -nostartfiles -static -o $@ -L$(obj) -T $(objgenerated)/romstage_xip.ld -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(romstage-objs) $(LIBGCC_FILE_NAME_romstage) -Wl,--end-group
 endif
 
 $(objgenerated)/romstage_null.ld: $$(ldscripts) $(obj)/ldoptions
@@ -238,15 +255,19 @@ $(objgenerated)/crt0.romstage.S: $$(crt0s)
 
 $(objgenerated)/crt0.romstage.o: $(objgenerated)/crt0.s
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -Wa,-acdlns -c -o $@ $<  > $(basename $@).disasm
+	$(CC_romstage) -Wa,-acdlns -c -o $@ $<  > $(basename $@).disasm
 
 $(objgenerated)/crt0.s: $(objgenerated)/crt0.romstage.S $(obj)/config.h $(obj)/build.h
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC) -MMD -x assembler-with-cpp -E -I$(src)/include -I$(src)/arch/x86/include -I$(obj) -include $(obj)/config.h -include $(obj)/build.h -I. -I$(src) $< -o $@
+	$(CC_romstage) -MMD -x assembler-with-cpp -E -I$(src)/include -I$(src)/arch/x86/include -I$(obj) -include $(obj)/config.h -include $(obj)/build.h -I. -I$(src) $< -o $@
+
+endif
 
 ###############################################################################
 # ramstage
 ###############################################################################
+
+ifeq ($(CONFIG_ARCH_RAMSTAGE_X86_32),y)
 
 ramstage-srcs += $(wildcard src/mainboard/$(MAINBOARDDIR)/mainboard.c)
 ifeq ($(CONFIG_GENERATE_MP_TABLE),y)
@@ -288,6 +309,8 @@ ifneq ($(wildcard src/mainboard/$(MAINBOARDDIR)/get_bus_conf.c),)
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/get_bus_conf.c
 endif
 
+$(eval $(call create_class_compiler,rmodules,x86_32))
+
 ifeq ($(CONFIG_RELOCATABLE_RAMSTAGE),y)
 
 $(eval $(call rmodule_link,$(objcbfs)/ramstage.debug, $(objgenerated)/ramstage.o, $(CONFIG_HEAP_SIZE)))
@@ -301,29 +324,30 @@ else
 $(objcbfs)/ramstage.debug: $(objgenerated)/ramstage.o $(src)/arch/x86/ramstage.ld
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m elf_i386 -o $@ -L$(obj) $< -T $(src)/arch/x86/ramstage.ld
+	$(LD_ramstage) -m elf_i386 -o $@ -L$(obj) $< -T $(src)/arch/x86/ramstage.ld
 else
-	$(CC) $(CFLAGS) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/x86/ramstage.ld $<
+	$(CC_ramstage) $(CFLAGS_ramstage) -nostartfiles -static -o $@ -L$(obj) -T $(src)/arch/x86/ramstage.ld $<
 endif
 
 endif
 
-$(objgenerated)/ramstage.o: $$(ramstage-objs) $(LIBGCC_FILE_NAME)
+$(objgenerated)/ramstage.o: $$(ramstage-objs) $(LIBGCC_FILE_NAME_ramstage)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD) -m elf_i386 -r -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) --end-group
+	$(LD_ramstage) -m elf_i386 -r -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --start-group $(ramstage-objs) $(LIBGCC_FILE_NAME_ramstage) --end-group
 else
-	$(CC) $(CFLAGS) -r -o $@ -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME) -Wl,--end-group
+	$(CC_ramstage) $(CFLAGS_ramstage) -r -o $@ -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(ramstage-objs) $(LIBGCC_FILE_NAME_ramstage) -Wl,--end-group
 endif
 
+endif
 
 ################################################################################
 
 seabios:
 	$(MAKE) -C payloads/external/SeaBIOS -f Makefile.inc \
 			HOSTCC="$(HOSTCC)" \
-			CC="$(CC)" LD="$(LD)" OBJDUMP="$(OBJDUMP)" \
-			OBJCOPY="$(OBJCOPY)" STRIP="$(STRIP)" \
+			CC="$(CC_x86_32)" LD="$(LD_x86_32)" OBJDUMP="$(OBJDUMP_x86_32)" \
+			OBJCOPY="$(OBJCOPY_x86_32)" STRIP="$(STRIP_x86_32)" \
 			CONFIG_SEABIOS_MASTER=$(CONFIG_SEABIOS_MASTER) \
 			CONFIG_SEABIOS_STABLE=$(CONFIG_SEABIOS_STABLE) \
 			OUT=$(abspath $(obj)) IASL="$(IASL)"
@@ -331,8 +355,7 @@ seabios:
 filo:
 	$(MAKE) -C payloads/external/FILO -f Makefile.inc \
 			HOSTCC="$(HOSTCC)" \
-			CC="$(CC)" LD="$(LD)" OBJDUMP="$(OBJDUMP)" \
-			OBJCOPY="$(OBJCOPY)" STRIP="$(STRIP)" \
+			CC="$(CC_x86_32)" LD="$(LD_x86_32)" OBJDUMP="$(OBJDUMP_x86_32)" \
+			OBJCOPY="$(OBJCOPY_x86_32)" STRIP="$(STRIP_x86_32)" \
 			CONFIG_FILO_MASTER=$(CONFIG_FILO_MASTER) \
 			CONFIG_FILO_STABLE=$(CONFIG_FILO_STABLE)
-

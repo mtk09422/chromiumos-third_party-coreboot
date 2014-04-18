@@ -21,6 +21,14 @@
 
 libgcc_files = ashldi3.S lib1funcs.S lshrdi3.S muldi3.S ucmpdi2.S uldivmod.S
 
+ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM),y)
 bootblock-y += $(libgcc_files)
+endif
+
+ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM),y)
 romstage-y += $(libgcc_files)
+endif
+
+ifeq ($(CONFIG_ARCH_RAMSTAGE_ARM),y)
 ramstage-y += $(libgcc_files)
+endif

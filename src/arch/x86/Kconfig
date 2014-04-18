@@ -1,11 +1,17 @@
 menu "Architecture (x86)"
 
-config X86_ARCH_OPTIONS
+config ARCH_BOOTBLOCK_X86_32
 	bool
-	default y
-	select HAVE_ARCH_MEMSET
-	select HAVE_ARCH_MEMCPY
-	select HAVE_ARCH_MEMMOVE
+	default n
+	select ARCH_X86
+
+config ARCH_ROMSTAGE_X86_32
+	bool
+	default n
+
+config ARCH_RAMSTAGE_X86_32
+	bool
+	default n
 
 config MARK_GRAPHICS_MEM_WRCOMB
 	bool "Mark graphics memory as write-combining."
@@ -42,12 +48,6 @@ config STACK_SIZE
 	hex
 	default 0x1000
 
-# Maximum reboot count
-# TODO: Improve description.
-config MAX_REBOOT_CNT
-	int
-	default 3
-
 # We had to rename the choice options under arch/ because otherwise
 # the options would conflict between different architectures despite
 # the if ARCH_xxx guarding the arch/xxx/Kconfig sourcing.
@@ -83,7 +83,7 @@ config ROMCC
 
 config PC80_SYSTEM
 	bool
-	default y
+	default y if ARCH_X86
 
 config BOOTBLOCK_MAINBOARD_INIT
 	string

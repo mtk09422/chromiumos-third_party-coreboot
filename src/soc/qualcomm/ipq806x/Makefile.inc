@@ -42,7 +42,7 @@ ifeq ($(CONFIG_USE_BLOBS),y)
 # Generate the actual coreboot bootblock code
 $(objcbfs)/bootblock.raw: $(objcbfs)/bootblock.elf
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(OBJCOPY) -O binary $< $@.tmp
+	$(OBJCOPY_bootblock) -O binary $< $@.tmp
 	@mv $@.tmp $@
 
 # Add MBN header to allow SBL3 to start coreboot bootblock

@@ -25,7 +25,7 @@ armv4_flags = -marm -march=armv4t -I$(src)/arch/arm/include/armv4/ \
 ################################################################################
 ## Bootblock
 ################################################################################
-ifeq ($(CONFIG_ARM_BOOTBLOCK_ARMV4),y)
+ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V4),y)
 
 ifneq ($(CONFIG_ARM_BOOTBLOCK_CUSTOM),y)
 bootblock-y += bootblock.S
@@ -41,7 +41,7 @@ endif
 ################################################################################
 ## ROM stage
 ################################################################################
-ifeq ($(CONFIG_ARM_ROMSTAGE_ARMV4),y)
+ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM_V4),y)
 
 romstage-c-ccopts += $(armv4_flags)
 romstage-S-ccopts += $(armv4_flags)
@@ -50,7 +50,7 @@ endif
 ################################################################################
 ## RAM stage
 ################################################################################
-ifeq ($(CONFIG_ARM_RAMSTAGE_ARMV4),y)
+ifeq ($(CONFIG_ARCH_RAMSTAGE_ARM_V4),y)
 
 ramstage-c-ccopts += $(armv4_flags)
 ramstage-S-ccopts += $(armv4_flags)
