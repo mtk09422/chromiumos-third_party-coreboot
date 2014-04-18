@@ -142,6 +142,8 @@ void serial_putchar(unsigned int c)
 	while ((serial_read_reg(0x05) & 0x20) == 0) ;
 #endif
 	serial_write_reg(c, 0x00);
+	if (c == '\n')
+		serial_putchar('\r');
 }
 
 int serial_havechar(void)
