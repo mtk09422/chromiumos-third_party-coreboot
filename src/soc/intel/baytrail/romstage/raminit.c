@@ -25,7 +25,7 @@
 #include <console/console.h>
 #include <device/pci_def.h>
 #include <baytrail/gpio.h>
-#include <baytrail/mrc_cache.h>
+#include <soc/intel/common/mrc_cache.h>
 #include <baytrail/iomap.h>
 #include <baytrail/iosf.h>
 #include <baytrail/pci_devs.h>
