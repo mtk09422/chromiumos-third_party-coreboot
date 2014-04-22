@@ -17,6 +17,9 @@ def create_header(base, size):
     @returns: string, the MBN header
     """
 
+    # SBLs require size to be 4 bytes aligned.
+    size = (size + 3) & 0xfffffffc
+
     # We currently do not support appending certificates. Signing GPL
     # code might violate the GPL. So U-Boot will never be signed. So
     # this is not required for U-Boot.
