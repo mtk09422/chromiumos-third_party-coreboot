@@ -39,6 +39,7 @@ extern int oprom_is_loaded;
 void read_vbnv(uint8_t *vbnv_copy);
 void save_vbnv(const uint8_t *vbnv_copy);
 
+#if CONFIG_CHROMEOS
 /* functions implemented in chromeos.c: */
 int developer_mode_enabled(void);
 int recovery_mode_enabled(void);
@@ -46,6 +47,12 @@ int vboot_skip_display_init(void);
 
 /* functions implemented in vboot.c */
 void init_chromeos(int bootmode);
+#else
+static inline int developer_mode_enabled(void) { return 0; }
+static inline int recovery_mode_enabled(void) { return 0; }
+static inline int vboot_skip_display_init(void) { return 0; }
+static inline void init_chromeos(int bootmode) { }
+#endif /* CONFIG_CHROMEOS */
 
 struct romstage_handoff;
 
