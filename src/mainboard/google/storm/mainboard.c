@@ -17,11 +17,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <device/device.h>
 #include <boot/coreboot_tables.h>
+#include <delay.h>
+#include <device/device.h>
 
 static void mainboard_init(device_t dev)
 {
+	init_timer();
 }
 
 static void mainboard_enable(device_t dev)

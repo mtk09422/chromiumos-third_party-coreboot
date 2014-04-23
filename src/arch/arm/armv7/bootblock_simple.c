@@ -26,6 +26,7 @@
 #include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <delay.h>
 
 void main(void)
 {
@@ -44,4 +45,9 @@ void main(void)
 
 	if (entry) stage_exit(entry);
 	hlt();
+}
+
+void bootblock_mainboard_init(void)
+{
+	init_timer();
 }
