@@ -37,6 +37,7 @@ unsigned char uart_rx_byte(void);
 void uart_tx_byte(unsigned char data);
 void uart_tx_flush(void);
 void uart_init(void);
+int uart_can_rx_byte(void);
 #endif
 
 #if CONFIG_HAVE_UART_MEMORY_MAPPED
