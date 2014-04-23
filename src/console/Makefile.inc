@@ -23,6 +23,7 @@ ramstage-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart8250mem_console.c
 ramstage-$(CONFIG_USBDEBUG) += usbdebug_console.c
 ramstage-$(CONFIG_CONSOLE_NE2K) += ne2k_console.c
 ramstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
+ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart_wrapper.c
 
 
 $(obj)/console/console.ramstage.o : $(obj)/build.h

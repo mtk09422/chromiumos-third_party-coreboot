@@ -2,16 +2,19 @@ bootblock-y += cbfs.c
 bootblock-y += clock.c
 bootblock-y += gpio.c
 bootblock-y += timer.c
+bootblock-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
 
 romstage-y += cbfs.c
 romstage-y += clock.c
 romstage-y += gpio.c
 romstage-y += timer.c
+romstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
 
 ramstage-y += cbfs.c
 ramstage-y += clock.c
 ramstage-y += gpio.c
 ramstage-y += timer.c
+ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
 
 ifeq ($(CONFIG_USE_BLOBS),y)
 
