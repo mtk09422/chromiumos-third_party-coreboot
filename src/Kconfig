@@ -234,13 +234,13 @@ config ARCH_ARM
 	bool
 	default n
 
-config ARCH_AARCH64
+config ARCH_ARM64
 	bool
 	default n
 
 source src/arch/x86/Kconfig
 source src/arch/arm/Kconfig
-source src/arch/aarch64/Kconfig
+source src/arch/arm64/Kconfig
 
 menu "Chipset"
 
@@ -270,6 +270,7 @@ config TPM
 	default n
 	select LPC_TPM if ARCH_X86
 	select I2C_TPM if ARCH_ARM
+	select I2C_TPM if ARCH_ARM64
 	help
 	  Enable this option to enable TPM support in coreboot.
 
@@ -298,6 +299,7 @@ config HAVE_UART_IO_MAPPED
 	bool
 	default y if ARCH_X86
 	default n if ARCH_ARM
+	default n if ARCH_ARM64
 
 config HAVE_UART_MEMORY_MAPPED
 	bool

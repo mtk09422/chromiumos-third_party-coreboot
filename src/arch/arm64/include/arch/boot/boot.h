@@ -1,5 +1,5 @@
-#ifndef ASM_ARM_BOOT_H
-#define ASM_ARM_BOOT_H
+#ifndef ASM_ARM64_BOOT_H
+#define ASM_ARM64_BOOT_H
 
 #define ELF_CLASS	ELFCLASS64
 #define ELF_DATA	ELFDATA2LSB

@@ -26,11 +26,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * cache.h: Cache maintenance API for AARCH64
+ * cache.h: Cache maintenance API for ARM64
  */
 
-#ifndef ARM_AARCH64_CACHE_H
-#define ARM_AARCH64_CACHE_H
+#ifndef ARM_ARM64_CACHE_H
+#define ARM_ARM64_CACHE_H
 
 #include <config.h>
 #include <stddef.h>
@@ -216,44 +216,6 @@ static inline void write_csselr(uint32_t val)
 	isb();	/* ISB to sync the change to CCSIDR_EL1 */
 }
 
-#if 0
-
-/* read L2 control register (L2CTLR) */
-static inline uint32_t read_l2ctlr(void)
-{
-	uint32_t val = 0;
-	asm volatile ("mrc p15, 1, %0, c9, c0, 2" : "=r" (val));
-	return val;
-}
-
-/* write L2 control register (L2CTLR) */
-static inline void write_l2ctlr(uint32_t val)
-{
-	/*
-	 * Note: L2CTLR can only be written when the L2 memory system
-	 * is idle, ie before the MMU is enabled.
-	 */
-	asm volatile("mcr p15, 1, %0, c9, c0, 2" : : "r" (val) : "memory" );
-	isb();
-}
-
-/* read L2 Auxiliary Control Register (L2ACTLR) */
-static inline uint32_t read_l2actlr(void)
-{
-	uint32_t val = 0;
-	asm volatile ("mrc p15, 1, %0, c15, c0, 0" : "=r" (val));
-	return val;
-}
-
-/* write L2 Auxiliary Control Register (L2ACTLR) */
-static inline void write_l2actlr(uint32_t val)
-{
-	asm volatile ("mcr p15, 1, %0, c15, c0, 0" : : "r" (val) : "memory" );
-	isb();
-}
-
-#endif
-
 /* read system control register (SCTLR_ELx) */
 static inline uint32_t read_sctlr(uint32_t el)
 {
@@ -269,18 +231,6 @@ static inline void write_sctlr(uint32_t val, uint32_t el)
 	isb();
 }
 
-/*
- * Cache maintenance API
- */
-
-#if 0
-
-/* dcache clean and invalidate all (on current level given by CCSELR) */
-void dcache_clean_invalidate_all(void);
-
-void dcache_clean_all(void);
-
-#endif
 
 /* dcache clean by virtual address to PoC */
 void dcache_clean_by_va(void const *addr, size_t len);
@@ -309,27 +259,4 @@ void cache_sync_instructions(void);
 /* tlb invalidate all */
 void tlb_invalidate_all(void);
 
-/*
- * Generalized setup/init functions
- */
-
-#if 0
-
-/* mmu initialization (set page table address, set permissions, etc) */
-void mmu_init(void);
-
-enum dcache_policy {
-	DCACHE_OFF,
-	DCACHE_WRITEBACK,
-	DCACHE_WRITETHROUGH,
-};
-
-/* disable the mmu for a range. Primarily useful to lock out address 0. */
-void mmu_disable_range(unsigned long start_mb, unsigned long size_mb);
-/* mmu range configuration (set dcache policy) */
-void mmu_config_range(unsigned long start_mb, unsigned long size_mb,
-						enum dcache_policy policy);
-
-#endif
-
-#endif /* ARM_AARCH64_CACHE_H */
+#endif /* ARM_ARM64_CACHE_H */

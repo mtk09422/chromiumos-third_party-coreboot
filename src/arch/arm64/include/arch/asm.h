@@ -1,8 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2006 Advanced Micro Devices, Inc.
- * Copyright (C) 2008-2010 coresystems GmbH
+ * Copyright 2013 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,38 +17,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
-OUTPUT_ARCH(aarch64)
+#ifndef __ARM_ARM64_ASM_H
+#define __ARM_ARM64_ASM_H
 
-PHDRS
-{
-	to_load PT_LOAD;
-}
+#define ALIGN .align 0
 
-TARGET(binary)
-SECTIONS
-{
-	ROMLOC = CONFIG_BOOTBLOCK_BASE;
+#define ENDPROC(name) \
+	.type name, %function; \
+	END(name)
 
-	/* This section might be better named .setup */
-	.rom ROMLOC : {
-		_rom = .;
-		*(.start);
-		*(.id);
-		*(.text);
-		*(.text.*);
-		*(.rom.text);
-		*(.rom.data);
-		*(.rom.data.*);
-		*(.rodata.*);
-		_erom = .;
-	} : to_load = 0xff
+#define ENTRY(name) \
+	.section .text.name, "ax", %progbits; \
+	.global name; \
+	ALIGN; \
+	name:
 
-	/DISCARD/ : {
-		*(.comment)
-		*(.note)
-		*(.comment.*)
-		*(.note.*)
-		*(.ARM.*)
-	}
-}
+#define END(name) \
+	.size name, .-name
+
+#endif	/* __ARM_ARM64_ASM_H */

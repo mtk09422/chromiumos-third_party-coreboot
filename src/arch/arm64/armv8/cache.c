@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2013 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
  * Reference: ARM Architecture Reference Manual, ARMv8-A edition
  */
 
-//#include <stdint.h>
+#include <stdint.h>
 
 #include <arch/cache.h>
 
@@ -54,7 +54,7 @@ unsigned int dcache_line_bytes(void)
 	ccsidr = read_ccsidr();
 	/* [2:0] - Indicates (Log2(number of words in cache line)) - 4 */
 	line_bytes = 1 << ((ccsidr & 0x7) + 4);	/* words per line */
-	line_bytes *= sizeof(unsigned int);	/* bytes per line */
+	line_bytes *= sizeof(uint32_t);	/* bytes per word */
 
 	return line_bytes;
 }

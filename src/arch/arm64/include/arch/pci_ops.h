@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef ARCH_AARCH64_PCI_OPS_H
-#define ARCH_AARCH64_PCI_OPS_H
+#ifndef ARCH_ARM64_PCI_OPS_H
+#define ARCH_ARM64_PCI_OPS_H
 
 /* V8 has PCI in some form. We will need to fill this in. */
 static inline const struct pci_bus_operations *pci_config_default(void)

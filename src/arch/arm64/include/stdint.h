@@ -1,5 +1,5 @@
-#ifndef ARM_STDINT_H
-#define ARM_STDINT_H
+#ifndef ARM64_STDINT_H
+#define ARM64_STDINT_H
 
 /* Exact integral types */
 typedef unsigned char      uint8_t;
@@ -57,4 +57,4 @@ typedef int64_t s64;
 typedef s64             intptr_t;
 typedef u64		uintptr_t;
 
-#endif /* ARM_STDINT_H */
+#endif /* ARM64_STDINT_H */

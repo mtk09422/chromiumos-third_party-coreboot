@@ -1,7 +1,7 @@
 /*
  *	Memory map:
  *
- *	CONFIG_RAMBASE		: text segment
+ *	CONFIG_ROMSTAGE_BASE	: text segment
  *				: rodata segment
  *				: data segment
  *				: bss segment
@@ -20,33 +20,40 @@
  */
 
 /* We use ELF as output format. So that we can debug the code in some form. */
+/*
+ INCLUDE ldoptions
+ */
+
+/* We use ELF as output format. So that we can debug the code in some form. */
 OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
-
-ENTRY(stage_entry)
+INCLUDE ldoptions
 
 PHDRS
 {
 	to_load PT_LOAD;
 }
 
+ENTRY(stage_entry)
+
 SECTIONS
 {
-	/* TODO make this a configurable option (per chipset). */
 	. = CONFIG_ROMSTAGE_BASE;
 
 	.romtext . : {
-		_rom = .;
 		_start = .;
 		*(.text.stage_entry.aarch64);
 		*(.text.startup);
 		*(.text);
+		*(.text.*);
 	} : to_load
 
 	.romdata . : {
 		*(.rodata);
+		*(.rodata.*);
 		*(.machine_param);
 		*(.data);
+		*(.data.*);
 		. = ALIGN(8);
 		_erom = .;
 	}
@@ -61,11 +68,15 @@ SECTIONS
 		. = ALIGN(8);
 		_bss = .;
 		*(.bss)
+		*(.bss.*)
 		*(.sbss)
-		*(COMMON)
+		*(.sbss.*)
+		_ebss = .;
 	}
-	_ebss = .;
+
 	_end = .;
+
+	preram_cbmem_console = CONFIG_CBMEM_CONSOLE_PRERAM_BASE;
 
 	/* Discard the sections we don't need/want */
 	/DISCARD/ : {

@@ -1,7 +1,8 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2013 Google Inc.
+ * Copyright (C) 2006 Advanced Micro Devices, Inc.
+ * Copyright (C) 2008-2010 coresystems GmbH
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,22 +18,42 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ARM_AARCH64_ASM_H
-#define __ARM_AARCH64_ASM_H
+/* We use ELF as output format. So that we can debug the code in some form. */
+OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+INCLUDE ldoptions
 
-#define ALIGN .align 0
+PHDRS
+{
+	to_load PT_LOAD;
+}
 
-#define ENDPROC(name) \
-	.type name, %function; \
-	END(name)
+ENTRY(_start)
+TARGET(binary)
+SECTIONS
+{
+	. = CONFIG_BOOTBLOCK_BASE;
 
-#define ENTRY(name) \
-	.section .text.name, "ax", %progbits; \
-	.global name; \
-	ALIGN; \
-	name:
+	.bootblock . : {
+		*(.text._start);
+		KEEP(*(.id));
+		*(.text);
+		*(.text.*);
+		*(.rodata);
+		*(.rodata.*);
+		*(.data);
+		*(.data.*);
+		*(.bss);
+		*(.bss.*);
+		*(.sbss);
+		*(.sbss.*);
+	} : to_load = 0xff
 
-#define END(name) \
-	.size name, .-name
-
-#endif	/* __ARM_AARCH64_ASM_H */
+	/DISCARD/ : {
+		*(.comment)
+		*(.note)
+		*(.comment.*)
+		*(.note.*)
+		*(.ARM.*)
+	}
+}

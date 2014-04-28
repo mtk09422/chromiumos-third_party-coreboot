@@ -1,7 +1,6 @@
 /*
- * (C) Copyright 2010
- * Texas Instruments, <www.ti.com>
- * Aneesh V <aneesh@ti.com>
+ * (C) Copyright 2002
+ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -13,7 +12,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -21,36 +20,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#ifndef _UTILS_H_
-#define _UTILS_H_
 
-static inline s32 log_2_n_round_up(u32 n)
+#include <console/console.h>
+
+void __div0(void); // called from asm so no need for a prototype in a header
+
+/* Replacement (=dummy) for GNU/Linux division-by zero handler */
+/* recursion is ok here because we have no formats ... */
+void __div0 (void)
 {
-	s32 log2n = -1;
-	u32 temp = n;
-
-	while (temp) {
-		log2n++;
-		temp >>= 1;
-	}
-
-	if (n & (n - 1))
-		return log2n + 1; /* not power of 2 - round up */
-	else
-		return log2n; /* power of 2 */
+	printk(BIOS_EMERG, "DIVIDE BY ZERO! continuing ... \n");
 }
-
-static inline s32 log_2_n_round_down(u32 n)
-{
-	s32 log2n = -1;
-	u32 temp = n;
-
-	while (temp) {
-		log2n++;
-		temp >>= 1;
-	}
-
-	return log2n;
-}
-
-#endif

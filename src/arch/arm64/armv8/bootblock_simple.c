@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2010 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -39,7 +39,7 @@ static int boot_cpu(void)
 
 void main(void)
 {
-	const char *stage_name = "fallback/romstage";
+	const char *stage_name = CONFIG_CBFS_PREFIX"/romstage";
 	void *entry = NULL;
 
 	/* Globally disable MMU, caches, and branch prediction (these should

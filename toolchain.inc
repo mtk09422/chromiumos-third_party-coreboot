@@ -23,13 +23,13 @@ ARCH_SUPPORTED := ARM ARM64 X86_32
 
 ARCH_TO_TOOLCHAIN_X86_32 := x86_32
 ARCH_TO_TOOLCHAIN_ARM    := arm
-ARCH_TO_TOOLCHAIN_ARM64  := aarch64
+ARCH_TO_TOOLCHAIN_ARM64  := arm64
 
 COREBOOT_STANDARD_STAGES := bootblock romstage ramstage
 
 ARCHDIR-i386      := x86
 ARCHDIR-arm       := arm
-ARCHDIR-aarch64   := arm64
+ARCHDIR-arm64     := arm64
 ARCHDIR-x86_32    := x86
 
 CFLAGS_arm          := -mno-unaligned-access -ffunction-sections -fdata-sections
@@ -83,6 +83,7 @@ init_stages = \
 
 # This mapping is created to have consistency with xcompile naming
 $(eval $(call create_class_compiler,x86_32,i386))
+$(eval $(call create_class_compiler,arm64,aarch64))
 
 $(eval $(call toolchain_to_dir))
 

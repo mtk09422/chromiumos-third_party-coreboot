@@ -48,4 +48,5 @@ struct cpuinfo_arm {
 
 #endif
 
+struct cpu_info *cpu_info(void);
 #endif /* __ARCH_CPU_H__ */

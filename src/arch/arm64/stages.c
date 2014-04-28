@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2012 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,7 @@
 /*
  * This file contains entry/exit functions for each stage during coreboot
  * execution (bootblock entry and ramstage exit will depend on external
- * loading.
- *
- * Unlike other files, this one should be compiled with a -m option to
- * specify a pre-determined instruction set. This is to ensure consistency
- * in the CPU operating mode (ARM or Thumb) when hand-off between stages
- * occurs.
+ * loading).
  *
  * Entry points must be placed at the location the previous stage jumps
  * to (the lowest address in the stage image). This is done by giving
@@ -35,25 +30,24 @@
 
 #include <arch/stages.h>
 #include <arch/cache.h>
-#include <console/console.h>
 
 void stage_entry(void)
 {
 	main();
 }
 
-/* we had marked 'doit' as 'noreturn'.  There is no apparent harm in
- * leaving it as something we can return from, and in the one case
- * where we call a payload, the payload is allowed to return.  Hence,
- * leave it as something we can return from.
+/* we had marked 'doit' as 'noreturn'.
+ * There is no apparent harm in leaving it as something we can return from, and in the one
+ * case where we call a payload, the payload is allowed to return.
+ * Hence, leave it as something we can return from.
  */
 void stage_exit(void *addr)
 {
 	void (*doit)(void) = addr;
-	/* make sure any code we installed is written to memory. Not all ARM have
-	 * unified caches.
+	/*
+	 * Most stages load code so we need to sync caches here. Should maybe
+	 * go into cbfs_load_stage() instead...
 	 */
-
 	cache_sync_instructions();
 	doit();
 }
