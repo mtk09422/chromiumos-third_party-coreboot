@@ -26,6 +26,7 @@
 /* functions implemented per mainboard: */
 int get_developer_mode_switch(void);
 int get_recovery_mode_switch(void);
+int clear_recovery_mode_switch(void);
 int get_write_protect_state(void);
 #ifdef __PRE_RAM__
 void __attribute__((weak)) save_chromeos_gpios(void);

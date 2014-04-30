@@ -83,6 +83,12 @@ int recovery_mode_enabled(void)
 		vboot_enable_recovery();
 }
 
+int __attribute__((weak)) clear_recovery_mode_switch(void)
+{
+	// Can be implemented by a mainboard
+	return 0;
+}
+
 int vboot_skip_display_init(void)
 {
 #if CONFIG_VBOOT_VERIFY_FIRMWARE
