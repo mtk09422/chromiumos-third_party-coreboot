@@ -57,8 +57,6 @@ void pch_disable_devfn(device_t dev);
 #if CONFIG_ELOG
 void pch_log_state(void);
 #endif
-void acpi_create_intel_hpet(acpi_hpet_t * hpet);
-void acpi_create_serialio_ssdt(acpi_header_t *ssdt);
 #endif /* __ASSEMBLER__ */
 
 
