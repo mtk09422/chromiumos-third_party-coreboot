@@ -49,22 +49,8 @@
 #define SMRR_SUPPORTED (1<<11)
 #define EMRR_SUPPORTED (1<<12)
 
-struct smm_relocation_params {
-	u32 smram_base;
-	u32 smram_size;
-	u32 ied_base;
-	u32 ied_size;
-	msr_t smrr_base;
-	msr_t smrr_mask;
-	msr_t emrr_base;
-	msr_t emrr_mask;
-	msr_t uncore_emrr_base;
-	msr_t uncore_emrr_mask;
-	/* The smm_save_state_in_msrs field indicates if SMM save state
-	 * locations live in MSRs. This indicates to the CPUs how to adjust
-	 * the SMMBASE and IEDBASE */
-	int smm_save_state_in_msrs;
-};
+#include <broadwell/smm.h>
+#include <broadwell/systemagent.h>
 
 /* This gets filled in and used during relocation. */
 static struct smm_relocation_params smm_reloc_params;
@@ -267,7 +253,7 @@ static void fill_in_relocation_params(device_t dev,
 	params->ied_size = tseg_size - params->smram_size;
 
 	/* Adjust available SMM handler memory size. */
-	params->smram_size -= RESERVED_SMM_SIZE;
+	params->smram_size -= CONFIG_SMM_RESERVED_SIZE;
 
 	/* SMRR has 32-bits of valid address aligned to 4KiB. */
 	params->smrr_base.lo = (params->smram_base & rmask) | MTRR_TYPE_WRBACK;

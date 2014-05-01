@@ -26,8 +26,6 @@
 #define HASWELL_DESKTOP	1
 #define HASWELL_SERVER	2
 
-/* Intel Enhanced Debug region */
-#define IED_SIZE	CONFIG_IED_REGION_SIZE
 
 
 #include <southbridge/intel/lynxpoint/pch.h>
@@ -182,12 +180,6 @@
 
 #ifndef __ASSEMBLER__
 static inline void barrier(void) { asm("" ::: "memory"); }
-
-struct ied_header {
-	char signature[10];
-	u32 size;
-	u8 reserved[34];
-} __attribute__ ((packed));
 
 #define PCI_DEVICE_ID_HSW_MOBILE 0x0c04
 #define PCI_DEVICE_ID_HSW_ULT 0x0a04
