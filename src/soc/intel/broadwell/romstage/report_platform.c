@@ -17,13 +17,65 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <console/console.h>
 #include <arch/cpu.h>
-#include <string.h>
-#include "southbridge/intel/lynxpoint/pch.h"
 #include <arch/io.h>
+#include <console/console.h>
+#include <device/pci.h>
+#include <string.h>
 #include <cpu/x86/msr.h>
-#include "haswell.h"
+#include <broadwell/cpu.h>
+#include <broadwell/pch.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/romstage.h>
+#include <broadwell/systemagent.h>
+
+static struct {
+	u32 cpuid;
+	const char *name;
+} cpu_table [] = {
+	{ CPUID_HASWELL_A0,     "Haswell A0" },
+	{ CPUID_HASWELL_B0,     "Haswell B0" },
+	{ CPUID_HASWELL_C0,     "Haswell C0" },
+	{ CPUID_HASWELL_ULT_B0, "Haswell ULT B0" },
+	{ CPUID_HASWELL_ULT,    "Haswell ULT C0 or D0" },
+	{ CPUID_HASWELL_HALO,   "Haswell Perf Halo" },
+	{ CPUID_BROADWELL_C0,   "Broadwell C0" },
+	{ CPUID_BROADWELL_D0,   "Broadwell D0" },
+};
+
+static struct {
+	u16 lpcid;
+	const char *name;
+} pch_table [] = {
+	{ PCH_LPT_LP_SAMPLE,     "LynxPoint LP Sample" },
+	{ PCH_LPT_LP_PREMIUM,    "LynxPoint LP Premium" },
+	{ PCH_LPT_LP_MAINSTREAM, "LynxPoint LP Mainstream" },
+	{ PCH_LPT_LP_VALUE,      "LynxPoint LP Value" },
+	{ PCH_WPT_HSW_U_SAMPLE,  "Haswell U Sample" },
+	{ PCH_WPT_BDW_U_SAMPLE,  "Broadwell U Sample" },
+	{ PCH_WPT_BDW_U_PREMIUM, "Broadwell U Premium" },
+	{ PCH_WPT_BDW_U_BASE,    "Broadwell U Base" },
+	{ PCH_WPT_BDW_Y_SAMPLE,  "Broadwell Y Sample" },
+	{ PCH_WPT_BDW_Y_PREMIUM, "Broadwell Y Premium" },
+	{ PCH_WPT_BDW_Y_BASE,    "Broadwell Y Base" },
+	{ PCH_WPT_BDW_H,         "Broadwell H" },
+};
+
+static struct {
+	u16 igdid;
+	const char *name;
+} igd_table [] = {
+	{ IGD_HASWELL_ULT_GT1,     "Haswell ULT GT1" },
+	{ IGD_HASWELL_ULT_GT2,     "Haswell ULT GT2" },
+	{ IGD_HASWELL_ULT_GT3,     "Haswell ULT GT3" },
+	{ IGD_BROADWELL_U_GT1,     "Broadwell U GT1" },
+	{ IGD_BROADWELL_U_GT2,     "Broadwell U GT2" },
+	{ IGD_BROADWELL_U_GT3_15W, "Broadwell U GT3 (15W)" },
+	{ IGD_BROADWELL_U_GT3_28W, "Broadwell U GT3 (28W)" },
+	{ IGD_BROADWELL_Y_GT2,     "Broadwell Y GT2" },
+	{ IGD_BROADWELL_H_GT2,     "Broadwell U GT2" },
+	{ IGD_BROADWELL_H_GT3,     "Broadwell U GT3" },
+};
 
 static void report_cpu_info(void)
 {
@@ -33,6 +85,7 @@ static void report_cpu_info(void)
 	int vt, txt, aes;
 	msr_t microcode_ver;
 	const char *mode[] = {"NOT ", ""};
+	const char *cpu_type = "Unknown";
 
 	index = 0x80000000;
 	cpuidr = cpuid(index);
@@ -57,59 +110,102 @@ static void report_cpu_info(void)
 	wrmsr(0x8B, microcode_ver);
 	cpuidr = cpuid(1);
 	microcode_ver = rdmsr(0x8b);
-	printk(BIOS_DEBUG, "CPU id(%x) ucode:%08x %s\n", cpuidr.eax, microcode_ver.hi, cpu_name);
+
+	/* Look for string to match the name */
+	for (i = 0; i < ARRAY_SIZE(cpu_table); i++) {
+		if (cpu_table[i].cpuid == cpuidr.eax) {
+			cpu_type = cpu_table[i].name;
+			break;
+		}
+	}
+
+	printk(BIOS_DEBUG, "CPU: %s\n", cpu_name);
+	printk(BIOS_DEBUG, "CPU: ID %x, %s, ucode: %08x\n",
+	       cpuidr.eax, cpu_type, microcode_ver.hi);
+
 	aes = (cpuidr.ecx & (1 << 25)) ? 1 : 0;
 	txt = (cpuidr.ecx & (1 << 6)) ? 1 : 0;
 	vt = (cpuidr.ecx & (1 << 5)) ? 1 : 0;
-	printk(BIOS_DEBUG, "AES %ssupported, TXT %ssupported, VT %ssupported\n",
-	       mode[aes], mode[txt], mode[vt]);
+	printk(BIOS_DEBUG, "CPU: AES %ssupported, TXT %ssupported, "
+	       "VT %ssupported\n", mode[aes], mode[txt], mode[vt]);
 }
-
-/* The PCI id name match comes from Intel document 472178 */
-static struct {
-	u16 dev_id;
-	const char *dev_name;
-} pch_table [] = {
-	{0x8c41, "Mobile Engineering Sample"},
-	{0x8c42, "Desktop Engineering Sample"},
-	{0x8c44, "Z87"},
-	{0x8c46, "Z85"},
-	{0x8c49, "HM86"},
-	{0x8c4a, "H87"},
-	{0x8c4b, "HM87"},
-	{0x8c4c, "Q85"},
-	{0x8c4e, "Q87"},
-	{0x8c4f, "QM87"},
-	{0x8c50, "B85"},
-	{0x8c52, "C222"},
-	{0x8c54, "C224"},
-	{0x8c56, "C226"},
-	{0x8c5c, "H81"},
-	{0x9c41, "LP Full Featured Engineering Sample"},
-	{0x9c43, "LP Premium"},
-	{0x9c45, "LP Mainstream"},
-	{0x9c47, "LP Value"},
-};
 
 static void report_pch_info(void)
 {
 	int i;
-	u16 dev_id = pci_read_config16(PCH_LPC_DEV, 2);
-
-
+	u16 lpcid = pch_type();
 	const char *pch_type = "Unknown";
+
 	for (i = 0; i < ARRAY_SIZE(pch_table); i++) {
-		if (pch_table[i].dev_id == dev_id) {
-			pch_type = pch_table[i].dev_name;
+		if (pch_table[i].lpcid == lpcid) {
+			pch_type = pch_table[i].name;
 			break;
 		}
 	}
-	printk (BIOS_DEBUG, "PCH type: %s, device id: %x, rev id %x\n",
-		pch_type, dev_id, pci_read_config8(PCH_LPC_DEV, 8));
+	printk(BIOS_DEBUG, "PCH: device id %04x (rev %02x) is %s\n",
+	       lpcid, pch_revision(), pch_type);
+}
+
+static void report_igd_info(void)
+{
+	int i;
+	u16 igdid = pci_read_config16(SA_DEV_IGD, PCI_DEVICE_ID);
+	const char *igd_type = "Unknown";
+
+	for (i = 0; i < ARRAY_SIZE(igd_table); i++) {
+		if (igd_table[i].igdid == igdid) {
+			igd_type = igd_table[i].name;
+			break;
+		}
+	}
+	printk(BIOS_DEBUG, "IGD: device id %04x (rev %02x) is %s\n",
+	       igdid, pci_read_config8(SA_DEV_IGD, PCI_REVISION_ID), igd_type);
 }
 
 void report_platform_info(void)
 {
 	report_cpu_info();
 	report_pch_info();
+	report_igd_info();
+}
+
+/*
+ * Dump in the log memory controller configuration as read from the memory
+ * controller registers.
+ */
+void report_memory_config(void)
+{
+	u32 addr_decoder_common, addr_decode_ch[2];
+	int i;
+
+	addr_decoder_common = MCHBAR32(0x5000);
+	addr_decode_ch[0] = MCHBAR32(0x5004);
+	addr_decode_ch[1] = MCHBAR32(0x5008);
+
+	printk(BIOS_DEBUG, "memcfg DDR3 clock %d MHz\n",
+	       (MCHBAR32(0x5e04) * 13333 * 2 + 50)/100);
+	printk(BIOS_DEBUG, "memcfg channel assignment: A: %d, B % d, C % d\n",
+	       addr_decoder_common & 3,
+	       (addr_decoder_common >> 2) & 3,
+	       (addr_decoder_common >> 4) & 3);
+
+	for (i = 0; i < ARRAY_SIZE(addr_decode_ch); i++) {
+		u32 ch_conf = addr_decode_ch[i];
+		printk(BIOS_DEBUG, "memcfg channel[%d] config (%8.8x):\n",
+		       i, ch_conf);
+		printk(BIOS_DEBUG, "   enhanced interleave mode %s\n",
+		       ((ch_conf >> 22) & 1) ? "on" : "off");
+		printk(BIOS_DEBUG, "   rank interleave %s\n",
+		       ((ch_conf >> 21) & 1) ? "on" : "off");
+		printk(BIOS_DEBUG, "   DIMMA %d MB width %s %s rank%s\n",
+		       ((ch_conf >> 0) & 0xff) * 256,
+		       ((ch_conf >> 19) & 1) ? "x16" : "x8 or x32",
+		       ((ch_conf >> 17) & 1) ? "dual" : "single",
+		       ((ch_conf >> 16) & 1) ? "" : ", selected");
+		printk(BIOS_DEBUG, "   DIMMB %d MB width %s %s rank%s\n",
+		       ((ch_conf >> 8) & 0xff) * 256,
+		       ((ch_conf >> 19) & 1) ? "x16" : "x8 or x32",
+		       ((ch_conf >> 18) & 1) ? "dual" : "single",
+		       ((ch_conf >> 16) & 1) ? ", selected" : "");
+	}
 }
