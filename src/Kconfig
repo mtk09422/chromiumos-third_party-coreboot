@@ -56,6 +56,14 @@ config ALT_CBFS_LOAD_PAYLOAD
 	 through memory-mapped I/O is slow and a faster alternative can be
 	 provided.
 
+config COMMON_CBFS_SPI_WRAPPER
+       bool
+       default n
+       depends on SPI_FLASH
+       depends on !ARCH_X86
+       help
+         Use common wrapper to interface CBFS to SPI bootprom.
+
 choice
 	prompt "Compiler to use"
 	default COMPILER_GCC

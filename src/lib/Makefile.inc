@@ -18,6 +18,7 @@
 #
 
 bootblock-y += cbfs.c
+bootblock-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 ifneq ($(CONFIG_HAVE_ARCH_MEMSET),y)
 bootblock-y += memset.c
 endif
@@ -50,6 +51,7 @@ romstage-y += memcmp.c
 rmodules-y += memcmp.c
 romstage-y += delay.c
 romstage-y += cbfs.c
+romstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 romstage-y += lzma.c
 #romstage-y += lzmadecode.c
 romstage-$(CONFIG_CACHE_AS_RAM) += ramtest.c
@@ -87,6 +89,7 @@ ramstage-y += fallback_boot.c
 ramstage-y += compute_ip_checksum.c
 ramstage-y += version.c
 ramstage-y += cbfs.c
+ramstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 ramstage-y += lzma.c
 #ramstage-y += lzmadecode.c
 ramstage-y += stack.c
