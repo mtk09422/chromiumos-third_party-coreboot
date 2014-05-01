@@ -13,3 +13,5 @@ static void __attribute__((unused)) bootblock_mainboard_init(void)
 {
 }
 #endif
+
+void bootblock_soc_init(void);

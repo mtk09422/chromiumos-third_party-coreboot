@@ -46,8 +46,3 @@ void main(void)
 	if (entry) stage_exit(entry);
 	hlt();
 }
-
-void bootblock_mainboard_init(void)
-{
-	init_timer();
-}

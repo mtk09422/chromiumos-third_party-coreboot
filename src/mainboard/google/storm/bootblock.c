@@ -17,20 +17,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <boot/coreboot_tables.h>
-#include <device/device.h>
+#include <bootblock_common.h>
 
-static void mainboard_init(device_t dev)
+void bootblock_mainboard_init(void)
 {
-	/* Not sure if this is needed at all */
+	bootblock_soc_init();
 }
-
-static void mainboard_enable(device_t dev)
-{
-	dev->ops->init = &mainboard_init;
-}
-
-struct chip_operations mainboard_ops = {
-	.name	= "storm",
-	.enable_dev = mainboard_enable,
-};
