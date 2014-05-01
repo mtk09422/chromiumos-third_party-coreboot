@@ -28,6 +28,7 @@
 #include <delay.h>
 #include <stdlib.h>
 #include <southbridge/intel/lynxpoint/hda_verb.h>
+#include <broadwell/ramstage.h>
 
 static const u32 minihd_verb_table[] = {
 	/* coreboot specific header */
@@ -106,35 +107,22 @@ static void minihd_init(struct device *dev)
 	}
 }
 
-static void minihd_set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static struct pci_operations minihd_pci_ops = {
-	.set_subsystem    = minihd_set_subsystem,
-};
-
 static struct device_operations minihd_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= minihd_init,
-	.scan_bus		= 0,
-	.ops_pci		= &minihd_pci_ops,
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.init			= &minihd_init,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
-static const unsigned short pci_device_ids[] = { 0x0a0c, 0 };
+static const unsigned short pci_device_ids[] = {
+	0x0a0c, /* Haswell */
+	0x160c, /* Broadwell */
+	0
+};
 
-static const struct pci_driver haswell_minihd __pci_driver = {
+static const struct pci_driver minihd_driver __pci_driver = {
 	.ops	 = &minihd_ops,
 	.vendor	 = PCI_VENDOR_ID_INTEL,
 	.devices = pci_device_ids,
 };
-

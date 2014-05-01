@@ -38,6 +38,7 @@
 #include <romstage_handoff.h>
 #include "chip.h"
 #include "haswell.h"
+#include <broadwell/ramstage.h>
 
 static int get_pcie_bar(device_t dev, unsigned int index, u32 *base, u32 *len)
 {
@@ -381,7 +382,7 @@ static void mc_add_dram_resources(device_t dev)
 #endif
 }
 
-static void mc_read_resources(device_t dev)
+static void systemagent_read_resources(device_t dev)
 {
 	/* Read standard PCI resources. */
 	pci_dev_read_resources(dev);
@@ -393,18 +394,7 @@ static void mc_read_resources(device_t dev)
 	mc_add_dram_resources(dev);
 }
 
-static void intel_set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static void northbridge_init(struct device *dev)
+static void systemagent_init(struct device *dev)
 {
 	u8 bios_reset_cpl, pair;
 
@@ -441,7 +431,7 @@ void *cbmem_top(void)
 	return (void *)(reg & ~((1 << 20) - 1));
 }
 
-static void northbridge_enable(device_t dev)
+static void systemagent_enable(device_t dev)
 {
 #if CONFIG_HAVE_ACPI_RESUME
 	struct romstage_handoff *handoff;
@@ -461,17 +451,25 @@ static void northbridge_enable(device_t dev)
 #endif
 }
 
-static struct pci_operations intel_pci_ops = {
-	.set_subsystem    = intel_set_subsystem,
+static struct device_operations systemagent_ops = {
+	.read_resources   = &systemagent_read_resources,
+	.set_resources    = &pci_dev_set_resources,
+	.enable_resources = &pci_dev_enable_resources,
+	.init             = &systemagent_init,
+	.enable           = &systemagent_enable,
+	.ops_pci          = &broadwell_pci_ops,
 };
 
-static struct device_operations mc_ops = {
-	.read_resources   = mc_read_resources,
-	.set_resources    = pci_dev_set_resources,
-	.enable_resources = pci_dev_enable_resources,
-	.init             = northbridge_init,
-	.enable           = northbridge_enable,
-	.scan_bus         = 0,
-	.ops_pci          = &intel_pci_ops,
+static const unsigned short systemagent_ids[] = {
+	0x0a04, /* Haswell ULT */
+	0x1604, /* Broadwell-U/Y */
+	0x1610, /* Broadwell-H Desktop */
+	0x1614, /* Broadwell-H Mobile */
+	0
 };
 
+static const struct pci_driver systemagent_driver __pci_driver = {
+	.ops     = &systemagent_ops,
+	.vendor  = PCI_VENDOR_ID_INTEL,
+	.devices = systemagent_ids
+};

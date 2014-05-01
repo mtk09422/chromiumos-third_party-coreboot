@@ -673,7 +673,7 @@ static void pch_pcie_early(struct device *dev)
 	pcie_update_cfg(dev, 0x90, ~0, 0);
 }
 
-static void pci_init(struct device *dev)
+static void pch_pcie_init(struct device *dev)
 {
 	u16 reg16;
 	u32 reg32;
@@ -741,16 +741,13 @@ static void pch_pcie_enable(device_t dev)
 static void pcie_set_subsystem(device_t dev, unsigned vendor, unsigned device)
 {
 	/* NOTE: This is not the default position! */
-	if (!vendor || !device) {
-		pci_write_config32(dev, 0x94,
-				pci_read_config32(dev, 0));
-	} else {
-		pci_write_config32(dev, 0x94,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
+	if (!vendor || !device)
+		pci_write_config32(dev, 0x94, pci_read_config32(dev, 0));
+	else
+		pci_write_config32(dev, 0x94, (device << 16) | vendor);
 }
 
-static struct pci_operations pci_ops = {
+static struct pci_operations pcie_ops = {
 	.set_subsystem = pcie_set_subsystem,
 };
 
@@ -758,22 +755,22 @@ static struct device_operations device_ops = {
 	.read_resources		= pci_bus_read_resources,
 	.set_resources		= pci_dev_set_resources,
 	.enable_resources	= pci_bus_enable_resources,
-	.init			= pci_init,
+	.init			= pch_pcie_init,
 	.enable			= pch_pcie_enable,
 	.scan_bus		= pciexp_scan_bridge,
-	.ops_pci		= &pci_ops,
+	.ops_pci		= &pcie_ops,
 };
 
-static const unsigned short pci_device_ids[] = {
-	/* Lynxpoint Mobile */
-	0x8c10, 0x8c12, 0x8c14, 0x8c16, 0x8c18, 0x8c1a, 0x8c1c, 0x8c1e,
-	/* Lynxpoint Low Power */
+static const unsigned short pcie_device_ids[] = {
+	/* Lynxpoint-LP */
 	0x9c10, 0x9c12, 0x9c14, 0x9c16, 0x9c18, 0x9c1a,
+	/* WildcatPoint */
+	0x9c90, 0x9c92, 0x9c94, 0x9c96, 0x9c98, 0x9c9a, 0x2448,
 	0
 };
 
 static const struct pci_driver pch_pcie __pci_driver = {
 	.ops	 = &device_ops,
 	.vendor	 = PCI_VENDOR_ID_INTEL,
-	.devices = pci_device_ids,
+	.devices = pcie_device_ids,
 };

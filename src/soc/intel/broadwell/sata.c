@@ -27,6 +27,7 @@
 #include "pch.h"
 
 typedef struct southbridge_intel_lynxpoint_config config_t;
+#include <broadwell/ramstage.h>
 
 static inline u32 sir_read(struct device *dev, int idx)
 {
@@ -326,35 +327,18 @@ static void sata_enable(device_t dev)
 	pci_write_config16(dev, 0x90, map);
 }
 
-static void sata_set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static struct pci_operations sata_pci_ops = {
-	.set_subsystem    = sata_set_subsystem,
-};
-
 static struct device_operations sata_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= sata_init,
-	.enable			= sata_enable,
-	.scan_bus		= 0,
-	.ops_pci		= &sata_pci_ops,
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.init			= &sata_init,
+	.enable			= &sata_enable,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
 static const unsigned short pci_device_ids[] = {
-	0x8c00, 0x8c02, 0x8c04, 0x8c06, 0x8c08, 0x8c0e, /* Desktop */
-	0x8c01, 0x8c03, 0x8c05, 0x8c07, 0x8c09, 0x8c0f, /* Mobile */
-	0x9c03, 0x9c05, 0x9c07, 0x9c0f,                 /* Low Power */
+	0x9c03, 0x9c05, 0x9c07, 0x9c0f,                 /* LynxPoint-LP */
+	0x9c83,	0x9c85, 0x282a, 0x9c87, 0x282a, 0x9c8f, /* WildcatPoint */
 	0
 };
 
@@ -363,4 +347,3 @@ static const struct pci_driver pch_sata __pci_driver = {
 	.vendor	 = PCI_VENDOR_ID_INTEL,
 	.devices = pci_device_ids,
 };
-

@@ -829,21 +829,6 @@ static void intel_me_init(device_t dev)
 	 */
 }
 
-static void set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-			   pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-			   ((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static struct pci_operations pci_ops = {
-	.set_subsystem = set_subsystem,
-};
-
 static void intel_me_enable(device_t dev)
 {
 #if CONFIG_HAVE_ACPI_RESUME
@@ -856,17 +841,17 @@ static void intel_me_enable(device_t dev)
 }
 
 static struct device_operations device_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.enable			= intel_me_enable,
-	.init			= intel_me_init,
-	.ops_pci		= &pci_ops,
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.enable			= &intel_me_enable,
+	.init			= &intel_me_init,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
 static const unsigned short pci_device_ids[] = {
-	0x8c3a, /* Mobile */
 	0x9c3a, /* Low Power */
+	0x9cba, /* WildcatPoint */
 	0
 };
 

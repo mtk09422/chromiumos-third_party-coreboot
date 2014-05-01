@@ -28,6 +28,7 @@
 #include "pch.h"
 #include "nvs.h"
 
+#include <broadwell/ramstage.h>
 /* Set D3Hot Power State in ACPI mode */
 static void serialio_enable_d3hot(struct device *dev)
 {
@@ -250,39 +251,37 @@ static void serialio_init(struct device *dev)
 	}
 }
 
-static void serialio_set_subsystem(device_t dev, unsigned vendor,
-				   unsigned device)
+static void serialio_set_resources(struct device *dev)
 {
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
+	pci_dev_set_resources(dev);
+
+#if CONFIG_INTEL_PCH_UART_CONSOLE
+	/* Update UART base address if used for debug */
+	if (serialio_uart_is_debug(dev)) {
+		struct resource *res = find_resource(dev, PCI_BASE_ADDRESS_0);
+		if (res)
+			uartmem_setbaseaddr(res->base);
 	}
+#endif
 }
 
-static struct pci_operations pci_ops = {
-	.set_subsystem		= serialio_set_subsystem,
-};
-
 static struct device_operations device_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= serialio_init,
-	.ops_pci		= &pci_ops,
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &serialio_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.init			= &serialio_init,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
 static const unsigned short pci_device_ids[] = {
-	0x9c60, /* 0:15.0 - SDMA */
-	0x9c61, /* 0:15.1 - I2C0 */
-	0x9c62, /* 0:15.2 - I2C1 */
-	0x9c65, /* 0:15.3 - SPI0 */
-	0x9c66, /* 0:15.4 - SPI1 */
-	0x9c63, /* 0:15.5 - UART0 */
-	0x9c64, /* 0:15.6 - UART1 */
-	0x9c35, /* 0:17.0 - SDIO */
+	0x9c60, 0x9ce0, /* 0:15.0 - SDMA */
+	0x9c61, 0x9ce1, /* 0:15.1 - I2C0 */
+	0x9c62, 0x9ce2, /* 0:15.2 - I2C1 */
+	0x9c65, 0x9ce5, /* 0:15.3 - SPI0 */
+	0x9c66, 0x9ce6, /* 0:15.4 - SPI1 */
+	0x9c63, 0x9ce3, /* 0:15.5 - UART0 */
+	0x9c64, 0x9ce4, /* 0:15.6 - UART1 */
+	0x9c35, 0x9cb5, /* 0:17.0 - SDIO */
 	0
 };
 

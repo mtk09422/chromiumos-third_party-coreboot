@@ -28,6 +28,7 @@
 #include <arch/io.h>
 #include "pch.h"
 #include "smbus.h"
+#include <broadwell/ramstage.h>
 
 static void pch_smbus_init(device_t dev)
 {
@@ -75,21 +76,6 @@ static struct smbus_bus_operations lops_smbus_bus = {
 	.write_byte	= lsmbus_write_byte,
 };
 
-static void smbus_set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static struct pci_operations smbus_pci_ops = {
-	.set_subsystem    = smbus_set_subsystem,
-};
-
 static void smbus_read_resources(device_t dev)
 {
 	struct resource *res = new_resource(dev, PCI_BASE_ADDRESS_4);
@@ -104,16 +90,20 @@ static void smbus_read_resources(device_t dev)
 }
 
 static struct device_operations smbus_ops = {
-	.read_resources		= smbus_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.scan_bus		= scan_static_bus,
-	.init			= pch_smbus_init,
+	.read_resources		= &smbus_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.scan_bus		= &scan_static_bus,
+	.init			= &pch_smbus_init,
 	.ops_smbus_bus		= &lops_smbus_bus,
-	.ops_pci		= &smbus_pci_ops,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
-static const unsigned short pci_device_ids[] = { 0x1c22, 0x1e22, 0x9c22, 0 };
+static const unsigned short pci_device_ids[] = {
+	0x9c22, /* LynxPoint */
+	0x9ca2, /* WildcatPoint */
+	0
+};
 
 static const struct pci_driver pch_smbus __pci_driver = {
 	.ops	 = &smbus_ops,

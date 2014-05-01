@@ -28,6 +28,7 @@
 #include <cpu/intel/haswell/haswell.h>
 #include <stdlib.h>
 #include <string.h>
+#include <broadwell/ramstage.h>
 
 #include "chip.h"
 #include "haswell.h"
@@ -423,7 +424,7 @@ static void gma_pm_init_post_vbios(struct device *dev)
 	gtt_write(0x0a188, 0x00000001);
 }
 
-static void gma_func0_init(struct device *dev)
+static void igd_init(struct device *dev)
 {
 #if CONFIG_MAINBOARD_DO_NATIVE_VGA_INIT
 	struct northbridge_intel_haswell_config *conf = dev->chip_info;
@@ -484,7 +485,7 @@ static void gma_set_subsystem(device_t dev, unsigned vendor, unsigned device)
 	}
 }
 
-static void gma_read_resources(struct device *dev)
+static void igd_read_resources(struct device *dev)
 {
 	pci_dev_read_resources(dev);
 
@@ -501,18 +502,12 @@ static void gma_read_resources(struct device *dev)
 #endif
 }
 
-static struct pci_operations gma_pci_ops = {
-	.set_subsystem    = gma_set_subsystem,
-};
-
-static struct device_operations gma_func0_ops = {
-	.read_resources		= gma_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= gma_func0_init,
-	.scan_bus		= 0,
-	.enable			= 0,
-	.ops_pci		= &gma_pci_ops,
+static struct device_operations igd_ops = {
+	.read_resources		= &igd_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.init			= &igd_init,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
 static const unsigned short pci_device_ids[] = {
@@ -529,8 +524,8 @@ static const unsigned short pci_device_ids[] = {
 	0,
 };
 
-static const struct pci_driver pch_lpc __pci_driver = {
-	.ops	 = &gma_func0_ops,
+static const struct pci_driver igd_driver __pci_driver = {
+	.ops	 = &igd_ops,
 	.vendor	 = PCI_VENDOR_ID_INTEL,
 	.devices = pci_device_ids,
 };

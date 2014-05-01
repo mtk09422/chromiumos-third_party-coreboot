@@ -211,20 +211,22 @@ static void usb_ehci_set_resources(struct device *dev)
 #endif
 }
 
-static struct pci_operations lops_pci = {
+static struct pci_operations ehci_ops_pci = {
 	.set_subsystem	= &usb_ehci_set_subsystem,
 };
 
 static struct device_operations usb_ehci_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= usb_ehci_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= usb_ehci_init,
-	.scan_bus		= 0,
-	.ops_pci		= &lops_pci,
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &usb_ehci_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.ops_pci		= &ehci_ops_pci,
 };
 
-static const unsigned short pci_device_ids[] = { 0x9c26, 0x8c26, 0x8c2d, 0 };
+static const unsigned short pci_device_ids[] = {
+	0x9c26, /* LynxPoint-LP */
+	0x9ca6, /* WildcatPoint */
+	0
+};
 
 static const struct pci_driver pch_usb_ehci __pci_driver = {
 	.ops	 = &usb_ehci_ops,

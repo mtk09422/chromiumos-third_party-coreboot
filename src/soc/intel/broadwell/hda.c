@@ -28,6 +28,7 @@
 #include <delay.h>
 #include "pch.h"
 #include "hda_verb.h"
+#include <broadwell/ramstage.h>
 
 const u32 * cim_verb_data = NULL;
 u32 cim_verb_data_size = 0;
@@ -133,7 +134,7 @@ static void azalia_pch_init(struct device *dev, u32 base)
 	}
 }
 
-static void azalia_init(struct device *dev)
+static void hda_init(struct device *dev)
 {
 	u32 base;
 	struct resource *res;
@@ -162,35 +163,22 @@ static void azalia_init(struct device *dev)
 	}
 }
 
-static void azalia_set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static struct pci_operations azalia_pci_ops = {
-	.set_subsystem    = azalia_set_subsystem,
+static struct device_operations hda_ops = {
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.init			= &hda_init,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
-static struct device_operations azalia_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= azalia_init,
-	.scan_bus		= 0,
-	.ops_pci		= &azalia_pci_ops,
+static const unsigned short pci_device_ids[] = {
+	0x9c20, /* LynxPoint-LP */
+	0x9ca0, /* WildcatPoint */
+	0
 };
 
-static const unsigned short pci_device_ids[] = { 0x8c20, 0x9c20, 0 };
-
-static const struct pci_driver pch_azalia __pci_driver = {
-	.ops	 = &azalia_ops,
+static const struct pci_driver pch_hda __pci_driver = {
+	.ops	 = &hda_ops,
 	.vendor	 = PCI_VENDOR_ID_INTEL,
 	.devices = pci_device_ids,
 };
-

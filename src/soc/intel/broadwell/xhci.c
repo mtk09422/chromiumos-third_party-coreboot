@@ -26,6 +26,7 @@
 #include "pch.h"
 
 typedef struct southbridge_intel_lynxpoint_config config_t;
+#include <broadwell/ramstage.h>
 
 static u32 usb_xhci_mem_base(device_t dev)
 {
@@ -383,16 +384,17 @@ static struct pci_operations lops_pci = {
 };
 
 static struct device_operations usb_xhci_ops = {
-	.read_resources		= pci_dev_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= usb_xhci_init,
-	.ops_pci		= &lops_pci,
+	.read_resources		= &pci_dev_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
-static const unsigned short pci_device_ids[] = { 0x8c31, /* LynxPoint-H */
-						 0x9c31, /* LynxPoint-LP */
-						 0 };
+static const unsigned short pci_device_ids[] = {
+	0x9c31, /* LynxPoint-LP */
+	0x9cb1, /* WildcatPoint */
+	0
+};
 
 static const struct pci_driver pch_usb_xhci __pci_driver = {
 	.ops	 = &usb_xhci_ops,

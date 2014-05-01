@@ -43,6 +43,7 @@
 typedef struct southbridge_intel_lynxpoint_config config_t;
 
 static void pch_enable_apic(struct device *dev)
+#include <broadwell/ramstage.h>
 {
 	int i;
 	u32 reg32;
@@ -734,38 +735,13 @@ static void pch_lpc_read_resources(device_t dev)
 		memset(gnvs, 0, sizeof(global_nvs_t));
 }
 
-static void pch_lpc_enable(device_t dev)
-{
-	/* Enable PCH Display Port */
-	RCBA16(DISPBDF) = 0x0010;
-	RCBA32_OR(FD2, PCH_ENABLE_DBDF);
-
-	pch_enable(dev);
-}
-
-static void set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
-	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
-	}
-}
-
-static struct pci_operations pci_ops = {
-	.set_subsystem = set_subsystem,
-};
-
 static struct device_operations device_ops = {
-	.read_resources		= pch_lpc_read_resources,
-	.set_resources		= pci_dev_set_resources,
-	.enable_resources	= pci_dev_enable_resources,
-	.init			= lpc_init,
-	.enable			= pch_lpc_enable,
-	.scan_bus		= scan_static_bus,
-	.ops_pci		= &pci_ops,
+	.read_resources		= &pch_lpc_read_resources,
+	.set_resources		= &pci_dev_set_resources,
+	.enable_resources	= &pci_dev_enable_resources,
+	.init			= &lpc_init,
+	.scan_bus		= &scan_static_bus,
+	.ops_pci		= &broadwell_pci_ops,
 };
 
 static const unsigned short pci_device_ids[] = {
@@ -789,5 +765,3 @@ static const struct pci_driver pch_lpc __pci_driver = {
 	.vendor	 = PCI_VENDOR_ID_INTEL,
 	.devices = pci_device_ids,
 };
-
-
