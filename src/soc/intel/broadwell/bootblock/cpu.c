@@ -23,23 +23,15 @@
 #include <cpu/x86/msr.h>
 #include <cpu/x86/mtrr.h>
 #include <arch/io.h>
-
 #include <cpu/intel/microcode/microcode.c>
-#include "haswell.h"
-
-#if CONFIG_SOUTHBRIDGE_INTEL_LYNXPOINT
-/* Needed for RCBA access to set Soft Reset Data register */
-#include <southbridge/intel/lynxpoint/pch.h>
-#else
-#error "CPU must be paired with Intel LynxPoint southbridge"
-#endif
+#include <broadwell/rcba.h>
+#include <broadwell/msr.h>
 
 static void set_var_mtrr(
 	unsigned reg, unsigned base, unsigned size, unsigned type)
 
 {
 	/* Bit Bit 32-35 of MTRRphysMask should be set to 1 */
-	/* FIXME: It only support 4G less range */
 	msr_t basem, maskm;
 	basem.lo = base | type;
 	basem.hi = 0;
@@ -55,7 +47,7 @@ static void enable_rom_caching(void)
 
 	disable_cache();
 	/* Why only top 4MiB ? */
-	set_var_mtrr(1, 0xffc00000, 4*1024*1024, MTRR_TYPE_WRPROT);
+	set_var_mtrr(1, CACHE_ROM_BASE, CONFIG_CACHE_ROM_SIZE, MTRR_TYPE_WRPROT);
 	enable_cache();
 
 	/* Enable Variable MTRRs */
