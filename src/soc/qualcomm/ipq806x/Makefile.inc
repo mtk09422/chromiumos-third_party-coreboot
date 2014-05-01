@@ -30,6 +30,7 @@ romstage-$(CONFIG_SPI_FLASH) += spi.c
 romstage-y += timer.c
 romstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
 
+ramstage-y += cbmem.c
 ramstage-y += clock.c
 ramstage-y += gpio.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
