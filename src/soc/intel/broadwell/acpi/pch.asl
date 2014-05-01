@@ -22,16 +22,6 @@
 
 Scope(\)
 {
-	// Return TRUE if chipset is LynxPoint-LP
-	Method (ISLP, 0, NotSerialized)
-	{
-		If (LEqual (\_SB.PCI0.LPCB.DIDH, 0x9c)) {
-			Return (1)
-		} else {
-			Return (0)
-		}
-	}
-
 	// IO-Trap at 0x800. This is the ACPI->SMI communication interface.
 
 	OperationRegion(IO_T, SystemIO, 0x800, 0x10)
@@ -82,7 +72,7 @@ Scope(\)
 }
 
 // High Definition Audio (Azalia) 0:1b.0
-#include "audio.asl"
+#include "hda.asl"
 
 // PCI Express Ports 0:1c.x
 #include "pcie.asl"

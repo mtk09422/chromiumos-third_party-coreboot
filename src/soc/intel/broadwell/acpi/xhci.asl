@@ -242,26 +242,22 @@ Device (XHCI)
 			Store (0, ^D0D3)
 		}
 
-		If (\ISLP ()) {
-			// Clear PCI 0xB0[14:13]
-			Store (0, ^MB13)
-			Store (0, ^MB14)
+		// Clear PCI 0xB0[14:13]
+		Store (0, ^MB13)
+		Store (0, ^MB14)
 
-			// Clear MMIO 0x816C[14,2]
-			Store (0, CLK0)
-			Store (0, CLK1)
-		}
+		// Clear MMIO 0x816C[14,2]
+		Store (0, CLK0)
+		Store (0, CLK1)
 
 		// Set MMIO 0x8154[31]
 		Store (1, CLK2)
 
-		If (\ISLP ()) {
-			// Handle per-port reset if needed
-			LPS0 ()
+		// Handle per-port reset if needed
+		LPS0 ()
 
-			// Set MMIO 0x80e0[15]
-			Store (1, AX15)
-		}
+		// Set MMIO 0x80e0[15]
+		Store (1, AX15)
 
 		Return ()
 	}
@@ -301,23 +297,19 @@ Device (XHCI)
 			Store (0, ^D0D3)
 		}
 
-		If (\ISLP ()) {
-			// Set PCI 0xB0[14:13]
-			Store (1, ^MB13)
-			Store (1, ^MB14)
+		// Set PCI 0xB0[14:13]
+		Store (1, ^MB13)
+		Store (1, ^MB14)
 
-			// Set MMIO 0x816C[14,2]
-			Store (1, CLK0)
-			Store (1, CLK1)
-		}
+		// Set MMIO 0x816C[14,2]
+		Store (1, CLK0)
+		Store (1, CLK1)
 
 		// Clear MMIO 0x8154[31]
 		Store (0, CLK2)
 
-		If (\ISLP ()) {
-			// Clear MMIO 0x80e0[15]
-			Store (0, AX15)
-		}
+		// Clear MMIO 0x80e0[15]
+		Store (0, AX15)
 
 		// Put device in D3
 		Store (3, ^D0D3)
@@ -325,16 +317,7 @@ Device (XHCI)
 		Return ()
 	}
 
-	Name (PRWH, Package(){ 0x0d, 3 }) // LPT-H
-	Name (PRWL, Package(){ 0x6d, 3 }) // LPT-LP
-
-	Method (_PRW, 0) { // Power Resources for Wake
-		If (\ISLP ()) {
-			Return (PRWL)
-		} Else {
-			Return (PRWH)
-		}
-	}
+	Name (_PRW, Package(){ 0x6d, 3 })
 
 	// Leave USB ports on for to allow Wake from USB
 
