@@ -422,3 +422,31 @@ void disable_gpe(u32 mask)
 	gpe0_en &= ~mask;
 	outl(gpe0_en, ACPI_BASE_ADDRESS + GPE0_EN(GPE_STD));
 }
+
+int acpi_sci_irq(void)
+{
+	int scis = pci_read_config32(PCH_DEV_LPC, ACPI_CNTL) & SCI_IRQ_SEL;
+	int sci_irq = 9;
+
+	/* Determine how SCI is routed. */
+	switch (scis) {
+	case SCIS_IRQ9:
+	case SCIS_IRQ10:
+	case SCIS_IRQ11:
+		sci_irq = scis - SCIS_IRQ9 + 9;
+		break;
+	case SCIS_IRQ20:
+	case SCIS_IRQ21:
+	case SCIS_IRQ22:
+	case SCIS_IRQ23:
+		sci_irq = scis - SCIS_IRQ20 + 20;
+		break;
+	default:
+		printk(BIOS_DEBUG, "Invalid SCI route! Defaulting to IRQ9.\n");
+		sci_irq = 9;
+		break;
+	}
+
+	printk(BIOS_DEBUG, "SCI is IRQ%d\n", sci_irq);
+	return sci_irq;
+}
