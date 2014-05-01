@@ -20,12 +20,13 @@
 #include <stdint.h>
 #include <cpu/x86/msr.h>
 #include <cpu/x86/tsc.h>
-#include "cpu/intel/haswell/haswell.h"
+#include <broadwell/cpu.h>
+#include <broadwell/msr.h>
 
 unsigned long tsc_freq_mhz(void)
 {
 	msr_t platform_info;
 
 	platform_info = rdmsr(MSR_PLATFORM_INFO);
-	return HASWELL_BCLK * ((platform_info.lo >> 8) & 0xff);
+	return CPU_BCLK * ((platform_info.lo >> 8) & 0xff);
 }

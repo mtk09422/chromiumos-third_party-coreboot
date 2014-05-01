@@ -34,8 +34,8 @@
 #define HASWELL_STEPPING_ULT_B0		0
 #define HASWELL_STEPPING_ULT_C0		1
 
-/* Haswell bus clock is fixed at 100MHz */
-#define HASWELL_BCLK			100
+/* CPU bus clock is fixed at 100MHz */
+#define CPU_BCLK		100
 
 
 
