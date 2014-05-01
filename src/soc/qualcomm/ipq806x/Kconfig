@@ -3,7 +3,6 @@ config SOC_QC_IPQ806X
 	bool
 	default n
 	select ARM_BOOTBLOCK_ARMV7
-	select ARM_LPAE
 	select ARM_RAMSTAGE_ARMV7
 	select ARM_ROMSTAGE_ARMV7
 	select BOOTBLOCK_CONSOLE
