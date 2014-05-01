@@ -32,7 +32,7 @@ Device (LNKA)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 10, 12, 14, 15 }
 	})
 
@@ -41,15 +41,15 @@ Device (LNKA)
 	{
 		Name (RTLA, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLA, 1, IRQ0)
+		CreateWordField (RTLA, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTA
-		ShiftLeft(1, And(PRTA, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTA, 0x0f), IRQ0)
 
 		Return (RTLA)
 	}
@@ -57,19 +57,19 @@ Device (LNKA)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTA)
+		Store (Local0, PRTA)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTA, 0x80)) {
+		If(And (PRTA, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -91,7 +91,7 @@ Device (LNKB)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 11, 12, 14, 15 }
 	})
 
@@ -100,15 +100,15 @@ Device (LNKB)
 	{
 		Name (RTLB, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLB, 1, IRQ0)
+		CreateWordField (RTLB, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTB
-		ShiftLeft(1, And(PRTB, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTB, 0x0f), IRQ0)
 
 		Return (RTLB)
 	}
@@ -116,19 +116,19 @@ Device (LNKB)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTB)
+		Store (Local0, PRTB)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTB, 0x80)) {
+		If(And (PRTB, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -150,7 +150,7 @@ Device (LNKC)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 10, 12, 14, 15 }
 	})
 
@@ -159,15 +159,15 @@ Device (LNKC)
 	{
 		Name (RTLC, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLC, 1, IRQ0)
+		CreateWordField (RTLC, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTC
-		ShiftLeft(1, And(PRTC, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTC, 0x0f), IRQ0)
 
 		Return (RTLC)
 	}
@@ -175,19 +175,19 @@ Device (LNKC)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTC)
+		Store (Local0, PRTC)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTC, 0x80)) {
+		If(And (PRTC, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -209,7 +209,7 @@ Device (LNKD)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 11, 12, 14, 15 }
 	})
 
@@ -218,15 +218,15 @@ Device (LNKD)
 	{
 		Name (RTLD, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLD, 1, IRQ0)
+		CreateWordField (RTLD, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTD
-		ShiftLeft(1, And(PRTD, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTD, 0x0f), IRQ0)
 
 		Return (RTLD)
 	}
@@ -234,19 +234,19 @@ Device (LNKD)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTD)
+		Store (Local0, PRTD)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTD, 0x80)) {
+		If(And (PRTD, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -268,7 +268,7 @@ Device (LNKE)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 10, 12, 14, 15 }
 	})
 
@@ -277,15 +277,15 @@ Device (LNKE)
 	{
 		Name (RTLE, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLE, 1, IRQ0)
+		CreateWordField (RTLE, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTE
-		ShiftLeft(1, And(PRTE, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTE, 0x0f), IRQ0)
 
 		Return (RTLE)
 	}
@@ -293,19 +293,19 @@ Device (LNKE)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTE)
+		Store (Local0, PRTE)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTE, 0x80)) {
+		If(And (PRTE, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -327,7 +327,7 @@ Device (LNKF)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 11, 12, 14, 15 }
 	})
 
@@ -336,15 +336,15 @@ Device (LNKF)
 	{
 		Name (RTLF, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLF, 1, IRQ0)
+		CreateWordField (RTLF, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTF
-		ShiftLeft(1, And(PRTF, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTF, 0x0f), IRQ0)
 
 		Return (RTLF)
 	}
@@ -352,19 +352,19 @@ Device (LNKF)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTF)
+		Store (Local0, PRTF)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTF, 0x80)) {
+		If(And (PRTF, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -386,7 +386,7 @@ Device (LNKG)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 10, 12, 14, 15 }
 	})
 
@@ -395,15 +395,15 @@ Device (LNKG)
 	{
 		Name (RTLG, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLG, 1, IRQ0)
+		CreateWordField (RTLG, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTG
-		ShiftLeft(1, And(PRTG, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTG, 0x0f), IRQ0)
 
 		Return (RTLG)
 	}
@@ -411,19 +411,19 @@ Device (LNKG)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTG)
+		Store (Local0, PRTG)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTG, 0x80)) {
+		If(And (PRTG, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)
@@ -445,7 +445,7 @@ Device (LNKH)
 	// Possible Resource Settings for this Link
 	Name (_PRS, ResourceTemplate()
 	{
-		IRQ(Level, ActiveLow, Shared)
+		IRQ (Level, ActiveLow, Shared)
 			{ 1, 3, 4, 5, 6, 7, 11, 12, 14, 15 }
 	})
 
@@ -454,15 +454,15 @@ Device (LNKH)
 	{
 		Name (RTLH, ResourceTemplate()
 		{
-			IRQ(Level, ActiveLow, Shared) {}
+			IRQ (Level, ActiveLow, Shared) {}
 		})
-		CreateWordField(RTLH, 1, IRQ0)
+		CreateWordField (RTLH, 1, IRQ0)
 
 		// Clear the WordField
 		Store (Zero, IRQ0)
 
 		// Set the bit from PRTH
-		ShiftLeft(1, And(PRTH, 0x0f), IRQ0)
+		ShiftLeft (1, And (PRTH, 0x0f), IRQ0)
 
 		Return (RTLH)
 	}
@@ -470,19 +470,19 @@ Device (LNKH)
 	// Set Resource Setting for this IRQ link
 	Method (_SRS, 1, Serialized)
 	{
-		CreateWordField(Arg0, 1, IRQ0)
+		CreateWordField (Arg0, 1, IRQ0)
 
 		// Which bit is set?
-		FindSetRightBit(IRQ0, Local0)
+		FindSetRightBit (IRQ0, Local0)
 
 		Decrement(Local0)
-		Store(Local0, PRTH)
+		Store (Local0, PRTH)
 	}
 
 	// Status
 	Method (_STA, 0, Serialized)
 	{
-		If(And(PRTH, 0x80)) {
+		If(And (PRTH, 0x80)) {
 			Return (0x9)
 		} Else {
 			Return (0xb)

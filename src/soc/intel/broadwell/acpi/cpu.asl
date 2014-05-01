@@ -88,13 +88,35 @@ Method (TNOT)
 Method (PPKG)
 {
 	If (LGreaterEqual (\PCNT, 8)) {
-		Return (Package() {\_PR.CPU0, \_PR.CPU1, \_PR.CPU2, \_PR.CPU3,
-				   \_PR.CPU4, \_PR.CPU5, \_PR.CPU6, \_PR.CPU7})
+		Return (Package()
+		{
+			\_PR.CPU0,
+			\_PR.CPU1,
+			\_PR.CPU2,
+			\_PR.CPU3,
+			\_PR.CPU4,
+			\_PR.CPU5,
+			\_PR.CPU6,
+			\_PR.CPU7
+		})
 	} ElseIf (LGreaterEqual (\PCNT, 4)) {
-		Return (Package() {\_PR.CPU0, \_PR.CPU1, \_PR.CPU2, \_PR.CPU3})
+		Return (Package ()
+		{
+			\_PR.CPU0,
+			\_PR.CPU1,
+			\_PR.CPU2,
+			\_PR.CPU3
+		})
 	} ElseIf (LGreaterEqual (\PCNT, 2)) {
-		Return (Package() {\_PR.CPU0, \_PR.CPU1})
+		Return (Package ()
+		{
+			\_PR.CPU0,
+			\_PR.CPU1
+		})
 	} Else {
-		Return (Package() {\_PR.CPU0})
+		Return (Package ()
+		{
+			\_PR.CPU0
+		})
 	}
 }

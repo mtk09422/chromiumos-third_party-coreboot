@@ -20,83 +20,23 @@
 
 #include <soc/intel/broadwell/broadwell/iomap.h>
 
-Name(_HID,EISAID("PNP0A08"))	// PCIe
-Name(_CID,EISAID("PNP0A03"))	// PCI
+Name (_HID, EISAID ("PNP0A08"))	// PCIe
+Name (_CID, EISAID ("PNP0A03"))	// PCI
 
-Name(_ADR, 0)
-Name(_BBN, 0)
+Name (_ADR, 0)
+Name (_BBN, 0)
 
 Device (MCHC)
 {
-	Name(_ADR, 0x00000000)	// 0:0.0
+	Name (_ADR, 0x00000000)	// 0:0.0
 
-	OperationRegion(MCHP, PCI_Config, 0x00, 0x100)
+	OperationRegion (MCHP, PCI_Config, 0x00, 0x100)
 	Field (MCHP, DWordAcc, NoLock, Preserve)
 	{
-		Offset (0x40),	// EPBAR
-		EPEN,	 1,	// Enable
-		,	11,	//
-		EPBR,	24,	// EPBAR
-
-		Offset (0x48),	// MCHBAR
-		MHEN,	 1,	// Enable
-		,	13,	//
-		MHBR,	22,	// MCHBAR
-
-		Offset (0x60),	// PCIe BAR
-		PXEN,	 1,	// Enable
-		PXSZ,	 2,	// BAR size
-		,	23,	//
-		PXBR,	10,	// PCIe BAR
-
-		Offset (0x68),	// DMIBAR
-		DMEN,	 1,	// Enable
-		,	11,	//
-		DMBR,	24,	// DMIBAR
-
 		Offset (0x70),	// ME Base Address
 		MEBA,	 64,
-
-		// ...
-
-		Offset (0x80),	// PAM0
-		,	 4,
-		PM0H,	 2,
-		,	 2,
-		Offset (0x81),	// PAM1
-		PM1L,	 2,
-		,	 2,
-		PM1H,	 2,
-		,	 2,
-		Offset (0x82),	// PAM2
-		PM2L,	 2,
-		,	 2,
-		PM2H,	 2,
-		,	 2,
-		Offset (0x83),	// PAM3
-		PM3L,	 2,
-		,	 2,
-		PM3H,	 2,
-		,	 2,
-		Offset (0x84),	// PAM4
-		PM4L,	 2,
-		,	 2,
-		PM4H,	 2,
-		,	 2,
-		Offset (0x85),	// PAM5
-		PM5L,	 2,
-		,	 2,
-		PM5H,	 2,
-		,	 2,
-		Offset (0x86),	// PAM6
-		PM6L,	 2,
-		,	 2,
-		PM6H,	 2,
-		,	 2,
-
 		Offset (0xa0),	// Top of Used Memory
 		TOM,	 64,
-
 		Offset (0xbc),	// Top of Low Used Memory
 		TLUD,	 32,
 	}
@@ -242,8 +182,6 @@ Method (_CRS, 0, Serialized)
 	Return (MCRS)
 }
 
-/* IRQ assignment is mainboard specific. Get it from mainboard ACPI code */
-#include "acpi/haswell_pci_irqs.asl"
 /* PCI Device Resource Consumption */
 Device (PDRC)
 {
@@ -267,6 +205,8 @@ Device (PDRC)
 	}
 }
 
+/* PCI IRQ assignment */
+#include "pci_irqs.asl"
 
 /* Configurable TDP */
 #include "ctdp.asl"

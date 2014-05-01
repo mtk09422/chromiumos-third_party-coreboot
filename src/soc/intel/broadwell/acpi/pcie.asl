@@ -18,9 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Intel 6/7 Series PCH PCIe support */
-
-// PCI Express Ports
+/* Intel PCH PCIe support */
 
 Method (IRQM, 1, Serialized) {
 
