@@ -27,8 +27,8 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <device/pci_ids.h>
-
 #include <spi-generic.h>
+#include <broadwell/pci_devs.h>
 
 #define min(a, b) ((a)<(b)?(a):(b))
 
@@ -286,14 +286,8 @@ void spi_init(void)
 	uint8_t *rcrb; /* Root Complex Register Block */
 	uint32_t rcba; /* Root Complex Base Address */
 	uint8_t bios_cntl;
-	device_t dev;
+	device_t dev = PCH_DEV_LPC;
 	ich9_spi_regs *ich9_spi;
-
-#ifdef __SMM__
-	dev = PCI_DEV(0, 31, 0);
-#else
-	dev = dev_find_slot(0, PCI_DEVFN(31, 0));
-#endif
 
 	pci_read_config_dword(dev, 0xf0, &rcba);
 	/* Bits 31-14 are the base address, 13-1 are reserved, 0 is enable. */
