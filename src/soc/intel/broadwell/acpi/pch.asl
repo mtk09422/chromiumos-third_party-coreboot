@@ -19,6 +19,7 @@
  */
 
 /* Intel Cougar Point PCH support */
+#include <soc/intel/broadwell/broadwell/iomap.h>
 
 Scope(\)
 {
@@ -31,9 +32,9 @@ Scope(\)
 		TRP0, 8		// IO-Trap at 0x808
 	}
 
-	// ICH7 Root Complex Register Block. Memory Mapped through RCBA)
-	OperationRegion(RCRB, SystemMemory, DEFAULT_RCBA, 0x4000)
-	Field(RCRB, DWordAcc, Lock, Preserve)
+	// Root Complex Register Block
+	OperationRegion (RCRB, SystemMemory, RCBA_BASE_ADDRESS, RCBA_BASE_SIZE)
+	Field (RCRB, DWordAcc, Lock, Preserve)
 	{
 		Offset(0x0000), // Backbone
 		Offset(0x1000), // Chipset

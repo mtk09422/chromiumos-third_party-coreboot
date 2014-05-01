@@ -178,7 +178,7 @@ Device (LPCB)
 			IO (Decode16, 0x80, 0x80, 0x1, 0x01) // Port 80 Post
 			IO (Decode16, 0x92, 0x92, 0x1, 0x01) // CPU Reserved
 			IO (Decode16, 0xb2, 0xb2, 0x1, 0x02) // SWSMI
-			IO (Decode16, DEFAULT_PMBASE, DEFAULT_PMBASE,
+			IO (Decode16, ACPI_BASE_ADDRESS, ACPI_BASE_ADDRESS,
 			    0x1, 0xff)
 		})
 

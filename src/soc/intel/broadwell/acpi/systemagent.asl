@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <soc/intel/broadwell/broadwell/iomap.h>
 
 Name(_HID,EISAID("PNP0A08"))	// PCIe
 Name(_CID,EISAID("PNP0A03"))	// PCI
@@ -243,6 +244,28 @@ Method (_CRS, 0, Serialized)
 
 /* IRQ assignment is mainboard specific. Get it from mainboard ACPI code */
 #include "acpi/haswell_pci_irqs.asl"
+/* PCI Device Resource Consumption */
+Device (PDRC)
+{
+	Name (_HID, EISAID("PNP0C02"))
+	Name (_UID, 1)
+
+	Name (PDRS, ResourceTemplate() {
+		Memory32Fixed (ReadWrite, RCBA_BASE_ADDRESS, RCBA_BASE_SIZE)
+		Memory32Fixed (ReadWrite, MCH_BASE_ADDRESS, MCH_BASE_SIZE)
+		Memory32Fixed (ReadWrite, DMI_BASE_ADDRESS, DMI_BASE_SIZE)
+		Memory32Fixed (ReadWrite, EP_BASE_ADDRESS, EP_BASE_SIZE)
+		Memory32Fixed (ReadWrite, MCFG_BASE_ADDRESS, MCFG_BASE_SIZE)
+		Memory32Fixed (ReadWrite, EDRAM_BASE_ADDRESS, EDRAM_BASE_SIZE)
+		Memory32Fixed (ReadWrite, GDXC_BASE_ADDRESS, GDXC_BASE_SIZE)
+	})
+
+	// Current Resource Settings
+	Method (_CRS, 0, Serialized)
+	{
+		Return (PDRS)
+	}
+}
 
 
 /* Configurable TDP */
