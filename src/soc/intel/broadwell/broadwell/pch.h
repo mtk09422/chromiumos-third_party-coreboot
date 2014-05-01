@@ -61,30 +61,6 @@
 #define LPT_LP_STEP_B1		0x03
 #define LPT_LP_STEP_B2		0x04
 
-/*
- * It does not matter where we put the SMBus I/O base, as long as we
- * keep it consistent and don't interfere with other devices.  Stage2
- * will relocate this anyways.
- * Our solution is to have SMB initialization move the I/O to SMBUS_IO_BASE
- * again. But handling static BARs is a generic problem that should be
- * solved in the device allocator.
- */
-#define SMBUS_IO_BASE		0x0400
-#define SMBUS_SLAVE_ADDR	0x24
-
-#if CONFIG_INTEL_LYNXPOINT_LP
-#define DEFAULT_PMBASE		0x1000
-#define DEFAULT_GPIOBASE	0x1400
-#define DEFAULT_GPIOSIZE	0x400
-#else
-#define DEFAULT_PMBASE		0x500
-#define DEFAULT_GPIOBASE	0x480
-#define DEFAULT_GPIOSIZE	0x80
-#endif
-
-#define HPET_ADDR		0xfed00000
-#define DEFAULT_RCBA		0xfed1c000
-
 #ifndef __ACPI__
 
 #if defined (__SMM__) && !defined(__ASSEMBLER__)
@@ -154,11 +130,6 @@ void pch_enable_lpc(void);
 #define PCH_ME_DEV		PCI_DEV(0, 0x16, 0)
 #define PCH_PCIE_DEV_SLOT	28
 
-/* Southbridge IO BARs */
-
-#define GPIOBASE		0x48
-
-#define PMBASE		0x40
 
 #endif /* __ACPI__ */
 #endif /* SOUTHBRIDGE_INTEL_LYNXPOINT_PCH_H */

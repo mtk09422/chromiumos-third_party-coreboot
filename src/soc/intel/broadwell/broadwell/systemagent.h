@@ -29,11 +29,6 @@
 /* Intel Enhanced Debug region */
 #define IED_SIZE	CONFIG_IED_REGION_SIZE
 
-/* Northbridge BARs */
-#define DEFAULT_PCIEXBAR	CONFIG_MMCONF_BASE_ADDRESS	/* 4 KB per PCIe device */
-#define DEFAULT_MCHBAR		0xfed10000	/* 16 KB */
-#define DEFAULT_DMIBAR		0xfed18000	/* 4 KB */
-#define DEFAULT_EPBAR		0xfed19000	/* 4 KB */
 
 #include <southbridge/intel/lynxpoint/pch.h>
 
