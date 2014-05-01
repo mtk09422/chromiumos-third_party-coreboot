@@ -22,3 +22,18 @@ config LPC_TPM
 	  Enable this option to enable TPM support in coreboot.
 
 	  If unsure, say N.
+
+config DRIVERS_MC146818_RTC
+	bool
+	default y if ARCH_X86
+	default n if !ARCH_X86
+
+config DRIVERS_MC146818_CMOS
+	bool
+	default y if ARCH_X86
+	default n if !ARCH_X86
+
+config DRIVERS_RTC_HAS_ALTCENTURY
+	bool "The RTC supports alt century"
+	depends on DRIVERS_MC146818_RTC
+	default y

@@ -81,7 +81,7 @@ static void lpc_init(device_t dev)
 	}
 #endif
 
-	cmos_check_update_date(RTC_HAS_ALTCENTURY);
+	cmos_check_update_date();
 }
 
 void set_cbmem_toc(struct cbmem_entry *toc)
