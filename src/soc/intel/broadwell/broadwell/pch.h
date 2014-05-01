@@ -21,33 +21,6 @@
 #ifndef SOUTHBRIDGE_INTEL_LYNXPOINT_PCH_H
 #define SOUTHBRIDGE_INTEL_LYNXPOINT_PCH_H
 
-/*
- * Lynx Point PCH PCI Devices:
- *
- * Bus 0:Device 31:Function 0 LPC Controller1
- * Bus 0:Device 31:Function 2 SATA Controller #1
- * Bus 0:Device 31:Function 3 SMBus Controller
- * Bus 0:Device 31:Function 5 SATA Controller #22
- * Bus 0:Device 31:Function 6 Thermal Subsystem
- * Bus 0:Device 29:Function 03 USB EHCI Controller #1
- * Bus 0:Device 26:Function 03 USB EHCI Controller #2
- * Bus 0:Device 28:Function 0 PCI Express* Port 1
- * Bus 0:Device 28:Function 1 PCI Express Port 2
- * Bus 0:Device 28:Function 2 PCI Express Port 3
- * Bus 0:Device 28:Function 3 PCI Express Port 4
- * Bus 0:Device 28:Function 4 PCI Express Port 5
- * Bus 0:Device 28:Function 5 PCI Express Port 6
- * Bus 0:Device 28:Function 6 PCI Express Port 7
- * Bus 0:Device 28:Function 7 PCI Express Port 8
- * Bus 0:Device 27:Function 0 Intel High Definition Audio Controller
- * Bus 0:Device 25:Function 0 Gigabit Ethernet Controller
- * Bus 0:Device 22:Function 0 Intel Management Engine Interface #1
- * Bus 0:Device 22:Function 1 Intel Management Engine Interface #2
- * Bus 0:Device 22:Function 2 IDE-R
- * Bus 0:Device 22:Function 3 KT
- * Bus 0:Device 20:Function 0 xHCI Controller
-*/
-
 /* PCH types */
 #define PCH_TYPE_LPT		0x8c
 #define PCH_TYPE_LPT_LP		0x9c
@@ -123,12 +96,6 @@ void pch_enable_lpc(void);
 /* Power Management Control and Status */
 #define PCH_PCS			0x84
 #define  PCH_PCS_PS_D3HOT	3
-
-#define PCH_EHCI1_DEV		PCI_DEV(0, 0x1d, 0)
-#define PCH_EHCI2_DEV		PCI_DEV(0, 0x1a, 0)
-#define PCH_XHCI_DEV		PCI_DEV(0, 0x14, 0)
-#define PCH_ME_DEV		PCI_DEV(0, 0x16, 0)
-#define PCH_PCIE_DEV_SLOT	28
 
 
 #endif /* __ACPI__ */
