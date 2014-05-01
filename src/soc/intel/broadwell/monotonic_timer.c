@@ -20,8 +20,8 @@
 #include <stdint.h>
 #include <cpu/x86/msr.h>
 #include <timer.h>
+#include <broadwell/msr.h>
 
-#define MSR_COUNTER_24_MHz 0x637
 static struct monotonic_counter {
 	int initialized;
 	struct mono_time time;
@@ -34,7 +34,7 @@ static inline uint32_t read_counter_msr(void)
 	 * is polled frequently enough to only use the lower 32-bits. */
 	msr_t counter_msr;
 
-	counter_msr = rdmsr(MSR_COUNTER_24_MHz);
+	counter_msr = rdmsr(MSR_COUNTER_24_MHZ);
 
 	return counter_msr.lo;
 }

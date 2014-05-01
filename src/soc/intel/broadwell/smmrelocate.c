@@ -33,22 +33,8 @@
 #include <southbridge/intel/lynxpoint/pch.h>
 #include "haswell.h"
 
-#define EMRRphysBase_MSR 0x1f4
-#define EMRRphysMask_MSR 0x1f5
-#define UNCORE_EMRRphysBase_MSR 0x2f4
-#define UNCORE_EMRRphysMask_MSR 0x2f5
-#define SMM_MCA_CAP_MSR 0x17d
-#define   SMM_CPU_SVRSTR_BIT 57
-#define   SMM_CPU_SVRSTR_MASK (1 << (SMM_CPU_SVRSTR_BIT - 32))
-#define SMM_FEATURE_CONTROL_MSR 0x4e0
-#define   SMM_CPU_SAVE_EN (1 << 1)
-/* SMM save state MSRs */
-#define SMBASE_MSR 0xc20
-#define IEDBASE_MSR 0xc22
-
-#define SMRR_SUPPORTED (1<<11)
-#define EMRR_SUPPORTED (1<<12)
-
+#include <broadwell/cpu.h>
+#include <broadwell/msr.h>
 #include <broadwell/smm.h>
 #include <broadwell/systemagent.h>
 
