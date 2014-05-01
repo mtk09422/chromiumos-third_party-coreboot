@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _INTEL_ME_H
-#define _INTEL_ME_H
+#ifndef _BROADWELL_ME_H_
+#define _BROADWELL_ME_H_
+
+#include <console/loglevel.h>
 
 #define ME_RETRY		100000	/* 1 second */
 #define ME_DELAY		10	/* 10 us */
@@ -27,7 +29,6 @@
  * Management Engine PCI registers
  */
 
-#define PCI_CPU_DEVICE		PCI_DEV(0,0,0)
 #define PCI_CPU_MEBASE_L	0x70	/* Set by MRC */
 #define PCI_CPU_MEBASE_H	0x74	/* Set by MRC */
 
@@ -326,14 +327,6 @@ typedef enum {
 	ME_FIRMWARE_UPDATE_BIOS_PATH,
 } me_bios_path;
 
-/* Defined in me_status.c for both romstage and ramstage */
-void intel_me_status(struct me_hfs *hfs, struct me_hfs2 *hfs2);
-
-#ifdef __SMM__
-void intel_me_finalize_smm(void);
-void intel_me8_finalize_smm(void);
-#endif
-
 /*
  * ME to BIOS Payload Datastructures and definitions. The ordering of the
  * structures follows the ordering in the ME9 BWG.
@@ -496,4 +489,13 @@ struct me_fwcaps {
 	u8 reserved[3];
 } __attribute__ ((packed));
 
-#endif /* _INTEL_ME_H */
+void intel_me_finalize(void);
+
+#if (CONFIG_DEFAULT_CONSOLE_LOGLEVEL >= BIOS_DEBUG)
+/* Defined in me_status.c for both romstage and ramstage */
+void intel_me_status(void);
+#else
+static inline void intel_me_status(void) { }
+#endif
+
+#endif

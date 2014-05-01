@@ -19,7 +19,7 @@
 
 /*
  * This is a ramstage driver for the Intel Management Engine found in the
- * 6-series chipset.  It handles the required boot-time messages over the
+ * southbridge.  It handles the required boot-time messages over the
  * MMIO-based Management Engine Interface to tell the ME that the BIOS is
  * finished with POST.  Additional messages are defined for debug but are
  * not used unless the console loglevel is high enough.
@@ -36,16 +36,19 @@
 #include <string.h>
 #include <delay.h>
 #include <elog.h>
-
-#include "me.h"
-#include "pch.h"
+#include <broadwell/me.h>
+#include <broadwell/lpc.h>
+#include <broadwell/pch.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/ramstage.h>
+#include <broadwell/rcba.h>
+#include <chip.h>
 
 #if CONFIG_CHROMEOS
 #include <vendorcode/google/chromeos/chromeos.h>
 #include <vendorcode/google/chromeos/gnvs.h>
 #endif
 
-#ifndef __SMM__
 /* Path that the BIOS should take based on ME state */
 static const char *me_bios_path_values[] = {
 	[ME_NORMAL_BIOS_PATH]		= "Normal",
@@ -56,7 +59,6 @@ static const char *me_bios_path_values[] = {
 	[ME_FIRMWARE_UPDATE_BIOS_PATH]	= "Firmware Update",
 };
 static int intel_me_read_mbp(me_bios_payload *mbp_data, device_t dev);
-#endif
 
 /* MMIO base address for MEI interface */
 static u32 mei_base_address;
@@ -475,7 +477,7 @@ void intel_me_mbp_clear(device_t dev)
 	}
 }
 
-#if (CONFIG_DEFAULT_CONSOLE_LOGLEVEL >= BIOS_DEBUG) && !defined(__SMM__)
+#if (CONFIG_DEFAULT_CONSOLE_LOGLEVEL >= BIOS_DEBUG)
 static inline void print_cap(const char *name, int state)
 {
 	printk(BIOS_DEBUG, "ME Capability: %-41s : %sabled\n",
@@ -544,34 +546,6 @@ static void me_print_fwcaps(mbp_mefwcaps *cap)
 #endif
 #endif
 
-#if CONFIG_CHROMEOS && 0 /* DISABLED */
-/* Tell ME to issue a global reset */
-static int mkhi_global_reset(void)
-{
-	struct me_global_reset reset = {
-		.request_origin	= GLOBAL_RESET_BIOS_POST,
-		.reset_type	= CBM_RR_GLOBAL_RESET,
-	};
-	struct mkhi_header mkhi = {
-		.group_id	= MKHI_GROUP_ID_CBM,
-		.command	= MKHI_GLOBAL_RESET,
-	};
-
-	/* Send request and wait for response */
-	printk(BIOS_NOTICE, "ME: %s\n", __FUNCTION__);
-	if (mei_sendrecv_mkhi(&mkhi, &reset, sizeof(reset), NULL, 0) < 0) {
-		/* No response means reset will happen shortly... */
-		hlt();
-	}
-
-	/* If the ME responded it rejected the reset request */
-	printk(BIOS_ERR, "ME: Global Reset failed\n");
-	return -1;
-}
-#endif
-
-#ifdef __SMM__
-
 /* Send END OF POST message to the ME */
 static int mkhi_end_of_post(void)
 {
@@ -592,13 +566,11 @@ static int mkhi_end_of_post(void)
 	return 0;
 }
 
-void intel_me_finalize_smm(void)
+void intel_me_finalize(void)
 {
+	device_t dev = PCH_DEV_ME;
 	struct me_hfs hfs;
 	u32 reg32;
-
-	mei_base_address =
-		pci_read_config32(PCH_ME_DEV, PCI_BASE_ADDRESS_0) & ~0xf;
 
 	/* S3 path will have hidden this device already */
 	if (!mei_base_address || mei_base_address == 0xfffffff0)
@@ -606,11 +578,11 @@ void intel_me_finalize_smm(void)
 
 #if CONFIG_ME_MBP_CLEAR_LATE
 	/* Wait for ME MBP Cleared indicator */
-	intel_me_mbp_clear(PCH_ME_DEV);
+	intel_me_mbp_clear(dev);
 #endif
 
 	/* Make sure ME is in a mode that expects EOP */
-	reg32 = pci_read_config32(PCH_ME_DEV, PCI_ME_HFS);
+	reg32 = pci_read_config32(dev, PCI_ME_HFS);
 	memcpy(&hfs, &reg32, sizeof(u32));
 
 	/* Abort and leave device alone if not normal mode */
@@ -623,16 +595,14 @@ void intel_me_finalize_smm(void)
 	mkhi_end_of_post();
 
 	/* Make sure IO is disabled */
-	reg32 = pci_read_config32(PCH_ME_DEV, PCI_COMMAND);
+	reg32 = pci_read_config32(dev, PCI_COMMAND);
 	reg32 &= ~(PCI_COMMAND_MASTER |
 		   PCI_COMMAND_MEMORY | PCI_COMMAND_IO);
-	pci_write_config32(PCH_ME_DEV, PCI_COMMAND, reg32);
+	pci_write_config32(dev, PCI_COMMAND, reg32);
 
 	/* Hide the PCI device */
 	RCBA32_OR(FD2, PCH_DISABLE_MEI1);
 }
-
-#else /* !__SMM__ */
 
 static int me_icc_set_clock_enables(u32 mask)
 {
@@ -665,11 +635,11 @@ static me_bios_path intel_me_path(device_t dev)
 	struct me_hfs hfs;
 	struct me_hfs2 hfs2;
 
+	/* Check and dump status */
+	intel_me_status();
+
 	pci_read_dword_ptr(dev, &hfs, PCI_ME_HFS);
 	pci_read_dword_ptr(dev, &hfs2, PCI_ME_HFS2);
-
-	/* Check and dump status */
-	intel_me_status(&hfs, &hfs2);
 
 	/* Check Current Working State */
 	switch (hfs.working_state) {
@@ -808,7 +778,7 @@ static int intel_me_extend_valid(device_t dev)
 /* Check whether ME is present and do basic init */
 static void intel_me_init(device_t dev)
 {
-	struct southbridge_intel_lynxpoint_config *config = dev->chip_info;
+	config_t *config = dev->chip_info;
 	me_bios_path path = intel_me_path(dev);
 	me_bios_payload mbp_data;
 
@@ -918,22 +888,6 @@ static u32 me_to_host_words_pending(void)
 		(me.buffer_depth - 1);
 }
 
-#if 0
-/* This function is not yet being used, keep it in for the future. */
-static u32 host_to_me_words_room(void)
-{
-	struct mei_csr csr;
-
-	read_me_csr(&csr);
-	if (!csr.ready)
-		return 0;
-
-	read_host_csr(&csr);
-	return (csr.buffer_read_ptr - csr.buffer_write_ptr - 1) &
-		(csr.buffer_depth - 1);
-}
-#endif
-
 struct mbp_payload {
 	mbp_header header;
 	u32 data[0];
@@ -1010,11 +964,12 @@ static int intel_me_read_mbp(me_bios_payload *mbp_data, device_t dev)
 #endif
 #endif
 
-	#define ASSIGN_FIELD_PTR(field_,val_) \
-		{ \
+#define ASSIGN_FIELD_PTR(field_,val_) \
+	{ \
 		mbp_data->field_ = (typeof(mbp_data->field_))(void *)val_; \
 		break; \
-		}
+	}
+
 	/* Setup the pointers in the me_bios_payload structure. */
 	for (i = 0; i < mbp->header.mbp_size - 1;) {
 		mbp_item_header *item = (void *)&mbp->data[i];
@@ -1065,5 +1020,3 @@ mbp_failure:
 	intel_me_mbp_give_up(dev);
 	return -1;
 }
-
-#endif /* !__SMM__ */
