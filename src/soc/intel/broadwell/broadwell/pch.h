@@ -143,30 +143,6 @@ int pch_is_lp(void);
 u16 get_pmbase(void);
 u16 get_gpiobase(void);
 
-/* Power Management register handling in pmutil.c */
-/* PM1_CNT */
-void enable_pm1_control(u32 mask);
-void disable_pm1_control(u32 mask);
-/* PM1 */
-u16 clear_pm1_status(void);
-void enable_pm1(u16 events);
-u32 clear_smi_status(void);
-/* SMI */
-void enable_smi(u32 mask);
-void disable_smi(u32 mask);
-/* ALT_GP_SMI */
-u32 clear_alt_smi_status(void);
-void enable_alt_smi(u32 mask);
-/* TCO */
-u32 clear_tco_status(void);
-void enable_tco_sci(void);
-/* GPE0 */
-u32 clear_gpe_status(void);
-void clear_gpe_enable(void);
-void enable_all_gpe(u32 set1, u32 set2, u32 set3, u32 set4);
-void disable_all_gpe(void);
-void enable_gpe(u32 mask);
-void disable_gpe(u32 mask);
 /*
  * get GPIO pin value
  */
@@ -217,9 +193,6 @@ void pch_enable_lpc(void);
 #endif /* !__PRE_RAM__ && !__SMM__ */
 #endif /* __ASSEMBLER__ */
 
-#define MAINBOARD_POWER_OFF	0
-#define MAINBOARD_POWER_ON	1
-#define MAINBOARD_POWER_KEEP	2
 
 #ifndef CONFIG_MAINBOARD_POWER_ON_AFTER_POWER_FAIL
 #define CONFIG_MAINBOARD_POWER_ON_AFTER_POWER_FAIL MAINBOARD_POWER_ON
@@ -693,91 +666,6 @@ void pch_enable_lpc(void);
 #define PCH_DISABLE_MEI1	(1 << 1)
 #define PCH_ENABLE_DBDF		(1 << 0)
 
-/* ICH7 PMBASE */
-#define PM1_STS		0x00
-#define   WAK_STS	(1 << 15)
-#define   PCIEXPWAK_STS	(1 << 14)
-#define   PRBTNOR_STS	(1 << 11)
-#define   RTC_STS	(1 << 10)
-#define   PWRBTN_STS	(1 << 8)
-#define   GBL_STS	(1 << 5)
-#define   BM_STS	(1 << 4)
-#define   TMROF_STS	(1 << 0)
-#define PM1_EN		0x02
-#define   PCIEXPWAK_DIS	(1 << 14)
-#define   RTC_EN	(1 << 10)
-#define   PWRBTN_EN	(1 << 8)
-#define   GBL_EN	(1 << 5)
-#define   TMROF_EN	(1 << 0)
-#define PM1_CNT		0x04
-#define   SLP_EN	(1 << 13)
-#define   SLP_TYP	(7 << 10)
-#define    SLP_TYP_S0	0
-#define    SLP_TYP_S1	1
-#define    SLP_TYP_S3	5
-#define    SLP_TYP_S4	6
-#define    SLP_TYP_S5	7
-#define   GBL_RLS	(1 << 2)
-#define   BM_RLD	(1 << 1)
-#define   SCI_EN	(1 << 0)
-#define PM1_TMR		0x08
-#define PROC_CNT	0x10
-#define LV2		0x14
-#define LV3		0x15
-#define LV4		0x16
-#define PM2_CNT		0x50 // mobile only
-#define GPE0_STS	0x20
-#define   PME_B0_STS	(1 << 13)
-#define   PME_STS	(1 << 11)
-#define   BATLOW_STS	(1 << 10)
-#define   PCI_EXP_STS	(1 << 9)
-#define   RI_STS	(1 << 8)
-#define   SMB_WAK_STS	(1 << 7)
-#define   TCOSCI_STS	(1 << 6)
-#define   SWGPE_STS	(1 << 2)
-#define   HOT_PLUG_STS	(1 << 1)
-#define GPE0_STS_2	0x24
-#define GPE0_EN		0x28
-#define   PME_B0_EN	(1 << 13)
-#define   PME_EN	(1 << 11)
-#define   TCOSCI_EN	(1 << 6)
-#define GPE0_EN_2	0x2c
-#define SMI_EN		0x30
-#define   INTEL_USB2_EN	 (1 << 18) // Intel-Specific USB2 SMI logic
-#define   LEGACY_USB2_EN (1 << 17) // Legacy USB2 SMI logic
-#define   PERIODIC_EN	 (1 << 14) // SMI on PERIODIC_STS in SMI_STS
-#define   TCO_EN	 (1 << 13) // Enable TCO Logic (BIOSWE et al)
-#define   MCSMI_EN	 (1 << 11) // Trap microcontroller range access
-#define   BIOS_RLS	 (1 <<  7) // asserts SCI on bit set
-#define   SWSMI_TMR_EN	 (1 <<  6) // start software smi timer on bit set
-#define   APMC_EN	 (1 <<  5) // Writes to APM_CNT cause SMI#
-#define   SLP_SMI_EN	 (1 <<  4) // Write to SLP_EN in PM1_CNT asserts SMI#
-#define   LEGACY_USB_EN  (1 <<  3) // Legacy USB circuit SMI logic
-#define   BIOS_EN	 (1 <<  2) // Assert SMI# on setting GBL_RLS bit
-#define   EOS		 (1 <<  1) // End of SMI (deassert SMI#)
-#define   GBL_SMI_EN	 (1 <<  0) // SMI# generation at all?
-#define SMI_STS		0x34
-#define ALT_GP_SMI_EN	0x38
-#define ALT_GP_SMI_STS	0x3a
-#define GPE_CNTL	0x42
-#define DEVACT_STS	0x44
-#define SS_CNT		0x50
-#define C3_RES		0x54
-#define TCO1_STS	0x64
-#define   DMISCI_STS	(1 << 9)
-#define TCO2_STS	0x66
-#define ALT_GP_SMI_EN2	0x5c
-#define ALT_GP_SMI_STS2	0x5e
-
-/* Lynxpoint LP */
-#define LP_GPE0_STS_1	0x80	/* GPIO 0-31 */
-#define LP_GPE0_STS_2	0x84	/* GPIO 32-63 */
-#define LP_GPE0_STS_3	0x88	/* GPIO 64-94 */
-#define LP_GPE0_STS_4	0x8c	/* Standard GPE */
-#define LP_GPE0_EN_1	0x90
-#define LP_GPE0_EN_2	0x94
-#define LP_GPE0_EN_3	0x98
-#define LP_GPE0_EN_4	0x9c
 
 /*
  * SPI Opcode Menu setup for SPIBAR lockdown
