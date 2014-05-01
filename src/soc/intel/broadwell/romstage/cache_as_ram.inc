@@ -31,6 +31,8 @@
 #define CACHE_AS_RAM_SIZE \
 	(CONFIG_DCACHE_RAM_SIZE + CONFIG_DCACHE_RAM_MRC_VAR_SIZE)
 #define CACHE_AS_RAM_BASE CONFIG_DCACHE_RAM_BASE
+#define CACHE_AS_RAM_LIMIT (CONFIG_DCACHE_RAM_BASE + CONFIG_DCACHE_RAM_SIZE)
+#define USBDEBUG_VAR_SIZE  36 /* sizeof(struct ehci_debug_info) */
 
 /* Cache 4GB - MRC_SIZE_KB for MRC */
 #define CACHE_MRC_BYTES   ((CONFIG_CACHE_MRC_SIZE_KB << 10) - 1)
@@ -115,11 +117,10 @@ clear_mtrrs:
 	andl    $~2, %eax
 	wrmsr
 
-       /* Clear the cache memory region. This will also fill up the cache */
+	/* Clear the cache memory region. This will also fill up the cache */
 	movl	$CACHE_AS_RAM_BASE, %esi
 	movl	%esi, %edi
 	movl	$(CACHE_AS_RAM_SIZE / 4), %ecx
-	// movl	$0x23322332, %eax
 	xorl	%eax, %eax
 	rep	stosl
 
@@ -172,7 +173,10 @@ clear_mtrrs:
 	movl	%eax, %cr0
 
 	/* Setup the stack. */
-	movl	$(CONFIG_DCACHE_RAM_BASE + CONFIG_DCACHE_RAM_SIZE), %eax
+	movl	$(CACHE_AS_RAM_LIMIT), %eax
+#if CONFIG_USBDEBUG
+	sub	$(USBDEBUG_VAR_SIZE), %eax
+#endif
 	movl	%eax, %esp
 
 	/* Restore the BIST result. */
@@ -186,7 +190,7 @@ before_romstage:
 	call	romstage_main
 	/* Save return value from romstage_main. It contains the stack to use
 	 * after cache-as-ram is torn down. It also contains the information
-	 * for setting up MTTRs. */
+	 * for setting up MTRRs. */
 	movl	%eax, %ebx
 
 	post_code(0x2f)
@@ -194,9 +198,9 @@ before_romstage:
 	/* Copy global variable space (for USBDEBUG) to memory */
 #if CONFIG_USBDEBUG
 	cld
-	movl	$(CONFIG_DCACHE_RAM_BASE + CONFIG_DCACHE_RAM_SIZE - 24), %esi
-	movl	$(CONFIG_RAMTOP - 24), %edi
-	movl	$24, %ecx
+	movl	$(CACHE_AS_RAM_LIMIT - USBDEBUG_VAR_SIZE), %esi
+	movl	$(CONFIG_RAMTOP - USBDEBUG_VAR_SIZE), %edi
+	movl	$USBDEBUG_VAR_SIZE, %ecx
 	rep	movsb
 #endif
 
@@ -259,23 +263,23 @@ before_romstage:
 	/* Setup stack as indicated by return value from ramstage_main(). */
 	movl	%ebx, %esp
 
-	/* Get number of MTTRs. */
+	/* Get number of MTRRs. */
 	popl	%ebx
 	movl	$MTRRphysBase_MSR(0), %ecx
 1:
 	testl	%ebx, %ebx
 	jz	1f
 
-	/* Low 32 bits of MTTR base. */
+	/* Low 32 bits of MTRR base. */
 	popl	%eax
-	/* Upper 32 bits of MTTR base. */
+	/* Upper 32 bits of MTRR base. */
 	popl	%edx
 	/* Write MTRR base. */
 	wrmsr
 	inc	%ecx
-	/* Low 32 bits of MTTR mask. */
+	/* Low 32 bits of MTRR mask. */
 	popl	%eax
-	/* Upper 32 bits of MTTR mask. */
+	/* Upper 32 bits of MTRR mask. */
 	popl	%edx
 	/* Write MTRR mask. */
 	wrmsr
