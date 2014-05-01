@@ -18,31 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __NORTHBRIDGE_INTEL_HASWELL_HASWELL_H__
-#define __NORTHBRIDGE_INTEL_HASWELL_HASWELL_H__ 1
+#ifndef _BROADWELL_SYSTEMAGENT_H_
+#define _BROADWELL_SYSTEMAGENT_H_
 
-/* Chipset types */
-#define HASWELL_MOBILE	0
-#define HASWELL_DESKTOP	1
-#define HASWELL_SERVER	2
+#include <broadwell/iomap.h>
 
 
-
-#include <southbridge/intel/lynxpoint/pch.h>
-
-/* Everything below this line is ignored in the DSDT */
-#ifndef __ACPI__
-
-/* Device 0:0.0 PCI configuration space (Host Bridge) */
+/* Device 0:0.0 PCI configuration space */
 
 #define EPBAR		0x40
 #define MCHBAR		0x48
 #define PCIEXBAR	0x60
 #define DMIBAR		0x68
-
-#define GGC		0x50			/* GMCH Graphics Control */
-
-#define DEVEN		0x54			/* Device Enable */
+#define GGC		0x50	/* GMCH Graphics Control */
+#define DEVEN		0x54	/* Device Enable */
 #define  DEVEN_D7EN	(1 << 14)
 #define  DEVEN_D4EN	(1 << 7)
 #define  DEVEN_D3EN	(1 << 5)
@@ -60,7 +49,6 @@
 #define PAM5		0x85
 #define PAM6		0x86
 
-#define LAC		0x87	/* Legacy Access Control */
 #define SMRAM		0x88	/* System Management RAM Control */
 #define  D_OPEN		(1 << 6)
 #define  D_CLS		(1 << 5)
@@ -78,67 +66,25 @@
 #define BGSM		0xb4	/* Base GTT Stolen Memory */
 #define TSEG		0xb8	/* TSEG base */
 #define TOLUD		0xbc	/* Top of Low Used Memory */
-
 #define SKPAD		0xdc	/* Scratchpad Data */
 
-/* Device 0:1.0 PCI configuration space (PCI Express) */
+/* MCHBAR */
 
-#define BCTRL1		0x3e	/* 16bit */
+#define MCHBAR8(x)	*((volatile u8 *)(MCH_BASE_ADDRESS + x))
+#define MCHBAR16(x)	*((volatile u16 *)(MCH_BASE_ADDRESS + x))
+#define MCHBAR32(x)	*((volatile u32 *)(MCH_BASE_ADDRESS + x))
 
+#define MCHBAR_PEI_VERSION	0x5034
+#define BIOS_RESET_CPL		0x5da8
+#define EDRAMBAR		0x5408
+#define MCH_PAIR		0x5418
+#define GDXCBAR			0x5420
 
-/* Device 0:2.0 PCI configuration space (Graphics Device) */
-
-#define MSAC		0x62	/* Multi Size Aperture Control */
-#define SWSCI		0xe8	/* SWSCI  enable */
-#define ASLS		0xfc	/* OpRegion Base */
-
-/*
- * MCHBAR
- */
-
-#define MCHBAR8(x) *((volatile u8 *)(DEFAULT_MCHBAR + x))
-#define MCHBAR16(x) *((volatile u16 *)(DEFAULT_MCHBAR + x))
-#define MCHBAR32(x) *((volatile u32 *)(DEFAULT_MCHBAR + x))
-#define MCHBAR32_OR(x, or) MCHBAR32(x) = (MCHBAR32(x) | (or))
-
-#define BIOS_RESET_CPL	0x5da8	/* 8bit */
-
-/* Some power MSRs are also represented in MCHBAR */
 #define MCH_PKG_POWER_LIMIT_LO	0x59a0
 #define MCH_PKG_POWER_LIMIT_HI	0x59a4
 #define MCH_DDR_POWER_LIMIT_LO	0x58e0
 #define MCH_DDR_POWER_LIMIT_HI	0x58e4
 
-/*
- * EPBAR - Egress Port Root Complex Register Block
- */
-
-#define EPBAR8(x) *((volatile u8 *)(DEFAULT_EPBAR + x))
-#define EPBAR16(x) *((volatile u16 *)(DEFAULT_EPBAR + x))
-#define EPBAR32(x) *((volatile u32 *)(DEFAULT_EPBAR + x))
-
-#define EPPVCCAP1	0x004	/* 32bit */
-#define EPPVCCAP2	0x008	/* 32bit */
-
-#define EPVC0RCAP	0x010	/* 32bit */
-#define EPVC0RCTL	0x014	/* 32bit */
-#define EPVC0RSTS	0x01a	/* 16bit */
-
-#define EPVC1RCAP	0x01c	/* 32bit */
-#define EPVC1RCTL	0x020	/* 32bit */
-#define EPVC1RSTS	0x026	/* 16bit */
-
-#define EPVC1MTS	0x028	/* 32bit */
-#define EPVC1IST	0x038	/* 64bit */
-
-#define EPESD		0x044	/* 32bit */
-
-#define EPLE1D		0x050	/* 32bit */
-#define EPLE1A		0x058	/* 64bit */
-#define EPLE2D		0x060	/* 32bit */
-#define EPLE2A		0x068	/* 64bit */
-
-#define PORTARB		0x100	/* 256bit */
 /* PCODE MMIO communications live in the MCHBAR. */
 #define BIOS_MAILBOX_INTERFACE			0x5da4
 #define  MAILBOX_RUN_BUSY			(1 << 31)
@@ -160,82 +106,4 @@
 /* Data is passed through bits 31:0 of the data register. */
 #define BIOS_MAILBOX_DATA			0x5da0
 
-/*
- * DMIBAR
- */
-
-#define DMIBAR8(x) *((volatile u8 *)(DEFAULT_DMIBAR + x))
-#define DMIBAR16(x) *((volatile u16 *)(DEFAULT_DMIBAR + x))
-#define DMIBAR32(x) *((volatile u32 *)(DEFAULT_DMIBAR + x))
-
-#define DMIVCECH	0x000	/* 32bit */
-#define DMIPVCCAP1	0x004	/* 32bit */
-#define DMIPVCCAP2	0x008	/* 32bit */
-
-#define DMIPVCCCTL	0x00c	/* 16bit */
-
-#define DMIVC0RCAP	0x010	/* 32bit */
-#define DMIVC0RCTL0	0x014	/* 32bit */
-#define DMIVC0RSTS	0x01a	/* 16bit */
-
-#define DMIVC1RCAP	0x01c	/* 32bit */
-#define DMIVC1RCTL	0x020	/* 32bit */
-#define DMIVC1RSTS	0x026	/* 16bit */
-
-#define DMILE1D		0x050	/* 32bit */
-#define DMILE1A		0x058	/* 64bit */
-#define DMILE2D		0x060	/* 32bit */
-#define DMILE2A		0x068	/* 64bit */
-
-#define DMILCAP		0x084	/* 32bit */
-#define DMILCTL		0x088	/* 16bit */
-#define DMILSTS		0x08a	/* 16bit */
-
-#define DMICTL1		0x0f0	/* 32bit */
-#define DMICTL2		0x0fc	/* 32bit */
-
-#define DMICC		0x208	/* 32bit */
-
-#define DMIDRCCFG	0xeb4	/* 32bit */
-
-#ifndef __ASSEMBLER__
-static inline void barrier(void) { asm("" ::: "memory"); }
-
-#define PCI_DEVICE_ID_HSW_MOBILE 0x0c04
-#define PCI_DEVICE_ID_HSW_ULT 0x0a04
-
-#ifdef __SMM__
-void intel_northbridge_haswell_finalize_smm(void);
-#else /* !__SMM__ */
-void haswell_late_initialization(void);
-void set_translation_table(int start, int end, u64 base, int inc);
-
-/* debugging functions */
-void print_pci_devices(void);
-void dump_pci_device(unsigned dev);
-void dump_pci_devices(void);
-void dump_spd_registers(void);
-void dump_mem(unsigned start, unsigned end);
-#endif /* !__SMM__ */
-
-
-#define MRC_DATA_ALIGN           0x1000
-#define MRC_DATA_SIGNATURE       (('M'<<0)|('R'<<8)|('C'<<16)|('D'<<24))
-
-struct mrc_data_container {
-	u32	mrc_signature;	// "MRCD"
-	u32	mrc_data_size;	// Actual total size of this structure
-	u32	mrc_checksum;	// IP style checksum
-	u32	reserved;	// For header alignment
-	u8	mrc_data[0];	// Variable size, platform/run time dependent.
-} __attribute__ ((packed));
-
-struct mrc_data_container *find_current_mrc_cache(void);
-#if !defined(__PRE_RAM__)
-#include "gma.h"
-int init_igd_opregion(igd_opregion_t *igd_opregion);
-#endif
-
-#endif
-#endif
 #endif
