@@ -22,16 +22,21 @@
 #include <device/device.h>
 #include <device/pci.h>
 #include <device/pciexp.h>
+#include <device/pci_def.h>
 #include <device/pci_ids.h>
-#include "pch.h"
+#include <broadwell/gpio.h>
+#include <broadwell/lpc.h>
+#include <broadwell/iobp.h>
+#include <broadwell/pch.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/rcba.h>
+#include <chip.h>
 
 static void pcie_update_cfg8(device_t dev, int reg, u8 mask, u8 or);
 static void pcie_update_cfg(device_t dev, int reg, u32 mask, u32 or);
 
-/* LynxPoint-LP has 6 root ports while non-LP has 8. */
-#define MAX_NUM_ROOT_PORTS 8
-#define H_NUM_ROOT_PORTS MAX_NUM_ROOT_PORTS
-#define LP_NUM_ROOT_PORTS (MAX_NUM_ROOT_PORTS - 2)
+/* Low Power variant has 6 root ports. */
+#define NUM_ROOT_PORTS 6
 
 struct root_port_config {
 	/* RPFN is a write-once register so keep a copy until it is written */
@@ -47,18 +52,10 @@ struct root_port_config {
 	int coalesce;
 	int gbe_port;
 	int num_ports;
-	device_t ports[MAX_NUM_ROOT_PORTS];
+	device_t ports[NUM_ROOT_PORTS];
 };
 
 static struct root_port_config rpc;
-
-static inline int max_root_ports(void)
-{
-	if (pch_is_lp())
-		return LP_NUM_ROOT_PORTS;
-	else
-		return H_NUM_ROOT_PORTS;
-}
 
 static inline int root_port_is_first(device_t dev)
 {
@@ -82,27 +79,22 @@ static void root_port_config_update_gbe_port(void)
 	if (!((rpc.strpfusecfg1 >> 19) & 1))
 		return;
 
-	if (pch_is_lp()) {
-		switch ((rpc.strpfusecfg1 >> 16) & 0x7) {
-		case 0:
-			rpc.gbe_port = 3;
-			break;
-		case 1:
-			rpc.gbe_port = 4;
-			break;
-		case 2:
-		case 3:
-		case 4:
-		case 5:
-			/* Lanes 0-4 of Root Port 5. */
-			rpc.gbe_port = 5;
-			break;
-		default:
-			printk(BIOS_DEBUG, "Invalid GbE Port Selection.\n");
-		}
-	} else {
-		/* Non-LP has 1:1 mapping with root ports. */
-		rpc.gbe_port = ((rpc.strpfusecfg1 >> 16) & 0x7) + 1;
+	switch ((rpc.strpfusecfg1 >> 16) & 0x7) {
+	case 0:
+		rpc.gbe_port = 3;
+		break;
+	case 1:
+		rpc.gbe_port = 4;
+		break;
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+		/* Lanes 0-4 of Root Port 5. */
+		rpc.gbe_port = 5;
+		break;
+	default:
+		printk(BIOS_DEBUG, "Invalid GbE Port Selection.\n");
 	}
 }
 
@@ -113,16 +105,14 @@ static void root_port_init_config(device_t dev)
 	if (root_port_is_first(dev)) {
 		rpc.orig_rpfn = RCBA32(RPFN);
 		rpc.new_rpfn = rpc.orig_rpfn;
-		rpc.num_ports = max_root_ports();
+		rpc.num_ports = NUM_ROOT_PORTS;
 		rpc.gbe_port = -1;
 
 		rpc.pin_ownership = pci_read_config32(dev, 0x410);
 		root_port_config_update_gbe_port();
 
 		if (dev->chip_info != NULL) {
-			struct southbridge_intel_lynxpoint_config *config;
-
-			config = dev->chip_info;
+			config_t *config = dev->chip_info;
 			rpc.coalesce = config->pcie_port_coalesce;
 		}
 	}
@@ -169,7 +159,7 @@ static void pch_pcie_device_set_func(int index, int pci_func)
 	rpc.new_rpfn |= RPFN_FNSET(index, pci_func);
 
 	/* Determine the new devfn for this port */
-	new_devfn = PCI_DEVFN(PCH_PCIE_DEV_SLOT, pci_func);
+	new_devfn = PCI_DEVFN(PCH_DEV_SLOT_PCIE, pci_func);
 
 	if (dev->path.pci.devfn != new_devfn) {
 		printk(BIOS_DEBUG,
@@ -185,11 +175,7 @@ static void pch_pcie_device_set_func(int index, int pci_func)
 static void pcie_enable_clock_gating(void)
 {
 	int i;
-	int is_lp;
-	int enabled_ports;
-
-	is_lp = pch_is_lp();
-	enabled_ports = 0;
+	int enabled_ports = 0;
 
 	for (i = 0; i < rpc.num_ports; i++) {
 		device_t dev;
@@ -200,30 +186,14 @@ static void pcie_enable_clock_gating(void)
 
 		if (!dev->enabled) {
 			/* Configure shared resource clock gating. */
-			if (rp == 1 || rp == 5 || (rp == 6 && is_lp))
+			if (rp == 1 || rp == 5 || rp == 6)
 				pcie_update_cfg8(dev, 0xe1, 0xc3, 0x3c);
-
-			if (!is_lp) {
-				if (rp == 1 && !rpc.ports[1]->enabled &&
-				    !rpc.ports[2]->enabled &&
-				    !rpc.ports[3]->enabled) {
-					pcie_update_cfg8(dev, 0xe2, ~1, 1);
-					pcie_update_cfg8(dev, 0xe1, 0x7f, 0x80);
-				}
-				if (rp == 5 && !rpc.ports[5]->enabled &&
-				    !rpc.ports[6]->enabled &&
-				    !rpc.ports[7]->enabled) {
-					pcie_update_cfg8(dev, 0xe2, ~1, 1);
-					pcie_update_cfg8(dev, 0xe1, 0x7f, 0x80);
-				}
-				continue;
-			}
 
 			pcie_update_cfg8(dev, 0xe2, ~(3 << 4), (3 << 4));
 			pcie_update_cfg(dev, 0x420, ~(1 << 31), (1 << 31));
 
 			/* Per-Port CLKREQ# handling. */
-			if (is_lp && gpio_is_native(18 + rp - 1))
+			if (gpio_is_native(18 + rp - 1))
 				pcie_update_cfg(dev, 0x420, ~0, (3 << 29));
 
 			/* Enable static clock gating. */
@@ -242,27 +212,23 @@ static void pcie_enable_clock_gating(void)
 
 		/* Enable dynamic clock gating. */
 		pcie_update_cfg8(dev, 0xe1, 0xfc, 0x03);
-
-		if (is_lp) {
-			pcie_update_cfg8(dev, 0xe2, ~(1 << 6), (1 << 6));
-			pcie_update_cfg8(dev, 0xe8, ~(3 << 2), (2 << 2));
-		}
+		pcie_update_cfg8(dev, 0xe2, ~(1 << 6), (1 << 6));
+		pcie_update_cfg8(dev, 0xe8, ~(3 << 2), (2 << 2));
 
 		/* Update PECR1 register. */
 		pcie_update_cfg8(dev, 0xe8, ~0, 1);
-
 		pcie_update_cfg8(dev, 0x324, ~(1 << 5), (1 < 5));
 
 		/* Per-Port CLKREQ# handling. */
-		if (is_lp && gpio_is_native(18 + rp - 1))
+		if (gpio_is_native(18 + rp - 1))
 			pcie_update_cfg(dev, 0x420, ~0, (3 << 29));
 
 		/* Configure shared resource clock gating. */
-		if (rp == 1 || rp == 5 || (rp == 6 && is_lp))
+		if (rp == 1 || rp == 5 || rp == 6)
 			pcie_update_cfg8(dev, 0xe1, 0xc3, 0x3c);
 	}
 
-	if (!enabled_ports && is_lp)
+	if (!enabled_ports)
 		pcie_update_cfg8(rpc.ports[0], 0xe1, ~(1 << 6), (1 << 6));
 }
 
@@ -342,7 +308,6 @@ static void root_port_mark_disable(device_t dev)
 static void root_port_check_disable(device_t dev)
 {
 	int rp;
-	int is_lp;
 
 	/* Device already disabled. */
 	if (!dev->enabled) {
@@ -357,8 +322,6 @@ static void root_port_check_disable(device_t dev)
 		root_port_mark_disable(dev);
 		return;
 	}
-
-	is_lp = pch_is_lp();
 
 	/* Check Root Port Configuration. */
 	switch (rp) {
@@ -385,79 +348,31 @@ static void root_port_check_disable(device_t dev)
 				return;
 			}
 			break;
-		case 6:
-			if (is_lp)
-				break;
-			/* Root Port 6 is disabled for all lane configurations
-			 * but config 00b (4x1 links). */
-			if ((rpc.strpfusecfg2 >> 14) & 0x3) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
-		case 7:
-			if (is_lp)
-				break;
-			/* Root Port 3 is disabled in config 11b (1x4 links). */
-			if (((rpc.strpfusecfg2 >> 14) & 0x3) == 0x3) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
-		case 8:
-			if (is_lp)
-				break;
-			/* Root Port 8 is disabled in configs 11b (1x4 links)
-			 * and 10b (2x2 links). */
-			if ((rpc.strpfusecfg2 >> 14) & 0x2) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
 	}
 
 	/* Check Pin Ownership. */
-	if (is_lp) {
-		switch (rp) {
-		case 1:
-			/* Bit 0 is Root Port 1 ownership. */
-			if ((rpc.pin_ownership & 0x1) == 0) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
-		case 2:
-			/* Bit 2 is Root Port 2 ownership. */
-			if ((rpc.pin_ownership & 0x4) == 0) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
-		case 6:
-			/* Bits 7:4 are Root Port 6 pin-lane ownership. */
-			if ((rpc.pin_ownership & 0xf0) == 0) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
+	switch (rp) {
+	case 1:
+		/* Bit 0 is Root Port 1 ownership. */
+		if ((rpc.pin_ownership & 0x1) == 0) {
+			root_port_mark_disable(dev);
+			return;
 		}
-	} else {
-		switch (rp) {
-		case 1:
-			/* Bits 4 and 0 are Root Port 1 ownership. */
-			if ((rpc.pin_ownership & 0x11) == 0) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
-		case 2:
-			/* Bits 5 and 2 are Root Port 2 ownership. */
-			if ((rpc.pin_ownership & 0x24) == 0) {
-				root_port_mark_disable(dev);
-				return;
-			}
-			break;
+		break;
+	case 2:
+		/* Bit 2 is Root Port 2 ownership. */
+		if ((rpc.pin_ownership & 0x4) == 0) {
+			root_port_mark_disable(dev);
+			return;
 		}
+		break;
+	case 6:
+		/* Bits 7:4 are Root Port 6 pin-lane ownership. */
+		if ((rpc.pin_ownership & 0xf0) == 0) {
+			root_port_mark_disable(dev);
+			return;
+		}
+		break;
 	}
 }
 
@@ -492,55 +407,35 @@ static void pcie_add_0x0202000_iobp(u32 reg)
 
 static void pch_pcie_early(struct device *dev)
 {
-	int rp;
-	int do_aspm;
-	int is_lp;
-	struct southbridge_intel_lynxpoint_config *config = dev->chip_info;
+	config_t *config = dev->chip_info;
+	int do_aspm = 0;
+	int rp = root_port_number(dev);
 
-	rp = root_port_number(dev);
-	do_aspm = 0;
-	is_lp = pch_is_lp();
-
-	if (is_lp) {
-		switch (rp) {
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-			/* Bits 31:28 of b0d28f0 0x32c register correspnd to
-			 * Root Ports 4:1. */
-			do_aspm = !!(rpc.b0d28f0_32c & (1 << (28 + rp - 1)));
-			break;
-		case 5:
-			/* Bit 28 of b0d28f4 0x32c register correspnd to
-			 * Root Ports 4:1. */
-			do_aspm = !!(rpc.b0d28f4_32c & (1 << 28));
-			break;
-		case 6:
-			/* Bit 28 of b0d28f5 0x32c register correspnd to
-			 * Root Ports 4:1. */
-			do_aspm = !!(rpc.b0d28f5_32c & (1 << 28));
-			break;
-		}
-	} else {
-		switch (rp) {
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-			/* Bits 31:28 of b0d28f0 0x32c register correspnd to
-			 * Root Ports 4:1. */
-			do_aspm = !!(rpc.b0d28f0_32c & (1 << (28 + rp - 1)));
-			break;
-		case 5:
-		case 6:
-		case 7:
-		case 8:
-			/* Bit 31:28 of b0d28f4 0x32c register correspnd to
-			 * Root Ports 8:5. */
-			do_aspm = !!(rpc.b0d28f4_32c & (1 << (28 + rp - 5)));
-			break;
-		}
+	switch (rp) {
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+		/*
+		 * Bits 31:28 of b0d28f0 0x32c register correspnd to
+		 * Root Ports 4:1.
+		 */
+		do_aspm = !!(rpc.b0d28f0_32c & (1 << (28 + rp - 1)));
+		break;
+	case 5:
+		/*
+		 * Bit 28 of b0d28f4 0x32c register correspnd to
+		 * Root Ports 4:1.
+		 */
+		do_aspm = !!(rpc.b0d28f4_32c & (1 << 28));
+		break;
+	case 6:
+		/*
+		 * Bit 28 of b0d28f5 0x32c register correspnd to
+		 * Root Ports 4:1.
+		 */
+		do_aspm = !!(rpc.b0d28f5_32c & (1 << 28));
+		break;
 	}
 
 	/* Allow ASPM to be forced on in devicetree */
@@ -560,71 +455,36 @@ static void pch_pcie_early(struct device *dev)
 		/* Set L1 exit latency in LCAP register. */
 		pcie_update_cfg(dev, 0x4c, ~(0x7 << 15), (0x4 << 15));
 
-		if (is_lp) {
-			switch (rp) {
-			case 1:
-				pcie_add_0x0202000_iobp(0xe9002440);
-				break;
-			case 2:
-				pcie_add_0x0202000_iobp(0xe9002640);
-				break;
-			case 3:
-				pcie_add_0x0202000_iobp(0xe9000840);
-				break;
-			case 4:
-				pcie_add_0x0202000_iobp(0xe9000a40);
-				break;
-			case 5:
-				pcie_add_0x0202000_iobp(0xe9000c40);
-				pcie_add_0x0202000_iobp(0xe9000e40);
-				pcie_add_0x0202000_iobp(0xe9001040);
-				pcie_add_0x0202000_iobp(0xe9001240);
-				break;
-			case 6:
-				/* Update IOBP based on lane ownership. */
-				if (rpc.pin_ownership & (1 << 4))
-					pcie_add_0x0202000_iobp(0xea002040);
-				if (rpc.pin_ownership & (1 << 5))
-					pcie_add_0x0202000_iobp(0xea002240);
-				if (rpc.pin_ownership & (1 << 6))
-					pcie_add_0x0202000_iobp(0xea002440);
-				if (rpc.pin_ownership & (1 << 7))
-					pcie_add_0x0202000_iobp(0xea002640);
-				break;
-			}
-		} else {
-			switch (rp) {
-			case 1:
-				if ((rpc.pin_ownership & 0x3) == 1)
-					pcie_add_0x0202000_iobp(0xe9002e40);
-				else
-					pcie_add_0x0202000_iobp(0xea002040);
-				break;
-			case 2:
-				if ((rpc.pin_ownership & 0xc) == 0x4)
-					pcie_add_0x0202000_iobp(0xe9002c40);
-				else
-					pcie_add_0x0202000_iobp(0xea002240);
-				break;
-			case 3:
-				pcie_add_0x0202000_iobp(0xe9002a40);
-				break;
-			case 4:
-				pcie_add_0x0202000_iobp(0xe9002840);
-				break;
-			case 5:
-				pcie_add_0x0202000_iobp(0xe9002640);
-				break;
-			case 6:
-				pcie_add_0x0202000_iobp(0xe9002440);
-				break;
-			case 7:
-				pcie_add_0x0202000_iobp(0xe9002240);
-				break;
-			case 8:
-				pcie_add_0x0202000_iobp(0xe9002040);
-				break;
-			}
+		switch (rp) {
+		case 1:
+			pcie_add_0x0202000_iobp(0xe9002440);
+			break;
+		case 2:
+			pcie_add_0x0202000_iobp(0xe9002640);
+			break;
+		case 3:
+			pcie_add_0x0202000_iobp(0xe9000840);
+			break;
+		case 4:
+			pcie_add_0x0202000_iobp(0xe9000a40);
+			break;
+		case 5:
+			pcie_add_0x0202000_iobp(0xe9000c40);
+			pcie_add_0x0202000_iobp(0xe9000e40);
+			pcie_add_0x0202000_iobp(0xe9001040);
+			pcie_add_0x0202000_iobp(0xe9001240);
+			break;
+		case 6:
+			/* Update IOBP based on lane ownership. */
+			if (rpc.pin_ownership & (1 << 4))
+				pcie_add_0x0202000_iobp(0xea002040);
+			if (rpc.pin_ownership & (1 << 5))
+				pcie_add_0x0202000_iobp(0xea002240);
+			if (rpc.pin_ownership & (1 << 6))
+				pcie_add_0x0202000_iobp(0xea002440);
+			if (rpc.pin_ownership & (1 << 7))
+				pcie_add_0x0202000_iobp(0xea002640);
+			break;
 		}
 
 		pcie_update_cfg(dev, 0x338, ~(1 << 26), 0);
@@ -654,7 +514,7 @@ static void pch_pcie_early(struct device *dev)
 
 	pcie_update_cfg8(dev, 0xf5, 0x3f, 0);
 
-	if (rp == 1 || rp == 5 || (is_lp && rp == 6))
+	if (rp == 1 || rp == 5 || rp == 6)
 		pcie_update_cfg8(dev, 0xf7, ~0xc, 0);
 
 	/* Set EOI forwarding disable. */
@@ -662,9 +522,7 @@ static void pch_pcie_early(struct device *dev)
 
 	/* Set something involving advanced error reporting. */
 	pcie_update_cfg(dev, 0x100, ~((1 << 20) - 1), 0x10001);
-
-	if (is_lp)
-		pcie_update_cfg(dev, 0x100, ~0, (1 << 29));
+	pcie_update_cfg(dev, 0x100, ~0, (1 << 29));
 
 	/* Read and write back write-once capability registers. */
 	pcie_update_cfg(dev, 0x34, ~0, 0);
@@ -691,12 +549,10 @@ static void pch_pcie_init(struct device *dev)
 	pci_write_config32(dev, PCI_COMMAND, reg32);
 
 	/* Set Cache Line Size to 0x10 */
-	// This has no effect but the OS might expect it
 	pci_write_config8(dev, 0x0c, 0x10);
 
 	reg16 = pci_read_config16(dev, 0x3e);
 	reg16 &= ~(1 << 0); /* disable parity error response */
-	// reg16 &= ~(1 << 1); /* disable SERR */
 	reg16 |= (1 << 2); /* ISA enable */
 	pci_write_config16(dev, 0x3e, reg16);
 
