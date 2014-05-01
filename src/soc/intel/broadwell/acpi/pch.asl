@@ -103,10 +103,7 @@ Scope(\)
 #include "smbus.asl"
 
 // Serial IO
-#if CONFIG_INTEL_LYNXPOINT_LP
 #include "serialio.asl"
-#include "lpt_lp.asl"
-#endif
 
 Method (_OSC, 4)
 {

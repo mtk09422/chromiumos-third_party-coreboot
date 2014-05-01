@@ -17,21 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Intel LynxPoint Serial IO Devices in ACPI Mode
+// Intel Serial IO Devices in ACPI Mode
 
 // Serial IO Device BAR0 and BAR1 is 4KB
 #define SIO_BAR_LEN 0x1000
-
-// This is defined in SSDT2 which is generated at boot based
-// on whether or not the device is enabled in ACPI mode.
-External(\S0EN)
-External(\S1EN)
-External(\S2EN)
-External(\S3EN)
-External(\S4EN)
-External(\S5EN)
-External(\S6EN)
-External(\S7EN)
 
 // Serial IO Resource Consumption for BAR1
 Device (SIOR)
@@ -474,58 +463,6 @@ Device (SDIO)
 			Return (0x0)
 		} Else {
 			Return (0xF)
-		}
-	}
-}
-
-Device (GPIO)
-{
-	// GPIO Controller
-	Name (_HID, "INT33C7")
-	Name (_CID, "INT33C7")
-	Name (_UID, 1)
-
-	Name (RBUF, ResourceTemplate()
-	{
-		DWordIo (ResourceProducer,
-			MinFixed,    // IsMinFixed
-			MaxFixed,    // IsMaxFixed
-			PosDecode,   // Decode
-			EntireRange, // ISARanges
-			0x00000000,  // AddressGranularity
-			0x00000000,  // AddressMinimum
-			0x00000000,  // AddressMaximum
-			0x00000000,  // AddressTranslation
-			0x00000000,  // RangeLength
-			,            // ResourceSourceIndex
-			,            // ResourceSource
-			BAR0)
-		Interrupt (ResourceConsumer,
-			Level, ActiveHigh, Shared, , , ) {14}
-	})
-
-	Method (_CRS, 0, NotSerialized)
-	{
-		If (\ISLP ()) {
-			CreateDwordField (^RBUF, ^BAR0._MIN, BMIN)
-			CreateDwordField (^RBUF, ^BAR0._MAX, BMAX)
-			CreateDwordField (^RBUF, ^BAR0._LEN, BLEN)
-
-			Store (DEFAULT_GPIOSIZE, BLEN)
-			Store (DEFAULT_GPIOBASE, BMIN)
-			Store (Subtract (Add (DEFAULT_GPIOBASE,
-					      DEFAULT_GPIOSIZE), 1), BMAX)
-		}
-
-		Return (RBUF)
-	}
-
-	Method (_STA, 0, NotSerialized)
-	{
-		If (\ISLP ()) {
-			Return (0xF)
-		} Else {
-			Return (0x0)
 		}
 	}
 }
