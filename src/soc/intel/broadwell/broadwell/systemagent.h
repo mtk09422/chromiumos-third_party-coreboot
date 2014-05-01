@@ -23,6 +23,18 @@
 
 #include <broadwell/iomap.h>
 
+#define SA_IGD_OPROM_VENDEV	0x80860406
+
+#define IGD_HASWELL_ULT_GT1	0x0a06
+#define IGD_HASWELL_ULT_GT2	0x0a16
+#define IGD_HASWELL_ULT_GT3	0x0a26
+#define IGD_BROADWELL_U_GT1	0x1606
+#define IGD_BROADWELL_U_GT2	0x1616
+#define IGD_BROADWELL_U_GT3_15W	0x1626
+#define IGD_BROADWELL_U_GT3_28W	0x162b
+#define IGD_BROADWELL_Y_GT2	0x161e
+#define IGD_BROADWELL_H_GT2	0x1612
+#define IGD_BROADWELL_H_GT3	0x1622
 
 /* Device 0:0.0 PCI configuration space */
 

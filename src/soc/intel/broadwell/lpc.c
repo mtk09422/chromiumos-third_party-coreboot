@@ -768,24 +768,21 @@ static struct device_operations device_ops = {
 	.ops_pci		= &pci_ops,
 };
 
-
-/* IDs for LPC device of Intel 8 Series Chipset (Lynx Point) */
 static const unsigned short pci_device_ids[] = {
-	0x8c41, /* Mobile Full Featured Engineering Sample. */
-	0x8c42, /* Desktop Full Featured Engineering Sample. */
-	0x8c44, /* Z87 SKU */
-	0x8c46, /* Z85 SKU */
-	0x8c49, /* HM86 SKU */
-	0x8c4a, /* H87 SKU */
-	0x8c4b, /* HM87 SKU */
-	0x8c4c, /* Q85 SKU */
-	0x8c4e, /* Q87 SKU */
-	0x8c4f, /* QM87 SKU */
-	0x9c41, /* LP Full Featured Engineering Sample */
-	0x9c43, /* LP Premium SKU */
-	0x9c45, /* LP Mainstream SKU */
-	0x9c47, /* LP Value SKU */
-	0 };
+	PCH_LPT_LP_SAMPLE,
+	PCH_LPT_LP_PREMIUM,
+	PCH_LPT_LP_MAINSTREAM,
+	PCH_LPT_LP_VALUE,
+	PCH_WPT_HSW_U_SAMPLE,
+	PCH_WPT_BDW_U_SAMPLE,
+	PCH_WPT_BDW_U_PREMIUM,
+	PCH_WPT_BDW_U_BASE,
+	PCH_WPT_BDW_Y_SAMPLE,
+	PCH_WPT_BDW_Y_PREMIUM,
+	PCH_WPT_BDW_Y_BASE,
+	PCH_WPT_BDW_H,
+	0
+};
 
 static const struct pci_driver pch_lpc __pci_driver = {
 	.ops	 = &device_ops,

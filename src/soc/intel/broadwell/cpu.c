@@ -762,6 +762,18 @@ static struct mp_flight_record mp_steps[] = {
 };
 
 void bsp_init_and_start_aps(struct bus *cpu_bus)
+
+static struct cpu_device_id cpu_table[] = {
+	{ X86_VENDOR_INTEL, CPUID_HASWELL_ULT },
+	{ X86_VENDOR_INTEL, CPUID_BROADWELL_C0 },
+	{ X86_VENDOR_INTEL, CPUID_BROADWELL_D0 },
+	{ 0, 0 },
+};
+
+static const struct cpu_driver driver __cpu_driver = {
+	.ops      = &cpu_dev_ops,
+	.id_table = cpu_table,
+};
 {
 	int num_threads;
 	int num_cores;
@@ -808,18 +820,3 @@ void bsp_init_and_start_aps(struct bus *cpu_bus)
 static struct device_operations cpu_dev_ops = {
 	.init     = haswell_init,
 };
-
-static struct cpu_device_id cpu_table[] = {
-	{ X86_VENDOR_INTEL, 0x306c1 }, /* Intel Haswell 4+2 A0 */
-	{ X86_VENDOR_INTEL, 0x306c2 }, /* Intel Haswell 4+2 B0 */
-	{ X86_VENDOR_INTEL, 0x40650 }, /* Intel Haswell ULT B0 */
-	{ X86_VENDOR_INTEL, 0x40651 }, /* Intel Haswell ULT B1 */
-	{ 0, 0 },
-};
-
-static const struct cpu_driver driver __cpu_driver = {
-	.ops      = &cpu_dev_ops,
-	.id_table = cpu_table,
-	.cstates  = cstate_map,
-};
-

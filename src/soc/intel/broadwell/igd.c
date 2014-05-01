@@ -516,18 +516,16 @@ static struct device_operations gma_func0_ops = {
 };
 
 static const unsigned short pci_device_ids[] = {
-	0x0402, /* Desktop GT1 */
-	0x0412, /* Desktop GT2 */
-	0x0422, /* Desktop GT3 */
-	0x0406, /* Mobile GT1 */
-	0x0416, /* Mobile GT2 */
-	0x0426, /* Mobile GT3 */
-	0x0d16, /* Mobile 4+3 GT1 */
-	0x0d26, /* Mobile 4+3 GT2 */
-	0x0d36, /* Mobile 4+3 GT3 */
-	0x0a06, /* ULT GT1 */
-	0x0a16, /* ULT GT2 */
-	0x0a26, /* ULT GT3 */
+	IGD_HASWELL_ULT_GT1,
+	IGD_HASWELL_ULT_GT2,
+	IGD_HASWELL_ULT_GT3,
+	IGD_BROADWELL_U_GT1,
+	IGD_BROADWELL_U_GT2,
+	IGD_BROADWELL_U_GT3_15W,
+	IGD_BROADWELL_U_GT3_28W,
+	IGD_BROADWELL_Y_GT2,
+	IGD_BROADWELL_H_GT2,
+	IGD_BROADWELL_H_GT3,
 	0,
 };
 
