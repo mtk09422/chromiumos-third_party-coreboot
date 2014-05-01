@@ -18,17 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/io.h>
 #include <console/console.h>
 #include <device/device.h>
 #include <device/path.h>
 #include <device/smbus.h>
+#include <device/smbus_def.h>
 #include <device/pci.h>
 #include <device/pci_ids.h>
 #include <device/pci_ops.h>
-#include <arch/io.h>
-#include "pch.h"
-#include "smbus.h"
+#include <broadwell/iomap.h>
 #include <broadwell/ramstage.h>
+#include <broadwell/smbus.h>
 
 static void pch_smbus_init(device_t dev)
 {
@@ -79,7 +80,7 @@ static struct smbus_bus_operations lops_smbus_bus = {
 static void smbus_read_resources(device_t dev)
 {
 	struct resource *res = new_resource(dev, PCI_BASE_ADDRESS_4);
-	res->base = SMBUS_IO_BASE;
+	res->base = SMBUS_BASE_ADDRESS;
 	res->size = 32;
 	res->limit = res->base + res->size - 1;
 	res->flags = IORESOURCE_IO | IORESOURCE_FIXED | IORESOURCE_RESERVE |
