@@ -26,9 +26,9 @@
 #include <device/pci_ops.h>
 #include <arch/io.h>
 #include <delay.h>
-#include "pch.h"
-#include "hda_verb.h"
+#include <soc/intel/common/hda_verb.h>
 #include <broadwell/ramstage.h>
+#include <broadwell/rcba.h>
 
 const u32 * cim_verb_data = NULL;
 u32 cim_verb_data_size = 0;
@@ -51,87 +51,58 @@ static void codecs_init(u32 base, u32 codec_mask)
 		hda_codec_write(base, pc_beep_verbs_size, pc_beep_verbs);
 }
 
-static void azalia_pch_init(struct device *dev, u32 base)
+static void hda_pch_init(struct device *dev, u32 base)
 {
 	u8 reg8;
 	u16 reg16;
 	u32 reg32;
 
 	if (RCBA32(0x2030) & (1 << 31)) {
-		reg32 = pci_mmio_read_config32(dev, 0x120);
+		reg32 = pci_read_config32(dev, 0x120);
 		reg32 &= 0xf8ffff01;
 		reg32 |= (1 << 25);
 		reg32 |= RCBA32(0x2030) & 0xfe;
-		pci_mmio_write_config32(dev, 0x120, reg32);
-
-		if (!pch_is_lp()) {
-			reg16 = pci_mmio_read_config16(dev, 0x78);
-			reg16 &= ~(1 << 11);
-			pci_mmio_write_config16(dev, 0x78, reg16);
-		}
+		pci_write_config32(dev, 0x120, reg32);
 	} else
-		printk(BIOS_DEBUG, "Azalia: V1CTL disabled.\n");
+		printk(BIOS_DEBUG, "HDA: V1CTL disabled.\n");
 
-	reg32 = pci_mmio_read_config32(dev, 0x114);
+	reg32 = pci_read_config32(dev, 0x114);
 	reg32 &= ~0xfe;
-	pci_mmio_write_config32(dev, 0x114, reg32);
+	pci_write_config32(dev, 0x114, reg32);
 
 	// Set VCi enable bit
-	if (pci_mmio_read_config32(dev, 0x120) & ((1 << 24) |
-						(1 << 25) | (1 << 26))) {
-		reg32 = pci_mmio_read_config32(dev, 0x120);
-		if (pch_is_lp())
-			reg32 &= ~(1 << 31);
-		else
-			reg32 |= (1 << 31);
-		pci_mmio_write_config32(dev, 0x120, reg32);
+	if (pci_read_config32(dev, 0x120) & ((1 << 24) |
+					     (1 << 25) | (1 << 26))) {
+		reg32 = pci_read_config32(dev, 0x120);
+		reg32 &= ~(1 << 31);
+		pci_write_config32(dev, 0x120, reg32);
 	}
 
 	reg8 = pci_read_config8(dev, 0x43);
-	if (pch_is_lp())
-		reg8 &= ~(1 << 6);
-	else
-		reg8 |= (1 << 4);
+	reg8 &= ~(1 << 6);
 	pci_write_config8(dev, 0x43, reg8);
-
-	if (!pch_is_lp()) {
-		reg32 = pci_read_config32(dev, 0xc0);
-		reg32 |= (1 << 17);
-		pci_write_config32(dev, 0xc0, reg32);
-	}
 
 	/* Additional programming steps */
 	reg32 = pci_read_config32(dev, 0xc4);
-	if (pch_is_lp())
-		reg32 |= (1 << 24);
-	else
-		reg32 |= (1 << 14);
+	reg32 |= (1 << 24);
 	pci_write_config32(dev, 0xc4, reg32);
 
-	if (!pch_is_lp()) {
-		reg32 = pci_read_config32(dev, 0xd0);
-		reg32 &= ~(1 << 31);
-		pci_write_config32(dev, 0xd0, reg32);
-	}
-
 	reg8 = pci_read_config8(dev, 0x40); // Audio Control
-	reg8 |= 1; // Select Azalia mode
+	reg8 |= 1; // Select HDA mode
 	pci_write_config8(dev, 0x40, reg8);
 
 	reg8 = pci_read_config8(dev, 0x4d); // Docking Status
 	reg8 &= ~(1 << 7); // Docking not supported
 	pci_write_config8(dev, 0x4d, reg8);
 
-	if (pch_is_lp()) {
-		reg16 = read32(base + 0x0012);
-		reg16 |= (1 << 0);
-		write32(base + 0x0012, reg16);
+	reg16 = read32(base + 0x0012);
+	reg16 |= (1 << 0);
+	write32(base + 0x0012, reg16);
 
-		/* disable Auto Voltage Detector */
-		reg8 = pci_read_config8(dev, 0x42);
-		reg8 |= (1 << 2);
-		pci_write_config8(dev, 0x42, reg8);
-	}
+	/* disable Auto Voltage Detector */
+	reg8 = pci_read_config8(dev, 0x42);
+	reg8 |= (1 << 2);
+	pci_write_config8(dev, 0x42, reg8);
 }
 
 static void hda_init(struct device *dev)
@@ -147,18 +118,18 @@ static void hda_init(struct device *dev)
 		return;
 
 	base = (u32)res->base;
-	printk(BIOS_DEBUG, "Azalia: base = %08x\n", (u32)base);
+	printk(BIOS_DEBUG, "HDA: base = %08x\n", (u32)base);
 
 	/* Set Bus Master */
 	reg32 = pci_read_config32(dev, PCI_COMMAND);
 	pci_write_config32(dev, PCI_COMMAND, reg32 | PCI_COMMAND_MASTER);
 
-	azalia_pch_init(dev, base);
+	hda_pch_init(dev, base);
 
 	codec_mask = hda_codec_detect(base);
 
 	if (codec_mask) {
-		printk(BIOS_DEBUG, "Azalia: codec_mask = %02x\n", codec_mask);
+		printk(BIOS_DEBUG, "HDA: codec_mask = %02x\n", codec_mask);
 		codecs_init(base, codec_mask);
 	}
 }
