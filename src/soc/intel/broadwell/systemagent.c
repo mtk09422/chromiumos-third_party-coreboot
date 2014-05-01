@@ -69,28 +69,6 @@ static int get_pcie_bar(device_t dev, unsigned int index, u32 *base, u32 *len)
 	return 0;
 }
 
-static void pci_domain_set_resources(device_t dev)
-{
-	assign_resources(dev->link_list);
-}
-
-	/* TODO We could determine how many PCIe busses we need in
-	 * the bar. For now that number is hardcoded to a max of 64.
-	 * See e7525/northbridge.c for an example.
-	 */
-static struct device_operations pci_domain_ops = {
-	.read_resources   = pci_domain_read_resources,
-	.set_resources    = pci_domain_set_resources,
-	.enable_resources = NULL,
-	.init             = NULL,
-	.scan_bus         = pci_domain_scan_bus,
-#if CONFIG_MMCONF_SUPPORT_DEFAULT
-	.ops_pci_bus	  = &pci_ops_mmconf,
-#else
-	.ops_pci_bus	  = &pci_cf8_conf1,
-#endif
-};
-
 static int get_bar(device_t dev, unsigned int index, u32 *base, u32 *len)
 {
 	u32 bar;
@@ -497,46 +475,3 @@ static struct device_operations mc_ops = {
 	.ops_pci          = &intel_pci_ops,
 };
 
-static const struct pci_driver mc_driver_hsw_mobile __pci_driver = {
-	.ops    = &mc_ops,
-	.vendor = PCI_VENDOR_ID_INTEL,
-	.device = PCI_DEVICE_ID_HSW_MOBILE,
-};
-
-static const struct pci_driver mc_driver_hsw_ult __pci_driver = {
-	.ops    = &mc_ops,
-	.vendor = PCI_VENDOR_ID_INTEL,
-	.device = PCI_DEVICE_ID_HSW_ULT,
-};
-
-static void cpu_bus_init(device_t dev)
-{
-	bsp_init_and_start_aps(dev->link_list);
-}
-
-static void cpu_bus_noop(device_t dev)
-{
-}
-
-static struct device_operations cpu_bus_ops = {
-	.read_resources   = cpu_bus_noop,
-	.set_resources    = cpu_bus_noop,
-	.enable_resources = cpu_bus_noop,
-	.init             = cpu_bus_init,
-	.scan_bus         = 0,
-};
-
-static void enable_dev(device_t dev)
-{
-	/* Set the operations if it is a special bus type */
-	if (dev->path.type == DEVICE_PATH_DOMAIN) {
-		dev->ops = &pci_domain_ops;
-	} else if (dev->path.type == DEVICE_PATH_CPU_CLUSTER) {
-		dev->ops = &cpu_bus_ops;
-	}
-}
-
-struct chip_operations northbridge_intel_haswell_ops = {
-	CHIP_NAME("Intel i7 (Haswell) integrated Northbridge")
-	.enable_dev = enable_dev,
-};
