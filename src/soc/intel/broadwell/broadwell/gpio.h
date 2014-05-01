@@ -17,10 +17,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef INTEL_LYNXPOINT_LP_GPIO_H
-#define INTEL_LYNXPOINT_LP_GPIO_H
+#ifndef _BROADWELL_GPIO_H_
+#define _BROADWELL_GPIO_H_
 
-/* LynxPoint LP GPIOBASE Registers */
+#include <stdint.h>
+
+/* PCH-LP GPIOBASE Registers */
 #define GPIO_OWNER(set)		(0x00 + ((set) * 4))
 #define GPIO_PIRQ_APIC_EN	0x10
 #define GPIO_BLINK		0x18
@@ -28,6 +30,8 @@
 #define GPIO_SER_BLINK_CS	0x20
 #define GPIO_SER_BLINK_DATA	0x24
 #define GPIO_ROUTE(set)		(0x30 + ((set) * 4))
+#define GPIO_ALT_GPI_SMI_STS	0x50
+#define GPIO_ALT_GPI_SMI_EN	0x54
 #define GPIO_RESET(set)		(0x60 + ((set) * 4))
 #define GPIO_GLOBAL_CONFIG	0x7c
 #define GPIO_IRQ_IS(set)	(0x80 + ((set) * 4))
@@ -54,10 +58,12 @@
 
 #define GPI_LEVEL		(1 << 30)
 
+#define GPIO_OUT_LOW		0
+#define GPIO_OUT_HIGH		1
 #define GPO_LEVEL_SHIFT		31
 #define GPO_LEVEL_MASK		(1 << GPO_LEVEL_SHIFT)
-#define GPO_LEVEL_LOW		(0 << GPO_LEVEL_SHIFT)
-#define GPO_LEVEL_HIGH		(1 << GPO_LEVEL_SHIFT)
+#define GPO_LEVEL_LOW		(GPIO_OUT_LOW << GPO_LEVEL_SHIFT)
+#define GPO_LEVEL_HIGH		(GPIO_OUT_HIGH << GPO_LEVEL_SHIFT)
 
 /* conf1 */
 
@@ -98,61 +104,61 @@
 #define GPIO_PIRQ_APIC_MASK	0
 #define GPIO_PIRQ_APIC_ROUTE	1
 
-#define LP_GPIO_END \
+#define PCH_GPIO_END \
 	{ .conf0 = GPIO_LIST_END }
 
-#define LP_GPIO_NATIVE \
+#define PCH_GPIO_NATIVE \
 	{ .conf0 = GPIO_MODE_NATIVE }
 
-#define LP_GPIO_UNUSED \
+#define PCH_GPIO_UNUSED \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .conf1 = GPIO_SENSE_DISABLE }
 
-#define LP_GPIO_ACPI_SCI \
+#define PCH_GPIO_ACPI_SCI \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT | GPIO_INVERT, \
 	  .owner = GPIO_OWNER_ACPI, \
 	  .route = GPIO_ROUTE_SCI }
 
-#define LP_GPIO_ACPI_SMI \
+#define PCH_GPIO_ACPI_SMI \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT | GPIO_INVERT, \
 	  .owner = GPIO_OWNER_ACPI, \
 	  .route = GPIO_ROUTE_SMI }
 
-#define LP_GPIO_INPUT \
+#define PCH_GPIO_INPUT \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT, \
 	  .owner = GPIO_OWNER_GPIO }
 
-#define LP_GPIO_INPUT_INVERT \
+#define PCH_GPIO_INPUT_INVERT \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT | GPIO_INVERT, \
 	  .owner = GPIO_OWNER_GPIO }
 
-#define LP_GPIO_IRQ_EDGE \
+#define PCH_GPIO_IRQ_EDGE \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT | GPIO_IRQ_EDGE, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .irqen = GPIO_IRQ_ENABLE }
 
-#define LP_GPIO_IRQ_LEVEL \
+#define PCH_GPIO_IRQ_LEVEL \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT | GPIO_IRQ_LEVEL, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .irqen = GPIO_IRQ_ENABLE }
 
-#define LP_GPIO_PIRQ \
+#define PCH_GPIO_PIRQ \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_INPUT, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .pirq  = GPIO_PIRQ_APIC_ROUTE }
 
-#define LP_GPIO_OUT_HIGH \
+#define PCH_GPIO_OUT_HIGH \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_OUTPUT | GPO_LEVEL_HIGH, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .conf1 = GPIO_SENSE_DISABLE }
 
-#define LP_GPIO_OUT_LOW \
+#define PCH_GPIO_OUT_LOW \
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_OUTPUT | GPO_LEVEL_LOW, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .conf1 = GPIO_SENSE_DISABLE }
 
-struct pch_lp_gpio_map {
+struct gpio_config {
 	u8 gpio;
 	u32 conf0;
 	u32 conf1;
@@ -165,6 +171,22 @@ struct pch_lp_gpio_map {
 } __attribute__ ((packed));
 
 /* Configure GPIOs with mainboard provided settings */
-void setup_pch_lp_gpios(const struct pch_lp_gpio_map map[]);
+void init_one_gpio(int gpio_num, struct gpio_config *config);
+void init_gpios(const struct gpio_config config[]);
+
+/* Get GPIO pin value */
+int get_gpio(int gpio_num);
+
+/* Set GPIO pin value */
+void set_gpio(int gpio_num, int value);
+
+/* Return non-zero if gpio is set to native function. 0 otherwise. */
+int gpio_is_native(int gpio_num);
+
+/*
+ * Get a number comprised of multiple GPIO values. gpio_num_array points to
+ * the array of gpio pin numbers to scan, terminated by -1.
+ */
+unsigned get_gpios(const int *gpio_num_array);
 
 #endif
