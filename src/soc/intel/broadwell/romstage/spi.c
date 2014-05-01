@@ -111,3 +111,37 @@ int early_spi_read(u32 offset, u32 size, u8 *buffer)
 
 	return 0;
 }
+
+/*
+ * Minimal set of commands to read WPSR from SPI.
+ * Don't use this code outside romstage -- it trashes the opmenu table.
+ * Returns 0 on success, < 0 on failure.
+ */
+int early_spi_read_wpsr(u8 *sr)
+{
+	int retry;
+
+	/* No address associated with rdsr */
+	SPIBAR8(SPIBAR_OPTYPE) = 0x0;
+	/* Setup opcode[0] = read wpsr */
+	SPIBAR8(SPIBAR_OPMENU_LOWER) = 0x5;
+
+	/* Start transaction */
+	SPIBAR16(SPIBAR_SSFC) = SPIBAR_SSFC_DATA | SPIBAR_SSFC_GO;
+
+	/* Wait for error / complete status */
+	for (retry = SPI_RETRY; retry; retry--) {
+		u16 status = SPIBAR16(SPIBAR_SSFS);
+		if (status & SPIBAR_SSFS_ERROR) {
+			printk(BIOS_ERR, "SPI rdsr failed\n");
+			return -1;
+		} else if (status & SPIBAR_SSFS_DONE) {
+			break;
+		}
+
+		udelay(SPI_DELAY);
+	}
+
+	*sr = SPIBAR32(SPIBAR_FDATA(0)) & 0xff;
+	return 0;
+}
