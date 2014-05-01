@@ -17,146 +17,130 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <console/console.h>
 #include <arch/io.h>
+#include <console/console.h>
 #include <device/device.h>
 #include <device/pci_def.h>
-#include <elog.h>
-#include "pch.h"
-#include "chip.h"
+#include <reg_script.h>
+#include <broadwell/iomap.h>
+#include <broadwell/lpc.h>
+#include <broadwell/pch.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/pm.h>
+#include <broadwell/rcba.h>
+#include <broadwell/romstage.h>
+#include <broadwell/smbus.h>
+#include <chip.h>
 
-#if CONFIG_INTEL_LYNXPOINT_LP
-#include "lp_gpio.h"
-#else
-#include "gpio.h"
-#endif
-
-#include <vendorcode/google/chromeos/chromeos.h>
-
-const struct rcba_config_instruction pch_early_config[] = {
-	/* Enable IOAPIC */
-	RCBA_SET_REG_16(OIC, 0x0100),
-	/* PCH BWG says to read back the IOAPIC enable register */
-	RCBA_READ_REG_16(OIC),
-
-	RCBA_END_CONFIG,
-};
-
-int pch_is_lp(void)
-{
-	u8 id = pci_read_config8(PCH_LPC_DEV, PCI_DEVICE_ID + 1);
-	return id == PCH_TYPE_LPT_LP;
-}
-
-static void pch_enable_bars(void)
-{
-	/* Setting up Southbridge. In the northbridge code. */
-	pci_write_config32(PCH_LPC_DEV, RCBA, DEFAULT_RCBA | 1);
-
-	pci_write_config32(PCH_LPC_DEV, PMBASE, DEFAULT_PMBASE | 1);
-	/* Enable ACPI BAR */
-	pci_write_config8(PCH_LPC_DEV, ACPI_CNTL, 0x80);
-
-	pci_write_config32(PCH_LPC_DEV, GPIO_BASE, DEFAULT_GPIOBASE|1);
-
-	/* Enable GPIO functionality. */
-	pci_write_config8(PCH_LPC_DEV, GPIO_CNTL, 0x10);
-}
-
-static void pch_generic_setup(void)
-{
-	printk(BIOS_DEBUG, "Disabling Watchdog reboot...");
-	RCBA32(GCS) = RCBA32(GCS) | (1 << 5);	/* No reset */
-	outw((1 << 11), DEFAULT_PMBASE | 0x60 | 0x08);	/* halt timer */
-	printk(BIOS_DEBUG, " done.\n");
-}
-
-static int sleep_type_s3(void)
-{
-	u32 pm1_cnt;
-	u16 pm1_sts;
-	int is_s3 = 0;
-
-	/* Check PM1_STS[15] to see if we are waking from Sx */
-	pm1_sts = inw(DEFAULT_PMBASE + PM1_STS);
-	if (pm1_sts & WAK_STS) {
-		/* Read PM1_CNT[12:10] to determine which Sx state */
-		pm1_cnt = inl(DEFAULT_PMBASE + PM1_CNT);
-		if (((pm1_cnt >> 10) & 7) == SLP_TYP_S3) {
-			/* Clear SLP_TYPE. */
-			outl(pm1_cnt & ~(7 << 10), DEFAULT_PMBASE + PM1_CNT);
-			is_s3 = 1;
-		}
-	}
-	return is_s3;
-}
-
-void pch_enable_lpc(void)
-{
-	const struct device *dev = dev_find_slot(0, PCI_DEVFN(0x1f, 0));
-	const struct southbridge_intel_lynxpoint_config *config = NULL;
+const struct reg_script pch_early_init_script[] = {
+	/* Setup southbridge BARs */
+	REG_PCI_WRITE32(RCBA, RCBA_BASE_ADDRESS | 1),
+	REG_PCI_WRITE32(PMBASE, ACPI_BASE_ADDRESS | 1),
+	REG_PCI_WRITE8(ACPI_CNTL, ACPI_EN),
+	REG_PCI_WRITE32(GPIO_BASE, GPIO_BASE_ADDRESS | 1),
+	REG_PCI_WRITE8(GPIO_CNTL, GPIO_EN),
 
 	/* Set COM1/COM2 decode range */
-	pci_write_config16(PCH_LPC_DEV, LPC_IO_DEC, 0x0010);
+	REG_PCI_WRITE16(LPC_IO_DEC, 0x0010),
+	/* Enable legacy decode ranges */
+	REG_PCI_WRITE16(LPC_EN, CNF1_LPC_EN | CNF2_LPC_EN | GAMEL_LPC_EN |
+			COMA_LPC_EN | KBC_LPC_EN | MC_LPC_EN),
 
-	/* Enable SuperIO + MC + COM1 + PS/2 Keyboard/Mouse */
-	u16 lpc_config = CNF1_LPC_EN | CNF2_LPC_EN | GAMEL_LPC_EN |
-		COMA_LPC_EN | KBC_LPC_EN | MC_LPC_EN;
-	pci_write_config16(PCH_LPC_DEV, LPC_EN, lpc_config);
+	/* Enable IOAPIC */
+	REG_MMIO_WRITE16(RCBA_BASE_ADDRESS + OIC, 0x0100),
+	/* Read back for posted write */
+	REG_MMIO_READ16(RCBA_BASE_ADDRESS + OIC),
 
-	/* Set up generic decode ranges */
-	if (!dev)
+	/* Set HPET address and enable it */
+	REG_MMIO_RMW32(RCBA_BASE_ADDRESS + HPTC, ~3, (1 << 7)),
+	/* Read back for posted write */
+	REG_MMIO_READ32(RCBA_BASE_ADDRESS + HPTC),
+	/* Enable HPET to start counter */
+	REG_MMIO_OR32(HPET_BASE_ADDRESS + 0x10, (1 << 0)),
+
+	/* Disable reset */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + GCS, (1 << 5)),
+	/* TCO timer halt */
+	REG_IO_OR16(ACPI_BASE_ADDRESS + TCO1_CNT, TCO_TMR_HLT),
+
+	/* Enable upper 128 bytes of CMOS */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + RC, (1 << 2)),
+
+	/* Disable unused device (always) */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + FD, PCH_DISABLE_ALWAYS),
+
+	REG_SCRIPT_END
+};
+
+const struct reg_script pch_interrupt_init_script[] = {
+	/*
+	 *             GFX    INTA -> PIRQA (MSI)
+	 * D28IP_P1IP  PCIE   INTA -> PIRQA
+	 * D29IP_E1P   EHCI   INTA -> PIRQD
+	 * D20IP_XHCI  XHCI   INTA -> PIRQC (MSI)
+	 * D31IP_SIP   SATA   INTA -> PIRQF (MSI)
+	 * D31IP_SMIP  SMBUS  INTB -> PIRQG
+	 * D31IP_TTIP  THRT   INTC -> PIRQA
+	 * D27IP_ZIP   HDA    INTA -> PIRQG (MSI)
+	 */
+
+	/* Device interrupt pin register (board specific) */
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D31IP,
+			 (INTC << D31IP_TTIP) | (NOINT << D31IP_SIP2) |
+			 (INTB << D31IP_SMIP) | (INTA << D31IP_SIP)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D29IP, (INTA << D29IP_E1P)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D28IP,
+			 (INTA << D28IP_P1IP) | (INTC << D28IP_P3IP) |
+			 (INTB << D28IP_P4IP)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D27IP, (INTA << D27IP_ZIP)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D26IP, (INTA << D26IP_E2P)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D22IP, (NOINT << D22IP_MEI1IP)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D20IP, (INTA << D20IP_XHCI)),
+
+	/* Device interrupt route registers */
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D31IR, /* LPC */
+			 DIR_ROUTE(PIRQG, PIRQC, PIRQB, PIRQA)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D29IR, /* EHCI */
+			 DIR_ROUTE(PIRQD, PIRQD, PIRQD, PIRQD)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D28IR, /* PCIE */
+			 DIR_ROUTE(PIRQA, PIRQB, PIRQC, PIRQD)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D27IR, /* HDA */
+			 DIR_ROUTE(PIRQG, PIRQG, PIRQG, PIRQG)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D22IR, /* ME */
+			 DIR_ROUTE(PIRQA, PIRQA, PIRQA, PIRQA)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D21IR, /* SIO */
+			 DIR_ROUTE(PIRQE, PIRQF, PIRQF, PIRQF)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D20IR, /* XHCI */
+			 DIR_ROUTE(PIRQC, PIRQC, PIRQC, PIRQC)),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + D23IR, /* SDIO */
+			 DIR_ROUTE(PIRQH, PIRQH, PIRQH, PIRQH)),
+
+	REG_SCRIPT_END
+};
+
+static void pch_enable_lpc(void)
+{
+	/* Lookup device tree in romstage */
+	const struct device *dev;
+	const config_t *config;
+
+	dev = dev_find_slot(0, PCI_DEVFN(PCH_DEV_SLOT_LPC, 0));
+	if (!dev || !dev->chip_info)
 		return;
-	if (dev->chip_info)
-		config = dev->chip_info;
-	if (!config)
-		return;
+	config = dev->chip_info;
 
-	pci_write_config32(PCH_LPC_DEV, LPC_GEN1_DEC, config->gen1_dec);
-	pci_write_config32(PCH_LPC_DEV, LPC_GEN2_DEC, config->gen2_dec);
-	pci_write_config32(PCH_LPC_DEV, LPC_GEN3_DEC, config->gen3_dec);
-	pci_write_config32(PCH_LPC_DEV, LPC_GEN4_DEC, config->gen4_dec);
+	pci_write_config32(PCH_DEV_LPC, LPC_GEN1_DEC, config->gen1_dec);
+	pci_write_config32(PCH_DEV_LPC, LPC_GEN2_DEC, config->gen2_dec);
+	pci_write_config32(PCH_DEV_LPC, LPC_GEN3_DEC, config->gen3_dec);
+	pci_write_config32(PCH_DEV_LPC, LPC_GEN4_DEC, config->gen4_dec);
 }
 
-int early_pch_init(const void *gpio_map,
-                   const struct rcba_config_instruction *rcba_config)
+void pch_early_init(void)
 {
-	int wake_from_s3;
+	reg_script_run_on_dev(PCH_DEV_LPC, pch_early_init_script);
+	reg_script_run_on_dev(PCH_DEV_LPC, pch_interrupt_init_script);
 
 	pch_enable_lpc();
 
-	pch_enable_bars();
-
-#if CONFIG_INTEL_LYNXPOINT_LP
-	setup_pch_lp_gpios(gpio_map);
-#else
-	setup_pch_gpios(gpio_map);
-#endif
-
-#if CONFIG_CHROMEOS
-	save_chromeos_gpios();
-#endif
-
-	console_init();
-
-	pch_generic_setup();
-
-	/* Enable SMBus for reading SPDs. */
 	enable_smbus();
-
-	/* Early PCH RCBA settings */
-	pch_config_rcba(pch_early_config);
-
-	/* Mainboard RCBA settings */
-	pch_config_rcba(rcba_config);
-
-	wake_from_s3 = sleep_type_s3();
-
-#if CONFIG_ELOG_BOOT_COUNT
-	if (!wake_from_s3)
-		boot_count_increment();
-#endif
-
-	/* Report if we are waking from s3. */
-	return wake_from_s3;
 }
