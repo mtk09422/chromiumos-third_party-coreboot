@@ -17,14 +17,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _CPU_INTEL_HASWELL_H
-#define _CPU_INTEL_HASWELL_H
+#ifndef _BROADWELL_CPU_H_
+#define _BROADWELL_CPU_H_
 
 #include <arch/cpu.h>
+#include <device/device.h>
 
-/* Haswell CPU types */
-#define HASWELL_FAMILY_MOBILE		0x306c0
-#define HASWELL_FAMILY_ULT		0x40650
+/* CPU types */
+#define HASWELL_FAMILY_ULT	0x40650
+#define BROADWELL_FAMILY_ULT	0x306d0
 
 /* Haswell CPU steppings */
 #define HASWELL_STEPPING_MOBILE_A0	1
@@ -37,27 +38,33 @@
 /* CPU bus clock is fixed at 100MHz */
 #define CPU_BCLK		100
 
+/* Latency times in units of 1024ns. */
+#define C_STATE_LATENCY_CONTROL_0_LIMIT 0x42
+#define C_STATE_LATENCY_CONTROL_1_LIMIT 0x73
+#define C_STATE_LATENCY_CONTROL_2_LIMIT 0x91
+#define C_STATE_LATENCY_CONTROL_3_LIMIT 0xe4
+#define C_STATE_LATENCY_CONTROL_4_LIMIT 0x145
+#define C_STATE_LATENCY_CONTROL_5_LIMIT 0x1ef
 
+#define C_STATE_LATENCY_MICRO_SECONDS(limit, base) \
+	(((1 << ((base)*5)) * (limit)) / 1000)
+#define C_STATE_LATENCY_FROM_LAT_REG(reg) \
+	C_STATE_LATENCY_MICRO_SECONDS(C_STATE_LATENCY_CONTROL_ ##reg## _LIMIT, \
+	                              (IRTL_1024_NS >> 10))
 
-#if !defined(__ROMCC__) // FIXME romcc should handle below constructs
-
-#ifdef __SMM__
-/* Lock MSRs */
-void intel_cpu_haswell_finalize_smm(void);
-#else
 /* Configure power limits for turbo mode */
 void set_power_limits(u8 power_limit_1_time);
 int cpu_config_tdp_levels(void);
-/* Determine if HyperThreading is disabled. The variable is not valid until
- * setup_ap_init() has been called. */
+
+/*
+ * Determine if HyperThreading is disabled.
+ * The variable is not valid until setup_ap_init() has been called.
+ */
 extern int ht_disabled;
-#endif
 
 /* CPU identification */
-int haswell_family_model(void);
-int haswell_stepping(void);
-int haswell_is_ult(void);
-
-#endif
+u32 cpu_family_model(void);
+u32 cpu_stepping(void);
+int cpu_is_ult(void);
 
 #endif
