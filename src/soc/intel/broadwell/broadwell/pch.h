@@ -122,7 +122,6 @@ void southbridge_smm_enable_smi(void);
 #else
 void enable_smbus(void);
 void enable_usb_bar(void);
-int smbus_read_byte(unsigned device, unsigned address);
 int early_spi_read(u32 offset, u32 size, u8 *buffer);
 int early_pch_init(const void *gpio_map,
                    const struct rcba_config_instruction *rcba_config);
@@ -154,33 +153,6 @@ void pch_enable_lpc(void);
 #define PCH_XHCI_DEV		PCI_DEV(0, 0x14, 0)
 #define PCH_ME_DEV		PCI_DEV(0, 0x16, 0)
 #define PCH_PCIE_DEV_SLOT	28
-
-/* PCI Configuration Space (D31:F3): SMBus */
-#define PCH_SMBUS_DEV		PCI_DEV(0, 0x1f, 3)
-#define SMB_BASE		0x20
-#define HOSTC			0x40
-#define SMB_RCV_SLVA		0x09
-
-/* HOSTC bits */
-#define I2C_EN			(1 << 2)
-#define SMB_SMI_EN		(1 << 1)
-#define HST_EN			(1 << 0)
-
-/* SMBus I/O bits. */
-#define SMBHSTSTAT		0x0
-#define SMBHSTCTL		0x2
-#define SMBHSTCMD		0x3
-#define SMBXMITADD		0x4
-#define SMBHSTDAT0		0x5
-#define SMBHSTDAT1		0x6
-#define SMBBLKDAT		0x7
-#define SMBTRNSADD		0x9
-#define SMBSLVDATA		0xa
-#define SMLINK_PIN_CTL		0xe
-#define SMBUS_PIN_CTL		0xf
-
-#define SMBUS_TIMEOUT		(10 * 1000 * 100)
-
 
 /* Southbridge IO BARs */
 

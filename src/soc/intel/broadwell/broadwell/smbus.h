@@ -19,83 +19,34 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <device/smbus_def.h>
-#include "pch.h"
+#ifndef _BROADWELL_SMBUS_H_
+#define _BROADWELL_SMBUS_H_
 
-static void smbus_delay(void)
-{
-	inb(0x80);
-}
+/* PCI Configuration Space (D31:F3): SMBus */
+#define SMB_BASE		0x20
+#define HOSTC			0x40
+#define  HST_EN			(1 << 0)
+#define SMB_RCV_SLVA		0x09
 
-static int smbus_wait_until_ready(u16 smbus_base)
-{
-	unsigned loops = SMBUS_TIMEOUT;
-	unsigned char byte;
-	do {
-		smbus_delay();
-		if (--loops == 0)
-			break;
-		byte = inb(smbus_base + SMBHSTSTAT);
-	} while (byte & 1);
-	return loops ? 0 : -1;
-}
+/* SMBus I/O bits. */
+#define SMBHSTSTAT		0x0
+#define SMBHSTCTL		0x2
+#define SMBHSTCMD		0x3
+#define SMBXMITADD		0x4
+#define SMBHSTDAT0		0x5
+#define SMBHSTDAT1		0x6
+#define SMBBLKDAT		0x7
+#define SMBTRNSADD		0x9
+#define SMBSLVDATA		0xa
+#define SMLINK_PIN_CTL		0xe
+#define SMBUS_PIN_CTL		0xf
 
-static int smbus_wait_until_done(u16 smbus_base)
-{
-	unsigned loops = SMBUS_TIMEOUT;
-	unsigned char byte;
-	do {
-		smbus_delay();
-		if (--loops == 0)
-			break;
-		byte = inb(smbus_base + SMBHSTSTAT);
-	} while ((byte & 1) || (byte & ~((1 << 6) | (1 << 0))) == 0);
-	return loops ? 0 : -1;
-}
+#define SMBUS_TIMEOUT		(10 * 1000 * 100)
+#define SMBUS_SLAVE_ADDR	0x24
 
-static int do_smbus_read_byte(unsigned smbus_base, unsigned device, unsigned address)
-{
-	unsigned char global_status_register;
-	unsigned char byte;
+int do_smbus_read_byte(unsigned smbus_base, unsigned device,
+		       unsigned address);
+int do_smbus_write_byte(unsigned smbus_base, unsigned device,
+			unsigned address, unsigned data);
 
-	if (smbus_wait_until_ready(smbus_base) < 0) {
-		return SMBUS_WAIT_UNTIL_READY_TIMEOUT;
-	}
-	/* Setup transaction */
-	/* Disable interrupts */
-	outb(inb(smbus_base + SMBHSTCTL) & (~1), smbus_base + SMBHSTCTL);
-	/* Set the device I'm talking too */
-	outb(((device & 0x7f) << 1) | 1, smbus_base + SMBXMITADD);
-	/* Set the command/address... */
-	outb(address & 0xff, smbus_base + SMBHSTCMD);
-	/* Set up for a byte data read */
-	outb((inb(smbus_base + SMBHSTCTL) & 0xe3) | (0x2 << 2),
-	     (smbus_base + SMBHSTCTL));
-	/* Clear any lingering errors, so the transaction will run */
-	outb(inb(smbus_base + SMBHSTSTAT), smbus_base + SMBHSTSTAT);
-
-	/* Clear the data byte... */
-	outb(0, smbus_base + SMBHSTDAT0);
-
-	/* Start the command */
-	outb((inb(smbus_base + SMBHSTCTL) | 0x40),
-	     smbus_base + SMBHSTCTL);
-
-	/* Poll for transaction completion */
-	if (smbus_wait_until_done(smbus_base) < 0) {
-		return SMBUS_WAIT_UNTIL_DONE_TIMEOUT;
-	}
-
-	global_status_register = inb(smbus_base + SMBHSTSTAT);
-
-	/* Ignore the "In Use" status... */
-	global_status_register &= ~(3 << 5);
-
-	/* Read results of transaction */
-	byte = inb(smbus_base + SMBHSTDAT0);
-	if (global_status_register != (1 << 1)) {
-		return SMBUS_ERROR;
-	}
-	return byte;
-}
-
+#endif
