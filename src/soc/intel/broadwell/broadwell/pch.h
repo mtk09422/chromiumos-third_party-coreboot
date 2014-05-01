@@ -59,15 +59,6 @@ void pch_log_state(void);
 #endif
 void acpi_create_intel_hpet(acpi_hpet_t * hpet);
 void acpi_create_serialio_ssdt(acpi_header_t *ssdt);
-
-#else
-void enable_smbus(void);
-void enable_usb_bar(void);
-int early_spi_read(u32 offset, u32 size, u8 *buffer);
-int early_pch_init(const void *gpio_map,
-                   const struct rcba_config_instruction *rcba_config);
-void pch_enable_lpc(void);
-#endif /* !__PRE_RAM__ && !__SMM__ */
 #endif /* __ASSEMBLER__ */
 
 

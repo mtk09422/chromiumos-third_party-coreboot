@@ -61,39 +61,6 @@
 
 #if !defined(__ROMCC__) // FIXME romcc should handle below constructs
 
-#if defined(__PRE_RAM__)
-struct pei_data;
-struct rcba_config_instruction;
-struct romstage_params {
-	struct pei_data *pei_data;
-	const void *gpio_map;
-	const struct rcba_config_instruction *rcba_config;
-	unsigned long bist;
-	void (*copy_spd)(struct pei_data *);
-};
-void mainboard_romstage_entry(unsigned long bist);
-void romstage_common(const struct romstage_params *params);
-/* romstage_main is called from the cache-as-ram assembly file. The return
- * value is the stack value to be used for romstage once cache-as-ram is
- * torn down. The following values are pushed onto the stack to setup the
- * MTRRs:
- *   +0: Number of MTRRs
- *   +4: MTTR base 0 31:0
- *   +8: MTTR base 0 63:32
- *  +12: MTTR mask 0 31:0
- *  +16: MTTR mask 0 63:32
- *  +20: MTTR base 1 31:0
- *  +24: MTTR base 1 63:32
- *  +28: MTTR mask 1 31:0
- *  +32: MTTR mask 1 63:32
- *  ...
- */
-void * asmlinkage romstage_main(unsigned long bist);
-/* romstage_after_car() is the C function called after cache-as-ram has
- * been torn down. It is responsible for loading the ramstage. */
-void romstage_after_car(void);
-#endif
-
 #ifdef __SMM__
 /* Lock MSRs */
 void intel_cpu_haswell_finalize_smm(void);
