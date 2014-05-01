@@ -24,63 +24,61 @@
 #include <device/device.h>
 #include <device/pci.h>
 #include <device/pci_def.h>
-#include "pch.h"
+#include <broadwell/iobp.h>
+#include <broadwell/pch.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/ramstage.h>
+#include <broadwell/rcba.h>
+#include <broadwell/serialio.h>
+#include <broadwell/spi.h>
 
-static device_t pch_get_lpc_device(void)
+u8 pch_revision(void)
 {
-#ifdef __SMM__
-	return PCI_DEV(0, 0x1f, 0);
-#else
-	return dev_find_slot(0, PCI_DEVFN(0x1f, 0));
-#endif
+	return pci_read_config8(PCH_DEV_LPC, PCI_REVISION_ID);
 }
 
-int pch_silicon_revision(void)
+u16 pch_type(void)
 {
-	static int pch_revision_id = -1;
-
-	if (pch_revision_id < 0)
-		pch_revision_id = pci_read_config8(pch_get_lpc_device(),
-						   PCI_REVISION_ID);
-	return pch_revision_id;
+	return pci_read_config16(PCH_DEV_LPC, PCI_DEVICE_ID);
 }
 
-int pch_silicon_type(void)
+/* Return 1 if PCH type is WildcatPoint */
+int pch_is_wpt(void)
 {
-	static int pch_type = -1;
-
-	if (pch_type < 0)
-		pch_type = pci_read_config8(pch_get_lpc_device(),
-					    PCI_DEVICE_ID + 1);
-	return pch_type;
+	return ((pch_type() & 0xfff0) == 0x9cc0) ? 1 : 0;
 }
 
-int pch_is_lp(void)
+/* Return 1 if PCH type is WildcatPoint ULX */
+int pch_is_wpt_ulx(void)
 {
-	return pch_silicon_type() == PCH_TYPE_LPT_LP;
+	u16 lpcid = pch_type();
+
+	switch (lpcid) {
+	case PCH_WPT_BDW_Y_SAMPLE:
+	case PCH_WPT_BDW_Y_PREMIUM:
+	case PCH_WPT_BDW_Y_BASE:
+		return 1;
+	}
+
+	return 0;
 }
 
-u16 get_pmbase(void)
+u32 pch_read_soft_strap(int id)
 {
-	static u16 pmbase;
+	u32 fdoc;
 
-	if (!pmbase)
-		pmbase = pci_read_config16(pch_get_lpc_device(),
-					   PMBASE) & 0xfffc;
-	return pmbase;
+	fdoc = SPIBAR32(SPIBAR_FDOC);
+	fdoc &= ~0x00007ffc;
+	SPIBAR32(SPIBAR_FDOC) = fdoc;
+
+	fdoc |= 0x00004000;
+	fdoc |= id * 4;
+	SPIBAR32(SPIBAR_FDOC) = fdoc;
+
+	return SPIBAR32(SPIBAR_FDOD);
 }
 
-u16 get_gpiobase(void)
-{
-	static u16 gpiobase;
-
-	if (!gpiobase)
-		gpiobase = pci_read_config16(pch_get_lpc_device(),
-					     GPIOBASE) & 0xfffc;
-	return gpiobase;
-}
-
-#ifndef __SMM__
+#ifndef __PRE_RAM__
 
 /* Put device in D3Hot Power State */
 static void pch_enable_d3hot(device_t dev)
@@ -184,16 +182,16 @@ void pch_disable_devfn(device_t dev)
 	}
 }
 
-void pch_enable(device_t dev)
+void broadwell_pch_enable_dev(device_t dev)
 {
 	u32 reg32;
 
 	/* PCH PCIe Root Ports are handled in PCIe driver. */
-	if (PCI_SLOT(dev->path.pci.devfn) == PCH_PCIE_DEV_SLOT)
+	if (PCI_SLOT(dev->path.pci.devfn) == PCH_DEV_SLOT_PCIE)
 		return;
 
 	if (!dev->enabled) {
-		printk(BIOS_DEBUG, "%s: Disabling device\n",  dev_path(dev));
+		printk(BIOS_DEBUG, "%s: Disabling device\n", dev_path(dev));
 
 		/* Ensure memory, io, and bus master are all disabled */
 		reg32 = pci_read_config32(dev, PCI_COMMAND);
@@ -211,9 +209,4 @@ void pch_enable(device_t dev)
 	}
 }
 
-struct chip_operations southbridge_intel_lynxpoint_ops = {
-	CHIP_NAME("Intel Series 8 (Lynx Point) Southbridge")
-	.enable_dev = pch_enable,
-};
-
-#endif /* __SMM__ */
+#endif
