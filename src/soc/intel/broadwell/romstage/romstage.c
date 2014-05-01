@@ -76,6 +76,8 @@ void * asmlinkage romstage_main(unsigned long bist,
 	/* Print useful platform information */
 	report_platform_info();
 
+	/* Set CPU frequency to maximum */
+	set_max_freq();
 
 	/* Call into mainboard. */
 	mainboard_romstage_entry(&rp);
