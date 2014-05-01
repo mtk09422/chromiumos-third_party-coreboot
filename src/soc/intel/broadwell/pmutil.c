@@ -19,7 +19,7 @@
 
 /*
  * Helper functions for dealing with power management registers
- * and the differences between LynxPoint-H and LynxPoint-LP.
+ * and the differences between PCH variants.
  */
 
 #include <arch/io.h>
@@ -27,17 +27,11 @@
 #include <device/pci.h>
 #include <device/pci_def.h>
 #include <console/console.h>
-#include "pch.h"
-
-#if CONFIG_INTEL_LYNXPOINT_LP
-#include "lp_gpio.h"
-#endif
-
-/* These defines are here to handle the LP variant code dynamically. If these
- * values are defined in lp_gpio.h but when a non-LP board is being built, the
- * build will fail. */
-#define GPIO_ALT_GPI_SMI_STS	0x50
-#define GPIO_ALT_GPI_SMI_EN	0x54
+#include <broadwell/iomap.h>
+#include <broadwell/lpc.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/pm.h>
+#include <broadwell/gpio.h>
 
 /* Print status bits with descriptive names */
 static void print_status_bits(u32 status, const char *bit_names[])
@@ -79,17 +73,17 @@ static void print_gpio_status(u32 status, int start)
 /* Enable events in PM1 control register */
 void enable_pm1_control(u32 mask)
 {
-	u32 pm1_cnt = inl(get_pmbase() + PM1_CNT);
+	u32 pm1_cnt = inl(ACPI_BASE_ADDRESS + PM1_CNT);
 	pm1_cnt |= mask;
-	outl(pm1_cnt, get_pmbase() + PM1_CNT);
+	outl(pm1_cnt, ACPI_BASE_ADDRESS + PM1_CNT);
 }
 
 /* Disable events in PM1 control register */
 void disable_pm1_control(u32 mask)
 {
-	u32 pm1_cnt = inl(get_pmbase() + PM1_CNT);
+	u32 pm1_cnt = inl(ACPI_BASE_ADDRESS + PM1_CNT);
 	pm1_cnt &= ~mask;
-	outl(pm1_cnt, get_pmbase() + PM1_CNT);
+	outl(pm1_cnt, ACPI_BASE_ADDRESS + PM1_CNT);
 }
 
 
@@ -100,8 +94,8 @@ void disable_pm1_control(u32 mask)
 /* Clear and return PM1 status register */
 static u16 reset_pm1_status(void)
 {
-	u16 pm1_sts = inw(get_pmbase() + PM1_STS);
-	outw(pm1_sts, get_pmbase() + PM1_STS);
+	u16 pm1_sts = inw(ACPI_BASE_ADDRESS + PM1_STS);
+	outw(pm1_sts, ACPI_BASE_ADDRESS + PM1_STS);
 	return pm1_sts;
 }
 
@@ -138,7 +132,7 @@ u16 clear_pm1_status(void)
 /* Set the PM1 register to events */
 void enable_pm1(u16 events)
 {
-	outw(events, get_pmbase() + PM1_EN);
+	outw(events, ACPI_BASE_ADDRESS + PM1_EN);
 }
 
 
@@ -149,8 +143,8 @@ void enable_pm1(u16 events)
 /* Clear and return SMI status register */
 static u32 reset_smi_status(void)
 {
-	u32 smi_sts = inl(get_pmbase() + SMI_STS);
-	outl(smi_sts, get_pmbase() + SMI_STS);
+	u32 smi_sts = inl(ACPI_BASE_ADDRESS + SMI_STS);
+	outl(smi_sts, ACPI_BASE_ADDRESS + SMI_STS);
 	return smi_sts;
 }
 
@@ -199,17 +193,17 @@ u32 clear_smi_status(void)
 /* Enable SMI event */
 void enable_smi(u32 mask)
 {
-	u32 smi_en = inl(get_pmbase() + SMI_EN);
+	u32 smi_en = inl(ACPI_BASE_ADDRESS + SMI_EN);
 	smi_en |= mask;
-	outl(smi_en, get_pmbase() + SMI_EN);
+	outl(smi_en, ACPI_BASE_ADDRESS + SMI_EN);
 }
 
 /* Disable SMI event */
 void disable_smi(u32 mask)
 {
-	u32 smi_en = inl(get_pmbase() + SMI_EN);
+	u32 smi_en = inl(ACPI_BASE_ADDRESS + SMI_EN);
 	smi_en &= ~mask;
-	outl(smi_en, get_pmbase() + SMI_EN);
+	outl(smi_en, ACPI_BASE_ADDRESS + SMI_EN);
 }
 
 
@@ -222,27 +216,10 @@ static u32 reset_alt_smi_status(void)
 {
 	u32 alt_sts, alt_en;
 
-	if (pch_is_lp()) {
-		/* LynxPoint-LP moves this to GPIO region as dword */
-		alt_sts = inl(get_gpiobase() + GPIO_ALT_GPI_SMI_STS);
-		outl(alt_sts, get_gpiobase() + GPIO_ALT_GPI_SMI_STS);
-
-		alt_en = inl(get_gpiobase() + GPIO_ALT_GPI_SMI_EN);
-	} else {
-		u16 pmbase = get_pmbase();
-
-		/* LynxPoint-H adds a second enable/status word */
-		alt_sts = inw(pmbase + ALT_GP_SMI_STS2);
-		outw(alt_sts & 0xffff, pmbase + ALT_GP_SMI_STS2);
-
-		alt_sts <<= 16;
-		alt_sts |= inw(pmbase + ALT_GP_SMI_STS);
-		outw(alt_sts & 0xffff, pmbase + ALT_GP_SMI_STS);
-
-		alt_en = inw(pmbase + ALT_GP_SMI_EN2);
-		alt_en <<= 16;
-		alt_en |= inw(pmbase + ALT_GP_SMI_EN);
-	}
+	/* Low Power variant moves this to GPIO region as dword */
+	alt_sts = inl(GPIO_BASE_ADDRESS + GPIO_ALT_GPI_SMI_STS);
+	outl(alt_sts, GPIO_BASE_ADDRESS + GPIO_ALT_GPI_SMI_STS);
+	alt_en = inl(GPIO_BASE_ADDRESS + GPIO_ALT_GPI_SMI_EN);
 
 	/* Only report enabled events */
 	return alt_sts & alt_en;
@@ -256,25 +233,8 @@ static u32 print_alt_smi_status(u32 alt_sts)
 
 	printk(BIOS_DEBUG, "ALT_STS: ");
 
-	if (pch_is_lp()) {
-		/* First 16 events are GPIO 32-47 */
-		print_gpio_status(alt_sts & 0xffff, 32);
-	} else {
-		const char *alt_sts_bits_high[] = {
-			[0] = "GPIO17",
-			[1] = "GPIO19",
-			[2] = "GPIO21",
-			[3] = "GPIO22",
-			[4] = "GPIO43",
-			[5] = "GPIO56",
-			[6] = "GPIO57",
-			[7] = "GPIO60",
-		};
-
-		/* First 16 events are GPIO 0-15 */
-		print_gpio_status(alt_sts & 0xffff, 0);
-		print_status_bits(alt_sts >> 16, alt_sts_bits_high);
-	}
+	/* First 16 events are GPIO 32-47 */
+	print_gpio_status(alt_sts & 0xffff, 32);
 
 	printk(BIOS_DEBUG, "\n");
 
@@ -290,26 +250,11 @@ u32 clear_alt_smi_status(void)
 /* Enable GPIO SMI events */
 void enable_alt_smi(u32 mask)
 {
-	if (pch_is_lp()) {
-		u32 alt_en;
+	u32 alt_en;
 
-		alt_en = inl(get_gpiobase() + GPIO_ALT_GPI_SMI_EN);
-		alt_en |= mask;
-		outl(alt_en, get_gpiobase() + GPIO_ALT_GPI_SMI_EN);
-	} else {
-		u16 pmbase = get_pmbase();
-		u16 alt_en;
-
-		/* Lower enable register */
-		alt_en = inw(pmbase + ALT_GP_SMI_EN);
-		alt_en |= mask & 0xffff;
-		outw(alt_en, pmbase + ALT_GP_SMI_EN);
-
-		/* Upper enable register */
-		alt_en = inw(pmbase + ALT_GP_SMI_EN2);
-		alt_en |= (mask >> 16) & 0xffff;
-		outw(alt_en, pmbase + ALT_GP_SMI_EN2);
-	}
+	alt_en = inl(GPIO_BASE_ADDRESS + GPIO_ALT_GPI_SMI_EN);
+	alt_en |= mask;
+	outl(alt_en, GPIO_BASE_ADDRESS + GPIO_ALT_GPI_SMI_EN);
 }
 
 
@@ -320,9 +265,9 @@ void enable_alt_smi(u32 mask)
 /* Clear TCO status and return events that are enabled and active */
 static u32 reset_tco_status(void)
 {
-	u32 tcobase = get_pmbase() + 0x60;
+	u32 tcobase = ACPI_BASE_ADDRESS + 0x60;
 	u32 tco_sts = inl(tcobase + 0x04);
-	u32 tco_en = inl(get_pmbase() + 0x68);
+	u32 tco_en = inl(ACPI_BASE_ADDRESS + 0x68);
 
 	/* Don't clear BOOT_STS before SECOND_TO_STS */
 	outl(tco_sts & ~(1 << 18), tcobase + 0x04);
@@ -373,10 +318,8 @@ u32 clear_tco_status(void)
 /* Enable TCO SCI */
 void enable_tco_sci(void)
 {
-	u16 gpe0_sts = pch_is_lp() ? LP_GPE0_STS_4 : GPE0_STS;
-
 	/* Clear pending events */
-	outl(get_pmbase() + gpe0_sts, TCOSCI_STS);
+	outl(ACPI_BASE_ADDRESS + GPE0_STS(3), TCOSCI_STS);
 
 	/* Enable TCO SCI events */
 	enable_gpe(TCOSCI_EN);
@@ -388,12 +331,12 @@ void enable_tco_sci(void)
  */
 
 /* Clear a GPE0 status and return events that are enabled and active */
-static u32 reset_gpe_status(u16 sts_reg, u16 en_reg)
+static u32 reset_gpe(u16 sts_reg, u16 en_reg)
 {
-	u32 gpe0_sts = inl(get_pmbase() + sts_reg);
-	u32 gpe0_en = inl(get_pmbase() + en_reg);
+	u32 gpe0_sts = inl(ACPI_BASE_ADDRESS + sts_reg);
+	u32 gpe0_en = inl(ACPI_BASE_ADDRESS + en_reg);
 
-	outl(gpe0_sts, get_pmbase() + sts_reg);
+	outl(gpe0_sts, ACPI_BASE_ADDRESS + sts_reg);
 
 	/* Only report enabled events */
 	return gpe0_sts & gpe0_en;
@@ -425,62 +368,10 @@ static u32 print_gpe_gpio(u32 gpe0_sts, int start)
 	return gpe0_sts;
 }
 
-/* Print, clear, and return LynxPoint-H GPE0 status */
-static u32 clear_lpt_gpe_status(void)
+/* Clear all GPE status and return "standard" GPE event status */
+u32 clear_gpe_status(void)
 {
-	const char *gpe0_sts_bits_low[] = {
-		[1] = "HOTPLUG",
-		[2] = "SWGPE",
-		[6] = "TCO_SCI",
-		[7] = "SMB_WAK",
-		[8] = "RI",
-		[9] = "PCI_EXP",
-		[10] = "BATLOW",
-		[11] = "PME",
-		[13] = "PME_B0",
-		[16] = "GPIO0",
-		[17] = "GPIO1",
-		[18] = "GPIO2",
-		[19] = "GPIO3",
-		[20] = "GPIO4",
-		[21] = "GPIO5",
-		[22] = "GPIO6",
-		[23] = "GPIO7",
-		[24] = "GPIO8",
-		[25] = "GPIO9",
-		[26] = "GPIO10",
-		[27] = "GPIO11",
-		[28] = "GPIO12",
-		[29] = "GPIO13",
-		[30] = "GPIO14",
-		[31] = "GPIO15",
-	};
-	const char *gpe0_sts_bits_high[] = {
-		[3] = "GPIO27",
-		[6] = "WADT",
-		[24] = "GPIO17",
-		[25] = "GPIO19",
-		[26] = "GPIO21",
-		[27] = "GPIO22",
-		[28] = "GPIO43",
-		[29] = "GPIO56",
-		[30] = "GPIO57",
-		[31] = "GPIO60",
-	};
-
-	/* High bits */
-	print_gpe_status(reset_gpe_status(GPE0_STS_2, GPE0_EN_2),
-			 gpe0_sts_bits_high);
-
-	/* Standard GPE and GPIO 0-31 */
-	return print_gpe_status(reset_gpe_status(GPE0_STS, GPE0_EN),
-				gpe0_sts_bits_low);
-}
-
-/* Print, clear, and return LynxPoint-LP GPE0 status */
-static u32 clear_lpt_lp_gpe_status(void)
-{
-	const char *gpe0_sts_4_bits[] = {
+	const char *gpe0_sts_3_bits[] = {
 		[1] = "HOTPLUG",
 		[2] = "SWGPE",
 		[6] = "TCO_SCI",
@@ -494,43 +385,20 @@ static u32 clear_lpt_lp_gpe_status(void)
 		[18] = "WADT"
 	};
 
-	/* GPIO 0-31 */
-	print_gpe_gpio(reset_gpe_status(LP_GPE0_STS_1, LP_GPE0_EN_1), 0);
-
-	/* GPIO 32-63 */
-	print_gpe_gpio(reset_gpe_status(LP_GPE0_STS_2, LP_GPE0_EN_2), 32);
-
-	/* GPIO 64-94 */
-	print_gpe_gpio(reset_gpe_status(LP_GPE0_STS_3, LP_GPE0_EN_3), 64);
-
-	/* Standard GPE */
-	return print_gpe_status(reset_gpe_status(LP_GPE0_STS_4, LP_GPE0_EN_4),
-				gpe0_sts_4_bits);
-}
-
-/* Clear all GPE status and return "standard" GPE event status */
-u32 clear_gpe_status(void)
-{
-	if (pch_is_lp())
-		return clear_lpt_lp_gpe_status();
-	else
-		return clear_lpt_gpe_status();
+	print_gpe_gpio(reset_gpe(GPE0_STS(GPE_31_0), GPE0_EN(GPE_31_0)), 0);
+	print_gpe_gpio(reset_gpe(GPE0_STS(GPE_63_32), GPE0_EN(GPE_63_32)), 32);
+	print_gpe_gpio(reset_gpe(GPE0_STS(GPE_94_64), GPE0_EN(GPE_94_64)), 64);
+	return print_gpe_status(reset_gpe(GPE0_STS(GPE_STD), GPE0_EN(GPE_STD)),
+				gpe0_sts_3_bits);
 }
 
 /* Enable all requested GPE */
 void enable_all_gpe(u32 set1, u32 set2, u32 set3, u32 set4)
 {
-	u16 pmbase = get_pmbase();
-
-	if (pch_is_lp()) {
-		outl(set1, pmbase + LP_GPE0_EN_1);
-		outl(set2, pmbase + LP_GPE0_EN_2);
-		outl(set3, pmbase + LP_GPE0_EN_3);
-		outl(set4, pmbase + LP_GPE0_EN_4);
-	} else {
-		outl(set1, pmbase + GPE0_EN);
-		outl(set2, pmbase + GPE0_EN_2);
-	}
+	outl(set1, ACPI_BASE_ADDRESS + GPE0_EN(GPE_31_0));
+	outl(set2, ACPI_BASE_ADDRESS + GPE0_EN(GPE_63_32));
+	outl(set3, ACPI_BASE_ADDRESS + GPE0_EN(GPE_94_64));
+	outl(set4, ACPI_BASE_ADDRESS + GPE0_EN(GPE_STD));
 }
 
 /* Disable all GPE */
@@ -542,17 +410,15 @@ void disable_all_gpe(void)
 /* Enable a standard GPE */
 void enable_gpe(u32 mask)
 {
-	u32 gpe0_reg = pch_is_lp() ? LP_GPE0_EN_4 : GPE0_EN;
-	u32 gpe0_en = inl(get_pmbase() + gpe0_reg);
+	u32 gpe0_en = inl(ACPI_BASE_ADDRESS + GPE0_EN(GPE_STD));
 	gpe0_en |= mask;
-	outl(gpe0_en, get_pmbase() + gpe0_reg);
+	outl(gpe0_en, ACPI_BASE_ADDRESS + GPE0_EN(GPE_STD));
 }
 
 /* Disable a standard GPE */
 void disable_gpe(u32 mask)
 {
-	u32 gpe0_reg = pch_is_lp() ? LP_GPE0_EN_4 : GPE0_EN;
-	u32 gpe0_en = inl(get_pmbase() + gpe0_reg);
+	u32 gpe0_en = inl(ACPI_BASE_ADDRESS + GPE0_EN(GPE_STD));
 	gpe0_en &= ~mask;
-	outl(gpe0_en, get_pmbase() + gpe0_reg);
+	outl(gpe0_en, ACPI_BASE_ADDRESS + GPE0_EN(GPE_STD));
 }
