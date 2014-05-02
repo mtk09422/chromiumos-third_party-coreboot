@@ -128,6 +128,18 @@ static acpi_cstate_t cstate_map[NUM_C_STATES] = {
 	},
 };
 
+static int cstate_set_s0ix[3] = {
+	C_STATE_C1E,
+	C_STATE_C7S_LONG_LAT,
+	C_STATE_C10
+};
+
+static int cstate_set_non_s0ix[3] = {
+	C_STATE_C1E,
+	C_STATE_C3,
+	C_STATE_C7S_LONG_LAT
+};
+
 static int get_cores_per_package(void)
 {
 	struct cpuinfo_x86 c;
@@ -142,89 +154,6 @@ static int get_cores_per_package(void)
 	cores = result.ebx & 0xff;
 
 	return cores;
-}
-
-static int generate_cstate_entries(acpi_cstate_t *cstates,
-				   int c1, int c2, int c3)
-{
-	int length, cstate_count = 0;
-
-	/* Count number of active C-states */
-	if (c1 > 0)
-		++cstate_count;
-	if (c2 > 0)
-		++cstate_count;
-	if (c3 > 0)
-		++cstate_count;
-	if (!cstate_count)
-		return 0;
-
-	length = acpigen_write_package(cstate_count + 1);
-	length += acpigen_write_byte(cstate_count);
-
-	/* Add an entry if the level is enabled */
-	if (c1 > 0) {
-		cstates[c1].ctype = 1;
-		length += acpigen_write_CST_package_entry(&cstates[c1]);
-	}
-	if (c2 > 0) {
-		cstates[c2].ctype = 2;
-		length += acpigen_write_CST_package_entry(&cstates[c2]);
-	}
-	if (c3 > 0) {
-		cstates[c3].ctype = 3;
-		length += acpigen_write_CST_package_entry(&cstates[c3]);
-	}
-
-	acpigen_patch_len(length - 1);
-	return length;
-}
-
-static int generate_C_state_entries(void)
-{
-	struct cpu_info *info;
-	struct cpu_driver *cpu;
-	int len, lenif;
-	device_t lapic;
-	struct cpu_intel_haswell_config *conf = NULL;
-
-	/* Find the SpeedStep CPU in the device tree using magic APIC ID */
-	lapic = dev_find_lapic(SPEEDSTEP_APIC_MAGIC);
-	if (!lapic)
-		return 0;
-	conf = lapic->chip_info;
-	if (!conf)
-		return 0;
-
-	/* Find CPU map of supported C-states */
-	info = cpu_info();
-	if (!info)
-		return 0;
-	cpu = find_cpu_driver(info->cpu);
-	if (!cpu || !cpu->cstates)
-		return 0;
-
-	len = acpigen_emit_byte(0x14);		/* MethodOp */
-	len += acpigen_write_len_f();		/* PkgLength */
-	len += acpigen_emit_namestring("_CST");
-	len += acpigen_emit_byte(0x00);		/* No Arguments */
-
-	/* If running on AC power */
-	len += acpigen_emit_byte(0xa0);		/* IfOp */
-	lenif = acpigen_write_len_f();		/* PkgLength */
-	lenif += acpigen_emit_namestring("PWRS");
-	lenif += acpigen_emit_byte(0xa4);	/* ReturnOp */
-	lenif += generate_cstate_entries(cpu->cstates, conf->c1_acpower,
-					 conf->c2_acpower, conf->c3_acpower);
-	acpigen_patch_len(lenif - 1);
-	len += lenif;
-
-	/* Else on battery power */
-	len += acpigen_emit_byte(0xa4);	/* ReturnOp */
-	len += generate_cstate_entries(cpu->cstates, conf->c1_battery,
-					conf->c2_battery, conf->c3_battery);
-	acpigen_patch_len(len - 1);
-	return len;
 }
 
 void acpi_fill_in_fadt(acpi_fadt_t *fadt)
@@ -390,6 +319,28 @@ static int generate_T_state_entries(int core, int cores_per_package)
 			ARRAY_SIZE(tss_table_coarse), tss_table_coarse);
 
 	return len;
+}
+
+static int generate_C_state_entries(void)
+{
+	device_t dev = SA_DEV_ROOT;
+	config_t *config = dev->chip_info;
+	acpi_cstate_t map[3];
+	int *set;
+	int i;
+
+	if (config->s0ix_enable)
+		set = cstate_set_s0ix;
+	else
+		set = cstate_set_non_s0ix;
+
+	for (i = 0; i < 3; i++) {
+		memcpy(&map[i], &cstate_map[set[i]], sizeof(acpi_cstate_t));
+		map[i].ctype = i + 1;
+	}
+
+	/* Generate C-state tables */
+	return acpigen_write_CST_package(map, ARRAY_SIZE(map));
 }
 
 static int calculate_power(int tdp, int p1_ratio, int ratio)
