@@ -23,152 +23,226 @@
 #include <device/device.h>
 #include <device/pci.h>
 #include <device/pci_ids.h>
-#include <drivers/intel/gma/i915_reg.h>
-#include <drivers/intel/gma/i915.h>
-#include <cpu/intel/haswell/haswell.h>
 #include <stdlib.h>
 #include <string.h>
+#include <reg_script.h>
+#include <drivers/intel/gma/i915_reg.h>
+#include <broadwell/cpu.h>
 #include <broadwell/ramstage.h>
+#include <broadwell/systemagent.h>
+#include <chip.h>
 
-#include "chip.h"
-#include "haswell.h"
+#define GT_RETRY 		1000
+#define GT_CDCLK_337		0
+#define GT_CDCLK_450		1
+#define GT_CDCLK_540		2
+#define GT_CDCLK_675		3
 
-#if CONFIG_CHROMEOS
-#include <vendorcode/google/chromeos/chromeos.h>
-#endif
+struct reg_script haswell_early_init_script[] = {
+	/* Enable Force Wake */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa180, 0x00000020),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa188, 0x00010001),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x130044, 1, 1, GT_RETRY),
 
-struct gt_reg {
-	u32 reg;
-	u32 andmask;
-	u32 ormask;
-};
-
-static const struct gt_reg haswell_gt_setup[] = {
 	/* Enable Counters */
-	{ 0x0a248, 0x00000000, 0x00000016 },
-	{ 0x0a000, 0x00000000, 0x00070020 },
-	{ 0x0a180, 0xff3fffff, 0x15000000 },
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa248, 0x00000016),
+
+	/* GFXPAUSE settings */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa000, 0x00070020),
+
+	/* ECO Settings */
+	REG_RES_RMW32(PCI_BASE_ADDRESS_0, 0xa180, 0xff3fffff, 0x15000000),
+
 	/* Enable DOP Clock Gating */
-	{ 0x09424, 0x00000000, 0x000003fd },
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9424, 0x000003fd),
+
 	/* Enable Unit Level Clock Gating */
-	{ 0x09400, 0x00000000, 0x00000080 },
-	{ 0x09404, 0x00000000, 0x40401000 },
-	{ 0x09408, 0x00000000, 0x00000000 },
-	{ 0x0940c, 0x00000000, 0x02000001 },
-	{ 0x0a008, 0x00000000, 0x08000000 },
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9400, 0x00000080),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9404, 0x40401000),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9408, 0x00000000),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x940c, 0x02000001),
+
+	/*
+	 * RC6 Settings
+	 */
+
 	/* Wake Rate Limits */
-	{ 0x0a090, 0xffffffff, 0x00000000 },
-	{ 0x0a098, 0xffffffff, 0x03e80000 },
-	{ 0x0a09c, 0xffffffff, 0x00280000 },
-	{ 0x0a0a8, 0xffffffff, 0x0001e848 },
-	{ 0x0a0ac, 0xffffffff, 0x00000019 },
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa090, 0x00000000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa098, 0x03e80000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa09c, 0x00280000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa0a8, 0x0001e848),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa0ac, 0x00000019),
+
 	/* Render/Video/Blitter Idle Max Count */
-	{ 0x02054, 0x00000000, 0x0000000a },
-	{ 0x12054, 0x00000000, 0x0000000a },
-	{ 0x22054, 0x00000000, 0x0000000a },
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x02054, 0x0000000a),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x12054, 0x0000000a),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x22054, 0x0000000a),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x1a054, 0x0000000a),
+
 	/* RC Sleep / RCx Thresholds */
-	{ 0x0a0b0, 0xffffffff, 0x00000000 },
-	{ 0x0a0b4, 0xffffffff, 0x000003e8 },
-	{ 0x0a0b8, 0xffffffff, 0x0000c350 },
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa0b0, 0x00000000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa0b4, 0x000003e8),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa0b8, 0x0000c350),
+
 	/* RP Settings */
-	{ 0x0a010, 0xffffffff, 0x000f4240 },
-	{ 0x0a014, 0xffffffff, 0x12060000 },
-	{ 0x0a02c, 0xffffffff, 0x0000e808 },
-	{ 0x0a030, 0xffffffff, 0x0003bd08 },
-	{ 0x0a068, 0xffffffff, 0x000101d0 },
-	{ 0x0a06c, 0xffffffff, 0x00055730 },
-	{ 0x0a070, 0xffffffff, 0x0000000a },
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa010, 0x000f4240),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa014, 0x12060000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa02c, 0x0000e808),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa030, 0x0003bd08),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa068, 0x000101d0),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa06c, 0x00055730),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0xa070, 0x0000000a),
+
 	/* RP Control */
-	{ 0x0a024, 0x00000000, 0x00000b92 },
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa024, 0x00000b92),
+
 	/* HW RC6 Control */
-	{ 0x0a090, 0x00000000, 0x88040000 },
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa090, 0x88040000),
+
 	/* Video Frequency Request */
-	{ 0x0a00c, 0x00000000, 0x08000000 },
-	{ 0 },
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa00c, 0x08000000),
+
+	/* Set RC6 VIDs */
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x138124, (1 << 31), 0, GT_RETRY),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x138128, 0),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x138124, 0x80000004),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x138124, (1 << 31), 0, GT_RETRY),
+
+	/* Enable PM Interrupts */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x4402c, 0x03000076),
+
+	/* Enable RC6 in idle */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa094, 0x00040000),
+
+	REG_SCRIPT_END
 };
 
-static const struct gt_reg haswell_gt_lock[] = {
-	{ 0x0a248, 0xffffffff, 0x80000000 },
-	{ 0x0a004, 0xffffffff, 0x00000010 },
-	{ 0x0a080, 0xffffffff, 0x00000004 },
-	{ 0x0a180, 0xffffffff, 0x80000000 },
-	{ 0 },
+static const struct reg_script haswell_late_init_script[] = {
+	/* Lock settings */
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a248, (1 << 31)),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a004, (1 << 4)),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a080, (1 << 2)),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a180, (1 << 31)),
+
+	/* Disable Force Wake */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa188, 0x00010000),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x130044, 1, 0, GT_RETRY),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa188, 0x00000001),
+
+	/* Enable power well for DP and Audio */
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x45400, (1 << 31)),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x45400,
+		       (1 << 30), (1 << 30), GT_RETRY),
+
+	REG_SCRIPT_END
 };
 
-/* some vga option roms are used for several chipsets but they only have one
- * PCI ID in their header. If we encounter such an option rom, we need to do
- * the mapping ourselfes
- */
+static const struct reg_script broadwell_early_init_script[] = {
+	/* Enable Force Wake */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa188, 0x00010001),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x130044, 1, 1, GT_RETRY),
+
+	/* Enable push bus metric control and shift */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa248, 0x00000004),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa250, 0x000000ff),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa25c, 0x00000010),
+
+	/* GFXPAUSE settings */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa000, 0x00030020),
+
+	/* ECO Settings */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa180, 0x45200000),
+
+	/* Enable DOP Clock Gating */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9424, 0x000000fd),
+
+	/* Enable Unit Level Clock Gating */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9400, 0x00000000),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9404, 0x40401000),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x9408, 0x00000000),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x940c, 0x02000001),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x1a054, 0x0000000a),
+
+	/* Video Frequency Request */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa00c, 0x08000000),
+
+	/*
+	 * RC6 Settings
+	 */
+
+	/* Wake Rate Limits */
+	REG_RES_RMW32(PCI_BASE_ADDRESS_0, 0x0a090, 0, 0),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a098, 0x03e80000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a09c, 0x00280000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a0a8, 0x0001e848),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a0ac, 0x00000019),
+
+	/* Render/Video/Blitter Idle Max Count */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x02054, 0x0000000a),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x12054, 0x0000000a),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x22054, 0x0000000a),
+
+	/* RC Sleep / RCx Thresholds */
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a0b0, 0x00000000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a0b8, 0x00000271),
+
+	/* RP Settings */
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a010, 0x000f4240),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a014, 0x12060000),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a02c, 0x0000e808),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a030, 0x0003bd08),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a068, 0x000101d0),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a06c, 0x00055730),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a070, 0x0000000a),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a168, 0x00000006),
+
+	/* RP Control */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa024, 0x00000b92),
+
+	/* HW RC6 Control */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa090, 0x90040000),
+
+	/* Set RC6 VIDs */
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x138124, (1 << 31), 0, GT_RETRY),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x138128, 0),
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x138124, 0x80000004),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x138124, (1 << 31), 0, GT_RETRY),
+
+	/* Enable PM Interrupts */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0x4402c, 0x03000076),
+
+	/* Enable RC6 in idle */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa094, 0x00040000),
+
+	REG_SCRIPT_END
+};
+
+static const struct reg_script broadwell_late_init_script[] = {
+	/* Lock settings */
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a248, (1 << 31)),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a000, (1 << 18)),
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x0a180, (1 << 31)),
+
+	/* Disable Force Wake */
+	REG_RES_WRITE32(PCI_BASE_ADDRESS_0, 0xa188, 0x00010000),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x130044, 1, 0, GT_RETRY),
+
+	/* Enable power well for DP and Audio */
+	REG_RES_OR32(PCI_BASE_ADDRESS_0, 0x45400, (1 << 31)),
+	REG_RES_POLL32(PCI_BASE_ADDRESS_0, 0x45400,
+		       (1 << 30), (1 << 30), GT_RETRY),
+
+	REG_SCRIPT_END
+};
 
 u32 map_oprom_vendev(u32 vendev)
 {
-	u32 new_vendev=vendev;
-
-	switch (vendev) {
-	case 0x80860402:		/* GT1 Desktop */
-	case 0x80860406:		/* GT1 Mobile */
-	case 0x8086040a:		/* GT1 Server */
-	case 0x80860a06:		/* GT1 ULT */
-
-	case 0x80860412:		/* GT2 Desktop */
-	case 0x80860416:		/* GT2 Mobile */
-	case 0x8086041a:		/* GT2 Server */
-	case 0x80860a16:		/* GT2 ULT */
-
-	case 0x80860422:		/* GT3 Desktop */
-	case 0x80860426:		/* GT3 Mobile */
-	case 0x8086042a:		/* GT3 Server */
-	case 0x80860a26:		/* GT3 ULT */
-
-		new_vendev=0x80860406;	/* GT1 Mobile */
-		break;
-	}
-
-	return new_vendev;
-}
-
-/* GTT is the Global Translation Table for the graphics pipeline.
- * It is used to translate graphics addresses to physical
- * memory addresses. As in the CPU, GTTs map 4K pages.
- * The setgtt function adds a further bit of flexibility:
- * it allows you to set a range (the first two parameters) to point
- * to a physical address (third parameter);the physical address is
- * incremented by a count (fourth parameter) for each GTT in the
- * range.
- * Why do it this way? For ultrafast startup,
- * we can point all the GTT entries to point to one page,
- * and set that page to 0s:
- * memset(physbase, 0, 4096);
- * setgtt(0, 4250, physbase, 0);
- * this takes about 2 ms, and is a win because zeroing
- * the page takes a up to 200 ms.
- * This call sets the GTT to point to a linear range of pages
- * starting at physbase.
- */
-
-#define GTT_PTE_BASE (2 << 20)
-
-void
-set_translation_table(int start, int end, u64 base, int inc)
-{
-	int i;
-
-	for(i = start; i < end; i++){
-		u64 physical_address = base + i*inc;
-		/* swizzle the 32:39 bits to 4:11 */
-		u32 word = physical_address | ((physical_address >> 28) & 0xff0) | 1;
-		/* note: we've confirmed by checking
-		 * the values that mrc does no
-		 * useful setup before we run this.
-		 */
-		gtt_write(GTT_PTE_BASE + i * 4, word);
-		gtt_read(GTT_PTE_BASE + i * 4);
-	}
+	return SA_IGD_OPROM_VENDEV;
 }
 
 static struct resource *gtt_res = NULL;
 
-unsigned long gtt_read(unsigned long reg)
+static unsigned long gtt_read(unsigned long reg)
 {
 	u32 val;
 	val = read32(gtt_res->base + reg);
@@ -176,7 +250,7 @@ unsigned long gtt_read(unsigned long reg)
 
 }
 
-void gtt_write(unsigned long reg, unsigned long data)
+static void gtt_write(unsigned long reg, unsigned long data)
 {
 	write32(gtt_res->base + reg, data);
 }
@@ -189,20 +263,9 @@ static inline void gtt_rmw(u32 reg, u32 andmask, u32 ormask)
 	gtt_write(reg, val);
 }
 
-static inline void gtt_write_regs(const struct gt_reg *gt)
+static int gtt_poll(u32 reg, u32 mask, u32 value)
 {
-	for (; gt && gt->reg; gt++) {
-		if (gt->andmask)
-			gtt_rmw(gt->reg, gt->andmask, gt->ormask);
-		else
-			gtt_write(gt->reg, gt->ormask);
-	}
-}
-
-#define GTT_RETRY 1000
-int gtt_poll(u32 reg, u32 mask, u32 value)
-{
-	unsigned try = GTT_RETRY;
+	unsigned try = GT_RETRY;
 	u32 data;
 
 	while (try--) {
@@ -216,89 +279,10 @@ int gtt_poll(u32 reg, u32 mask, u32 value)
 	return 0;
 }
 
-static void power_well_enable(void)
+static void igd_setup_panel(struct device *dev)
 {
-	gtt_write(HSW_PWR_WELL_CTL1, HSW_PWR_WELL_ENABLE);
-	gtt_poll(HSW_PWR_WELL_CTL1, HSW_PWR_WELL_STATE, HSW_PWR_WELL_STATE);
-#if CONFIG_MAINBOARD_DO_NATIVE_VGA_INIT
-	/* In the native graphics case, we've got about 20 ms.
-	 * after we power up the the AUX channel until we can talk to it.
-	 * So get that going right now. We can't turn on the panel, yet, just VDD.
-	 */
-	gtt_write(PCH_PP_CONTROL, PCH_PP_UNLOCK| EDP_FORCE_VDD | PANEL_POWER_RESET);
-#endif
-}
-
-static void gma_pm_init_pre_vbios(struct device *dev)
-{
-	printk(BIOS_DEBUG, "GT Power Management Init\n");
-
-	gtt_res = find_resource(dev, PCI_BASE_ADDRESS_0);
-	if (!gtt_res || !gtt_res->base)
-		return;
-
-	power_well_enable();
-
-	/*
-	 * Enable RC6
-	 */
-
-	/* Enable Force Wake */
-	gtt_write(0x0a180, 1 << 5);
-	gtt_write(0x0a188, 0x00010001);
-	gtt_poll(0x130044, 1 << 0, 1 << 0);
-
-	/* GT Settings */
-	gtt_write_regs(haswell_gt_setup);
-
-	/* Wait for Mailbox Ready */
-	gtt_poll(0x138124, (1 << 31), (0 << 31));
-	/* Mailbox Data - RC6 VIDS */
-	gtt_write(0x138128, 0x00000000);
-	/* Mailbox Command */
-	gtt_write(0x138124, 0x80000004);
-	/* Wait for Mailbox Ready */
-	gtt_poll(0x138124, (1 << 31), (0 << 31));
-
-	/* Enable PM Interrupts */
-	gtt_write(GEN6_PMIER, GEN6_PM_MBOX_EVENT | GEN6_PM_THERMAL_EVENT |
-		  GEN6_PM_RP_DOWN_TIMEOUT | GEN6_PM_RP_UP_THRESHOLD |
-		  GEN6_PM_RP_DOWN_THRESHOLD | GEN6_PM_RP_UP_EI_EXPIRED |
-		  GEN6_PM_RP_DOWN_EI_EXPIRED);
-
-	/* Enable RC6 in idle */
-	gtt_write(0x0a094, 0x00040000);
-
-	/* PM Lock Settings */
-	gtt_write_regs(haswell_gt_lock);
-}
-
-static void init_display_planes(void)
-{
-	int pipe, plane;
-
-	/* Disable cursor mode */
-	for (pipe = PIPE_A; pipe <= PIPE_C; pipe++) {
-		gtt_write(CURCNTR_IVB(pipe), CURSOR_MODE_DISABLE);
-		gtt_write(CURBASE_IVB(pipe), 0x00000000);
-	}
-
-	/* Disable primary plane and set surface base address*/
-	for (plane = PLANE_A; plane <= PLANE_C; plane++) {
-		gtt_write(DSPCNTR(plane), DISPLAY_PLANE_DISABLE);
-		gtt_write(DSPSURF(plane), 0x00000000);
-	}
-
-	/* Disable VGA display */
-	gtt_write(CPU_VGACNTRL, CPU_VGA_DISABLE);
-}
-
-static void gma_setup_panel(struct device *dev)
-{
-	struct northbridge_intel_haswell_config *conf = dev->chip_info;
+	config_t *conf = dev->chip_info;
 	u32 reg32;
-
-	printk(BIOS_DEBUG, "GT Power Management Init (post VBIOS)\n");
 
 	/* Setup Digital Port Hotplug */
 	reg32 = gtt_read(PCH_PORT_HOTPLUG);
@@ -343,145 +327,188 @@ static void gma_setup_panel(struct device *dev)
 		gtt_write(BLC_PWM_PCH_CTL1, BLM_PCH_PWM_ENABLE);
 		gtt_write(BLC_PWM_PCH_CTL2, conf->gpu_pch_backlight);
 	}
-
-	/* Get display,pipeline,and DDI registers into a basic sane state */
-	power_well_enable();
-
-	init_display_planes();
-
-	/* DDI-A params set:
-	   bit 0: Display detected (RO)
-	   bit 4: DDI A supports 4 lanes and DDI E is not used
-	   bit 7: DDI buffer is idle
-	*/
-	gtt_write(DDI_BUF_CTL_A, DDI_BUF_IS_IDLE | DDI_A_4_LANES | DDI_INIT_DISPLAY_DETECTED);
-
-	/* Set FDI registers - is this required? */
-	gtt_write(_FDI_RXA_MISC, 0x00200090);
-	gtt_write(_FDI_RXA_MISC, 0x0a000000);
-
-	/* Enable the handshake with PCH display when processing reset */
-	gtt_write(NDE_RSTWRN_OPT, RST_PCH_HNDSHK_EN);
-
-	/* undocumented */
-	gtt_write(0x42090, 0x04000000);
-	gtt_write(0x9840, 0x00000000);
-	gtt_write(0x42090, 0xa4000000);
-
-	gtt_write(SOUTH_DSPCLK_GATE_D, PCH_LP_PARTITION_LEVEL_DISABLE);
-
-	/* undocumented */
-	gtt_write(0x42080, 0x00004000);
-
-	/* Prepare DDI buffers for DP and FDI */
-	intel_prepare_ddi();
-
-	/* Hot plug detect buffer enabled for port A */
-	gtt_write(DIGITAL_PORT_HOTPLUG_CNTRL, DIGITAL_PORTA_HOTPLUG_ENABLE);
-
-	/* Enable HPD buffer for digital port D and B */
-	gtt_write(PCH_PORT_HOTPLUG, PORTD_HOTPLUG_ENABLE | PORTB_HOTPLUG_ENABLE);
-
-	/* Bits 4:0 - Power cycle delay (default 0x6 --> 500ms)
-	   Bits 31:8 - Reference divider (0x0004af ----> 24MHz)
-	*/
-	gtt_write(PCH_PP_DIVISOR, 0x0004af06);
 }
 
-static void gma_pm_init_post_vbios(struct device *dev)
+static void igd_cdclk_init_haswell(struct device *dev)
 {
-	int cdclk = 0;
+	config_t *conf = dev->chip_info;
+	int cdclk = conf->cdclk;
 	int devid = pci_read_config16(dev, PCI_DEVICE_ID);
 	int gpu_is_ulx = 0;
+	u32 dpdiv, lpcll;
 
+	/* Check for ULX GT1 or GT2 */
 	if (devid == 0x0a0e || devid == 0x0a1e)
 		gpu_is_ulx = 1;
 
-	/* CD Frequency */
-	if ((gtt_read(0x42014) & 0x1000000) || gpu_is_ulx || haswell_is_ult())
-		cdclk = 0; /* fixed frequency */
-	else
-		cdclk = 2; /* variable frequency */
+	/* 675MHz is not supported on haswell */
+	if (cdclk == GT_CDCLK_675)
+		cdclk = GT_CDCLK_337;
 
-	if (gpu_is_ulx || cdclk != 0)
-		gtt_rmw(0x130040, 0xf7ffffff, 0x04000000);
-	else
-		gtt_rmw(0x130040, 0xf3ffffff, 0x00000000);
+	/* If CD clock is fixed or ULT then set to 450MHz */
+	if ((gtt_read(0x42014) & 0x1000000) || cpu_is_ult())
+		cdclk = GT_CDCLK_450;
 
-	/* More magic */
-	if (haswell_is_ult() || gpu_is_ulx) {
-		if (!gpu_is_ulx)
-			gtt_write(0x138128, 0x00000000);
+	/* 540MHz is not supported on ULX */
+	if (gpu_is_ulx && cdclk == GT_CDCLK_540)
+		cdclk = GT_CDCLK_337;
+
+	/* 337.5MHz is not supported on non-ULT/ULX */
+	if (!gpu_is_ulx && !cpu_is_ult() && cdclk == GT_CDCLK_337)
+		cdclk = GT_CDCLK_450;
+
+	/* Set variables based on CD Clock setting */
+	switch (cdclk) {
+	case GT_CDCLK_337:
+		dpdiv = 169;
+		lpcll = (1 << 26);
+		break;
+	case GT_CDCLK_450:
+		dpdiv = 225;
+		lpcll = 0;
+		break;
+	case GT_CDCLK_540:
+		dpdiv = 270;
+		lpcll = (1 << 26);
+		break;
+	default:
+		return;
+	}
+
+	/* Set LPCLL_CTL CD Clock Frequency Select */
+	gtt_rmw(0x130040, 0xf3ffffff, lpcll);
+
+	/* ULX: Inform power controller of selected frequency */
+	if (gpu_is_ulx) {
+		if (cdclk == GT_CDCLK_450)
+			gtt_write(0x138128, 0x00000000); /* 450MHz */
 		else
-			gtt_write(0x138128, 0x00000001);
+			gtt_write(0x138128, 0x00000001); /* 337.5MHz */
 		gtt_write(0x13812c, 0x00000000);
 		gtt_write(0x138124, 0x80000017);
 	}
 
-	/* Disable Force Wake */
-	gtt_write(0x0a188, 0x00010000);
-	gtt_poll(0x130044, 1 << 0, 0 << 0);
-	gtt_write(0x0a188, 0x00000001);
+	/* Set CPU DP AUX 2X bit clock dividers */
+	gtt_rmw(0x64010, 0xfffff800, dpdiv);
+	gtt_rmw(0x64810, 0xfffff800, dpdiv);
+}
+
+static void igd_cdclk_init_broadwell(struct device *dev)
+{
+	config_t *conf = dev->chip_info;
+	int cdclk = conf->cdclk;
+	u32 dpdiv, lpcll, pwctl, cdset;
+
+	/* Inform power controller of upcoming frequency change */
+	gtt_write(0x138128, 0);
+	gtt_write(0x13812c, 0);
+	gtt_write(0x138124, 0x80000018);
+
+	/* Poll GT driver mailbox for run/busy clear */
+	if (!gtt_poll(0x138124, (1 << 31), (0 << 31)))
+		cdclk = GT_CDCLK_450;
+
+	if (gtt_read(0x42014) & 0x1000000) {
+		/* If CD clock is fixed then set to 450MHz */
+		cdclk = GT_CDCLK_450;
+	} else {
+		/* Program CD clock to highest supported freq */
+		if (cpu_is_ult())
+			cdclk = GT_CDCLK_540;
+		else
+			cdclk = GT_CDCLK_675;
+	}
+
+	/* CD clock frequency 675MHz not supported on ULT */
+	if (cpu_is_ult() && cdclk == GT_CDCLK_675)
+		cdclk = GT_CDCLK_540;
+
+	/* Set variables based on CD Clock setting */
+	switch (cdclk) {
+	case GT_CDCLK_337:
+		cdset = 337;
+		lpcll = (1 << 27);
+		pwctl = 2;
+		dpdiv = 169;
+		break;
+	case GT_CDCLK_450:
+		cdset = 449;
+		lpcll = 0;
+		pwctl = 0;
+		dpdiv = 225;
+		break;
+	case GT_CDCLK_540:
+		cdset = 539;
+		lpcll = (1 << 26);
+		pwctl = 1;
+		dpdiv = 270;
+		break;
+	case GT_CDCLK_675:
+		cdset = 674;
+		lpcll = (1 << 26) | (1 << 27);
+		pwctl = 3;
+		dpdiv = 338;
+	default:
+		return;
+	}
+
+	/* Set LPCLL_CTL CD Clock Frequency Select */
+	gtt_rmw(0x130040, 0xf3ffffff, lpcll);
+
+	/* Inform power controller of selected frequency */
+	gtt_write(0x138128, pwctl);
+	gtt_write(0x13812c, 0);
+	gtt_write(0x138124, 0x80000017);
+
+	/* Program CD Clock Frequency */
+	gtt_rmw(0x46200, 0xfffffc00, cdset);
+
+	/* Set CPU DP AUX 2X bit clock dividers */
+	gtt_rmw(0x64010, 0xfffff800, dpdiv);
+	gtt_rmw(0x64810, 0xfffff800, dpdiv);
 }
 
 static void igd_init(struct device *dev)
 {
-#if CONFIG_MAINBOARD_DO_NATIVE_VGA_INIT
-	struct northbridge_intel_haswell_config *conf = dev->chip_info;
-	struct intel_dp dp;
-#endif
-	int lightup_ok = 0;
-	u32 reg32;
+	int is_broadwell = !!(cpu_family_model() == BROADWELL_FAMILY_ULT);
+	u32 rp1_gfx_freq;
+
 	/* IGD needs to be Bus Master */
-	reg32 = pci_read_config32(dev, PCI_COMMAND);
+	u32 reg32 = pci_read_config32(dev, PCI_COMMAND);
 	reg32 |= PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY | PCI_COMMAND_IO;
 	pci_write_config32(dev, PCI_COMMAND, reg32);
 
-	/* Init graphics power management */
-	gma_pm_init_pre_vbios(dev);
+	gtt_res = find_resource(dev, PCI_BASE_ADDRESS_0);
+	if (!gtt_res || !gtt_res->base)
+		return;
 
-	/* Post VBIOS init */
-	gma_setup_panel(dev);
+	/* Wait for any configured pre-graphics delay */
+	mdelay(CONFIG_PRE_GRAPHICS_DELAY);
 
-#if CONFIG_MAINBOARD_DO_NATIVE_VGA_INIT
-	printk(BIOS_SPEW, "NATIVE graphics, run native enable\n");
-	/* Default set to 1 since it might be required for
-	   stuff like seabios */
-	unsigned int init_fb = 1;
-
-	/* the BAR for graphics space is a well known number for
-	 * sandy and ivy. And the resource code renumbers it.
-	 * So it's almost like having two hardcodes.
-	 */
-	dp.graphics = (void *)((uintptr_t)dev->resource_list[1].base);
-	dp.physbase = pci_read_config32(dev, 0x5c) & ~0xf;
-	dp.panel_power_down_delay = conf->gpu_panel_power_down_delay;
-	dp.panel_power_up_delay = conf->gpu_panel_power_up_delay;
-	dp.panel_power_cycle_delay = conf->gpu_panel_power_cycle_delay;
-
-#ifdef CONFIG_CHROMEOS
-	init_fb = developer_mode_enabled() || recovery_mode_enabled();
-#endif
-	lightup_ok = panel_lightup(&dp, init_fb);
-#endif
-	if (! lightup_ok) {
-		printk(BIOS_SPEW, "FUI did not run; using VBIOS\n");
-		mdelay(CONFIG_PRE_GRAPHICS_DELAY);
-		pci_dev_init(dev);
+	/* Early init steps */
+	if (is_broadwell) {
+		reg_script_run_on_dev(dev, broadwell_early_init_script);
+	} else {
+		reg_script_run_on_dev(dev, haswell_early_init_script);
 	}
 
-	/* Post VBIOS init */
-	gma_pm_init_post_vbios(dev);
-}
+	/* Set RP1 graphics frequency */
+	rp1_gfx_freq = (MCHBAR32(0x5998) >> 8) & 0xff;
+	gtt_write(0xa008, rp1_gfx_freq << 24);
 
-static void gma_set_subsystem(device_t dev, unsigned vendor, unsigned device)
-{
-	if (!vendor || !device) {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				pci_read_config32(dev, PCI_VENDOR_ID));
+	/* Post VBIOS panel setup */
+	igd_setup_panel(dev);
+
+	/* Initialize PCI device, load/execute BIOS Option ROM */
+	pci_dev_init(dev);
+
+	/* Late init steps */
+	if (is_broadwell) {
+		igd_cdclk_init_broadwell(dev);
+		reg_script_run_on_dev(dev, broadwell_late_init_script);
 	} else {
-		pci_write_config32(dev, PCI_SUBSYSTEM_VENDOR_ID,
-				((device & 0xffff) << 16) | (vendor & 0xffff));
+		igd_cdclk_init_haswell(dev);
+		reg_script_run_on_dev(dev, haswell_late_init_script);
 	}
 }
 
