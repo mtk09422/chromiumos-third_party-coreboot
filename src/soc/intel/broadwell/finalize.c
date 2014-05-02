@@ -18,38 +18,110 @@
  */
 
 #include <arch/io.h>
+#include <bootstate.h>
+#include <console/console.h>
+#include <console/post_codes.h>
+#include <cpu/x86/smm.h>
+#include <reg_script.h>
+#include <spi-generic.h>
 #include <stdlib.h>
-#include "haswell.h"
+#include <broadwell/pci_devs.h>
+#include <broadwell/lpc.h>
+#include <broadwell/me.h>
+#include <broadwell/rcba.h>
+#include <broadwell/spi.h>
+#include <broadwell/systemagent.h>
 
-#define PCI_DEV_HSW PCI_DEV(0, 0, 0)
+const struct reg_script system_agent_finalize_script[] = {
+	REG_PCI_OR16(0x50, 1 << 0),				/* GGC */
+	REG_PCI_OR32(0x5c, 1 << 0),				/* DPR */
+	REG_PCI_OR32(0x78, 1 << 10),				/* ME */
+	REG_PCI_OR32(0x90, 1 << 0),				/* REMAPBASE */
+	REG_PCI_OR32(0x98, 1 << 0),				/* REMAPLIMIT */
+	REG_PCI_OR32(0xa0, 1 << 0),				/* TOM */
+	REG_PCI_OR32(0xa8, 1 << 0),				/* TOUUD */
+	REG_PCI_OR32(0xb0, 1 << 0),				/* BDSM */
+	REG_PCI_OR32(0xb4, 1 << 0),				/* BGSM */
+	REG_PCI_OR32(0xb8, 1 << 0),				/* TSEGMB */
+	REG_PCI_OR32(0xbc, 1 << 0),				/* TOLUD */
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x5500, 1 << 0),	/* PAVP */
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x5f00, 1 << 31),	/* SA PM */
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x6020, 1 << 0),	/* UMA GFX */
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x63fc, 1 << 0),	/* VTDTRK */
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x6800, 1 << 31),
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x7000, 1 << 31),
+	REG_MMIO_OR32(MCH_BASE_ADDRESS + 0x77fc, 1 << 0),
+	REG_MMIO_WRITE8(MCH_BASE_ADDRESS + 0x50fc, 0x8f),	/* MC */
 
-void intel_northbridge_haswell_finalize_smm(void)
+	REG_SCRIPT_END
+};
+
+const struct reg_script pch_finalize_script[] = {
+	/* Set SPI opcode menu */
+	REG_MMIO_WRITE16(RCBA_BASE_ADDRESS + SPIBAR_OFFSET + SPIBAR_PREOP,
+			 SPI_OPPREFIX),
+	REG_MMIO_WRITE16(RCBA_BASE_ADDRESS + SPIBAR_OFFSET + SPIBAR_OPTYPE,
+			 SPI_OPTYPE),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + SPIBAR_OFFSET +
+			 SPIBAR_OPMENU_LOWER, SPI_OPMENU_LOWER),
+	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + SPIBAR_OFFSET +
+			 SPIBAR_OPMENU_UPPER, SPI_OPMENU_UPPER),
+
+	/* Lock SPIBAR */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + SPIBAR_OFFSET + SPIBAR_HSFS,
+		      SPIBAR_HSFS_FLOCKDN),
+
+	/* TC Lockdown */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + 0x0050, (1 << 31)),
+
+	/* BIOS Interface Lockdown */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + GCS, (1 << 0)),
+
+	/* Function Disable SUS Well Lockdown */
+	REG_MMIO_OR8(RCBA_BASE_ADDRESS + FDSW, (1 << 7)),
+
+	/* Global SMI Lock */
+	REG_PCI_OR16(GEN_PMCON_1, SMI_LOCK),
+
+	/* GEN_PMCON Lock */
+	REG_PCI_OR8(GEN_PMCON_LOCK, SLP_STR_POL_LOCK | ACPI_BASE_LOCK),
+
+	/* PMSYNC */
+	REG_MMIO_OR32(RCBA_BASE_ADDRESS + PMSYNC_CONFIG, (1 << 31)),
+
+
+	REG_SCRIPT_END
+};
+
+static void broadwell_finalize(void *unused)
 {
-	pci_or_config16(PCI_DEV_HSW, 0x50, 1 << 0);	/* GGC */
-	pci_or_config32(PCI_DEV_HSW, 0x5c, 1 << 0);	/* DPR */
-	pci_or_config32(PCI_DEV_HSW, 0x78, 1 << 10);	/* ME */
-	pci_or_config32(PCI_DEV_HSW, 0x90, 1 << 0);	/* REMAPBASE */
-	pci_or_config32(PCI_DEV_HSW, 0x98, 1 << 0);	/* REMAPLIMIT */
-	pci_or_config32(PCI_DEV_HSW, 0xa0, 1 << 0);	/* TOM */
-	pci_or_config32(PCI_DEV_HSW, 0xa8, 1 << 0);	/* TOUUD */
-	pci_or_config32(PCI_DEV_HSW, 0xb0, 1 << 0);	/* BDSM */
-	pci_or_config32(PCI_DEV_HSW, 0xb4, 1 << 0);	/* BGSM */
-	pci_or_config32(PCI_DEV_HSW, 0xb8, 1 << 0);	/* TSEGMB */
-	pci_or_config32(PCI_DEV_HSW, 0xbc, 1 << 0);	/* TOLUD */
+	printk(BIOS_DEBUG, "Finalizing chipset.\n");
 
-	MCHBAR32_OR(0x5500, 1 << 0);	/* PAVP */
-	MCHBAR32_OR(0x5f00, 1 << 31);	/* SA PM */
-	MCHBAR32_OR(0x6020, 1 << 0);	/* UMA GFX */
-	MCHBAR32_OR(0x63fc, 1 << 0);	/* VTDTRK */
-	MCHBAR32_OR(0x6800, 1 << 31);
-	MCHBAR32_OR(0x7000, 1 << 31);
-	MCHBAR32_OR(0x77fc, 1 << 0);
+	reg_script_run_on_dev(SA_DEV_ROOT, system_agent_finalize_script);
+	reg_script_run_on_dev(PCH_DEV_LPC, pch_finalize_script);
 
-	/* Memory Controller Lockdown */
-	MCHBAR8(0x50fc) = 0x8f;
-
-	/* Read+write the following */
+	/* Read+Write the following registers */
 	MCHBAR32(0x6030) = MCHBAR32(0x6030);
 	MCHBAR32(0x6034) = MCHBAR32(0x6034);
 	MCHBAR32(0x6008) = MCHBAR32(0x6008);
+	RCBA32(0x21a4) = RCBA32(0x21a4);
+
+	/* Re-init SPI after lockdown */
+	spi_init();
+
+	/* Lock down management engine */
+	intel_me_finalize();
+
+	printk(BIOS_DEBUG, "Finalizing SMM.\n");
+	outb(APM_CNT_FINALIZE, APM_CNT);
+
+	/* Indicate finalize step with post code */
+	post_code(POST_OS_BOOT);
 }
+
+BOOT_STATE_INIT_ENTRIES(finalize) = {
+	BOOT_STATE_INIT_ENTRY(BS_OS_RESUME, BS_ON_ENTRY,
+			      broadwell_finalize, NULL),
+	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
+			      broadwell_finalize, NULL),
+};
