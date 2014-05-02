@@ -26,16 +26,19 @@
 #include <cpu/x86/cache.h>
 #include <cpu/x86/smm.h>
 #include <string.h>
-#include "pch.h"
+#include <broadwell/iomap.h>
+#include <broadwell/pch.h>
+#include <broadwell/pm.h>
+#include <broadwell/smm.h>
 
 void southbridge_smm_clear_state(void)
 {
 	u32 smi_en;
 
 	printk(BIOS_DEBUG, "Initializing Southbridge SMI...");
-	printk(BIOS_SPEW, " ... pmbase = 0x%04x\n", get_pmbase());
+	printk(BIOS_SPEW, " ... pmbase = 0x%04x\n", ACPI_BASE_ADDRESS);
 
-	smi_en = inl(get_pmbase() + SMI_EN);
+	smi_en = inl(ACPI_BASE_ADDRESS + SMI_EN);
 	if (smi_en & APMC_EN) {
 		printk(BIOS_INFO, "SMI# handler already enabled?\n");
 		return;

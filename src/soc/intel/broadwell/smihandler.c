@@ -26,16 +26,21 @@
 #include <cpu/x86/cache.h>
 #include <device/pci_def.h>
 #include <cpu/x86/smm.h>
+#include <spi-generic.h>
 #include <elog.h>
 #include <pc80/mc146818rtc.h>
-#include "pch.h"
-
-#include "nvs.h"
-
+#include <broadwell/lpc.h>
+#include <broadwell/nvs.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/pm.h>
+#include <broadwell/rcba.h>
+#include <broadwell/smm.h>
+#include <broadwell/xhci.h>
 
 static u8 smm_initialized = 0;
 
-/* GNVS needs to be updated by an 0xEA PM Trap (B2) after it has been located
+/*
+ * GNVS needs to be updated by an 0xEA PM Trap (B2) after it has been located
  * by coreboot.
  */
 static global_nvs_t *gnvs;
@@ -111,9 +116,8 @@ static void southbridge_smi_sleep(void)
 	u32 reg32;
 	u8 slp_typ;
 	u8 s5pwr = CONFIG_MAINBOARD_POWER_ON_AFTER_POWER_FAIL;
-	u16 pmbase = get_pmbase();
 
-	// save and recover RTC port values
+	/* save and recover RTC port values */
 	u8 tmp70, tmp72;
 	tmp70 = inb(0x70);
 	tmp72 = inb(0x72);
@@ -125,7 +129,7 @@ static void southbridge_smi_sleep(void)
 	disable_smi(SLP_SMI_EN);
 
 	/* Figure out SLP_TYP */
-	reg32 = inl(pmbase + PM1_CNT);
+	reg32 = inl(ACPI_BASE_ADDRESS + PM1_CNT);
 	printk(BIOS_SPEW, "SMI#: SLP = 0x%08x\n", reg32);
 	slp_typ = (reg32 >> 10) & 7;
 
@@ -133,11 +137,7 @@ static void southbridge_smi_sleep(void)
 	mainboard_smi_sleep(slp_typ-2);
 
 	/* USB sleep preparations */
-#if !CONFIG_FINALIZE_USB_ROUTE_XHCI
-	usb_ehci_sleep_prepare(PCH_EHCI1_DEV, slp_typ);
-	usb_ehci_sleep_prepare(PCH_EHCI2_DEV, slp_typ);
-#endif
-	usb_xhci_sleep_prepare(PCH_XHCI_DEV, slp_typ);
+	usb_xhci_sleep_prepare(PCH_DEV_XHCI, slp_typ);
 
 #if CONFIG_ELOG_GSMI
 	/* Log S3, S4, and S5 entry */
@@ -173,13 +173,12 @@ static void southbridge_smi_sleep(void)
 		/* Always set the flag in case CMOS was changed on runtime. For
 		 * "KEEP", switch to "OFF" - KEEP is software emulated
 		 */
-		reg8 = pci_read_config8(PCI_DEV(0, 0x1f, 0), GEN_PMCON_3);
-		if (s5pwr == MAINBOARD_POWER_ON) {
+		reg8 = pci_read_config8(PCH_DEV_LPC, GEN_PMCON_3);
+		if (s5pwr == MAINBOARD_POWER_ON)
 			reg8 &= ~1;
-		} else {
+		else
 			reg8 |= 1;
-		}
-		pci_write_config8(PCI_DEV(0, 0x1f, 0), GEN_PMCON_3, reg8);
+		pci_write_config8(PCH_DEV_LPC, GEN_PMCON_3, reg8);
 
 		/* also iterates over all bridges on bus 0 */
 		busmaster_disable_on_bus(0);
@@ -189,7 +188,8 @@ static void southbridge_smi_sleep(void)
 		break;
 	}
 
-	/* Write back to the SLP register to cause the originally intended
+	/*
+	 * Write back to the SLP register to cause the originally intended
 	 * event again. We need to set BIT13 (SLP_EN) though to make the
 	 * sleep happen.
 	 */
@@ -199,11 +199,12 @@ static void southbridge_smi_sleep(void)
 	if (slp_typ > 1)
 		hlt();
 
-	/* In most sleep states, the code flow of this function ends at
+	/*
+	 * In most sleep states, the code flow of this function ends at
 	 * the line above. However, if we entered sleep state S1 and wake
 	 * up again, we will continue to execute code in this function.
 	 */
-	reg32 = inl(pmbase + PM1_CNT);
+	reg32 = inl(ACPI_BASE_ADDRESS + PM1_CNT);
 	if (reg32 & SCI_EN) {
 		/* The OS is not an ACPI OS, so we set the state to S0 */
 		disable_pm1_control(SLP_EN | SLP_TYP);
@@ -295,17 +296,9 @@ static void southbridge_smi_apmc(void)
 	reg8 = inb(APM_CNT);
 	switch (reg8) {
 	case APM_CNT_CST_CONTROL:
-		/* Calling this function seems to cause
-		 * some kind of race condition in Linux
-		 * and causes a kernel oops
-		 */
 		printk(BIOS_DEBUG, "C-state control\n");
 		break;
 	case APM_CNT_PST_CONTROL:
-		/* Calling this function seems to cause
-		 * some kind of race condition in Linux
-		 * and causes a kernel oops
-		 */
 		printk(BIOS_DEBUG, "P-state control\n");
 		break;
 	case APM_CNT_ACPI_DISABLE:
@@ -333,9 +326,6 @@ static void southbridge_smi_apmc(void)
 			printk(BIOS_DEBUG, "SMI#: Setting GNVS to %p\n", gnvs);
 		}
 		break;
-	case 0xca:
-		usb_xhci_route_all();
-		break;
 #if CONFIG_ELOG_GSMI
 	case ELOG_GSMI_APM_CNT:
 		southbridge_smi_gsmi();
@@ -354,7 +344,7 @@ static void southbridge_smi_pm1(void)
 	 * on a power button event.
 	 */
 	if (pm1_sts & PWRBTN_STS) {
-		// power button pressed
+		/* power button pressed */
 #if CONFIG_ELOG_GSMI
 		elog_add_event(ELOG_TYPE_POWER_BUTTON);
 #endif
@@ -378,9 +368,7 @@ static void southbridge_smi_gpi(void)
 
 static void southbridge_smi_mc(void)
 {
-	u32 reg32;
-
-	reg32 = inl(get_pmbase() + SMI_EN);
+	u32 reg32 = inl(ACPI_BASE_ADDRESS + SMI_EN);
 
 	/* Are microcontroller SMIs enabled? */
 	if ((reg32 & MCSMI_EN) == 0)
@@ -388,8 +376,6 @@ static void southbridge_smi_mc(void)
 
 	printk(BIOS_DEBUG, "Microcontroller SMI.\n");
 }
-
-
 
 static void southbridge_smi_tco(void)
 {
@@ -400,23 +386,21 @@ static void southbridge_smi_tco(void)
 		return;
 
 	if (tco_sts & (1 << 8)) { // BIOSWR
-		u8 bios_cntl;
-
-		bios_cntl = pci_read_config16(PCI_DEV(0, 0x1f, 0), 0xdc);
+		u8 bios_cntl = pci_read_config16(PCH_DEV_LPC, BIOS_CNTL);
 
 		if (bios_cntl & 1) {
-			/* BWE is RW, so the SMI was caused by a
+			/*
+			 * BWE is RW, so the SMI was caused by a
 			 * write to BWE, not by a write to the BIOS
-			 */
-
-			/* This is the place where we notice someone
+			 *
+			 * This is the place where we notice someone
 			 * is trying to tinker with the BIOS. We are
 			 * trying to be nice and just ignore it. A more
 			 * resolute answer would be to power down the
 			 * box.
 			 */
 			printk(BIOS_DEBUG, "Switching back to RO\n");
-			pci_write_config32(PCI_DEV(0, 0x1f, 0), 0xdc,
+			pci_write_config32(PCH_DEV_LPC, BIOS_CNTL,
 					   (bios_cntl & ~1));
 		} /* No else for now? */
 	} else if (tco_sts & (1 << 3)) { /* TIMEOUT */
@@ -427,9 +411,7 @@ static void southbridge_smi_tco(void)
 
 static void southbridge_smi_periodic(void)
 {
-	u32 reg32;
-
-	reg32 = inl(get_pmbase() + SMI_EN);
+	u32 reg32 = inl(ACPI_BASE_ADDRESS + SMI_EN);
 
 	/* Are periodic SMIs enabled? */
 	if ((reg32 & PERIODIC_EN) == 0)

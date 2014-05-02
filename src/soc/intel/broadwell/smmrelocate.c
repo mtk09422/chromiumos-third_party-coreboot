@@ -29,12 +29,9 @@
 #include <cpu/x86/mtrr.h>
 #include <cpu/x86/smm.h>
 #include <console/console.h>
-#include <northbridge/intel/haswell/haswell.h>
-#include <southbridge/intel/lynxpoint/pch.h>
-#include "haswell.h"
-
 #include <broadwell/cpu.h>
 #include <broadwell/msr.h>
+#include <broadwell/pci_devs.h>
 #include <broadwell/smm.h>
 #include <broadwell/systemagent.h>
 
@@ -326,11 +323,6 @@ static void setup_ied_area(struct smm_relocation_params *params)
 
 	/* Zero out 32KiB at IEDBASE + 1MiB */
 	memset(ied_base + (1 << 20), 0, (32 << 10));
-
-	/* According to the BWG MP init section 2MiB of memory at IEDBASE +
-	 * 2MiB should be zeroed as well. However, I suspect what is inteneded
-	 * is to clear the memory covered by EMRR. TODO(adurbin): figure out if 	 * this is really required. */
-	//memset(ied_base + (2 << 20), 0, (2 << 20));
 }
 
 static int install_permanent_handler(int num_cpus,
@@ -359,13 +351,11 @@ static int install_permanent_handler(int num_cpus,
 
 static int cpu_smm_setup(void)
 {
-	device_t dev;
+	device_t dev = SA_DEV_ROOT;
 	int num_cpus;
 	msr_t msr;
 
 	printk(BIOS_DEBUG, "Setting up SMI for CPU\n");
-
-	dev = dev_find_slot(0, PCI_DEVFN(0, 0));
 
 	fill_in_relocation_params(dev, &smm_reloc_params);
 
@@ -445,7 +435,5 @@ void smm_lock(void)
 	 * make the SMM registers writable again.
 	 */
 	printk(BIOS_DEBUG, "Locking SMM.\n");
-	pci_write_config8(dev_find_slot(0, PCI_DEVFN(0, 0)), SMRAM,
-			D_LCK | G_SMRAME | C_BASE_SEG);
+	pci_write_config8(SA_DEV_ROOT, SMRAM, D_LCK | G_SMRAME | C_BASE_SEG);
 }
-
