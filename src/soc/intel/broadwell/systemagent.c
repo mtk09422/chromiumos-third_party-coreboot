@@ -23,22 +23,18 @@
 #include <arch/io.h>
 #include <stdint.h>
 #include <delay.h>
-#include <cpu/intel/haswell/haswell.h>
-#include <cpu/x86/msr.h>
 #include <device/device.h>
 #include <device/pci.h>
 #include <device/pci_ids.h>
-#include <device/hypertransport.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cpu/cpu.h>
-#include <cpu/x86/smm.h>
-#include <boot/tables.h>
 #include <cbmem.h>
 #include <romstage_handoff.h>
-#include "chip.h"
-#include "haswell.h"
+#include <vendorcode/google/chromeos/chromeos.h>
+#include <broadwell/cpu.h>
+#include <broadwell/iomap.h>
 #include <broadwell/ramstage.h>
+#include <broadwell/systemagent.h>
 
 static int get_pcie_bar(device_t dev, unsigned int index, u32 *base, u32 *len)
 {
@@ -54,15 +50,18 @@ static int get_pcie_bar(device_t dev, unsigned int index, u32 *base, u32 *len)
 
 	switch ((pciexbar_reg >> 1) & 3) {
 	case 0: // 256MB
-		*base = pciexbar_reg & ((1 << 31)|(1 << 30)|(1 << 29)|(1 << 28));
+		*base = pciexbar_reg & ((1 << 31)|(1 << 30)|(1 << 29)|
+					(1 << 28));
 		*len = 256 * 1024 * 1024;
 		return 1;
 	case 1: // 128M
-		*base = pciexbar_reg & ((1 << 31)|(1 << 30)|(1 << 29)|(1 << 28)|(1 << 27));
+		*base = pciexbar_reg & ((1 << 31)|(1 << 30)|(1 << 29)|
+					(1 << 28)|(1 << 27));
 		*len = 128 * 1024 * 1024;
 		return 1;
 	case 2: // 64M
-		*base = pciexbar_reg & ((1 << 31)|(1 << 30)|(1 << 29)|(1 << 28)|(1 << 27)|(1 << 26));
+		*base = pciexbar_reg & ((1 << 31)|(1 << 30)|(1 << 29)|
+					(1 << 28)|(1 << 27)|(1 << 26));
 		*len = 64 * 1024 * 1024;
 		return 1;
 	}
@@ -114,16 +113,14 @@ struct fixed_mmio_descriptor {
 	const char *description;
 };
 
-#define SIZE_KB(x) ((x)*1024)
 struct fixed_mmio_descriptor mc_fixed_resources[] = {
-	{ PCIEXBAR, SIZE_KB(0),  get_pcie_bar,      "PCIEXBAR" },
-	{ MCHBAR,   SIZE_KB(32), get_bar,           "MCHBAR"   },
-	{ DMIBAR,   SIZE_KB(4),  get_bar,           "DMIBAR"   },
-	{ EPBAR,    SIZE_KB(4),  get_bar,           "EPBAR"    },
-	{ 0x5420,   SIZE_KB(4),  get_bar_in_mchbar, "GDXCBAR"  },
-	{ 0x5408,   SIZE_KB(16), get_bar_in_mchbar, "EDRAMBAR" },
+	{ PCIEXBAR, 0,               get_pcie_bar,      "PCIEXBAR" },
+	{ MCHBAR,   MCH_BASE_SIZE,   get_bar,           "MCHBAR"   },
+	{ DMIBAR,   DMI_BASE_SIZE,   get_bar,           "DMIBAR"   },
+	{ EPBAR,    EP_BASE_SIZE,    get_bar,           "EPBAR"    },
+	{ GDXCBAR,  GDXC_BASE_SIZE,  get_bar_in_mchbar, "GDXCBAR"  },
+	{ EDRAMBAR, EDRAM_BASE_SIZE, get_bar_in_mchbar, "EDRAMBAR" },
 };
-#undef SIZE_KB
 
 /*
  * Add all known fixed MMIO ranges that hang off the host bridge/memory
@@ -399,10 +396,10 @@ static void systemagent_init(struct device *dev)
 	u8 bios_reset_cpl, pair;
 
 	/* Enable Power Aware Interrupt Routing */
-	pair = MCHBAR8(0x5418);
+	pair = MCHBAR8(MCH_PAIR);
 	pair &= ~0x7;	/* Clear 2:0 */
 	pair |= 0x4;	/* Fixed Priority */
-	MCHBAR8(0x5418) = pair;
+	MCHBAR8(MCH_PAIR) = pair;
 
 	/*
 	 * Set bits 0+1 of BIOS_RESET_CPL to indicate to the CPU
@@ -416,9 +413,6 @@ static void systemagent_init(struct device *dev)
 	/* Configure turbo power limits 1ms after reset complete bit */
 	mdelay(1);
 	set_power_limits(28);
-
-	/* Set here before graphics PM init */
-	MCHBAR32(0x5500) = 0x00100001;
 }
 
 static void systemagent_enable(device_t dev)
