@@ -33,13 +33,18 @@
 #include <cpu/intel/turbo.h>
 #include <cpu/x86/cache.h>
 #include <cpu/x86/name.h>
+#include <cpu/x86/smm.h>
 #include <delay.h>
 #include <pc80/mc146818rtc.h>
 #include <usbdebug.h>
-#include <northbridge/intel/haswell/haswell.h>
-#include <southbridge/intel/lynxpoint/pch.h>
-#include "haswell.h"
-#include "chip.h"
+#include <broadwell/cpu.h>
+#include <broadwell/msr.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/ramstage.h>
+#include <broadwell/rcba.h>
+#include <broadwell/smm.h>
+#include <broadwell/systemagent.h>
+#include <chip.h>
 
 /* Convert time in seconds to POWER_LIMIT_1_TIME MSR value */
 static const u8 power_limit_time_sec_to_msr[] = {
@@ -99,23 +104,28 @@ static const u8 power_limit_time_msr_to_sec[] = {
 	[0x11] = 128,
 };
 
-int haswell_family_model(void)
+u32 cpu_family_model(void)
 {
 	return cpuid_eax(1) & 0x0fff0ff0;
 }
 
-int haswell_stepping(void)
+u32 cpu_stepping(void)
 {
 	return cpuid_eax(1) & 0xf;
 }
 
 /* Dynamically determine if the part is ULT. */
-int haswell_is_ult(void)
+int cpu_is_ult(void)
 {
 	static int ult = -1;
 
-	if (ult < 0)
-		ult = !!(haswell_family_model() == HASWELL_FAMILY_ULT);
+	if (ult < 0) {
+		u32 fm = cpu_family_model();
+		if (fm == BROADWELL_FAMILY_ULT || fm == HASWELL_FAMILY_ULT)
+			ult = 1;
+		else
+			ult = 0;
+	}
 
 	return ult;
 }
@@ -209,9 +219,7 @@ static void initialize_vr_config(void)
 	msr.hi |= (0x01 << (52 - 32)); /* PSI3 threshold -  1A. */
 	msr.hi |= (0x05 << (42 - 32)); /* PSI2 threshold -  5A. */
 	msr.hi |= (0x0f << (32 - 32)); /* PSI1 threshold - 15A. */
-
-	if (haswell_is_ult())
-		msr.hi |= (1 <<  (62 - 32)); /* Enable PSI4 */
+	msr.hi |= (1 <<  (62 - 32)); /* Enable PSI4 */
 	/* Leave the max instantaneous current limit (12:0) to default. */
 	wrmsr(MSR_VR_CURRENT_CONFIG, msr);
 
@@ -236,14 +244,12 @@ static void initialize_vr_config(void)
 	wrmsr(MSR_VR_MISC_CONFIG, msr);
 
 	/*  Configure VR_MISC_CONFIG2 MSR. */
-	if (haswell_is_ult()) {
-		msr = rdmsr(MSR_VR_MISC_CONFIG2);
-		msr.lo &= ~0xffff;
-		/* Allow CPU to control minimum voltage completely (15:8) and
-		 * set the fast ramp voltage to 1110mV (0x6f in 10mV steps). */
-		msr.lo |= 0x006f;
-		wrmsr(MSR_VR_MISC_CONFIG2, msr);
-	}
+	msr = rdmsr(MSR_VR_MISC_CONFIG2);
+	msr.lo &= ~0xffff;
+	/* Allow CPU to control minimum voltage completely (15:8) and
+	 * set the fast ramp voltage to 1110mV (0x6f in 10mV steps). */
+	msr.lo |= 0x006f;
+	wrmsr(MSR_VR_MISC_CONFIG2, msr);
 }
 
 static void configure_pch_power_sharing(void)
@@ -391,12 +397,6 @@ static void configure_c_states(void)
 	/* The deepest package c-state defaults to factory-configured value. */
 	wrmsr(MSR_PMG_CST_CONFIG_CONTROL, msr);
 
-	msr = rdmsr(MSR_PMG_IO_CAPTURE_BASE);
-	msr.lo &= ~0xffff;
-	msr.lo |= (get_pmbase() + 0x14);	// LVL_2 base address
-	/* The deepest package c-state defaults to factory-configured value. */
-	wrmsr(MSR_PMG_IO_CAPTURE_BASE, msr);
-
 	msr = rdmsr(MSR_MISC_PWR_MGMT);
 	msr.lo &= ~(1 << 0);	// Enable P-state HW_ALL coordination
 	wrmsr(MSR_MISC_PWR_MGMT, msr);
@@ -422,39 +422,30 @@ static void configure_c_states(void)
 	msr.lo = IRTL_VALID | IRTL_1024_NS | C_STATE_LATENCY_CONTROL_2_LIMIT;
 	wrmsr(MSR_C_STATE_LATENCY_CONTROL_2, msr);
 
-	/* Haswell ULT only supoprts the 3-5 latency response registers.*/
-	if (haswell_is_ult()) {
-		/* C-state Interrupt Response Latency Control 3 - package C8 */
-		msr.hi = 0;
-		msr.lo = IRTL_VALID | IRTL_1024_NS |
-		         C_STATE_LATENCY_CONTROL_3_LIMIT;
-		wrmsr(MSR_C_STATE_LATENCY_CONTROL_3, msr);
+	/* C-state Interrupt Response Latency Control 3 - package C8 */
+	msr.hi = 0;
+	msr.lo = IRTL_VALID | IRTL_1024_NS |
+	         C_STATE_LATENCY_CONTROL_3_LIMIT;
+	wrmsr(MSR_C_STATE_LATENCY_CONTROL_3, msr);
 
-		/* C-state Interrupt Response Latency Control 4 - package C9 */
-		msr.hi = 0;
-		msr.lo = IRTL_VALID | IRTL_1024_NS |
-		         C_STATE_LATENCY_CONTROL_4_LIMIT;
-		wrmsr(MSR_C_STATE_LATENCY_CONTROL_4, msr);
+	/* C-state Interrupt Response Latency Control 4 - package C9 */
+	msr.hi = 0;
+	msr.lo = IRTL_VALID | IRTL_1024_NS |
+	         C_STATE_LATENCY_CONTROL_4_LIMIT;
+	wrmsr(MSR_C_STATE_LATENCY_CONTROL_4, msr);
 
-		/* C-state Interrupt Response Latency Control 5 - package C10 */
-		msr.hi = 0;
-		msr.lo = IRTL_VALID | IRTL_1024_NS |
-		         C_STATE_LATENCY_CONTROL_5_LIMIT;
-		wrmsr(MSR_C_STATE_LATENCY_CONTROL_5, msr);
-	}
+	/* C-state Interrupt Response Latency Control 5 - package C10 */
+	msr.hi = 0;
+	msr.lo = IRTL_VALID | IRTL_1024_NS |
+	         C_STATE_LATENCY_CONTROL_5_LIMIT;
+	wrmsr(MSR_C_STATE_LATENCY_CONTROL_5, msr);
 }
 
 static void configure_thermal_target(void)
 {
-	struct cpu_intel_haswell_config *conf;
-	device_t lapic;
+	device_t dev = SA_DEV_ROOT;
+	config_t *conf = dev->chip_info;
 	msr_t msr;
-
-	/* Find pointer to CPU configuration */
-	lapic = dev_find_lapic(SPEEDSTEP_APIC_MAGIC);
-	if (!lapic || !lapic->chip_info)
-		return;
-	conf = lapic->chip_info;
 
 	/* Set TCC activaiton offset if supported */
 	msr = rdmsr(MSR_PLATFORM_INFO);
@@ -548,8 +539,7 @@ static void set_energy_perf_bias(u8 policy)
 	msr.lo |= policy & 0xf;
 	wrmsr(IA32_ENERGY_PERFORMANCE_BIAS, msr);
 
-	printk(BIOS_DEBUG, "haswell: energy policy set to %u\n",
-	       policy);
+	printk(BIOS_DEBUG, "cpu: energy policy set to %u\n", policy);
 }
 
 static void configure_mca(void)
@@ -576,7 +566,6 @@ static unsigned ehci_debug_addr;
 static void bsp_init_before_ap_bringup(struct bus *cpu_bus)
 {
 #if CONFIG_USBDEBUG
-	// Is this caution really needed?
 	if(!ehci_debug_addr)
 		ehci_debug_addr = get_ehci_debug();
 	set_ehci_debug(0);
@@ -592,15 +581,12 @@ static void bsp_init_before_ap_bringup(struct bus *cpu_bus)
 #endif
 
 	initialize_vr_config();
-
-	if (haswell_is_ult()) {
-		calibrate_24mhz_bclk();
-		configure_pch_power_sharing();
-	}
+	calibrate_24mhz_bclk();
+	configure_pch_power_sharing();
 }
 
 /* All CPUs including BSP will run the following function. */
-static void haswell_init(device_t cpu)
+static void cpu_core_init(device_t cpu)
 {
 	/* Clear out pending MCEs */
 	configure_mca();
@@ -667,7 +653,9 @@ static struct mp_flight_record mp_steps[] = {
 	MP_FR_BLOCK_APS(NULL, NULL, enable_smis, NULL),
 };
 
-void bsp_init_and_start_aps(struct bus *cpu_bus)
+static struct device_operations cpu_dev_ops = {
+	.init = cpu_core_init,
+};
 
 static struct cpu_device_id cpu_table[] = {
 	{ X86_VENDOR_INTEL, CPUID_HASWELL_ULT },
@@ -680,7 +668,10 @@ static const struct cpu_driver driver __cpu_driver = {
 	.ops      = &cpu_dev_ops,
 	.id_table = cpu_table,
 };
+
+void broadwell_init_cpus(device_t dev)
 {
+	struct bus *cpu_bus = dev->link_list;
 	int num_threads;
 	int num_cores;
 	msr_t msr;
@@ -722,7 +713,3 @@ static const struct cpu_driver driver __cpu_driver = {
 	/* Enable ROM caching if option was selected. */
 	x86_mtrr_enable_rom_caching();
 }
-
-static struct device_operations cpu_dev_ops = {
-	.init     = haswell_init,
-};
