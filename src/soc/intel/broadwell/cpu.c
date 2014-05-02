@@ -676,6 +676,7 @@ void broadwell_init_cpus(device_t dev)
 	int num_cores;
 	msr_t msr;
 	struct mp_params mp_params;
+	void *smm_save_area;
 
 	msr = rdmsr(CORE_THREAD_COUNT_MSR);
 	num_threads = (msr.lo >> 0) & 0xffff;
@@ -691,6 +692,9 @@ void broadwell_init_cpus(device_t dev)
 	bsp_init_before_ap_bringup(cpu_bus);
 
 	microcode_patch = intel_microcode_find();
+
+	/* Save default SMM area before relocation occurs. */
+	smm_save_area = backup_default_smm_area();
 
 	mp_params.num_cpus = num_threads;
 	mp_params.parallel_microcode_load = 1;
@@ -709,6 +713,9 @@ void broadwell_init_cpus(device_t dev)
 	if (mp_init(cpu_bus, &mp_params)) {
 		printk(BIOS_ERR, "MP initialization failure.\n");
 	}
+
+	/* Restore the default SMM region. */
+	restore_default_smm_area(smm_save_area);
 
 	/* Enable ROM caching if option was selected. */
 	x86_mtrr_enable_rom_caching();

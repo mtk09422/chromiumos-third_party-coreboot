@@ -285,10 +285,7 @@ static void mc_add_dram_resources(device_t dev)
 
 	/*
 	 * These are the host memory ranges that should be added:
-	 * - 0 -> SMM_DEFAULT_BASE : cacheable
-	 * - SMM_DEFAULT_BASE -> SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE :
-	 *       cacheable and reserved
-	 * - SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE -> 0xa0000 : cacheable
+	 * - 0 -> 0xa0000: cacheable
 	 * - 0xc0000 -> TSEG : cacheable
 	 * - TESG -> BGSM: cacheable with standard MTRRs and reserved
 	 * - BGSM -> TOLUD: not cacheable with standard MTRRs and reserved
@@ -318,21 +315,8 @@ static void mc_add_dram_resources(device_t dev)
 	 */
 	index = 0;
 
-	/* 0 - > SMM_DEFAULT_BASE */
+	/* 0 - > 0xa0000 */
 	base_k = 0;
-	size_k = SMM_DEFAULT_BASE >> 10;
-	ram_resource(dev, index++, base_k, size_k);
-
-	/* SMM_DEFAULT_BASE -> SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE */
-	resource = new_resource(dev, index++);
-	resource->base = SMM_DEFAULT_BASE;
-	resource->size = SMM_DEFAULT_SIZE;
-	resource->flags = IORESOURCE_MEM | IORESOURCE_FIXED |
-	                  IORESOURCE_CACHEABLE | IORESOURCE_STORED |
-	                  IORESOURCE_RESERVE | IORESOURCE_ASSIGNED;
-
-	/* SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE -> 0xa0000 */
-	base_k = (SMM_DEFAULT_BASE + SMM_DEFAULT_SIZE) >> 10;
 	size_k = (0xa0000 >> 10) - base_k;
 	ram_resource(dev, index++, base_k, size_k);
 
@@ -372,11 +356,8 @@ static void mc_add_dram_resources(device_t dev)
 	mmio_resource(dev, index++, (0xa0000 >> 10), (0xc0000 - 0xa0000) >> 10);
 	reserved_ram_resource(dev, index++, (0xc0000 >> 10),
 	                      (0x100000 - 0xc0000) >> 10);
-#if CONFIG_CHROMEOS_RAMOOPS
-	reserved_ram_resource(dev, index++,
-			CONFIG_CHROMEOS_RAMOOPS_RAM_START >> 10,
-			CONFIG_CHROMEOS_RAMOOPS_RAM_SIZE >> 10);
-#endif
+
+	chromeos_reserve_ram_oops(dev, index++);
 }
 
 static void systemagent_read_resources(device_t dev)
