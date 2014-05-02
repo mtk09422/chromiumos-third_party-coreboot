@@ -165,6 +165,68 @@ static int get_cores_per_package(void)
 	return cores;
 }
 
+void acpi_init_gnvs(global_nvs_t *gnvs)
+{
+	/* Set unknown wake source */
+	gnvs->pm1i = -1;
+
+	/* CPU core count */
+	gnvs->pcnt = dev_count_cpu();
+
+#if CONFIG_CONSOLE_CBMEM
+	/* Update the mem console pointer. */
+	gnvs->cbmc = (u32)cbmem_find(CBMEM_ID_CONSOLE);
+#endif
+
+#if CONFIG_CHROMEOS
+	/* Initialize Verified Boot data */
+	chromeos_init_vboot(&(gnvs->chromeos));
+#if CONFIG_EC_GOOGLE_CHROMEEC
+	gnvs->chromeos.vbt2 = google_ec_running_ro() ?
+		ACTIVE_ECFW_RO : ACTIVE_ECFW_RW;
+#endif
+	gnvs->chromeos.vbt2 = ACTIVE_ECFW_RO;
+#endif
+}
+
+void acpi_create_intel_hpet(acpi_hpet_t * hpet)
+{
+	acpi_header_t *header = &(hpet->header);
+	acpi_addr_t *addr = &(hpet->addr);
+
+	memset((void *) hpet, 0, sizeof(acpi_hpet_t));
+
+	/* fill out header fields */
+	memcpy(header->signature, "HPET", 4);
+	memcpy(header->oem_id, OEM_ID, 6);
+	memcpy(header->oem_table_id, ACPI_TABLE_CREATOR, 8);
+	memcpy(header->asl_compiler_id, ASLC, 4);
+
+	header->length = sizeof(acpi_hpet_t);
+	header->revision = 1;
+
+	/* fill out HPET address */
+	addr->space_id = 0;	/* Memory */
+	addr->bit_width = 64;
+	addr->bit_offset = 0;
+	addr->addrl = (unsigned long long)HPET_BASE_ADDRESS & 0xffffffff;
+	addr->addrh = (unsigned long long)HPET_BASE_ADDRESS >> 32;
+
+	hpet->id = 0x8086a201;	/* Intel */
+	hpet->number = 0x00;
+	hpet->min_tick = 0x0080;
+
+	header->checksum =
+	    acpi_checksum((void *) hpet, sizeof(acpi_hpet_t));
+}
+
+unsigned long acpi_fill_mcfg(unsigned long current)
+{
+	current += acpi_create_mcfg_mmconfig((acpi_mcfg_mmconfig_t *)current,
+					     MCFG_BASE_ADDRESS, 0, 0, 255);
+	return current;
+}
+
 void acpi_fill_in_fadt(acpi_fadt_t *fadt)
 {
 	const uint16_t pmbase = ACPI_BASE_ADDRESS;
@@ -523,3 +585,29 @@ void generate_cpu_entries(void)
 	}
 }
 
+unsigned long acpi_madt_irq_overrides(unsigned long current)
+{
+	int sci = acpi_sci_irq();
+	acpi_madt_irqoverride_t *irqovr;
+	uint16_t flags = MP_IRQ_TRIGGER_LEVEL;
+
+	/* INT_SRC_OVR */
+	irqovr = (void *)current;
+	current += acpi_create_madt_irqoverride(irqovr, 0, 0, 2, 0);
+
+	if (sci >= 20)
+		flags |= MP_IRQ_POLARITY_LOW;
+	else
+		flags |= MP_IRQ_POLARITY_HIGH;
+
+	/* SCI */
+	irqovr = (void *)current;
+	current += acpi_create_madt_irqoverride(irqovr, 0, sci, sci, flags);
+
+	/* GPIO Controller */
+	irqovr = (void *)current;
+	flags = MP_IRQ_TRIGGER_LEVEL | MP_IRQ_POLARITY_HIGH;
+	current += acpi_create_madt_irqoverride(irqovr, 0, 14, 14, flags);
+
+	return current;
+}
