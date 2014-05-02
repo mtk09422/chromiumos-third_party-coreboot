@@ -18,21 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <types.h>
-#include <console/console.h>
 #include <arch/acpi.h>
 #include <arch/acpigen.h>
+#include <arch/io.h>
+#include <arch/smp/mpspec.h>
+#include <cbmem.h>
+#include <console/console.h>
+#include <cpu/x86/smm.h>
+#include <console/console.h>
+#include <types.h>
+#include <string.h>
 #include <arch/cpu.h>
 #include <cpu/x86/msr.h>
-#include <cpu/intel/speedstep.h>
+#include <cpu/x86/tsc.h>
 #include <cpu/intel/turbo.h>
-#include <device/device.h>
-#include <device/pci.h>
-#include "haswell.h"
-#include "chip.h"
-
-#include <southbridge/intel/lynxpoint/pch.h>
-
+#include <ec/google/chromeec/ec.h>
+#include <vendorcode/google/chromeos/gnvs.h>
+#include <broadwell/acpi.h>
+#include <broadwell/cpu.h>
+#include <broadwell/iomap.h>
+#include <broadwell/lpc.h>
+#include <broadwell/msr.h>
+#include <broadwell/pci_devs.h>
+#include <broadwell/pm.h>
+#include <chip.h>
 
 /*
  * List of suported C-states in this processor. Only the ULT parts support C8,
@@ -477,7 +486,7 @@ static int generate_P_state_entries(int core, int cores_per_package)
 void generate_cpu_entries(void)
 {
 	int len_pr;
-	int coreID, cpuID, pcontrol_blk = get_pmbase(), plen = 6;
+	int coreID, cpuID, pcontrol_blk = ACPI_BASE_ADDRESS, plen = 6;
 	int totalcores = dev_count_cpu();
 	int cores_per_package = get_cores_per_package();
 	int numcpus = totalcores/cores_per_package;
@@ -514,6 +523,3 @@ void generate_cpu_entries(void)
 	}
 }
 
-struct chip_operations cpu_intel_haswell_ops = {
-	CHIP_NAME("Intel Haswell CPU")
-};
