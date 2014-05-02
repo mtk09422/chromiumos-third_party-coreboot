@@ -25,10 +25,14 @@
 #include <device/pciexp.h>
 #include <device/pci_ids.h>
 #include <stdlib.h>
-#include "pch.h"
-#include "nvs.h"
-
+#include <broadwell/iobp.h>
+#include <broadwell/nvs.h>
+#include <broadwell/pch.h>
 #include <broadwell/ramstage.h>
+#include <broadwell/rcba.h>
+#include <broadwell/serialio.h>
+#include <chip.h>
+
 /* Set D3Hot Power State in ACPI mode */
 static void serialio_enable_d3hot(struct device *dev)
 {
@@ -156,7 +160,7 @@ static void serialio_init_once(int acpi_mode)
 
 static void serialio_init(struct device *dev)
 {
-	struct southbridge_intel_lynxpoint_config *config = dev->chip_info;
+	config_t *config = dev->chip_info;
 	struct resource *bar0, *bar1;
 	int sio_index = -1;
 	u32 reg32;
@@ -246,8 +250,8 @@ static void serialio_init(struct device *dev)
 		}
 
 		/* Save BAR0 and BAR1 to ACPI NVS */
-		gnvs->s0b[sio_index] = (u32)bar0->base;
-		gnvs->s1b[sio_index] = (u32)bar1->base;
+		gnvs->dev.bar0[sio_index] = (u32)bar0->base;
+		gnvs->dev.bar1[sio_index] = (u32)bar1->base;
 	}
 }
 
