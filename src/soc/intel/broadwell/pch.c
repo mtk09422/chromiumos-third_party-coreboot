@@ -190,6 +190,10 @@ void broadwell_pch_enable_dev(device_t dev)
 	if (PCI_SLOT(dev->path.pci.devfn) == PCH_DEV_SLOT_PCIE)
 		return;
 
+	/* EHCI disable is handled in ramstage driver */
+	if (PCI_SLOT(dev->path.pci.devfn) == PCH_DEV_SLOT_EHCI)
+		return;
+
 	if (!dev->enabled) {
 		printk(BIOS_DEBUG, "%s: Disabling device\n", dev_path(dev));
 
