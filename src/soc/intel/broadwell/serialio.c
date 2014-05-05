@@ -41,6 +41,19 @@ static void serialio_enable_d3hot(struct device *dev)
 	pci_write_config32(dev, PCH_PCS, reg32);
 }
 
+static int serialio_uart_is_debug(struct device *dev)
+{
+#if CONFIG_INTEL_PCH_UART_CONSOLE
+	switch (dev->path.pci.devfn) {
+	case PCI_DEVFN(21, 5): /* UART0 */
+		return !!(CONFIG_INTEL_PCH_UART_CONSOLE_NUMBER == 0);
+	case PCI_DEVFN(21, 6): /* UART1 */
+		return !!(CONFIG_INTEL_PCH_UART_CONSOLE_NUMBER == 1);
+	}
+#endif
+	return 0;
+}
+
 /* Enable clock in PCI mode */
 static void serialio_enable_clock(struct resource *bar0)
 {
@@ -220,13 +233,15 @@ static void serialio_init(struct device *dev)
 		break;
 	case PCI_DEVFN(21, 5): /* UART0 */
 		sio_index = SIO_ID_UART0;
-		serialio_d21_ltr(bar0);
+		if (!serialio_uart_is_debug(dev))
+			serialio_d21_ltr(bar0);
 		serialio_d21_mode(sio_index, SIO_PIN_INTD,
 				  config->sio_acpi_mode);
 		break;
 	case PCI_DEVFN(21, 6): /* UART1 */
 		sio_index = SIO_ID_UART1;
-		serialio_d21_ltr(bar0);
+		if (!serialio_uart_is_debug(dev))
+			serialio_d21_ltr(bar0);
 		serialio_d21_mode(sio_index, SIO_PIN_INTD,
 				  config->sio_acpi_mode);
 		break;
@@ -252,6 +267,10 @@ static void serialio_init(struct device *dev)
 		/* Save BAR0 and BAR1 to ACPI NVS */
 		gnvs->dev.bar0[sio_index] = (u32)bar0->base;
 		gnvs->dev.bar1[sio_index] = (u32)bar1->base;
+
+		/* Do not enable UART if it is used as debug port */
+		if (!serialio_uart_is_debug(dev))
+			gnvs->dev.enable[sio_index] = 1;
 	}
 }
 
