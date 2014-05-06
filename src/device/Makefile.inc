@@ -22,3 +22,6 @@ else
 ramstage-$(CONFIG_VGA_ROM_RUN) += pci_rom.c
 endif
 
+bootblock-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
+romstage-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
+ramstage-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
