@@ -20,8 +20,6 @@
 #ifndef ELOG_H_
 #define ELOG_H_
 
-#if CONFIG_ELOG
-
 /* SMI command code for GSMI event logging */
 #define ELOG_GSMI_APM_CNT                 0xEF
 
@@ -145,6 +143,7 @@ struct elog_event_data_me_extended {
 /* EC Shutdown Reason */
 #define ELOG_TYPE_EC_SHUTDOWN             0xa5
 
+#if CONFIG_ELOG
 /* Eventlog backing storage must be initialized before calling elog_init(). */
 extern int elog_init(void);
 extern int elog_clear(void);
@@ -155,6 +154,21 @@ extern void elog_add_event_word(u8 event_type, u16 data);
 extern void elog_add_event_dword(u8 event_type, u32 data);
 extern void elog_add_event_wake(u8 source, u32 instance);
 extern int elog_smbios_write_type15(unsigned long *current, int handle);
+#else
+/* Stubs to help avoid littering sources with #if CONFIG_ELOG */
+static inline int elog_init(void) { return -1; }
+static inline int elog_clear(void) { return -1; }
+static inline void elog_add_event_raw(void) { return; }
+static inline void elog_add_event(u8 event_type) { return; }
+static inline void elog_add_event_byte(u8 event_type, u8 data) { return; }
+static inline void elog_add_event_word(u8 event_type, u16 data) { return; }
+static inline void elog_add_event_dword(u8 event_type, u32 data) { return; }
+static inline void elog_add_event_wake(u8 source, u32 instance) { return; }
+static inline int elog_smbios_write_type15(unsigned long *current,
+						int handle) {
+	return 0;
+}
+#endif
 
 #if CONFIG_ELOG_GSMI
 extern u32 gsmi_exec(u8 command, u32 *param);
@@ -164,7 +178,5 @@ extern u32 gsmi_exec(u8 command, u32 *param);
 u32 boot_count_read(void);
 u32 boot_count_increment(void);
 #endif
-
-#endif /* !CONFIG_ELOG */
 
 #endif /* ELOG_H_ */
