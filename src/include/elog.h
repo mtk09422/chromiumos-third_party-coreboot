@@ -143,6 +143,9 @@ struct elog_event_data_me_extended {
 /* EC Shutdown Reason */
 #define ELOG_TYPE_EC_SHUTDOWN             0xa5
 
+/* CPU Thermal Trip */
+#define ELOG_TYPE_THERM_TRIP              0xa7
+
 #if CONFIG_ELOG
 /* Eventlog backing storage must be initialized before calling elog_init(). */
 extern int elog_init(void);
