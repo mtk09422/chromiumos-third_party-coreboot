@@ -17,12 +17,12 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
-include build/libpayload/libpayload.config
-
 export src := $(shell pwd)
 export obj := $(src)/build
 
-LIBPAYLOAD_DIR := $(obj)/libpayload
+LIBPAYLOAD_DIR ?= $(src)/../libpayload/install/libpayload
+
+include $(LIBPAYLOAD_DIR)/libpayload.config
 
 $(if $(wildcard .xcompile),,$(eval $(shell bash ../libpayload/util/xcompile/xcompile > .xcompile)))
 include .xcompile
@@ -32,15 +32,8 @@ ARCHDIR-$(CONFIG_LP_ARCH_X86)     := x86
 
 ARCH-y := $(ARCHDIR-y)
 
-classes-$(CONFIG_LP_PCI) += build/libpayload/lib/libpci.a
-classes-$(CONFIG_LP_CURSES) += build/libpayload/lib/libcurses.a
-classes-$(CONFIG_LP_PDCURSES) += build/libpayload/lib/libmenu.a
-classes-$(CONFIG_LP_PDCURSES) += build/libpayload/lib/libform.a
-classes-$(CONFIG_LP_PDCURSES) +=  build/libpayload/lib/libpanel.a
-classes-$(CONFIG_LP_CBFS) += build/libpayload/lib/libcbfs.a
-classes-$(CONFIG_LP_LZMA) += build/libpayload/lib/liblzma.a
-classes-$(CONFIG_LP_LIBC) += build/libpayload/lib/libc.a
-headdoto= build/libpayload/lib/$(ARCHDIR-y)/head.o
+classes-y += $(LIBPAYLOAD_DIR)/lib/libpayload.a
+headdoto= $(LIBPAYLOAD_DIR)/lib/$(ARCHDIR-y)/head.o
 libraries := $(classes-y)
 
 # If architecture folder name is different from GCC binutils architecture name,
@@ -58,22 +51,26 @@ READELF := $(READELF_$(ARCH-y))
 STRIP := $(STRIP_$(ARCH-y))
 AR := $(AR_$(ARCH-y))
 
-CFLAGS_arm= -mfloat-abi=softfp -marm -mabi=aapcs
-CFLAGS_arm += -march=armv7-a -Os -fno-builtin
-CFLAGS_arm += -ffreestanding -fomit-frame-pointer
+CFLAGS_arm = -mthumb -march=armv7-a
 
 LIBGCC_FILE_NAME := $(shell test -r `$(LPCC) -print-libgcc-file-name` && \
 		      $(LPCC) -print-libgcc-file-name)
 
-OBJECTS-y=main.o command.o cmd_help.o cmd_license.o
-
+OBJECTS-y := main.o command.o cmd_help.o cmd_license.o
 OBJECTS-y += $(libraries) $(LIBGCC_FILE_NAME)
 
-CFLAGS= -Wall -Werror -Os $(FFLAGS-y) -Ibuild/libpayload/include -I.
-CFLAGS+= -Ibuild/libpayload/include/$(ARCHDIR-y)
-CFLAGS+= $(CFLAGS_$(ARCH-y))
+# Common build params from Depthcharge
+ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
+		-fno-stack-protector -fomit-frame-pointer
+
+CFLAGS= -Wall -Werror -g -Os $(FFLAGS-y) -I$(LIBPAYLOAD_DIR)/include -I.
+CFLAGS+= -I$(LIBPAYLOAD_DIR)/include/$(ARCHDIR-y)
+CFLAGS+= $(CFLAGS_$(ARCH-y)) $(ABI_FLAGS)
+CFLAGS+= -fdata-sections -ffunction-sections -std=gnu99
 
 LDFLAGS=-Wl,-T,ubootcli.ldscript.$(ARCH-y) -static -nostartfiles -nostdlib
+LDFLAGS+=$(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd
+LDFLAGS+=-Wl,--gc-sections -Wl,-Map=$@.map
 LIBGCC=$(shell $(CC) -m32 -print-libgcc-file-name)
 
 

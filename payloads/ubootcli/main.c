@@ -32,7 +32,7 @@
 /*
  * Board-specific Platform code can reimplement show_boot_progress () if needed
  */
-void inline __show_boot_progress (int val) {}
+void __show_boot_progress (int val) {}
 void show_boot_progress (int val) __attribute__((weak, alias("__show_boot_progress")));
 
 #define MAX_DELAY_STOP_STR 32
@@ -1087,15 +1087,12 @@ int do_run (cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 }
 #endif
 
-void abort(void)
-{
-	printf("abort()\n");
-	while (1)
-		die("abort");
-}
-
 int main(int argc, char *argv[])
 {
+#if CONFIG_LP_SKIP_CONSOLE_INIT
+	serial_console_init();
+	video_console_init();
+#endif
 	main_loop();
 	return 0;
 }

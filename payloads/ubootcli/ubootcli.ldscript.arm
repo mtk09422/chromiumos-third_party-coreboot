@@ -34,8 +34,9 @@ OUTPUT_ARCH(arm)*/
 
 ENTRY(_entry)
 
-HEAP_SIZE = 16384;
-STACK_SIZE = 16384;
+/* The heap size must be large enough to contain video console buffer. */
+HEAP_SIZE = 65536;
+STACK_SIZE = 65536;
 
 SECTIONS
 {
