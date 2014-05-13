@@ -31,6 +31,7 @@
 #define __USB_H
 #include <libpayload.h>
 #include <pci/pci.h>
+#include <stdint.h>
 
 typedef enum { host_to_device = 0, device_to_host = 1 } dev_req_dir;
 typedef enum { standard_type = 0, class_type = 1, vendor_type =
@@ -210,7 +211,7 @@ typedef enum { OHCI = 0, UHCI = 1, EHCI = 2, XHCI = 3} hc_type;
 
 struct usbdev_hc {
 	hci_t *next;
-	u32 reg_base;
+	uintptr_t reg_base;
 	hc_type type;
 	int latest_address;
 	usbdev_t *devices[128];	// dev 0 is root hub, 127 is last addressable

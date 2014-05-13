@@ -127,7 +127,7 @@ xhci_init (void *bar)
 	controller->destroy_intr_queue	= xhci_destroy_intr_queue;
 	controller->poll_intr_queue	= xhci_poll_intr_queue;
 
-	controller->reg_base = (u32)bar;
+	controller->reg_base = (uintptr_t)bar;
 	controller->instance = xzalloc(sizeof(xhci_t));
 	xhci_t *const xhci = (xhci_t *)controller->instance;
 
