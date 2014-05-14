@@ -34,6 +34,7 @@ romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 ramstage-y += cbmem.c
 ramstage-y += clock.c
 ramstage-y += gpio.c
+ramstage-y += soc.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
