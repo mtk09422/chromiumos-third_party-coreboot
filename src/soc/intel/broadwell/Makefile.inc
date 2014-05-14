@@ -10,6 +10,7 @@ subdirs-y += ../../../cpu/intel/microcode
 subdirs-y += ../../../cpu/intel/turbo
 
 ramstage-y += acpi.c
+ramstage-y += adsp.c
 ramstage-y += chip.c
 ramstage-y += cpu.c
 ramstage-y += elog.c

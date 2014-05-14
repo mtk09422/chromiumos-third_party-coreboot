@@ -187,6 +187,7 @@ void broadwell_pch_enable_dev(device_t dev)
 	switch (PCI_SLOT(dev->path.pci.devfn)) {
 	case PCH_DEV_SLOT_PCIE:
 	case PCH_DEV_SLOT_EHCI:
+	case PCH_DEV_SLOT_HDA:
 		return;
 	}
 
