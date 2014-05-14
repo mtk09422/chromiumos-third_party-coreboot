@@ -48,11 +48,15 @@ int vboot_skip_display_init(void);
 
 /* functions implemented in vboot.c */
 void init_chromeos(int bootmode);
+
+/* functions implemented in elog.c */
+void elog_add_boot_reason(void);
 #else
 static inline int developer_mode_enabled(void) { return 0; }
 static inline int recovery_mode_enabled(void) { return 0; }
 static inline int vboot_skip_display_init(void) { return 0; }
 static inline void init_chromeos(int bootmode) { }
+static inline void elog_add_boot_reason(void) { return; }
 #endif /* CONFIG_CHROMEOS */
 
 struct romstage_handoff;
