@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-Name(OIPG, Package() {
-	Package () { 0x0001, 0, 0xFFFFFFFF, "LynxPoint" }, // no recovery button
-	Package () { 0x0003, 1, 16, "LynxPoint" }, // firmware write protect
+Name (OIPG, Package() {
+	Package () { 0x0001, 0, 0xFFFFFFFF, "PCH-LP" }, // no recovery button
+	Package () { 0x0003, 1, 16, "PCH-LP" }, // firmware write protect
 })
