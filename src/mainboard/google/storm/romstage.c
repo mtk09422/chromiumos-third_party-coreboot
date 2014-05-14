@@ -19,12 +19,14 @@
 
 #include <arch/stages.h>
 #include <cbfs.h>
+#include <cbmem.h>
 #include <console/console.h>
 
 void main(void)
 {
 	void *entry;
 
+	cbmem_initialize_empty();
 	console_init();
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
