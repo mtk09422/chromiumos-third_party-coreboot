@@ -25,6 +25,8 @@ void main(void)
 {
 	void *entry;
 
+	console_init();
+
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 	stage_exit(entry);
 }

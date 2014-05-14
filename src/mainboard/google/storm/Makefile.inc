@@ -21,6 +21,7 @@ bootblock-y += bootblock.c
 bootblock-y += cdp.c
 
 romstage-y += romstage.c
+romstage-y += cdp.c
 
 ramstage-y += mainboard.c
 ramstage-y += cdp.c
