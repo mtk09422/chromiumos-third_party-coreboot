@@ -30,6 +30,7 @@
 #include <soc/nvidia/tegra124/pmc.h>
 #include <soc/nvidia/tegra124/spi.h>
 #include <soc/nvidia/tegra124/usb.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 static struct clk_rst_ctlr *clk_rst = (void *)TEGRA_CLK_RST_BASE;
 
@@ -243,6 +244,7 @@ static void mainboard_init(device_t dev)
 	clock_init_arm_generic_timer();
 	setup_ec_spi();
 	elog_init();
+	elog_add_boot_reason();
 }
 
 static void mainboard_enable(device_t dev)
