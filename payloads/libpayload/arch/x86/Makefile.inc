@@ -35,6 +35,8 @@ libc-y += selfboot.c
 libc-y += string.c
 libc-y += exception_asm.S exception.c
 
+libgdb-y += gdb.c
+
 libcbfs-$(CONFIG_LP_CBFS) += rom_media.c
 
 # Multiboot support is configurable
