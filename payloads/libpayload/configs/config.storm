@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Wed May 21 16:16:26 2014
+# Wed May 21 16:27:33 2014
 #
 
 #
@@ -47,9 +47,12 @@ CONFIG_LP_8250_SERIAL_CONSOLE=y
 #
 # CONFIG_LP_RTC_PORT_EXTENDED_VIA is not set
 # CONFIG_LP_STORAGE is not set
-CONFIG_LP_TIMER_NONE=y
+# CONFIG_LP_TIMER_NONE is not set
 # CONFIG_LP_TIMER_MCT is not set
 # CONFIG_LP_TIMER_TEGRA_1US is not set
+CONFIG_LP_TIMER_IPQ806X=y
+CONFIG_LP_IPQ806X_TIMER_FREQ=32000
+CONFIG_LP_IPQ806X_TIMER_REG=0x0200A008
 # CONFIG_LP_USB is not set
 # CONFIG_LP_USB_GEN_HUB is not set
 # CONFIG_LP_BIG_ENDIAN is not set
