@@ -26,3 +26,12 @@ Device (PWRB)
 	// Wake from deep sleep via GPIO27
 	Name(_PRW, Package(){27, 4})
 }
+Scope (\_SB.LPEA)
+{
+	Name (GBUF, ResourceTemplate ()
+	{
+	//There is no LPE device on bayleybay
+	//If we don't add this Name space here, it will cause compile error
+	})
+}
+

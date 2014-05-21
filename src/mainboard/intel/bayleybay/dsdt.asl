@@ -23,7 +23,7 @@
 DefinitionBlock(
 	"dsdt.aml",
 	"DSDT",
-	0x02,		// DSDT revision: ACPI v2.0
+	0x05,		// DSDT revision: ACPI v5.0
 	"COREv4",	// OEM id
 	"COREBOOT",	// OEM table id
 	0x20110725	// OEM revision
@@ -34,8 +34,6 @@ DefinitionBlock(
 
 	// global NVS and variables
 	#include <soc/intel/baytrail/acpi/globalnvs.asl>
-
-	//#include "acpi/thermal.asl"
 
 	#include <soc/intel/baytrail/acpi/cpu.asl>
 
@@ -52,4 +50,6 @@ DefinitionBlock(
 
 	/* Chipset specific sleep states */
 	#include <soc/intel/baytrail/acpi/sleepstates.asl>
+
+	#include "acpi/mainboard.asl"
 }
