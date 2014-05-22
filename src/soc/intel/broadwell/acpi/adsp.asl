@@ -27,7 +27,7 @@ Device (ADSP)
 		}
 
 		// LynxPoint-LP
-		Return ("INT33C2")
+		Return ("INT33C8")
 	}
 	Name (_UID, 1)
 	Name (_DDN, "Intel Smart Sound Technology")

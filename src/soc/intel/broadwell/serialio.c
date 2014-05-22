@@ -35,11 +35,11 @@
 #include <chip.h>
 
 /* Set D3Hot Power State in ACPI mode */
-static void serialio_enable_d3hot(struct device *dev)
+static void serialio_enable_d3hot(struct resource *res)
 {
-	u32 reg32 = pci_read_config32(dev, PCH_PCS);
+	u32 reg32 = read32(res->base + PCH_PCS);
 	reg32 |= PCH_PCS_PS_D3HOT;
-	pci_write_config32(dev, PCH_PCS, reg32);
+	write32(res->base + PCH_PCS, reg32);
 }
 
 static int serialio_uart_is_debug(struct device *dev)
@@ -196,8 +196,6 @@ static void serialio_init(struct device *dev)
 
 	if (!config->sio_acpi_mode)
 		serialio_enable_clock(bar0);
-	else if (dev->path.pci.devfn != PCH_DEVFN_SDMA)
-		serialio_enable_d3hot(dev); /* all but SDMA */
 
 	switch (dev->path.pci.devfn) {
 	case PCH_DEVFN_SDMA: /* SDMA */
@@ -272,6 +270,10 @@ static void serialio_init(struct device *dev)
 		/* Do not enable UART if it is used as debug port */
 		if (!serialio_uart_is_debug(dev))
 			gnvs->dev.enable[sio_index] = 1;
+
+		/* Put device in D3hot state via BAR1 */
+		if (dev->path.pci.devfn != PCH_DEVFN_SDMA)
+			serialio_enable_d3hot(bar1); /* all but SDMA */
 	}
 }
 
