@@ -35,7 +35,6 @@
 #include <arch/interrupt.h>
 #include <boot/coreboot_tables.h>
 #include "ec.h"
-#include "onboard.h"
 
 #if CONFIG_PCI_ROM_RUN || CONFIG_VGA_ROM_RUN
 static int int15_handler(void)
@@ -70,71 +69,13 @@ static int int15_handler(void)
 }
 #endif
 
+void mainboard_suspend_resume(void)
+{
+}
+
 static void mainboard_init(device_t dev)
 {
 	mainboard_ec_init();
-}
-
-static int mainboard_smbios_data(device_t dev, int *handle,
-				 unsigned long *current)
-{
-	int len = 0;
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_TRACKPAD_NAME,		/* name */
-		BOARD_TRACKPAD_IRQ,		/* instance */
-		BOARD_TRACKPAD_I2C_BUS,		/* segment */
-		BOARD_TRACKPAD_I2C_ADDR,	/* bus */
-		BOARD_TRACKPAD_IRQ_TYPE,	/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_TOUCHSCREEN_NAME,		/* name */
-		BOARD_TOUCHSCREEN_IRQ,		/* instance */
-		BOARD_TOUCHSCREEN_I2C_BUS,	/* segment */
-		BOARD_TOUCHSCREEN_I2C_ADDR,	/* bus */
-		BOARD_TOUCHSCREEN_IRQ_TYPE,	/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_CODEC_NAME,		/* name */
-		BOARD_CODEC_IRQ,		/* instance */
-		BOARD_CODEC_I2C_BUS,		/* segment */
-		BOARD_CODEC_I2C_ADDR,		/* bus */
-		BOARD_CODEC_IRQ_TYPE,		/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_NFC_NAME,			/* name */
-		BOARD_NFC_IRQ,			/* instance */
-		BOARD_NFC_I2C_BUS,		/* segment */
-		BOARD_NFC_I2C_ADDR,		/* bus */
-		BOARD_NFC_IRQ_TYPE,		/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_ACCEL_NAME,		/* name */
-		BOARD_ACCEL_IRQ,		/* instance */
-		BOARD_ACCEL_I2C_BUS,		/* segment */
-		BOARD_ACCEL_I2C_ADDR,		/* bus */
-		BOARD_ACCEL_IRQ_TYPE,		/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_ACCEL_GYRO_NAME,		/* name */
-		BOARD_ACCEL_GYRO_IRQ,		/* instance */
-		BOARD_ACCEL_GYRO_I2C_BUS,	/* segment */
-		BOARD_ACCEL_GYRO_I2C_ADDR,	/* bus */
-		BOARD_ACCEL_GYRO_IRQ_TYPE,	/* device */
-		0);				/* function */
-
-	return len;
 }
 
 // mainboard_enable is executed as first thing after
@@ -143,7 +84,6 @@ static int mainboard_smbios_data(device_t dev, int *handle,
 static void mainboard_enable(device_t dev)
 {
 	dev->ops->init = mainboard_init;
-	dev->ops->get_smbios_data = mainboard_smbios_data;
 #if CONFIG_PCI_ROM_RUN || CONFIG_VGA_ROM_RUN
 	/* Install custom int15 handler for VGA OPROM */
 	mainboard_interrupt_handlers(0x15, &int15_handler);
@@ -153,4 +93,3 @@ static void mainboard_enable(device_t dev)
 struct chip_operations mainboard_ops = {
 	.enable_dev = mainboard_enable,
 };
-
