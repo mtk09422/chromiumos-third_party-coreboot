@@ -26,11 +26,18 @@
 static unsigned long get_top_of_ram(void)
 {
 	/*
-	 * Base of TSEG is top of usable DRAM below 4GiB. The register has
-	 * 1 MiB alignement.
+	 * Base of DPR is top of usable DRAM below 4GiB. The register has
+	 * 1 MiB alignment and reports the TOP of the range, the base
+	 * must be calculated from the size in MiB in bits 11:4.
 	 */
-	u32 tom = pci_read_config32(SA_DEV_ROOT, TSEG);
-	return (unsigned long) tom & ~((1 << 20) - 1);
+	u32 dpr = pci_read_config32(SA_DEV_ROOT, DPR);
+	u32 tom = dpr & ~((1 << 20) - 1);
+
+	/* Subtract DMA Protected Range size if enabled */
+	if (dpr & DPR_EPM)
+		tom -= (dpr & DPR_SIZE_MASK) << 16;
+
+	return (unsigned long)tom;
 }
 
 void *cbmem_top(void)
