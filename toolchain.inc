@@ -19,11 +19,12 @@
 
 #######################################################################
 
-ARCH_SUPPORTED := ARM ARM64 X86_32
+ARCH_SUPPORTED := ARM ARM64 X86_32 MIPS
 
 ARCH_TO_TOOLCHAIN_X86_32 := x86_32
 ARCH_TO_TOOLCHAIN_ARM    := arm
 ARCH_TO_TOOLCHAIN_ARM64  := arm64
+ARCH_TO_TOOLCHAIN_MIPS   := mipsel
 
 COREBOOT_STANDARD_STAGES := bootblock verstage romstage ramstage
 
@@ -31,9 +32,12 @@ ARCHDIR-i386      := x86
 ARCHDIR-arm       := arm
 ARCHDIR-arm64     := arm64
 ARCHDIR-x86_32    := x86
+ARCHDIR-mipsel    := mips
 
 CFLAGS_arm          := -mno-unaligned-access -ffunction-sections -fdata-sections
 CFLAGS_arm64        := -ffunction-sections -fdata-sections
+
+CFLAGS_mipsel     := -mips32r2 -G 0
 
 toolchain_to_dir = \
 	$(foreach arch,$(ARCH_SUPPORTED),\
