@@ -24,6 +24,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <device/pci_def.h>
+#include <lib.h>
 #include <string.h>
 #if CONFIG_EC_GOOGLE_CHROMEEC
 #include <ec/google/chromeec/ec.h>
@@ -94,6 +95,9 @@ void raminit(struct pei_data *pei_data)
 		(version >> 8) & 0xff, version & 0xff);
 
 	report_memory_config();
+
+	/* Basic memory sanity test */
+	quick_ram_check();
 
 	if (pei_data->boot_mode != SLEEP_STATE_S3) {
 		cbmem_initialize_empty();
