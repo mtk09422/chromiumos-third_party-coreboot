@@ -38,6 +38,7 @@ ramstage-y += soc.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
+ramstage-y += usb.c
 
 ifeq ($(CONFIG_USE_BLOBS),y)
 
