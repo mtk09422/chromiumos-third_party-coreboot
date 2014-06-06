@@ -17,15 +17,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <console/console.h>
 #include <cbmem.h>
 #include <timestamp.h>
-#ifndef __PRE_RAM__
 #include <arch/early_variables.h>
-
-static struct timestamp_table* ts_table;
-#endif
 
 #define MAX_TIMESTAMPS 30
 
@@ -50,12 +47,10 @@ void timestamp_init(uint64_t base)
 void timestamp_add(enum timestamp_id id, uint64_t ts_time)
 {
 	struct timestamp_entry *tse;
-#ifdef __PRE_RAM__
-	struct timestamp_table *ts_table = cbmem_find(CBMEM_ID_TIMESTAMP);
-#else
+	MAYBE_STATIC struct timestamp_table *ts_table = NULL;
+
 	if (!ts_table)
 		ts_table = cbmem_find(CBMEM_ID_TIMESTAMP);
-#endif
 	if (!ts_table || (ts_table->num_entries == ts_table->max_entries))
 		return;
 
