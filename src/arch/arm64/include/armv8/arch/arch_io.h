@@ -25,6 +25,7 @@
 
 #include <arch/cache.h>		/* for dmb() */
 #include <stdint.h>
+#include <arch/lib_helpers.h>
 
 static inline uint8_t read8(const void *addr)
 {
