@@ -32,6 +32,15 @@ mainmenu "Libpayload Configuration"
 
 menu "Generic Options"
 
+config GPL
+	bool "GPLv2-licensed Options"
+	default n
+	help
+	  Prompt for options that will build code licensed under the GNU General
+	  Public License (version 2). This will subject the whole payload to the
+	  terms of this license (including its provision to release all sources,
+	  please see the LICENSE_GPL file for details).
+
 config EXPERIMENTAL
 	bool "Experimental Options"
 	default n
@@ -56,8 +65,9 @@ config DEVELOPER
 config REMOTEGDB
 	bool "Remote GDB stub"
 	default n
+	depends on GPL
 	help
-	  Enable Remote GDB debugging support. (CAREFUL: Compiles GPL code!)
+	  Enable Remote GDB debugging support.
 
 config CHROMEOS
 	bool "ChromeOS specific features"
