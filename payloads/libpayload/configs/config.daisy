@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Fri May  3 13:22:35 2013
+# Thu Jun 12 09:37:46 2014
 #
 
 #
@@ -17,6 +17,7 @@ CONFIG_LP_CHROMEOS=y
 #
 CONFIG_LP_ARCH_ARM=y
 # CONFIG_LP_ARCH_X86 is not set
+# CONFIG_LP_ARCH_ARM64 is not set
 # CONFIG_LP_MEMMAP_RAM_ONLY is not set
 
 #

@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Fri May  3 13:22:35 2013
+# Thu Jun 12 09:37:45 2014
 #
 
 #
@@ -15,9 +15,9 @@ CONFIG_LP_CHROMEOS=y
 #
 # Architecture Options
 #
-CONFIG_LP_ARCH_ARM64=y
 # CONFIG_LP_ARCH_ARM is not set
 # CONFIG_LP_ARCH_X86 is not set
+CONFIG_LP_ARCH_ARM64=y
 # CONFIG_LP_MEMMAP_RAM_ONLY is not set
 
 #
@@ -43,6 +43,10 @@ CONFIG_LP_COREBOOT_VIDEO_CONSOLE=y
 #
 # CONFIG_LP_RTC_PORT_EXTENDED_VIA is not set
 # CONFIG_LP_STORAGE is not set
+CONFIG_LP_TIMER_NONE=y
+# CONFIG_LP_TIMER_MCT is not set
+# CONFIG_LP_TIMER_TEGRA_1US is not set
+# CONFIG_LP_TIMER_IPQ806X is not set
 CONFIG_LP_USB=y
 # CONFIG_LP_USB_OHCI is not set
 CONFIG_LP_USB_EHCI=y
