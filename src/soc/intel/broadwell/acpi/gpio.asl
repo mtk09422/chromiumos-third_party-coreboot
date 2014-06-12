@@ -47,8 +47,9 @@ Device (GPIO)
 			,            // ResourceSourceIndex
 			,            // ResourceSource
 			BAR0)
-		Interrupt (ResourceConsumer,
-			Level, ActiveHigh, Shared, , , ) {14}
+		// Disabled due to IRQ storm: http://crosbug.com/p/29548
+		//Interrupt (ResourceConsumer,
+		//	Level, ActiveHigh, Shared, , , ) {14}
 	})
 
 	Method (_CRS, 0, NotSerialized)
