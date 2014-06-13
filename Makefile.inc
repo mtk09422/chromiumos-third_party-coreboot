@@ -228,7 +228,8 @@ else
 CFLAGS_common += -Os
 endif
 
-additional-dirs := $(objutil)/cbfstool $(objutil)/romcc $(objutil)/ifdtool $(objutil)/options
+additional-dirs := $(objutil)/cbfstool $(objutil)/romcc $(objutil)/ifdtool \
+    $(objutil)/options $(objutil)/bimgtool
 
 #######################################################################
 # generate build support files
@@ -289,6 +290,11 @@ $(ROMCC): $(top)/util/romcc/romcc.c
 
 IFDTOOL:=$(objutil)/ifdtool/ifdtool
 $(IFDTOOL): $(top)/util/ifdtool/ifdtool.c
+	@printf "    HOSTCC     $(subst $(obj)/,,$(@))\n"
+	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
+
+BIMGTOOL:=$(objutil)/bimgtool/bimgtool
+$(BIMGTOOL): $(top)/util/bimgtool/bimgtool.c
 	@printf "    HOSTCC     $(subst $(obj)/,,$(@))\n"
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
