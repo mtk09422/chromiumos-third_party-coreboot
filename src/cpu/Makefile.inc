@@ -3,6 +3,7 @@
 ################################################################################
 subdirs-y += amd
 subdirs-y += armltd
+subdirs-y += imgtec
 subdirs-y += intel
 subdirs-y += via
 subdirs-y += x86
