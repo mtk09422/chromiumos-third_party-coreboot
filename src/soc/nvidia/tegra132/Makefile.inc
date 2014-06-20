@@ -1,4 +1,5 @@
 CBOOTIMAGE = cbootimage
+CBOOTIMAGE_OPTS = --soc tegra132
 
 bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
@@ -49,14 +50,17 @@ $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
 
 $(obj)/generated/bct.bin: $(obj)/generated/bct.cfg
 	@printf "    CBOOTIMAGE $(subst $(obj)/,,$(@))\n"
-	$(CBOOTIMAGE) -gbct --soc tegra132 $< $@
+	$(CBOOTIMAGE) -gbct $(CBOOTIMAGE_OPTS) $< $@
 
 BCT_BIN = $(obj)/generated/bct.bin
 BCT_WRAPPER = $(obj)/generated/bct.wrapper
+PREBOOT_MTS_FILE = 3rdparty/mainboard/$(MAINBOARDDIR)/mts_preboot_si
 $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin $(BCT_BIN)
 	echo "Version    = 1;" > $(BCT_WRAPPER)
 	echo "Redundancy = 1;" >> $(BCT_WRAPPER)
+	echo "Bctcopy    = 1;" >> $(BCT_WRAPPER)
 	echo "Bctfile    = $(BCT_BIN);" >> $(BCT_WRAPPER)
+	echo "MtsPreboot = $(PREBOOT_MTS_FILE),0x4000f000,0x4000f000,Complete;" >> $(BCT_WRAPPER)
 	echo "BootLoader = $<,$(CONFIG_BOOTBLOCK_BASE),$(CONFIG_BOOTBLOCK_BASE),Complete;" >> $(BCT_WRAPPER)
 	@printf "    CBOOTIMAGE $(subst $(obj)/,,$(@))\n"
-	$(CBOOTIMAGE) $(BCT_WRAPPER) $@
+	$(CBOOTIMAGE) $(CBOOTIMAGE_OPTS) $(BCT_WRAPPER) $@
