@@ -25,7 +25,7 @@ ARCH_TO_TOOLCHAIN_X86_32 := x86_32
 ARCH_TO_TOOLCHAIN_ARM    := arm
 ARCH_TO_TOOLCHAIN_ARM64  := arm64
 
-COREBOOT_STANDARD_STAGES := bootblock romstage ramstage
+COREBOOT_STANDARD_STAGES := bootblock verstage romstage ramstage
 
 ARCHDIR-i386      := x86
 ARCHDIR-arm       := arm

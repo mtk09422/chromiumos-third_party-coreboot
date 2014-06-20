@@ -60,7 +60,7 @@ subdirs-y += site-local
 
 #######################################################################
 # Add source classes and their build options
-classes-y := ramstage romstage bootblock smm smmstub cpu_microcode rmodules
+classes-y := ramstage romstage bootblock smm smmstub cpu_microcode rmodules verstage
 
 #######################################################################
 # Helper functions for ramstage postprocess
@@ -101,6 +101,8 @@ ramstage-postprocess=$(foreach d,$(sort $(dir $(1))), \
 	$(eval $(d)ramstage.o: $(call files-in-dir,$(d),$(1)); $$(LINK) -o $$@ -r $$^ ) \
 	$(eval ramstage-objs:=$(d)ramstage.o $(filter-out $(call files-in-dir,$(d),$(1)),$(ramstage-objs))))
 
+verstage-c-ccopts:=-D__PRE_RAM__ -D__VER_STAGE__
+verstage-S-ccopts:=-D__PRE_RAM__ -D__VER_STAGE__
 romstage-c-ccopts:=-D__PRE_RAM__
 romstage-S-ccopts:=-D__PRE_RAM__
 ifeq ($(CONFIG_TRACE),y)
@@ -131,6 +133,7 @@ endif
 
 ramstage-c-deps:=$$(OPTION_TABLE_H)
 romstage-c-deps:=$$(OPTION_TABLE_H)
+verstage-c-deps:=$$(OPTION_TABLE_H)
 bootblock-c-deps:=$$(OPTION_TABLE_H)
 
 #######################################################################
@@ -308,6 +311,10 @@ $(obj)/%.ramstage.o $(abspath $(obj))/%.ramstage.o: $(obj)/%.c $(obj)/config.h $
 $(obj)/%.romstage.o $(abspath $(obj))/%.romstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
 	$(CC_romstage) -MMD $(CFLAGS_romstage) $(romstage-c-ccopts) -c -o $@ $<
+
+$(obj)/%.verstage.o $(abspath $(obj))/%.verstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
+	@printf "    CC         $(subst $(obj)/,,$(@))\n"
+	$(CC_verstage) -MMD $(CFLAGS_verstage) $(verstage-c-ccopts) -c -o $@ $<
 
 $(obj)/%.bootblock.o $(abspath $(obj))/%.bootblock.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"

@@ -22,6 +22,8 @@ ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
+verstage-y += verstage.c
+
 romstage-y += cbfs.c
 romstage-y += cbmem.c
 romstage-y += clock.c
