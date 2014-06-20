@@ -45,6 +45,17 @@ bootblock-S-ccopts += $(armv7_asm_flags)
 
 endif
 ################################################################################
+## Verification stage
+################################################################################
+verstage-c-ccopts += $(armv7_flags)
+verstage-S-ccopts += $(armv7_asm_flags)
+verstage-y += cache.c
+verstage-y += cpu.S
+verstage-y += exception.c
+verstage-y += exception_asm.S
+verstage-y += mmu.c
+
+################################################################################
 ## ROM stage
 ################################################################################
 ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM_V7),y)

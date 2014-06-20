@@ -32,6 +32,12 @@ endif
 romstage-y += memchr.c
 romstage-y += memcmp.c
 rmodules-y += memcmp.c
+
+verstage-y += delay.c
+verstage-y += cbfs.c
+verstage-y += memcmp.c
+verstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
+
 romstage-y += delay.c
 romstage-y += cbfs.c
 romstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c

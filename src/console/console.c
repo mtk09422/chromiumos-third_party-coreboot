@@ -126,6 +126,8 @@ void console_init(void)
 		COREBOOT_EXTRA_VERSION
 #if defined(__BOOT_BLOCK__)
 		" bootblock "
+#elif defined(__VER_STAGE__)
+		" verstage "
 #else
 		" romstage "
 #endif

@@ -9,6 +9,10 @@ smm-y += printk.c
 smm-y += vtxprintf.c
 smm-$(CONFIG_SMM_TSEG) += die.c
 
+verstage-$(CONFIG_EARLY_CONSOLE) += vtxprintf.c
+verstage-y += console.c
+verstage-y += die.c
+
 romstage-$(CONFIG_EARLY_CONSOLE) += vtxprintf.c
 romstage-y += console.c
 romstage-y += post.c

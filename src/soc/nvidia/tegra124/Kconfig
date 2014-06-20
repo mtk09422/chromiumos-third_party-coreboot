@@ -48,10 +48,12 @@ config BOOTBLOCK_ROM_OFFSET
 
 config CBFS_HEADER_ROM_OFFSET
 	hex "offset of master CBFS header in ROM"
+	default 0x1e000 if VBOOT2_VERIFY_FIRMWARE
 	default 0x18000
 
 config CBFS_ROM_OFFSET
 	hex "offset of CBFS data in ROM"
+	default 0x1e080 if VBOOT2_VERIFY_FIRMWARE
 	default 0x18080
 
 config SYS_SDRAM_BASE
@@ -64,6 +66,7 @@ config BOOTBLOCK_BASE
 
 config ROMSTAGE_BASE
 	hex
+	default 0x4002d000 if VBOOT2_VERIFY_FIRMWARE
 	default 0x4002c000
 
 config RAMSTAGE_BASE
@@ -95,6 +98,14 @@ config CBFS_CACHE_ADDRESS
 config CBFS_CACHE_SIZE
 	hex "size of CBFS cache data"
 	default 0x00016000
+
+config VBOOT_WORK_BUFFER_ADDRESS
+	hex "memory address of vboot work buffer"
+	default 0x40018000
+
+config VBOOT_WORK_BUFFER_SIZE
+	hex "size of vboot work buffer"
+	default 0x00004000
 
 config CBMEM_CONSOLE_PRERAM_BASE
 	hex "memory address of the CBMEM console buffer"

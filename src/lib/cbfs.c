@@ -27,7 +27,7 @@
 # define CBFS_MINI_BUILD
 #elif defined(__SMM__)
 # define CBFS_MINI_BUILD
-#elif defined(__BOOT_BLOCK__)
+#elif defined(__BOOT_BLOCK__) || defined(__VER_STAGE__)
   /* No LZMA in boot block. */
 #else
 # define CBFS_CORE_WITH_LZMA

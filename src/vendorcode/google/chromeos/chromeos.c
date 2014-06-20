@@ -118,7 +118,7 @@ int __attribute((weak)) vboot_get_sw_write_protect(void)
 }
 #endif
 
-#if CONFIG_VBOOT_VERIFY_FIRMWARE
+#if CONFIG_VBOOT_VERIFY_FIRMWARE || CONFIG_VBOOT2_VERIFY_FIRMWARE
 void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest)
 {
 	if (IS_ENABLED(CONFIG_SPI_FLASH_MEMORY_MAPPED)) {
@@ -145,7 +145,13 @@ void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest)
 		return cache;
 	}
 }
+#endif
 
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+void *vboot_get_payload(int *len) { return NULL; }
+#endif
+
+#if CONFIG_VBOOT_VERIFY_FIRMWARE
 void *vboot_get_payload(int *len)
 {
 	struct vboot_handoff *vboot_handoff;
