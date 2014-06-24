@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Thu Jun 12 09:37:47 2014
+# Tue Jun 24 10:49:19 2014
 #
 
 #
@@ -11,6 +11,7 @@ CONFIG_LP_GPL=y
 # CONFIG_LP_EXPERIMENTAL is not set
 # CONFIG_LP_OBSOLETE is not set
 # CONFIG_LP_DEVELOPER is not set
+# CONFIG_LP_REMOTEGDB is not set
 CONFIG_LP_CHROMEOS=y
 
 #
