@@ -43,8 +43,9 @@ struct tegra132_uart {
 	uint32_t msr; // Modem status register.
 } __attribute__ ((packed));
 
+
 static struct tegra132_uart * const uart_ptr =
-	(void *)CONFIG_CONSOLE_SERIAL_UART_ADDRESS;
+	(void *)CONFIG_CONSOLE_SERIAL_TEGRA132_UART_ADDRESS;
 
 static void tegra132_uart_tx_flush(void);
 static int tegra132_uart_tst_byte(void);
