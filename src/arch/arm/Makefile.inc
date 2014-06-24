@@ -45,6 +45,7 @@ ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM),y)
 bootblock-y += div0.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += id.S
+bootblock-y += clock.c
 
 $(obj)/arch/arm/id.bootblock.o: $(obj)/build.h
 
@@ -78,6 +79,7 @@ romstage-y += memset.S
 romstage-y += memcpy.S
 romstage-y += memmove.S
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
+romstage-y += clock.c
 
 $(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm/romstage.ld $(obj)/ldoptions
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
@@ -104,6 +106,7 @@ ramstage-y += tables.c
 ramstage-y += memset.S
 ramstage-y += memcpy.S
 ramstage-y += memmove.S
+ramstage-y += clock.c
 
 rmodules-y += memset.S
 rmodules-y += memcpy.S
