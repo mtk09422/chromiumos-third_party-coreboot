@@ -78,3 +78,10 @@ $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin $(BCT_BIN)
 	echo "BootLoader = $<,$(CONFIG_BOOTBLOCK_BASE),$(CONFIG_BOOTBLOCK_BASE),Complete;" >> $(BCT_WRAPPER)
 	@printf "    CBOOTIMAGE $(subst $(obj)/,,$(@))\n"
 	$(CBOOTIMAGE) $(CBOOTIMAGE_OPTS) $(BCT_WRAPPER) $@
+
+# MTS microcode
+MTS_FILE = 3rdparty/mainboard/$(MAINBOARDDIR)/mts_si
+MTS_FILE_CBFS = mts
+cbfs-files-y += $(MTS_FILE_CBFS)
+$(MTS_FILE_CBFS)-file := $(MTS_FILE)
+$(MTS_FILE_CBFS)-type := 0x50
