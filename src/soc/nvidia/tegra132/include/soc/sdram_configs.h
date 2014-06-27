@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __MAINBOARD_GOOGLE_RUSH_SDRAM_CONFIG_H__
-#define __MAINBOARD_GOOGLE_RUSH_SDRAM_CONFIG_H__
+#ifndef __SOC_NVIDIA_TEGRA132_SDRAM_CONFIGS_H__
+#define __SOC_NVIDIA_TEGRA132_SDRAM_CONFIGS_H__
 
-#include <soc/nvidia/tegra132/sdram_param.h>
+#include <soc/nvidia/tegra132/sdram.h>
 
 /* Loads SDRAM configurations for current system. */
 const struct sdram_params *get_sdram_config(void);
 
-#endif  /* __MAINBOARD_GOOGLE_RUSH_SDRAM_CONFIG_H__ */
+#endif  /* __SOC_NVIDIA_TEGRA132_SDRAM_CONFIGS_H__ */

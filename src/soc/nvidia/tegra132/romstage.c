@@ -22,7 +22,7 @@
 #include <console/console.h>
 #include <arch/exception.h>
 
-#include "sdram_configs.h"
+#include <soc/sdram_configs.h>
 #include <soc/nvidia/tegra132/sdram.h>
 
 void main(void)
@@ -40,6 +40,7 @@ void main(void)
 
 	while (1);
 
-        entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
-        stage_exit(entry);
+	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+				CONFIG_CBFS_PREFIX "/ramstage");
+	stage_exit(entry);
 }
