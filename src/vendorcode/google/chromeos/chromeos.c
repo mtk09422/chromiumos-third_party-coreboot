@@ -20,7 +20,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "chromeos.h"
-#if CONFIG_VBOOT_VERIFY_FIRMWARE
+#if CONFIG_VBOOT_VERIFY_FIRMWARE || CONFIG_VBOOT2_VERIFY_FIRMWARE
 #include "vboot_handoff.h"
 #endif
 #include <boot/coreboot_tables.h>
@@ -145,6 +145,20 @@ void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest)
 		return cache;
 	}
 }
+
+int vboot_get_handoff_info(void **addr, uint32_t *size)
+{
+	struct vboot_handoff *vboot_handoff;
+
+	vboot_handoff = cbmem_find(CBMEM_ID_VBOOT_HANDOFF);
+
+	if (vboot_handoff == NULL)
+		return -1;
+
+	*addr = vboot_handoff;
+	*size = sizeof(*vboot_handoff);
+	return 0;
+}
 #endif
 
 #if CONFIG_VBOOT2_VERIFY_FIRMWARE
@@ -182,19 +196,5 @@ void *vboot_get_payload(int *len)
 
 	/* This will leak a mapping. */
 	return vboot_get_region(fwc->address, fwc->size, NULL);
-}
-
-int vboot_get_handoff_info(void **addr, uint32_t *size)
-{
-	struct vboot_handoff *vboot_handoff;
-
-	vboot_handoff = cbmem_find(CBMEM_ID_VBOOT_HANDOFF);
-
-	if (vboot_handoff == NULL)
-		return -1;
-
-	*addr = vboot_handoff;
-	*size = sizeof(*vboot_handoff);
-	return 0;
 }
 #endif
