@@ -52,9 +52,9 @@ $(obj)/arch/arm64/id.bootblock.o: $(obj)/build.h
 bootblock-y += stages.c
 bootblock-y += eabi_compat.c
 
-bootblock-y += memset.S
-bootblock-y += memcpy.S
-bootblock-y += memmove.S
+bootblock-y += ../../lib/memset.c
+bootblock-y += ../../lib/memcpy.c
+bootblock-y += ../../lib/memmove.c
 
 # Build the bootblock
 
@@ -78,9 +78,9 @@ romstage-y += stages.c
 romstage-y += div0.c
 romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 romstage-y += eabi_compat.c
-romstage-y += memset.S
-romstage-y += memcpy.S
-romstage-y += memmove.S
+romstage-y += ../../lib/memset.c
+romstage-y += ../../lib/memcpy.c
+romstage-y += ../../lib/memmove.c
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 # Build the romstage
@@ -107,14 +107,14 @@ ramstage-y += cpu.c
 ramstage-y += eabi_compat.c
 ramstage-y += boot.c
 ramstage-y += tables.c
-ramstage-y += memset.S
-ramstage-y += memcpy.S
-ramstage-y += memmove.S
+ramstage-y += ../../lib/memset.c
+ramstage-y += ../../lib/memcpy.c
+ramstage-y += ../../lib/memmove.c
 ramstage-y += stage_entry.S
 
-rmodules-y += memset.S
-rmodules-y += memcpy.S
-rmodules-y += memmove.S
+rmodules-y += ../../lib/memset.c
+rmodules-y += ../../lib/memcpy.c
+rmodules-y += ../../lib/memmove.c
 rmodules-y += eabi_compat.c
 
 VBOOT_STUB_DEPS += $(obj)/arch/arm64/eabi_compat.rmodules.o
