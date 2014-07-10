@@ -10,6 +10,7 @@ config SOC_NVIDIA_TEGRA132
 	select HAVE_UART_MEMORY_MAPPED
 	select EARLY_CONSOLE
 	select ARM_BOOTBLOCK_CUSTOM
+	select DYNAMIC_CBMEM
 
 if SOC_NVIDIA_TEGRA132
 
@@ -80,6 +81,10 @@ config CBFS_CACHE_ADDRESS
 config CBFS_CACHE_SIZE
 	hex "size of CBFS cache data"
 	default 0x00016000
+
+config CBMEM_CONSOLE_PRERAM_BASE
+	hex "memory address of the CBMEM console buffer"
+	default 0x40004020
 
 choice CONSOLE_SERIAL_TEGRA132_UART_CHOICES
 	prompt "Serial Console UART"

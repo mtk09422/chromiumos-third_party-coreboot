@@ -20,7 +20,9 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 romstage-y += romstage_asm.S
+romstage-y += addressmap.c
 romstage-y += cbfs.c
+romstage-y += cbmem.c
 romstage-y += timer.c
 romstage-y += ccplex.c
 romstage-y += clock.c
@@ -39,7 +41,9 @@ ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
+ramstage-y += addressmap.c
 ramstage-y += cbfs.c
+ramstage-y += cbmem.c
 ramstage-y += timer.c
 ramstage-y += clock.c
 ramstage-y += spi.c

@@ -17,43 +17,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/stages.h>
-#include <cbfs.h>
 #include <cbmem.h>
-#include <console/console.h>
-#include <arch/exception.h>
+#include <soc/display.h>
+#include <soc/addressmap.h>
 
-#include <soc/sdram_configs.h>
-#include "sdram.h"
-#include "ccplex.h"
+#define MTS_SIZE_MB 128
 
-void romstage(void);
-void romstage(void)
+void *cbmem_top(void)
 {
-	void *entry;
+	/* FIXME(adurbin): use carveout registers properly. */
+	const uintptr_t reserve = FB_SIZE_MB + MTS_SIZE_MB;
 
-	console_init();
-	exception_init();
-
-	printk(BIOS_INFO, "T132: romstage here\n");
-
-	sdram_init(get_sdram_config());
-	printk(BIOS_INFO, "T132 romstage: sdram_init done\n");
-
-	cbmem_initialize();
-
-	ccplex_cpu_prepare();
-	printk(BIOS_INFO, "T132 romstage: cpu prepare done\n");
-
-	ccplex_load_mts();
-	printk(BIOS_INFO, "T132 romstage: MTS loading done\n");
-
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-				CONFIG_CBFS_PREFIX "/ramstage");
-
-	cbmemc_reinit();
-
-	ccplex_cpu_start(entry);
-
-	while (1);
+	return (void *)((sdram_max_addressable_mb() - reserve) << 20UL);
 }
