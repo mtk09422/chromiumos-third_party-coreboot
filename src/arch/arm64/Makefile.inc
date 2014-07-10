@@ -110,6 +110,7 @@ ramstage-y += tables.c
 ramstage-y += memset.S
 ramstage-y += memcpy.S
 ramstage-y += memmove.S
+ramstage-y += stage_entry.S
 
 rmodules-y += memset.S
 rmodules-y += memcpy.S
