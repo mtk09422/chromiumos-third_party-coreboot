@@ -19,8 +19,13 @@
 #ifndef _CONSOLE_CBMEM_CONSOLE_H_
 #define _CONSOLE_CBMEM_CONSOLE_H_
 
+#if IS_ENABLED(CONFIG_CONSOLE_CBMEM)
 void cbmemc_init(void);
 void cbmemc_reinit(void);
 void cbmemc_tx_byte(unsigned char data);
+#else
+static inline void cbmemc_init(void) {}
+static inline void cbmemc_reinit(void) {}
+#endif
 
 #endif
