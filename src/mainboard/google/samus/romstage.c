@@ -67,6 +67,9 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 	/* Initliaze memory */
 	romstage_common(rp);
 
+	/* Bring SSD out of reset */
+	set_gpio(SAMUS_GPIO_SSD_RESET_L, GPIO_OUT_HIGH);
+
 	/*
 	 * Enable PP3300_AUTOBAHN_EN after initial GPIO setup
 	 * to prevent possible brownout.
