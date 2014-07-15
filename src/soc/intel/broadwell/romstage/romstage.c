@@ -73,14 +73,14 @@ void * asmlinkage romstage_main(unsigned long bist,
 	/* Start console drivers */
 	console_init();
 
+	/* Get power state */
+	rp.power_state = fill_power_state();
+
 	/* Print useful platform information */
 	report_platform_info();
 
 	/* Set CPU frequency to maximum */
 	set_max_freq();
-
-	/* Get power state */
-	rp.power_state = fill_power_state();
 
 	/* Call into mainboard. */
 	mainboard_romstage_entry(&rp);
