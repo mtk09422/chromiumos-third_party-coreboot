@@ -53,6 +53,7 @@ ramstage-y += monotonic_timer.c
 ramstage-y += ../tegra/gpio.c
 ramstage-y += ../tegra/i2c.c
 ramstage-y += ../tegra/pinmux.c
+ramstage-y += ramstage.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
 INCLUDES += -Isrc/soc/nvidia/tegra132/include/
