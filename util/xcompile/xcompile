@@ -113,8 +113,7 @@ detect_special_flags() {
 		CFLAGS="$CFLAGS  -march=i686"
 		;;
 	arm )
-		ARMFLAGS=""
-		testcc "$CC" "$CFLAGS $ARMFLAGS" && CFLAGS="$CFLAGS $ARMFLAGS"
+		testcc "$CC" "$CFLAGS" && CFLAGS="$CFLAGS"
 		;;
 	esac
 }
