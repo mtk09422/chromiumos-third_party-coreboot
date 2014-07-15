@@ -78,7 +78,8 @@ $(obj)/generated/bct.bin: $(obj)/generated/bct.cfg
 
 BCT_BIN = $(obj)/generated/bct.bin
 BCT_WRAPPER = $(obj)/generated/bct.wrapper
-PREBOOT_MTS_FILE = 3rdparty/mainboard/$(MAINBOARDDIR)/mts_preboot_si
+MTS_DIR = $(CONFIG_MTS_DIRECTORY)
+PREBOOT_MTS_FILE = $(MTS_DIR)/mts_preboot_si
 $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin $(BCT_BIN)
 	echo "Version    = 1;" > $(BCT_WRAPPER)
 	echo "Redundancy = 1;" >> $(BCT_WRAPPER)
@@ -90,7 +91,7 @@ $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin $(BCT_BIN)
 	$(CBOOTIMAGE) $(CBOOTIMAGE_OPTS) $(BCT_WRAPPER) $@
 
 # MTS microcode
-MTS_FILE = 3rdparty/mainboard/$(MAINBOARDDIR)/mts_si
+MTS_FILE = $(MTS_DIR)/mts_si
 MTS_FILE_CBFS = mts
 cbfs-files-y += $(MTS_FILE_CBFS)
 $(MTS_FILE_CBFS)-file := $(MTS_FILE)

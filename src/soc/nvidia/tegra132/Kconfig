@@ -130,4 +130,10 @@ config CONSOLE_SERIAL_TEGRA132_UART_ADDRESS
 	help
 	  Map the UART names to the respective MMIO addres.
 
+config MTS_DIRECTORY
+	string "Directory where MTS microcode files are located"
+	default "."
+	help
+	  Path to directory where MTS microcode files are located.
+
 endif
