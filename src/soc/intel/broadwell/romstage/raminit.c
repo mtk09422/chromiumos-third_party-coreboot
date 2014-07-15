@@ -74,6 +74,16 @@ void raminit(struct pei_data *pei_data)
 #endif
 	}
 
+	/*
+	 * Do not use saved pei data.  Can be set by mainboard romstage
+	 * to force a full train of memory on every boot.
+	 */
+	if (pei_data->disable_saved_data) {
+		printk(BIOS_DEBUG, "Disabling PEI saved data by request\n");
+		pei_data->saved_data = NULL;
+		pei_data->saved_data_size = 0;
+	}
+
 	/* Determine if mrc.bin is in the cbfs. */
 	entry = (pei_wrapper_entry_t)cbfs_get_file_content(
 		CBFS_DEFAULT_MEDIA, "mrc.bin", 0xab);
