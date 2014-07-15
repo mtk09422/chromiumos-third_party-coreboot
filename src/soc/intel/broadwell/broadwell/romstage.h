@@ -29,9 +29,12 @@ struct romstage_timestamps {
 	int count;
 };
 
+struct chipset_power_state;
+struct pei_data;
 struct romstage_params {
 	struct romstage_timestamps ts;
 	unsigned long bist;
+	struct chipset_power_state *power_state;
 	struct pei_data *pei_data;
 };
 
