@@ -67,8 +67,9 @@ STRIP_$(1) := $(STRIP_$(2))
 READELF_$(1) := $(READELF_$(2))
 INCLUDES_$(1) = $$(INCLUDES) -Isrc/arch/$(ARCHDIR-$(2))/include
 CFLAGS_$(1) = $$(CFLAGS_common) $$(INCLUDES_$(1)) $(CFLAGS_$(2))
-LIBGCC_FILE_NAME_$(1) = $(shell [ -r `$(CC_$(2)) -print-libgcc-file-name` ] && \
-	$(CC_$(2)) -print-libgcc-file-name)
+LIBGCC_FILE_NAME_$(1) = $(shell test -n "$(CC_$(2))" && \
+		      test -r `$(CC_$(2)) -print-libgcc-file-name` && \
+		      $(CC_$(2)) -print-libgcc-file-name)
 endef
 
 # initialize standard toolchain (CC,AS and others) for given stage
