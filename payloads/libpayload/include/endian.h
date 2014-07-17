@@ -30,6 +30,7 @@
 #ifndef _ENDIAN_H_
 #define _ENDIAN_H_
 
+#include <arch/io.h>
 #include <arch/types.h>
 #include <libpayload-config.h>
 
@@ -107,5 +108,21 @@ static inline uint64_t swap_bytes64(uint64_t in)
 #define letohw(in) le16toh(in)
 #define letohl(in) le32toh(in)
 #define letohll(in) le64toh(in)
+
+/* Handy bit manipulation macros */
+
+#define clrsetbits_le32(addr, clear, set) writel(htole32((le32toh(readl(addr)) \
+	& ~(clear)) | (set)), (addr))
+#define setbits_le32(addr, set) writel(htole32(le32toh(readl(addr)) \
+	| (set)), (addr))
+#define clrbits_le32(addr, clear) writel(htole32(le32toh(readl(addr)) \
+	& ~(clear)), (addr))
+
+#define clrsetbits_be32(addr, clear, set) writel(htobe32((be32toh(readl(addr)) \
+	& ~(clear)) | (set)), (addr))
+#define setbits_be32(addr, set) writel(htobe32(be32toh(readl(addr)) \
+	| (set)), (addr))
+#define clrbits_be32(addr, clear) writel(htobe32(be32toh(readl(addr)) \
+	& ~(clear)), (addr))
 
 #endif
