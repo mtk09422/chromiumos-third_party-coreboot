@@ -21,13 +21,18 @@
 #include <cbfs.h>
 #include <cbmem.h>
 #include <console/console.h>
+#include <romstage_handoff.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 void main(void)
 {
 	void *entry;
 
 	cbmem_initialize_empty();
+
 	console_init();
+
+	vboot_verify_firmware(romstage_handoff_find_or_add());
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 	stage_exit(entry);
