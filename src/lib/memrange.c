@@ -215,6 +215,9 @@ static void do_action(struct memranges *ranges,
 	resource_t end;
 	resource_t begin;
 
+	if (size == 0)
+		return;
+
 	/* The addresses are aligned to 4096 bytes: the begin address is
 	 * aligned down while the end address is aligned up to be conservative
 	 * about the full range covered. */
@@ -263,11 +266,16 @@ void memranges_add_resources(struct memranges *ranges,
 	search_global_resources(mask, match, collect_ranges, &context);
 }
 
+void memranges_init_empty(struct memranges *ranges)
+{
+	ranges->entries = NULL;
+}
+
 void memranges_init(struct memranges *ranges,
                     unsigned long mask, unsigned long match,
                     unsigned long tag)
 {
-	ranges->entries = NULL;
+	memranges_init_empty(ranges);
 	memranges_add_resources(ranges, mask, match, tag);
 }
 
