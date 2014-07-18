@@ -516,14 +516,10 @@ endif
 	@printf "    CBFSPRINT  $(subst $(obj)/,,$(@))\n\n"
 	$(CBFSTOOL) $@ print
 
-ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM),y)
-ROMSTAGE_ELF := romstage.elf
-endif
-ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM64),y)
-ROMSTAGE_ELF := romstage.elf
-endif
 ifeq ($(CONFIG_ARCH_ROMSTAGE_X86_32),y)
 ROMSTAGE_ELF := romstage_xip.elf
+else
+ROMSTAGE_ELF := romstage.elf
 endif
 
 $(obj)/coreboot.pre: $(objcbfs)/$(ROMSTAGE_ELF) $(obj)/coreboot.pre1 $(CBFSTOOL)
