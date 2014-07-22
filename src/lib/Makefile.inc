@@ -31,7 +31,9 @@ endif
 
 romstage-y += memchr.c
 romstage-y += memcmp.c
-rmodules-y += memcmp.c
+
+$(foreach arch,$(ARCH_SUPPORTED),\
+	  $(eval rmodules_$(ARCH_TO_TOOLCHAIN_$(arch))-y += memcmp.c))
 
 verstage-y += delay.c
 verstage-y += cbfs.c
@@ -138,12 +140,13 @@ RMODULE_LDFLAGS  := -nostartfiles -Wl,--emit-relocs -Wl,-z,defs -Wl,-Bsymbolic -
 # (1) the object name to link
 # (2) the dependencies
 # (3) heap size of the relocatable module
+# (4) arch for which the rmodules are to be linked
 # It will create the necessary Make rules to create a rmodule. The resulting
 # rmdoule is named $(1).rmod
 define rmodule_link
 $(strip $(1)): $(strip $(2)) $$(RMODULE_LDSCRIPT) $$(obj)/ldoptions
-	$$(LD_rmodules) $$(RMODULE_LDFLAGS) --defsym=__heap_size=$(strip $(3)) -o $$@ --start-group $(strip $(2)) $$(LIBGCC_FILE_NAME_rmodules) --end-group
-	$$(NM_rmodules) -n $$@ > $$(basename $$@).map
+	$$(LD_rmodules_$(4)) -y $$(RMODULE_LDFLAGS) --defsym=__heap_size=$(strip $(3)) -o $$@ --start-group $(strip $(2)) $$(LIBGCC_FILE_NAME_rmodules_$(4)) --end-group
+	$$(NM_rmodules_$(4)) -n $$@ > $$(basename $$@).map
 
 $(strip $(1)).rmod: $(strip $(1))
 	$$(RMODTOOL) -i $$^ -o $$@
@@ -157,12 +160,13 @@ RMODULE_LDFLAGS  := -nostartfiles -Wl,--emit-relocs -Wl,-z,defs -Wl,-Bsymbolic -
 # (1) the object name to link
 # (2) the dependencies
 # (3) heap size of the relocatable module
+# (4) arch for which the rmodules are to be linked
 # It will create the necessary Make rules to create a rmodule. The resulting
 # rmdoule is named $(1).rmod
 define rmodule_link
 $(strip $(1)): $(strip $(2)) $$(RMODULE_LDSCRIPT) $$(obj)/ldoptions $$(RMODTOOL)
-	$$(CC_rmodules) $$(CFLAGS_rmodules) $$(RMODULE_LDFLAGS) -Wl,--defsym=__heap_size=$(strip $(3)) -o $$@ -Wl,--start-group $(strip $(2)) $$(LIBGCC_FILE_NAME_rmodules) -Wl,--end-group
-	$$(NM_rmodules) -n $$@ > $$(basename $$@).map
+	$$(CC_rmodules_$(4)) $$(CFLAGS_rmodules_$(4)) $$(RMODULE_LDFLAGS) -Wl,--defsym=__heap_size=$(strip $(3)) -o $$@ -Wl,--start-group $(strip $(2)) $$(LIBGCC_FILE_NAME_rmodules_$(4)) -Wl,--end-group
+	$$(NM_rmodules_$(4)) -n $$@ > $$(basename $$@).map
 
 $(strip $(1)).rmod: $(strip $(1))
 	$$(RMODTOOL) -i $$^ -o $$@

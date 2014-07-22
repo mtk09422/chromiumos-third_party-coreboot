@@ -50,11 +50,11 @@ ramstage-y += dp.c dp_lowlevel.c fimd.c
 ramstage-y += usb.c
 ramstage-y += cbmem.c
 
-rmodules-y += monotonic_timer.c
-rmodules-y += mct.c
+rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
+rmodules_$(ARCH-ROMSTAGE-y)-y += mct.c
 
-VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/monotonic_timer.rmodules.o
-VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/mct.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/monotonic_timer.rmodules_$(ARCH-ROMSTAGE-y).o
+VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/mct.rmodules_$(ARCH-ROMSTAGE-y).o
 
 $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
 	cp $< $@

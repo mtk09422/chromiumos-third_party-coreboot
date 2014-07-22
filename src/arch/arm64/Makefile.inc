@@ -117,14 +117,12 @@ ramstage-y += ../../lib/memcpy.c
 ramstage-y += ../../lib/memmove.c
 ramstage-y += stage_entry.S
 
-rmodules-y += ../../lib/memset.c
-rmodules-y += ../../lib/memcpy.c
-rmodules-y += ../../lib/memmove.c
-rmodules-y += eabi_compat.c
+rmodules_arm64-y += ../../lib/memset.c
+rmodules_arm64-y += ../../lib/memcpy.c
+rmodules_arm64-y += ../../lib/memmove.c
+rmodules_arm64-y += eabi_compat.c
 
-VBOOT_STUB_DEPS += $(obj)/arch/arm64/eabi_compat.rmodules.o
-
-$(eval $(call create_class_compiler,rmodules,arm64))
+VBOOT_STUB_DEPS += $(obj)/arch/arm64/eabi_compat.rmodules_arm64.o
 
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
