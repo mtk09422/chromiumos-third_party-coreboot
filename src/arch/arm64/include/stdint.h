@@ -52,9 +52,18 @@ typedef int16_t s16;
 typedef int32_t s32;
 typedef int64_t s64;
 
-
 /* Types for `void *' pointers.  */
 typedef s64             intptr_t;
 typedef u64		uintptr_t;
+
+#ifndef UINT32_MAX
+#define UINT32_MAX (4294967295U)
+#endif
+#ifndef UINT64_MAX
+# define UINT64_MAX (18446744073709551615ULL)
+#endif
+#ifndef PRIu64
+#define PRIu64 "llu"
+#endif
 
 #endif /* ARM64_STDINT_H */
