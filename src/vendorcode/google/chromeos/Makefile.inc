@@ -23,6 +23,8 @@ romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += vbnv_cmos.c
 ramstage-$(CONFIG_ARCH_RAMSTAGE_X86_32) += vbnv_cmos.c
 romstage-$(CONFIG_ARCH_ROMSTAGE_ARM) += vbnv_ec.c
 ramstage-$(CONFIG_ARCH_RAMSTAGE_ARM) += vbnv_ec.c
+romstage-$(CONFIG_ARCH_ROMSTAGE_ARM64) += vbnv_ec.c
+ramstage-$(CONFIG_ARCH_RAMSTAGE_ARM64) += vbnv_ec.c
 romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += vboot.c
 ramstage-$(CONFIG_ELOG) += elog.c
 ramstage-y += gnvs.c
@@ -78,6 +80,10 @@ endif
 ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM),y)
 VBOOT_STUB_DEPS += $(obj)/arch/arm/memset.rmodules_$(ARCH-ROMSTAGE-y).o
 VBOOT_STUB_DEPS += $(obj)/arch/arm/memcpy.rmodules_$(ARCH-ROMSTAGE-y).o
+endif
+ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM64),y)
+VBOOT_STUB_DEPS += $(obj)/lib/memset.rmodules.o
+VBOOT_STUB_DEPS += $(obj)/lib/memcpy.rmodules.o
 endif
 VBOOT_STUB_DEPS += $(VB_LIB)
 # Remove the '-include' option since that will break vboot's build and ensure
