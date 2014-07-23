@@ -101,7 +101,6 @@ choice CONSOLE_SERIAL_TEGRA132_UART_CHOICES
 
 config CONSOLE_SERIAL_TEGRA132_UARTA
 	bool "UARTA"
-	default y
 	help
 	  Serial console on UART A.
 
