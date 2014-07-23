@@ -58,6 +58,9 @@ ramstage-y += ramstage.c
 ramstage-y += mmu_operations.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
+rmodules_arm-y += monotonic_timer.c
+VBOOT_STUB_DEPS += $(obj)/soc/nvidia/tegra132/monotonic_timer.rmodules_arm.o
+
 INCLUDES += -Isrc/soc/nvidia/tegra132/include/
 
 # We want to grab the bootblock right before it goes into the image and wrap
