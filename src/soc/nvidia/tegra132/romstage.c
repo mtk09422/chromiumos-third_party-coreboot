@@ -22,6 +22,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <arch/exception.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/addressmap.h>
 #include <soc/sdram_configs.h>
@@ -31,6 +32,25 @@
 #include <soc/clock.h>
 
 void romstage(void);
+
+static void *load_ramstage(void)
+{
+	void *entry;
+
+	/*
+	 * This platform does not need to cache a loaded ramstage nor do we
+	 * go down this path on resume. Therefore, no romstage_handoff is
+	 * required.
+	 */
+	entry = vboot_verify_firmware_get_entry(NULL);
+
+	if (entry == NULL)
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/ramstage");
+
+	return entry;
+}
+
 void romstage(void)
 {
 	void *entry;
@@ -65,8 +85,12 @@ void romstage(void)
 	ccplex_load_mts();
 	printk(BIOS_INFO, "T132 romstage: MTS loading done\n");
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-				CONFIG_CBFS_PREFIX "/ramstage");
+	entry = load_ramstage();
+
+	if (entry == NULL) {
+		printk(BIOS_INFO, "T132 romstage: error loading ramstage\n");
+		clock_halt_avp();
+	}
 
 	cbmemc_reinit();
 
