@@ -996,6 +996,14 @@ config DEBUG_COVERAGE
 	  If enabled, the code coverage hooks in coreboot will output some
 	  information about the coverage data that is dumped.
 
+config TERTIARY_BOARD_ID
+	bool "Interpret board ID GPIOs as tertiary inputs"
+	default n if ARCH_X86
+	default y if !ARCH_X86
+	help
+	  Consider each GPIO as being in one of thee states: pulled down (0),
+	  pulled up (1), or not connected (2)
+
 endmenu
 
 # These probably belong somewhere else, but they are needed somewhere.

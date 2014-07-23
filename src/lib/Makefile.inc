@@ -58,6 +58,7 @@ romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 romstage-$(CONFIG_EARLY_CBMEM_INIT) += cbmem.c
 romstage-y += compute_ip_checksum.c
 romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += gcc.c
+romstage-$(CONFIG_TERTIARY_BOARD_ID) += tristate_gpios.c
 
 ramstage-y += hardwaremain.c
 ramstage-y += selfboot.c
