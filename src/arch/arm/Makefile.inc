@@ -95,6 +95,13 @@ romstage-y += memmove.S
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 romstage-y += clock.c
 
+rmodules_arm-y += memset.S
+rmodules_arm-y += memcpy.S
+rmodules_arm-y += memmove.S
+rmodules_arm-y += eabi_compat.c
+
+VBOOT_STUB_DEPS += $(obj)/arch/arm/eabi_compat.rmodules_arm.o
+
 $(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm/romstage.ld $(obj)/ldoptions
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
@@ -126,8 +133,6 @@ rmodules_arm-y += memset.S
 rmodules_arm-y += memcpy.S
 rmodules_arm-y += memmove.S
 rmodules_arm-y += eabi_compat.c
-
-VBOOT_STUB_DEPS += $(obj)/arch/arm/eabi_compat.rmodules_arm.o
 
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 

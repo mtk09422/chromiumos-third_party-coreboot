@@ -47,6 +47,9 @@ romstage-c-ccopts += $(armv4_flags)
 romstage-S-ccopts += $(armv4_flags)
 romstage-y += cache.c
 
+rmodules_arm-c-ccopts += $(armv4_flags)
+rmodules_arm-S-ccopts += $(armv4_flags)
+
 endif
 ################################################################################
 ## RAM stage

@@ -87,6 +87,13 @@ romstage-y += ../../lib/memcpy.c
 romstage-y += ../../lib/memmove.c
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
+rmodules_arm64-y += ../../lib/memset.c
+rmodules_arm64-y += ../../lib/memcpy.c
+rmodules_arm64-y += ../../lib/memmove.c
+rmodules_arm64-y += eabi_compat.c
+
+VBOOT_STUB_DEPS += $(obj)/arch/arm64/eabi_compat.rmodules_arm64.o
+
 # Build the romstage
 
 $(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm64/romstage.ld $(obj)/ldoptions
@@ -121,8 +128,6 @@ rmodules_arm64-y += ../../lib/memset.c
 rmodules_arm64-y += ../../lib/memcpy.c
 rmodules_arm64-y += ../../lib/memmove.c
 rmodules_arm64-y += eabi_compat.c
-
-VBOOT_STUB_DEPS += $(obj)/arch/arm64/eabi_compat.rmodules_arm64.o
 
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
