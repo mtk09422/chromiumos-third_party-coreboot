@@ -314,8 +314,8 @@ static void vboot_invoke_wrapper(struct vboot_handoff *vboot_handoff)
 }
 
 #if CONFIG_RELOCATABLE_RAMSTAGE
-static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
-                                struct romstage_handoff *handoff)
+static void *vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
+                                 struct romstage_handoff *handoff)
 {
 	struct cbfs_stage *stage;
 	const struct firmware_component *fwc;
@@ -327,14 +327,14 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 	if (CONFIG_VBOOT_RAMSTAGE_INDEX >= MAX_PARSED_FW_COMPONENTS) {
 		printk(BIOS_ERR, "Invalid ramstage index: %d\n",
 		       CONFIG_VBOOT_RAMSTAGE_INDEX);
-		return;
+		return NULL;
 	}
 
 	/* Check for invalid address. */
 	fwc = &vboot_handoff->components[CONFIG_VBOOT_RAMSTAGE_INDEX];
 	if (fwc->address == 0) {
 		printk(BIOS_DEBUG, "RW ramstage image address invalid.\n");
-		return;
+		return NULL;
 	}
 
 	printk(BIOS_DEBUG, "RW ramstage image at 0x%08x, 0x%08x bytes.\n",
@@ -347,33 +347,34 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 	if (rmodule_stage_load(&rmod_load, stage)) {
 		vboot_handoff->selected_firmware = VB_SELECT_FIRMWARE_READONLY;
 		printk(BIOS_DEBUG, "Could not load ramstage region.\n");
-		return;
+		return NULL;
 	}
 
 	cache_loaded_ramstage(handoff, rmod_load.cbmem_entry, rmod_load.entry);
 
 	timestamp_add_now(TS_END_COPYRAM);
 
-	stage_exit(rmod_load.entry);
+	return rmod_load.entry;
 }
 #else /* CONFIG_RELOCATABLE_RAMSTAGE */
-static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
-                                struct romstage_handoff *handoff)
+static void *vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
+                                 struct romstage_handoff *handoff)
 {
 	struct cbfs_stage *stage;
 	const struct firmware_component *fwc;
+	void *entry;
 
 	if (CONFIG_VBOOT_RAMSTAGE_INDEX >= MAX_PARSED_FW_COMPONENTS) {
 		printk(BIOS_ERR, "Invalid ramstage index: %d\n",
 		       CONFIG_VBOOT_RAMSTAGE_INDEX);
-		return;
+		return NULL;
 	}
 
 	/* Check for invalid address. */
 	fwc = &vboot_handoff->components[CONFIG_VBOOT_RAMSTAGE_INDEX];
 	if (fwc->address == 0) {
 		printk(BIOS_DEBUG, "RW ramstage image address invalid.\n");
-		return;
+		return NULL;
 	}
 
 	printk(BIOS_DEBUG, "RW ramstage image at 0x%08x, 0x%08x bytes.\n",
@@ -384,34 +385,35 @@ static void vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 
 	if (stage == NULL) {
 		printk(BIOS_DEBUG, "Unable to get RW ramstage region.\n");
-		return;
+		return NULL;
 	}
 
 	timestamp_add_now(TS_START_COPYRAM);
 
 	/* Stages rely the below clearing so that the bss is initialized. */
-	memset((void *) (uintptr_t) stage->load, 0, stage->memlen);
+	entry = (void *)(uintptr_t)stage->load;
+	memset(entry, 0, stage->memlen);
 
 	if (cbfs_decompress(stage->compression,
 			     ((unsigned char *) stage) +
 			     sizeof(struct cbfs_stage),
-			     (void *) (uintptr_t) stage->load,
-			     stage->len))
-		return;
+			     entry, stage->len))
+		return NULL;
 
 	timestamp_add_now(TS_END_COPYRAM);
 
-	stage_exit((void *)(uintptr_t)stage->entry);
+	return entry;
 }
 #endif /* CONFIG_RELOCATABLE_RAMSTAGE */
 
-void vboot_verify_firmware(struct romstage_handoff *handoff)
+
+void *vboot_verify_firmware_get_entry(struct romstage_handoff *handoff)
 {
 	struct vboot_handoff *vboot_handoff;
 
 	/* Don't go down verified boot path on S3 resume. */
 	if (handoff != NULL && handoff->s3_resume)
-		return;
+		return NULL;
 
 	timestamp_add_now(TS_START_VBOOT);
 
@@ -420,7 +422,7 @@ void vboot_verify_firmware(struct romstage_handoff *handoff)
 
 	if (vboot_handoff == NULL) {
 		printk(BIOS_DEBUG, "Could not add vboot_handoff structure.\n");
-		return;
+		return NULL;
 	}
 
 	memset(vboot_handoff, 0, sizeof(*vboot_handoff));
@@ -434,9 +436,17 @@ void vboot_verify_firmware(struct romstage_handoff *handoff)
 	    vboot_handoff->selected_firmware != VB_SELECT_FIRMWARE_B) {
 		printk(BIOS_DEBUG, "No RW firmware selected: 0x%08x\n",
 		       vboot_handoff->selected_firmware);
-		return;
+		return NULL;
 	}
 
 	/* Load ramstage from the vboot_handoff structure. */
-	vboot_load_ramstage(vboot_handoff, handoff);
+	return vboot_load_ramstage(vboot_handoff, handoff);
+}
+
+void vboot_verify_firmware(struct romstage_handoff *handoff)
+{
+	void *entry = vboot_verify_firmware_get_entry(handoff);
+
+	if (entry != NULL)
+		stage_exit(entry);
 }

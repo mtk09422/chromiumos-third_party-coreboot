@@ -71,11 +71,21 @@ struct romstage_handoff;
  * returned on error else the location of the requested region.
  */
 void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest);
+/*
+ * vboot_verify_firmware_get_entry() returns NULL if verification failed or
+ * the address to the next stage of firmware to run.
+ */
+void *vboot_verify_firmware_get_entry(struct romstage_handoff *handoff);
 void vboot_verify_firmware(struct romstage_handoff *handoff);
 void *vboot_get_payload(int *len);
 /* Returns 0 on success < 0 on error. */
 int vboot_get_handoff_info(void **addr, uint32_t *size);
 #else
+static inline void *
+vboot_verify_firmware_get_entry(struct romstage_handoff *handoff)
+{
+	return NULL;
+}
 static inline void vboot_verify_firmware(struct romstage_handoff *h) {}
 static inline void *vboot_get_payload(int *len) { return NULL; }
 static inline int vboot_get_handoff_info(void **addr, uint32_t *size)
