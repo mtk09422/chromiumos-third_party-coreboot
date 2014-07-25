@@ -30,6 +30,7 @@
 #include "ccplex.h"
 
 #include <soc/clock.h>
+#include <soc/romstage.h>
 
 void romstage(void);
 
@@ -84,6 +85,8 @@ void romstage(void)
 
 	ccplex_load_mts();
 	printk(BIOS_INFO, "T132 romstage: MTS loading done\n");
+
+	mainboard_init_tpm_i2c();
 
 	entry = load_ramstage();
 
