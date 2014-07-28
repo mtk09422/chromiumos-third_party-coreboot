@@ -23,6 +23,7 @@ bootblock-y += cdp.c
 romstage-y += romstage.c
 romstage-y += cdp.c
 
-ramstage-y += mainboard.c
+ramstage-y += boardid.c
 ramstage-y += cdp.c
+ramstage-y += mainboard.c
 
