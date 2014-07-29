@@ -1006,8 +1006,8 @@ config BOARD_ID_SUPPORT
 
 config TERTIARY_BOARD_ID
 	bool "Interpret board ID GPIOs as tertiary inputs"
-	default n if ARCH_X86
-	default y if !ARCH_X86
+	default n
+	depends on BOARD_ID_SUPPORT
 	help
 	  Consider each GPIO as being in one of thee states: pulled down (0),
 	  pulled up (1), or not connected (2)
