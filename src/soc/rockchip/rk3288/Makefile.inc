@@ -31,12 +31,12 @@ bootblock-y += spi.c
 romstage-y += cbmem.c
 romstage-y += timer.c
 romstage-y += monotonic_timer.c
-romstage-y += media.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-y += clock.c
 romstage-y += spi.c
+romstage-y += media.c
 
 ramstage-y += cbmem.c
 ramstage-y += timer.c
