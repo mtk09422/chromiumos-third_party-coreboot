@@ -35,8 +35,6 @@ romstage-y += reset.c
 romstage-y += romstage.c
 romstage-y += sdram_configs.c
 romstage-y += chromeos.c
-romstage-y += ec_dummy.c
 
 ramstage-y += boardid.c
 ramstage-y += mainboard.c
-ramstage-y += ec_dummy.c
