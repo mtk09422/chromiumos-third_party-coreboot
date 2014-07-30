@@ -88,6 +88,7 @@ void romstage(void)
 
 	mainboard_init_tpm_i2c();
 	mainboard_init_ec_spi();
+	mainboard_init_ec_i2c();
 
 	entry = load_ramstage();
 

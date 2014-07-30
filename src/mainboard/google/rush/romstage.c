@@ -75,6 +75,11 @@ void mainboard_init_ec_spi(void)
 	clock_configure_source(sbc1, CLK_M, 500);
 }
 
+void mainboard_init_ec_i2c(void)
+{
+	/* Empty - Rush uses SPI to communicate with the EC */
+}
+
 void mainboard_configure_pmc(void)
 {
 }
