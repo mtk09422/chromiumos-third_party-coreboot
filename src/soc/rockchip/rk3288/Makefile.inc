@@ -36,6 +36,7 @@ romstage-y += monotonic_timer.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
+romstage-y += i2c.c
 romstage-y += clock.c
 romstage-y += spi.c
 romstage-y += media.c
@@ -43,6 +44,7 @@ romstage-y += media.c
 ramstage-y += cbmem.c
 ramstage-y += timer.c
 ramstage-y += monotonic_timer.c
+ramstage-y += i2c.c
 ramstage-y += clock.c
 ramstage-y += spi.c
 ramstage-y += media.c
