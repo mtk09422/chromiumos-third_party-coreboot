@@ -32,7 +32,10 @@
 #include <soc/clock.h>
 #include <soc/romstage.h>
 
-void romstage(void);
+void __attribute__((weak)) romstage_mainboard_init(void)
+{
+	/* Default empty implementation. */
+}
 
 static void *load_ramstage(void)
 {
@@ -86,9 +89,7 @@ void romstage(void)
 	ccplex_load_mts();
 	printk(BIOS_INFO, "T132 romstage: MTS loading done\n");
 
-	mainboard_init_tpm_i2c();
-	mainboard_init_ec_spi();
-	mainboard_init_ec_i2c();
+	romstage_mainboard_init();
 
 	entry = load_ramstage();
 
