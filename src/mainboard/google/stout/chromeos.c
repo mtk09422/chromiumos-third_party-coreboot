@@ -32,8 +32,6 @@
 #include <boot/coreboot_tables.h>
 
 #define GPIO_COUNT	7
-#define ACTIVE_LOW	0
-#define ACTIVE_HIGH	1
 
 static int ec_in_rec_mode;
 static int ec_rec_flag_good;

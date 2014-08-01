@@ -197,6 +197,10 @@ struct lb_framebuffer {
 
 #define LB_TAG_GPIO	0x0013
 
+/* Values for the polarity field below. */
+#define ACTIVE_LOW     0
+#define ACTIVE_HIGH    1
+
 struct lb_gpio {
 	uint32_t port;
 	uint32_t polarity;

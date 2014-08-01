@@ -25,11 +25,6 @@
 #include <vendorcode/google/chromeos/chromeos.h>
 #include <soc/nvidia/tegra132/gpio.h>
 
-enum {
-	ACTIVE_LOW = 0,
-	ACTIVE_HIGH = 1
-};
-
 void fill_lb_gpios(struct lb_gpios *gpios)
 {
 	int count = 0;

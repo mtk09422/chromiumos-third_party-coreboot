@@ -82,8 +82,6 @@ static u8 gpio_read(int gpiox)
 #include <boot/coreboot_tables.h>
 
 #define GPIO_COUNT	6
-#define ACTIVE_LOW	0
-#define ACTIVE_HIGH	1
 
 void fill_lb_gpios(struct lb_gpios *gpios)
 {
