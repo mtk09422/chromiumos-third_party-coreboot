@@ -363,6 +363,7 @@ static void *vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 	struct cbfs_stage *stage;
 	const struct firmware_component *fwc;
 	void *entry;
+	void *load;
 
 	if (CONFIG_VBOOT_RAMSTAGE_INDEX >= MAX_PARSED_FW_COMPONENTS) {
 		printk(BIOS_ERR, "Invalid ramstage index: %d\n",
@@ -388,16 +389,18 @@ static void *vboot_load_ramstage(struct vboot_handoff *vboot_handoff,
 		return NULL;
 	}
 
+	load = (void *)(uintptr_t)stage->load;
+	entry = (void *)(uintptr_t)stage->entry;
+
 	timestamp_add_now(TS_START_COPYRAM);
 
 	/* Stages rely the below clearing so that the bss is initialized. */
-	entry = (void *)(uintptr_t)stage->load;
-	memset(entry, 0, stage->memlen);
+	memset(load, 0, stage->memlen);
 
 	if (cbfs_decompress(stage->compression,
 			     ((unsigned char *) stage) +
 			     sizeof(struct cbfs_stage),
-			     entry, stage->len))
+			     load, stage->len))
 		return NULL;
 
 	timestamp_add_now(TS_END_COPYRAM);
