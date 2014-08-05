@@ -31,8 +31,11 @@ bootblock-y += bootblock.c
 bootblock-y += pmic.c
 bootblock-y += reset.c
 
+romstage-y += chromeos.c
+romstage-y += reset.c
 romstage-y += reset.c
 romstage-y += romstage.c
 
 ramstage-y += boardid.c
 ramstage-y += mainboard.c
+ramstage-y += reset.c
