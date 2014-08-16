@@ -26,7 +26,7 @@
 #include <cbmem.h>
 #include <console/cbmem_console.h>
 #include <console/console.h>
-#include <mainboard/google/nyan/reset.h>
+#include <reset.h>
 #include <romstage_handoff.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 #include "sdram_configs.h"
@@ -188,7 +188,7 @@ static void __attribute__((noinline)) romstage(void)
 	 */
 	if (power_reset_status() == POWER_RESET_WATCHDOG) {
 		printk(BIOS_INFO, "Watchdog reset detected, rebooting.\n");
-		cpu_reset();
+		hard_reset();
 	}
 
 	cbmem_initialize_empty();

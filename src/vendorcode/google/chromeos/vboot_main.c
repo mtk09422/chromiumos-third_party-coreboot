@@ -109,7 +109,7 @@ int vb2ex_read_resource(struct vb2_context *ctx,
 
 static void reboot(void)
 {
-	cpu_reset();
+	hard_reset();
 }
 
 static void recovery(void)
