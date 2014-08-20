@@ -25,3 +25,7 @@ ramstage-y += timer.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += uart.c
 romstage-$(CONFIG_EARLY_CONSOLE) += uart.c
 ramstage-y += uart.c
+
+bootblock-y += memlayout.ld
+romstage-y += memlayout.ld
+ramstage-y += memlayout.ld

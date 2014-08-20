@@ -1,8 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2006 Advanced Micro Devices, Inc.
- * Copyright (C) 2008-2010 coresystems GmbH
+ * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,44 +17,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* We use ELF as output format. So that we can debug the code in some form. */
-OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
-OUTPUT_ARCH(arm)
+#include <memlayout.h>
 
-PHDRS
-{
-	to_load PT_LOAD;
-}
+#include <arch/header.ld>
 
-ENTRY(_start)
-TARGET(binary)
+/* TODO: This should be revised by someone who understands the SoC better. */
+
 SECTIONS
 {
-	. = CONFIG_BOOTBLOCK_BASE;
+	CBFS_CACHE(0x0, 0) /* TODO: fix this, it was already broken before!!! */
 
-	.bootblock . : {
-		*(.text._start);
-		KEEP(*(.id));
-		*(.text);
-		*(.text.*);
-		*(.rodata);
-		*(.rodata.*);
-		*(.data);
-		*(.data.*);
-		*(.bss);
-		*(.bss.*);
-		*(.sbss);
-		*(.sbss.*);
-		_end = .;
-	} : to_load = 0xff
+	DRAM_START(0x80000000)
+	RAMSTAGE(0x80000000, 128K)
 
-	preram_cbmem_console = CONFIG_CBMEM_CONSOLE_PRERAM_BASE;
-
-	/DISCARD/ : {
-		*(.comment)
-		*(.note)
-		*(.comment.*)
-		*(.note.*)
-		*(.ARM.*)
-	}
+	/* TODO: Does this SoC use SRAM? Add SRAM_START() and SRAM_END(). */
+	BOOTBLOCK(0x9B000000, 16K)
+	ROMSTAGE(0x9B004000, 40K)
+	STACK(0x9B00E000, 6K)
+	PRERAM_CBMEM_CONSOLE(0x9B00F800, 3K)
 }

@@ -50,34 +50,6 @@ config DRAM_SIZE_MB
 	int
 	default 1024
 
-# Memory map for Foundation v2 model
-# Reference: ARM v8-A Foundation Model User Guide
-#
-# 0x00_0000_0000 - 0x00_03FF_FFFF		Trusted Boot ROM
-# 0x00_0400_0000 - 0x00_0403_FFFF		Trusted SRAM
-# 0x00_0600_0000 - 0x00_07FF_FFFF		Trusted DRAM
-# 0x00_1C01_0000 - 0x00_1C01_FFFF		System Registers
-# 0x00_1C09_0000 - 0x00_1C09_FFFF		UART0 (PL011)
-# 0x00_2E00_0000 - 0x00_2E00_FFFF		Non-trusted SRAM
-# 0x00_8000_0000 - 0x00_FFFF_FFFF		DRAM (0GB - 2GB)
-# 0x08_8000_0000 - 0x09_FFFF_FFFF		DRAM (2GB - 8GB)
-
-config BOOTBLOCK_BASE
-	hex
-	default 0x0
-
-config ID_SECTION_BASE
-	hex
-	default 0x1f000
-
-config ROMSTAGE_BASE
-	hex
-	default 0x4000000
-
-config ROMSTAGE_SIZE
-	hex
-	default 0x20000
-
 config BOOTBLOCK_ROM_OFFSET
 	hex
 	default 0x0
@@ -89,37 +61,5 @@ config CBFS_HEADER_ROM_OFFSET
 config CBFS_ROM_OFFSET
 	hex
 	default 0x0110000
-
-config IRAM_STACK
-	hex
-	default 0x0007ff00
-
-config XIP_ROM_SIZE
-	hex
-	default ROMSTAGE_SIZE
-
-config SYS_SDRAM_BASE
-	hex "SDRAM base address"
-	default 0x80000000
-
-config SYS_TEXT_BASE
-	hex "Executable code section"
-	default 0x04e00000
-
-config RAMBASE
-	hex
-	default SYS_SDRAM_BASE
-
-config RAMTOP
-	hex
-	default 0x81000000
-
-config STACK_TOP
-	hex
-	default 0x90000000
-
-config STACK_SIZE
-	hex
-	default 0x00010000
 
 endif #  BOARD_EMULATION_FOUNDATION_ARMV8

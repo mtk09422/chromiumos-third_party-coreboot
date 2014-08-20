@@ -25,3 +25,7 @@ romstage-y += wakeup.c
 
 ramstage-y += mainboard.c
 ramstage-y += chromeos.c
+
+bootblock-y += memlayout.ld
+romstage-y += memlayout.ld
+ramstage-y += memlayout.ld

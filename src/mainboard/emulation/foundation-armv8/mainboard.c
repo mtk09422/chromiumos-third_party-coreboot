@@ -15,13 +15,14 @@
 
 #include <console/console.h>
 #include <device/device.h>
+#include <symbols.h>
 
 static void mainboard_enable(device_t dev)
 {
 	printk(BIOS_INFO, "Enable foundation/armv8 device...\n");
 
-	ram_resource(dev, 0, CONFIG_RAMBASE / KiB,
-	             (CONFIG_RAMTOP - CONFIG_RAMBASE) / KiB);
+	ram_resource(dev, 0, (uintptr_t)_dram / KiB,
+	             (uintptr_t)_dram / KiB + CONFIG_DRAM_SIZE_MB * KiB);
 }
 
 struct chip_operations mainboard_ops = {

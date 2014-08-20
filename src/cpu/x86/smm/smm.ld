@@ -10,6 +10,7 @@ SECTIONS
 	 */
 	. = 0xa0000;
 	.handler (.): {
+		_program = .;
 		/* Assembler stub */
 		*(.handler)
 
@@ -31,9 +32,10 @@ SECTIONS
 		*(.bss)
 		*(.sbss)
 
-		/* What is this? */
+		/* What is this? (Something we don't need with -fno-common.) */
 		*(COMMON)
 		 . = ALIGN(4);
+		_eprogram = .;
 	}
 
 	/* We are using the ASEG interleaved to stuff the SMM handlers

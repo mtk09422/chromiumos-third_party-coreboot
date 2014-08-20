@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <symbols.h>
 #include <cbfs.h>
 #include <lib.h>
 #if CONFIG_COLLECT_TIMESTAMPS
@@ -38,12 +39,8 @@
 #define MAX_ADDR -1UL
 #endif
 
-/* from ramstage.ld: */
-extern unsigned char _ram_seg;
-extern unsigned char _eram_seg;
-
-static const unsigned long lb_start = (unsigned long)&_ram_seg;
-static const unsigned long lb_end = (unsigned long)&_eram_seg;
+static const unsigned long lb_start = (unsigned long)&_program;
+static const unsigned long lb_end = (unsigned long)&_eprogram;
 
 struct segment {
 	struct segment *next;

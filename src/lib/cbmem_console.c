@@ -20,6 +20,7 @@
 #include <console/console.h>
 #include <cbmem.h>
 #include <arch/early_variables.h>
+#include <symbols.h>
 #include <string.h>
 
 /*
@@ -40,10 +41,8 @@ static struct cbmem_console *cbmem_console_p CAR_GLOBAL;
 /*
  * While running from ROM, before DRAM is initialized, some area in cache as
  * ram space is used for the console buffer storage. The size and location of
- * the area are defined in the config.
+ * the area are defined by the linker script with _(e)preram_cbmem_console.
  */
-
-extern struct cbmem_console preram_cbmem_console;
 
 /*
  * Once DRAM is initialized and the cache as ram mode is disabled, while still
@@ -121,8 +120,7 @@ static inline void init_console_ptr(void *storage, u32 total_space)
 void cbmemc_init(void)
 {
 #ifdef __PRE_RAM__
-	init_console_ptr(&preram_cbmem_console,
-			 CONFIG_CONSOLE_PRERAM_BUFFER_SIZE);
+	init_console_ptr(_preram_cbmem_console, _preram_cbmem_console_size);
 #else
 	/*
 	 * Initializing before CBMEM is available, use static buffer to store

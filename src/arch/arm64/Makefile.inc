@@ -57,13 +57,11 @@ bootblock-y += ../../lib/memset.c
 bootblock-y += ../../lib/memcpy.c
 bootblock-y += ../../lib/memmove.c
 
-bootblock-y += bootblock.ld
-
 # Build the bootblock
 
 $(objcbfs)/bootblock.debug: $$(bootblock-objs)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-	$(call link,bootblock,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm64/bootblock.bootblock.ld,--gc-sections)
+	$(call link,bootblock,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.bootblock.ld,--gc-sections)
 
 endif # CONFIG_ARCH_BOOTBLOCK_ARM64
 
@@ -85,8 +83,6 @@ romstage-y += ../../lib/memmove.c
 romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 romstage-y += transition.c transition_asm.S
 
-romstage-y += romstage.ld
-
 rmodules_arm64-y += ../../lib/memset.c
 rmodules_arm64-y += ../../lib/memcpy.c
 rmodules_arm64-y += ../../lib/memmove.c
@@ -98,7 +94,7 @@ VBOOT_STUB_DEPS += $(obj)/arch/arm64/eabi_compat.rmodules_arm64.o
 
 $(objcbfs)/romstage.debug: $$(romstage-objs)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-	$(call link,romstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm64/romstage.romstage.ld,--gc-sections)
+	$(call link,romstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.romstage.ld,--gc-sections)
 
 endif # CONFIG_ARCH_ROMSTAGE_ARM64
 
@@ -123,8 +119,6 @@ ramstage-y += stage_entry.S
 ramstage-$(CONFIG_ARCH_SPINTABLE) += spintable.c spintable_asm.S
 ramstage-y += transition.c transition_asm.S
 
-ramstage-y += ramstage.ld
-
 rmodules_arm64-y += ../../lib/memset.c
 rmodules_arm64-y += ../../lib/memcpy.c
 rmodules_arm64-y += ../../lib/memmove.c
@@ -143,6 +137,6 @@ ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 
 $(objcbfs)/ramstage.debug: $$(ramstage-objs)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(call link,ramstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm64/ramstage.ramstage.ld,--gc-sections)
+	$(call link,ramstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.ramstage.ld,--gc-sections)
 
 endif # CONFIG_ARCH_RAMSTAGE_ARM64

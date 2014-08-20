@@ -25,6 +25,7 @@
 #include <delay.h>
 #include <lib.h>
 #include <string.h>
+#include <symbols.h>
 #include <console/console.h>
 #include <arch/hlt.h>
 #include <device/device.h>

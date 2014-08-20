@@ -52,11 +52,9 @@ bootblock-y += memset.S
 bootblock-y += memcpy.S
 bootblock-y += memmove.S
 
-bootblock-y += bootblock.ld
-
 $(objcbfs)/bootblock.debug: $$(bootblock-objs)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-	$(call link,bootblock,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/bootblock.bootblock.ld,--gc-sections)
+	$(call link,bootblock,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.bootblock.ld,--gc-sections)
 
 endif # CONFIG_ARCH_BOOTBLOCK_ARM
 
@@ -66,7 +64,7 @@ endif # CONFIG_ARCH_BOOTBLOCK_ARM
 
 $(objcbfs)/verstage.debug: $$(verstage-objs) $$(VB2_LIB)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-	$(call link,verstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/verstage.verstage.ld,--gc-sections)
+	$(call link,verstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.verstage.ld,--gc-sections)
 
 verstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 verstage-y += div0.c
@@ -75,8 +73,6 @@ verstage-y += memset.S
 verstage-y += memcpy.S
 verstage-y += memmove.S
 verstage-y += stages.c
-
-verstage-y += verstage.ld
 
 ###############################################################################
 # romstage
@@ -99,13 +95,11 @@ rmodules_arm-y += memcpy.S
 rmodules_arm-y += memmove.S
 rmodules_arm-y += eabi_compat.c
 
-romstage-y += romstage.ld
-
 VBOOT_STUB_DEPS += $(obj)/arch/arm/eabi_compat.rmodules_arm.o
 
 $(objcbfs)/romstage.debug: $$(romstage-objs)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-	$(call link,romstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/romstage.romstage.ld,--gc-sections)
+	$(call link,romstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.romstage.ld,--gc-sections)
 
 endif # CONFIG_ARCH_ROMSTAGE_ARM
 
@@ -126,8 +120,6 @@ ramstage-y += memcpy.S
 ramstage-y += memmove.S
 ramstage-y += clock.c
 
-ramstage-y += ramstage.ld
-
 rmodules_arm-y += memset.S
 rmodules_arm-y += memcpy.S
 rmodules_arm-y += memmove.S
@@ -139,6 +131,6 @@ ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 
 $(objcbfs)/ramstage.debug: $$(ramstage-objs)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(call link,ramstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/ramstage.ramstage.ld,--gc-sections)
+	$(call link,ramstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.ramstage.ld,--gc-sections)
 
 endif # CONFIG_ARCH_RAMSTAGE_ARM

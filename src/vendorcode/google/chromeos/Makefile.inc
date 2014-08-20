@@ -122,6 +122,8 @@ verstage-y += verstage.c fmap.c chromeos.c
 verstage-y += antirollback.c vbnv_ec.c
 romstage-y += vboot_handoff.c
 
+verstage-y += verstage.ld
+
 VB_FIRMWARE_ARCH := $(ARCHDIR-$(ARCH-VERSTAGE-y))
 VB2_LIB = $(obj)/external/vboot_reference/vboot_fw2.a
 VBOOT_CFLAGS += $(patsubst -I%,-I$(top)/%,$(filter-out -include $(src)/include/kconfig.h, $(CFLAGS_verstage)))

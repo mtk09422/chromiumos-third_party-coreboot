@@ -45,11 +45,6 @@ int primitive_memtest(uintptr_t base, uintptr_t size);
 /* Defined in src/lib/stack.c */
 int checkstack(void *top_of_stack, int core);
 
-#ifndef __PRE_RAM__ // fails in bootblock compiled with romcc
-/* currently defined by a ldscript */
-extern unsigned char _estack[];
-#endif
-
 /* Defined in romstage.c */
 #if CONFIG_CPU_AMD_GEODE_LX
 void cache_as_ram_main(void);

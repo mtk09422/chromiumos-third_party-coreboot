@@ -117,6 +117,14 @@ ramstage-$(CONFIG_CONSOLE_NE2K) += ne2k.c
 
 romstage-$(CONFIG_CACHE_RELOCATED_RAMSTAGE_OUTSIDE_CBMEM) += ramstage_cache.c
 
+ifneq ($(CONFIG_ARCH_X86),y)
+# X86 bootblock and romstage use custom ldscripts that are all glued together,
+# so we need to exclude it here or it would pick these up as well
+bootblock-y += bootblock.ld
+romstage-y += romstage.ld
+endif
+ramstage-y += ramstage.ld
+
 smm-y += cbfs.c memcmp.c
 smm-$(CONFIG_CONSOLE_SERIAL8250) += uart8250.c
 smm-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart8250mem.c

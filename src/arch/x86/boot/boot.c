@@ -2,6 +2,7 @@
 #include <arch/stages.h>
 #include <ip_checksum.h>
 #include <string.h>
+#include <symbols.h>
 #include <cpu/x86/multiboot.h>
 
 #if CONFIG_RELOCATABLE_RAMSTAGE
@@ -29,11 +30,10 @@ void jmp_to_elf_entry(void *entry, unsigned long unused1, unsigned long unused2)
 #else
 void jmp_to_elf_entry(void *entry, unsigned long buffer, unsigned long size)
 {
-	extern unsigned char _ram_seg, _eram_seg;
 	unsigned long lb_start, lb_size;
 
-	lb_start = (unsigned long)&_ram_seg;
-	lb_size = (unsigned long)(&_eram_seg - &_ram_seg);
+	lb_start = (unsigned long)&_program;
+	lb_size = _program_size;
 
 	printk(BIOS_SPEW, "entry    = 0x%08lx\n", (unsigned long)entry);
 	printk(BIOS_SPEW, "lb_start = 0x%08lx\n", lb_start);
