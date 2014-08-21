@@ -24,6 +24,9 @@ ramstage-$(CONFIG_CHROMEOS) += chromeos.c
 
 smm-$(CONFIG_HAVE_SMI_HANDLER) += smihandler.c
 
+romstage-y += pei_data.c
+ramstage-y += pei_data.c
+
 ## DIMM SPD for on-board memory
 romstage-y += spd.c
 SPD_BIN = $(obj)/spd.bin
