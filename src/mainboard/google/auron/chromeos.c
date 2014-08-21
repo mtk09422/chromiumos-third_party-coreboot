@@ -29,6 +29,9 @@
 #include <ec/google/chromeec/ec.h>
 #endif
 
+/* SPI Write protect is GPIO 16 */
+#define CROS_WP_GPIO	58
+
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
 
@@ -66,7 +69,7 @@ void fill_lb_gpios(struct lb_gpios *gpios)
 	gpios->count = GPIO_COUNT;
 
 	gpio = gpios->gpios;
-	fill_lb_gpio(gpio++, 58, ACTIVE_HIGH, "write protect", 0);
+	fill_lb_gpio(gpio++, CROS_WP_GPIO, ACTIVE_HIGH, "write protect", 0);
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "recovery",
 		     get_recovery_mode_switch());
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "developer",
@@ -108,5 +111,5 @@ int get_recovery_mode_switch(void)
 
 int get_write_protect_state(void)
 {
-	return get_gpio(58);
+	return get_gpio(CROS_WP_GPIO);
 }
