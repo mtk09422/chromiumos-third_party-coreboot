@@ -41,20 +41,12 @@ extern const unsigned char AmlCode[];
 
 static void acpi_update_thermal_table(global_nvs_t *gnvs)
 {
-	gnvs->tmps = CTL_TDP_SENSOR_ID;
-
-	/* Normal TDP */
-	gnvs->f1of = 0;
-	gnvs->f1on = 0;
-
-	/* Limited TDP */
-	gnvs->f0of = CTL_TDP_THRESHOLD_OFF;
-	gnvs->f0on = CTL_TDP_THRESHOLD_ON;
-	gnvs->f0pw = CTL_TDP_POWER_LIMIT;
+	gnvs->tmps = TEMPERATURE_SENSOR_ID;
 
 	gnvs->tcrt = CRITICAL_TEMPERATURE;
 	gnvs->tpsv = PASSIVE_TEMPERATURE;
 	gnvs->tmax = MAX_TEMPERATURE;
+	gnvs->f0pw = EC_THROTTLE_POWER_LIMIT;
 	gnvs->flvl = 1;
 }
 

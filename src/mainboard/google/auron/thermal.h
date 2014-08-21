@@ -20,11 +20,10 @@
 #ifndef THERMAL_H
 #define THERMAL_H
 
-/* Control TDP Settings */
-#define CTL_TDP_SENSOR_ID		0	/* PECI */
-#define CTL_TDP_POWER_LIMIT		12	/* 12W */
-#define CTL_TDP_THRESHOLD_OFF		80	/* Normal at 80C */
-#define CTL_TDP_THRESHOLD_ON		85	/* Limited at 85C */
+#define TEMPERATURE_SENSOR_ID		0	/* PECI */
+
+/* Power level to set when EC requests throttle */
+#define EC_THROTTLE_POWER_LIMIT		12	/* 12W */
 
 /* Temperature which OS will shutdown at */
 #define CRITICAL_TEMPERATURE		99
