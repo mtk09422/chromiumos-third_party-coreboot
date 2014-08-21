@@ -35,15 +35,8 @@
 #include <arch/interrupt.h>
 #include <boot/coreboot_tables.h>
 #include "hda_verb.h"
-#include <southbridge/intel/lynxpoint/pch.h>
 #include "ec.h"
 #include "onboard.h"
-
-void mainboard_suspend_resume(void)
-{
-	/* Call SMM finalize() handlers before resume */
-	outb(0xcb, 0xb2);
-}
 
 #if CONFIG_PCI_ROM_RUN || CONFIG_VGA_ROM_RUN
 static int int15_handler(void)
@@ -54,32 +47,20 @@ static int int15_handler(void)
 	       __func__, X86_AX, X86_BX, X86_CX, X86_DX);
 
 	switch (X86_AX) {
-	case 0x5f34:
-		/*
-		 * Set Panel Fitting Hook:
-		 *  bit 2 = Graphics Stretching
-		 *  bit 1 = Text Stretching
-		 *  bit 0 = Centering (do not set with bit1 or bit2)
-		 *  0     = video bios default
-		 */
-		X86_AX = 0x005f;
-		X86_CX = 0x0001;
-		res = 1;
-		break;
 	case 0x5f35:
 		/*
 		 * Boot Display Device Hook:
 		 *  bit 0 = CRT
-		 *  bit 1 = TV (eDP) *
-		 *  bit 2 = EFP *
+		 *  bit 1 = RESERVED
+		 *  bit 2 = EFP
 		 *  bit 3 = LFP
-		 *  bit 4 = CRT2
-		 *  bit 5 = TV2 (eDP) *
-		 *  bit 6 = EFP2 *
-		 *  bit 7 = LFP2
+		 *  bit 4 = RESERVED
+		 *  bit 5 = EFP3
+		 *  bit 6 = EFP2
+		 *  bit 7 = RESERVED
 		 */
 		X86_AX = 0x005f;
-		X86_CX = 0x0000;
+		X86_CX = 0x0008;
 		res = 1;
 		break;
 	case 0x5f51:

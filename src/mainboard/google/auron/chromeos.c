@@ -18,16 +18,14 @@
  */
 
 #include <string.h>
-#include <vendorcode/google/chromeos/chromeos.h>
 #include <arch/io.h>
 #include <device/device.h>
 #include <device/pci.h>
-#include <southbridge/intel/lynxpoint/pch.h>
-
-#if CONFIG_EC_GOOGLE_CHROMEEC
-#include "ec.h"
+#include <console/console.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 #include <ec/google/chromeec/ec.h>
-#endif
+#include <broadwell/gpio.h>
+#include "ec.h"
 
 /* SPI Write protect is GPIO 16 */
 #define CROS_WP_GPIO	58
@@ -39,13 +37,9 @@
 
 static int get_lid_switch(void)
 {
-#if CONFIG_EC_GOOGLE_CHROMEEC
 	u8 ec_switches = inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES);
 
 	return !!(ec_switches & EC_SWITCH_LID_OPEN);
-#else
-	return 0;
-#endif
 }
 
 static void fill_lb_gpio(struct lb_gpio *gpio, int num,
@@ -91,7 +85,6 @@ int get_developer_mode_switch(void)
  * the other is driven by Servo. */
 int get_recovery_mode_switch(void)
 {
-#if CONFIG_EC_GOOGLE_CHROMEEC
 	u8 ec_switches = inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES);
 	u32 ec_events;
 
@@ -104,9 +97,6 @@ int get_recovery_mode_switch(void)
 
 	return !!(ec_events &
 		  EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY));
-#else
-	return 0;
-#endif
 }
 
 int get_write_protect_state(void)

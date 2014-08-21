@@ -29,67 +29,29 @@
 #include <device/pci.h>
 #include <device/pci_ids.h>
 #include <cpu/cpu.h>
-#include <cpu/x86/msr.h>
-#include <vendorcode/google/chromeos/gnvs.h>
-#include <ec/google/chromeec/ec.h>
+#include <broadwell/acpi.h>
+#include <broadwell/nvs.h>
+#include "thermal.h"
 
 extern const unsigned char AmlCode[];
 
-#include <southbridge/intel/lynxpoint/pch.h>
-#include <southbridge/intel/lynxpoint/nvs.h>
-#include "thermal.h"
-
-static void acpi_update_thermal_table(global_nvs_t *gnvs)
-{
-	gnvs->tmps = TEMPERATURE_SENSOR_ID;
-
-	gnvs->tcrt = CRITICAL_TEMPERATURE;
-	gnvs->tpsv = PASSIVE_TEMPERATURE;
-	gnvs->tmax = MAX_TEMPERATURE;
-	gnvs->f0pw = EC_THROTTLE_POWER_LIMIT;
-	gnvs->flvl = 1;
-}
-
 static void acpi_create_gnvs(global_nvs_t *gnvs)
 {
-	gnvs->apic = 1;
-	gnvs->mpen = 1; /* Enable Multi Processing */
-	gnvs->pcnt = dev_count_cpu();
+	acpi_init_gnvs(gnvs);
 
 	/* Enable USB ports in S3 */
 	gnvs->s3u0 = 1;
-	gnvs->s3u1 = 1;
 
 	/* Disable USB ports in S5 */
 	gnvs->s5u0 = 0;
-	gnvs->s5u1 = 0;
-
-	/* CBMEM TOC */
-	gnvs->cmem = 0;
 
 	/* TPM Present */
 	gnvs->tpmp = 1;
 
-	/* IGD Displays */
-	gnvs->ndid = 3;
-	gnvs->did[0] = 0x80000100;
-	gnvs->did[1] = 0x80000240;
-	gnvs->did[2] = 0x80000410;
-	gnvs->did[3] = 0x80000410;
-	gnvs->did[4] = 0x00000005;
-
-#if CONFIG_CHROMEOS
-	// TODO(reinauer) this could move elsewhere?
-	chromeos_init_vboot(&(gnvs->chromeos));
-
-	gnvs->chromeos.vbt2 = google_ec_running_ro() ?
-		ACTIVE_ECFW_RO : ACTIVE_ECFW_RW;
-#endif
-
-	/* Update the mem console pointer. */
-	gnvs->cbmc = (u32)cbmem_find(CBMEM_ID_CONSOLE);
-
-	acpi_update_thermal_table(gnvs);
+	gnvs->tmps = TEMPERATURE_SENSOR_ID;
+	gnvs->tcrt = CRITICAL_TEMPERATURE;
+	gnvs->tpsv = PASSIVE_TEMPERATURE;
+	gnvs->tmax = MAX_TEMPERATURE;
 }
 
 unsigned long acpi_fill_madt(unsigned long current)
@@ -101,13 +63,7 @@ unsigned long acpi_fill_madt(unsigned long current)
 	current += acpi_create_madt_ioapic((acpi_madt_ioapic_t *) current,
 				2, IO_APIC_ADDR, 0);
 
-	/* INT_SRC_OVR */
-	current += acpi_create_madt_irqoverride((acpi_madt_irqoverride_t *)
-		 current, 0, 0, 2, 0);
-	current += acpi_create_madt_irqoverride((acpi_madt_irqoverride_t *)
-		 current, 0, 9, 9, MP_IRQ_TRIGGER_LEVEL | MP_IRQ_POLARITY_HIGH);
-
-	return current;
+	return acpi_madt_irq_overrides(current);
 }
 
 unsigned long acpi_fill_ssdt_generator(unsigned long current,
@@ -119,13 +75,11 @@ unsigned long acpi_fill_ssdt_generator(unsigned long current,
 
 unsigned long acpi_fill_slit(unsigned long current)
 {
-	// Not implemented
 	return current;
 }
 
 unsigned long acpi_fill_srat(unsigned long current)
 {
-	/* No NUMA, no SRAT */
 	return current;
 }
 
@@ -142,9 +96,6 @@ unsigned long write_acpi_tables(unsigned long start)
 	acpi_mcfg_t *mcfg;
 	acpi_fadt_t *fadt;
 	acpi_facs_t *facs;
-#if CONFIG_HAVE_ACPI_SLIC
-	acpi_header_t *slic;
-#endif
 	acpi_header_t *ssdt;
 	acpi_header_t *dsdt;
 	global_nvs_t *gnvs;
@@ -255,26 +206,11 @@ unsigned long write_acpi_tables(unsigned long start)
 	dsdt->checksum = acpi_checksum((void *)dsdt, dsdt->length);
 
 	printk(BIOS_DEBUG, "ACPI:     * DSDT @ %p Length %x\n", dsdt,
-		     dsdt->length);
-
-#if CONFIG_HAVE_ACPI_SLIC
-	printk(BIOS_DEBUG, "ACPI:     * SLIC\n");
-	slic = (acpi_header_t *)current;
-	current += acpi_create_slic(current);
-	ALIGN_CURRENT;
-	acpi_add_table(rsdp, slic);
-#endif
+	       dsdt->length);
 
 	printk(BIOS_DEBUG, "ACPI:     * SSDT\n");
 	ssdt = (acpi_header_t *)current;
 	acpi_create_ssdt_generator(ssdt, ACPI_TABLE_CREATOR);
-	current += ssdt->length;
-	acpi_add_table(rsdp, ssdt);
-	ALIGN_CURRENT;
-
-	printk(BIOS_DEBUG, "ACPI:     * SSDT2\n");
-	ssdt = (acpi_header_t *)current;
-	acpi_create_serialio_ssdt(ssdt);
 	current += ssdt->length;
 	acpi_add_table(rsdp, ssdt);
 	ALIGN_CURRENT;

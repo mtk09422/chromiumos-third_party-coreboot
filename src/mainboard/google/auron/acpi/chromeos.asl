@@ -18,6 +18,6 @@
  */
 
 Name(OIPG, Package() {
-	Package () { 0x0001, 0, 0xFFFFFFFF, "LynxPoint" }, // no recovery button
-	Package () { 0x0003, 1, 58, "LynxPoint" }, // firmware write protect
+	Package () { 0x0001, 0, 0xFFFFFFFF, "PCH-LP" }, // no recovery button
+	Package () { 0x0003, 1, 58, "PCH-LP" }, // firmware write protect
 })
