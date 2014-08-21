@@ -29,6 +29,7 @@
 #include <southbridge/intel/lynxpoint/pch.h>
 #include <southbridge/intel/lynxpoint/lp_gpio.h>
 #include "gpio.h"
+#include "spd.h"
 
 const struct rcba_config_instruction rcba_config[] = {
 
@@ -69,38 +70,6 @@ const struct rcba_config_instruction rcba_config[] = {
 
 	RCBA_END_CONFIG,
 };
-
-/* Copy SPD data for on-board memory */
-static void copy_spd(struct pei_data *peid)
-{
-	const int gpio_vector[] = {13, 9, 47, -1};
-	int spd_index = get_gpios(gpio_vector);
-	struct cbfs_file *spd_file;
-
-	printk(BIOS_DEBUG, "SPD index %d\n", spd_index);
-	spd_file = cbfs_get_file(CBFS_DEFAULT_MEDIA, "spd.bin");
-	if (!spd_file)
-		die("SPD data not found.");
-
-	/* Index 0-2 are 4GB config with both CH0 and CH1.
-	 * Index 4-6 are 2GB config with CH0 only. */
-	if (spd_index > 3)
-		peid->dimm_channel1_disabled = 3;
-
-	if (ntohl(spd_file->len) <
-	    ((spd_index + 1) * sizeof(peid->spd_data[0]))) {
-		printk(BIOS_ERR, "SPD index override to 0 - old hardware?\n");
-		spd_index = 0;
-	}
-
-	if (spd_file->len < sizeof(peid->spd_data[0]))
-		die("Missing SPD data.");
-
-	memcpy(peid->spd_data[0],
-	       ((char*)CBFS_SUBHEADER(spd_file)) +
-	       spd_index * sizeof(peid->spd_data[0]),
-	       sizeof(peid->spd_data[0]));
-}
 
 void mainboard_romstage_entry(unsigned long bist)
 {
@@ -163,8 +132,9 @@ void mainboard_romstage_entry(unsigned long bist)
 		.gpio_map = &mainboard_gpio_map,
 		.rcba_config = &rcba_config[0],
 		.bist = bist,
-		.copy_spd = copy_spd,
 	};
+
+	mainboard_fill_spd_data(&pei_data);
 
 	/* Call into the real romstage main with this board's attributes. */
 	romstage_common(&romstage_params);
