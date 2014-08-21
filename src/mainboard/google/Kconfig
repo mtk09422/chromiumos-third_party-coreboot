@@ -173,6 +173,12 @@ config BOARD_GOOGLE_STOUT
 	  Enable this config to select the Google Stout mainboard.
 	  Stout is a Chrome OS mainboard.
 	  Stout is based on the Intel Ivy Bridge platform.
+config BOARD_GOOGLE_URARA
+	bool "Urara"
+	help
+	  Google Urara mainboard.
+	  Urara is an embedded device running on MIPS platorm
+	  based on the Danube SOC.
 config BOARD_GOOGLE_VEYRON
 	bool "Veyron"
 	help
@@ -204,6 +210,7 @@ source "src/mainboard/google/samus/Kconfig"
 source "src/mainboard/google/slippy/Kconfig"
 source "src/mainboard/google/storm/Kconfig"
 source "src/mainboard/google/stout/Kconfig"
+source "src/mainboard/google/urara/Kconfig"
 source "src/mainboard/google/veyron/Kconfig"
 
 config MAINBOARD_VENDOR
