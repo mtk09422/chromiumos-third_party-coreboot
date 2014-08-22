@@ -15,6 +15,7 @@ config BOARD_SPECIFIC_OPTIONS # dummy
 	select HAVE_SMI_HANDLER
 	select GFXUMA
 	select CHROMEOS
+	select CHROMEOS_VBNV_CMOS
 	select EXTERNAL_MRC_BLOB
 	select EARLY_CBMEM_INIT
 

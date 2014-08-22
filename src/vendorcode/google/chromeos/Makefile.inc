@@ -19,12 +19,10 @@
 
 romstage-y += chromeos.c
 ramstage-y += chromeos.c
-romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += vbnv_cmos.c
-ramstage-$(CONFIG_ARCH_RAMSTAGE_X86_32) += vbnv_cmos.c
-romstage-$(CONFIG_ARCH_ROMSTAGE_ARM) += vbnv_ec.c
-ramstage-$(CONFIG_ARCH_RAMSTAGE_ARM) += vbnv_ec.c
-romstage-$(CONFIG_ARCH_ROMSTAGE_ARM64) += vbnv_ec.c
-ramstage-$(CONFIG_ARCH_RAMSTAGE_ARM64) += vbnv_ec.c
+romstage-$(CONFIG_CHROMEOS_VBNV_CMOS) += vbnv_cmos.c
+ramstage-$(CONFIG_CHROMEOS_VBNV_CMOS) += vbnv_cmos.c
+romstage-$(CONFIG_CHROMEOS_VBNV_EC) += vbnv_ec.c
+ramstage-$(CONFIG_CHROMEOS_VBNV_EC) += vbnv_ec.c
 romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += vboot.c
 ramstage-$(CONFIG_ELOG) += elog.c
 ramstage-y += gnvs.c
