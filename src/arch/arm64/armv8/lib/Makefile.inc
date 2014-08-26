@@ -40,4 +40,9 @@ endif
 
 ifeq ($(CONFIG_ARCH_RAMSTAGE_ARM_V8_64),y)
 ramstage-y += $(lib_access)
+
+ifeq ($(CONFIG_ARCH_USE_SECURE_MONITOR),y)
+secmon-y += $(lib_access)
+endif
+
 endif

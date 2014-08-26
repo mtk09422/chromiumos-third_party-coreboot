@@ -132,6 +132,11 @@ rmodules_arm64-y += ../../lib/memcpy.c
 rmodules_arm64-y += ../../lib/memmove.c
 rmodules_arm64-y += eabi_compat.c
 
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += stage_entry.S
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += ../../lib/memset.c
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += ../../lib/memcmp.c
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += ../../lib/memcpy.c
+
 ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
