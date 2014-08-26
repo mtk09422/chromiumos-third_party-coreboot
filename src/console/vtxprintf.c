@@ -8,6 +8,18 @@
 #include <console/console.h>
 #include <console/vtxprintf.h>
 
+#if !CONFIG_ARCH_MIPS
+#define SUPPORT_64BIT_INTS
+#endif
+
+#ifdef SUPPORT_64BIT_INTS
+typedef unsigned long long unsigned_longest_int;
+typedef long long longest_int;
+#else
+typedef unsigned long unsigned_longest_int;
+typedef long longest_int;
+#endif
+
 /* haha, don't need ctype.c */
 #define isdigit(c)	((c) >= '0' && (c) <= '9')
 #define is_digit isdigit
@@ -31,7 +43,8 @@ static int skip_atoi(const char **s)
 #define LARGE	64		/* use 'ABCDEF' instead of 'abcdef' */
 
 static int number(void (*tx_byte)(unsigned char byte),
-	unsigned long long num, int base, int size, int precision, int type)
+		  unsigned_longest_int num, int base,
+		  int size, int precision, int type)
 {
 	char c,sign,tmp[66];
 	const char *digits="0123456789abcdefghijklmnopqrstuvwxyz";
@@ -47,7 +60,7 @@ static int number(void (*tx_byte)(unsigned char byte),
 	c = (type & ZEROPAD) ? '0' : ' ';
 	sign = 0;
 	if (type & SIGN) {
-		if ((signed long long)num < 0) {
+		if ((longest_int)num < 0) {
 			sign = '-';
 			num = -num;
 			size--;
@@ -104,7 +117,7 @@ static int number(void (*tx_byte)(unsigned char byte),
 int vtxprintf(void (*tx_byte)(unsigned char byte), const char *fmt, va_list args)
 {
 	int len;
-	unsigned long long num;
+	unsigned_longest_int num;
 	int i, base;
 	const char *s;
 
@@ -220,10 +233,13 @@ repeat:
 			continue;
 
 		case 'n':
+#ifdef SUPPORT_64BIT_INTS
 			if (qualifier == 'L') {
 				long long *ip = va_arg(args, long long *);
 				*ip = count;
-			} else if (qualifier == 'l') {
+			} else
+#endif
+			if (qualifier == 'l') {
 				long * ip = va_arg(args, long *);
 				*ip = count;
 			} else {
@@ -261,9 +277,12 @@ repeat:
 				--fmt;
 			continue;
 		}
+#ifdef SUPPORT_64BIT_INTS
 		if (qualifier == 'L') {
 			num = va_arg(args, unsigned long long);
-		} else if (qualifier == 'l') {
+		} else
+#endif
+		if (qualifier == 'l') {
 			num = va_arg(args, unsigned long);
 		} else if (qualifier == 'z') {
 			num = va_arg(args, size_t);
