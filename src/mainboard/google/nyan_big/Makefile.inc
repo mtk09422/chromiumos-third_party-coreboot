@@ -34,6 +34,7 @@ bootblock-y += reset.c
 romstage-y += reset.c
 romstage-y += romstage.c
 romstage-y += sdram_configs.c
+romstage-y += early_configs.c
 
 ramstage-y += reset.c
 ramstage-y += boardid.c
