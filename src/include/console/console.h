@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <console/loglevel.h>
 #include <console/post_codes.h>
+#include <console/vtxprintf.h>
 
 #if CONFIG_CONSOLE_SERIAL
 #include <uart.h>
@@ -81,6 +82,7 @@ void post_log_clear(void);
 void mainboard_post(u8 value);
 void __attribute__ ((noreturn)) die(const char *msg);
 int do_printk(int msg_level, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+int vprintk(int msg_level, const char *fmt, va_list args);
 
 #if defined(__BOOT_BLOCK__) && !CONFIG_BOOTBLOCK_CONSOLE || \
     (defined(__PRE_RAM__) && !defined(__BOOT_BLOCK__)) && !CONFIG_EARLY_CONSOLE

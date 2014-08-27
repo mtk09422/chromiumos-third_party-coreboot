@@ -61,21 +61,3 @@ void console_tx_flush(void)
 	usbdebug_tx_flush(0);
 #endif
 }
-
-int do_printk(int msg_level, const char *fmt, ...)
-{
-	va_list args;
-	int i;
-
-	if (msg_level > console_loglevel) {
-		return 0;
-	}
-
-	va_start(args, fmt);
-	i = vtxprintf(console_tx_byte, fmt, args);
-	va_end(args);
-
-	console_tx_flush();
-
-	return i;
-}
