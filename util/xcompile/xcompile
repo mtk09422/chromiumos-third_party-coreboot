@@ -167,7 +167,7 @@ XGCCPATH=${1:-"`pwd`/util/crossgcc/xgcc/bin/"}
 
 # MIPS Architecture (Little Endian)
 TARCH_mipsel="mipsel"
-TBFDARCH_mipsel="littlemips"
+TBFDARCH_mipsel="tradlittlemips littlemips"
 TCLIST_mipsel="mipsel"
 TWIDTH_mipsel="32"
 
@@ -175,7 +175,7 @@ TWIDTH_mipsel="32"
 for architecture in $SUPPORTED_ARCHITECTURE; do
 	GCCPREFIX="invalid"
 	TARCH="$(eval echo \$TARCH_$architecture)"
-	TBFDARCH="$(eval echo \$TBFDARCH_$architecture)"
+	TBFDARCHS="$(eval echo \$TBFDARCH_$architecture)"
 	TCLIST="$(eval echo \$TCLIST_$architecture)"
 	TWIDTH="$(eval echo \$TWIDTH_$architecture)"
 	[ -z "$TARCH" -o -z "$TCLIST" -o -z "$TWIDTH" ] &&
@@ -196,10 +196,13 @@ for architecture in $SUPPORTED_ARCHITECTURE; do
 	echo "# $architecture TARCH_SEARCH=$search"
 
 	# Search toolchain by checking assembler capability.
-	for gccprefixes in $search ""; do
-		program_exists "${gccprefixes}as" || continue
-		testas "$gccprefixes" "$TWIDTH" "$TBFDARCH" "" && break
-		testas "$gccprefixes" "$TWIDTH" "$TBFDARCH" "TRUE" && break
+        for TBFDARCH in $TBFDARCHS; do
+		for gccprefixes in $search ""; do
+			program_exists "${gccprefixes}as" || continue
+			testas "$gccprefixes" "$TWIDTH" "$TBFDARCH" "" && break
+			testas "$gccprefixes" "$TWIDTH" "$TBFDARCH" "TRUE" && break
+		done
+                [ "$GCCPREFIX" = "invalid" ] || break
 	done
 
 	if [ "$GCCPREFIX" = "invalid" ]; then
