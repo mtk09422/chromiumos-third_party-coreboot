@@ -27,6 +27,7 @@
 #include <timestamp.h>
 #include <arch/cache.h>
 #include <arch/exception.h>
+#include <soc/rockchip/rk3288/sdram.h>
 
 void main(void)
 {
@@ -38,6 +39,7 @@ void main(void)
 	u32 dram_start = (CONFIG_SYS_SDRAM_BASE >> 20);
 	u32 dram_size = CONFIG_DRAM_SIZE_MB;
 	u32 dram_end = dram_start + dram_size;
+	sdram_init(get_sdram_config());
 	mmu_init();
 	/* Device memory below DRAM is uncached. */
 	mmu_config_range(0, dram_start, DCACHE_OFF);
@@ -53,7 +55,6 @@ void main(void)
 	dcache_mmu_enable();
 
 	cbmem_initialize_empty();
-
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 	stage_exit(entry);
 }
