@@ -116,7 +116,8 @@ detect_special_flags() {
 		testcc "$CC" "$CFLAGS" && CFLAGS="$CFLAGS"
 		;;
 	mipsel )
-		testcc "$CC" "$CFLAGS"
+		testcc "$CC" "$CFLAGS -mno-abicalls -fno-pic" && \
+                  CFLAGS+=" -mno-abicalls -fno-pic"
 		;;
 	esac
 }
