@@ -559,7 +559,7 @@ void acpi_save_gnvs(u32 gnvs_address);
 extern u8 acpi_slp_type;
 
 void acpi_resume(void *wake_vec);
-void __attribute__((weak)) mainboard_suspend_resume(void);
+void mainboard_suspend_resume(void);
 void *acpi_find_wakeup_vector(void);
 void *acpi_get_wakeup_rsdp(void);
 void acpi_jump_to_wakeup(void *wakeup_addr);

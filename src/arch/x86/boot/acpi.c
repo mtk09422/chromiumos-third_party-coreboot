@@ -620,6 +620,10 @@ void acpi_write_hest(acpi_hest_t *hest)
 	header->checksum = acpi_checksum((void *)hest, header->length);
 }
 
+void __attribute__((weak)) mainboard_suspend_resume(void)
+{
+}
+
 #if CONFIG_HAVE_ACPI_RESUME
 void acpi_resume(void *wake_vec)
 {
@@ -635,8 +639,7 @@ void acpi_resume(void *wake_vec)
 #endif
 
 	/* Call mainboard resume handler first, if defined. */
-	if (mainboard_suspend_resume)
-		mainboard_suspend_resume();
+	mainboard_suspend_resume();
 
 	post_code(POST_OS_RESUME);
 	acpi_jump_to_wakeup(wake_vec);
