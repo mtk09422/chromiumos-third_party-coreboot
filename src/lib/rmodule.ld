@@ -53,11 +53,11 @@ SECTIONS
 		*(.bs_init)
 		_bs_init_end = .;
 
-		. = ALIGN(4);
+		. = ALIGN(8);
 
 		*(.rodata);
 		*(.rodata.*);
-		. = ALIGN(4);
+		. = ALIGN(8);
 
 		/* The parameters section can be used to pass parameters
 		 * to a module, however there has to be an prior agreement
@@ -71,7 +71,7 @@ SECTIONS
 		_sdata = .;
 		*(.data);
 		*(.data.*);
-		. = ALIGN(4);
+		. = ALIGN(8);
 		_edata = .;
 
 		. = ALIGN(8);
