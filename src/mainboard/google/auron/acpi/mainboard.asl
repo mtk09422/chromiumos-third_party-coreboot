@@ -88,3 +88,41 @@ Scope (\_SB)
 		Name (_PRW, Package() { BOARD_TOUCHSCREEN_WAKE_GPIO, 0x3 })
 	}
 }
+
+Scope (\_SB.PCI0.I2C0)
+{
+	Device (ETPA)
+	{
+		Name (_HID, "ELAN0000")
+		Name (_DDN, "Elan Touchpad")
+		Name (_UID, 1)
+		Name (ISTP, 1) /* Touchpad */
+
+		Name (_CRS, ResourceTemplate()
+		{
+			I2cSerialBus (
+				0x15,                     // SlaveAddress
+				ControllerInitiated,      // SlaveMode
+				400000,                   // ConnectionSpeed
+				AddressingMode7Bit,       // AddressingMode
+				"\\_SB.PCI0.I2C0",        // ResourceSource
+			)
+			Interrupt (ResourceConsumer, Edge, ActiveLow)
+			{
+				BOARD_TRACKPAD_IRQ
+			}
+		})
+
+		Method (_STA)
+		{
+			If (LEqual (\S1EN, 1)) {
+				Return (0xF)
+			} Else {
+				Return (0x0)
+			}
+		}
+
+		/* Allow device to power off in S0 */
+		Name (_S0W, 4)
+	}
+}
