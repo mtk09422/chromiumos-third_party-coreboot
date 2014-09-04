@@ -55,14 +55,14 @@ bootblock-y += memset.S
 bootblock-y += memcpy.S
 bootblock-y += memmove.S
 
-$(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(bootblock-objs) $$(VERSTAGE_LIB) $$(VB2_LIB) $(obj)/config.h
+$(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(bootblock-objs)  $(obj)/config.h
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 	$(LD_bootblock) -nostdlib -m armelf_linux_eabi --gc-sections -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
 else
 	# This is based on the assumption that bootblock and verstage are compatible
 	# from the linker's perspective.
-	$(CC_bootblock) $(CFLAGS_bootblock) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) $(VERSTAGE_LIB) $(VB2_LIB) -Wl,--end-group
+	$(CC_bootblock) $(CFLAGS_bootblock) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
 endif
 
 endif
@@ -70,6 +70,14 @@ endif
 ###############################################################################
 # verification stage
 ###############################################################################
+
+$(objcbfs)/verstage.debug: $$(verstage-objs) $(src)/arch/arm/verstage.ld $(obj)/ldoptions $$(VB2_LIB)
+	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
+ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
+	$(LD_verstage) -nostdlib --gc-sections -static -o $@ -L$(obj) $(verstage-objs) -T $(src)/arch/arm/verstage.ld
+else
+	$(CC_verstage) $(CFLAGS_verstage) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/verstage.ld -Wl,--start-group $(verstage-objs) $(VB2_LIB) -Wl,--end-group
+endif
 
 verstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 verstage-y += div0.c
@@ -147,4 +155,3 @@ else
 endif
 
 endif
-

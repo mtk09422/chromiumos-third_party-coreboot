@@ -335,6 +335,8 @@ void *cbfs_load_payload(struct cbfs_media *media, const char *name)
 
 	payload = (struct cbfs_payload *)cbfs_get_file_content(
 			media, name, CBFS_TYPE_PAYLOAD);
+	if (payload)
+		printk(BIOS_DEBUG, "Booting payload %s from cbfs\n", name);
 	return payload;
 }
 #endif

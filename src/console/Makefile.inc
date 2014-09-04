@@ -32,4 +32,5 @@ ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart_wrapper.c
 
 $(obj)/console/console.ramstage.o : $(obj)/build.h
 $(obj)/console/console.romstage.o : $(obj)/build.h
+$(obj)/console/console.verstage.o : $(obj)/build.h
 $(obj)/console/console.bootblock.o : $(obj)/build.h

@@ -18,7 +18,6 @@
  */
 
 #include <assert.h>
-#include <arch/cache.h>
 #include <arch/exception.h>
 #include <arch/hlt.h>
 #include <bootblock_common.h>
@@ -26,11 +25,9 @@
 #include <console/console.h>
 #include <soc/clock.h>
 #include <soc/nvidia/tegra/apbmisc.h>
-#include <soc/nvidia/tegra124/early_configs.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 #include "pinmux.h"
 #include "power.h"
-#include "verstage.h"
 
 void main(void)
 {
@@ -74,12 +71,12 @@ void main(void)
 			  PINMUX_PWR_INT_N_FUNC_PMICINTR |
 			  PINMUX_INPUT_ENABLE);
 
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
-	early_mainboard_init();
-	entry = (void *)verstage_vboot_main;
-#else
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/romstage");
-#endif
+	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE))
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/verstage");
+	else
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/romstage");
 
 	ASSERT(entry);
 	clock_cpu0_config(entry);

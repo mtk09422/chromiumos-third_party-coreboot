@@ -21,7 +21,9 @@
 #include <string.h>
 #include "chromeos.h"
 #if CONFIG_VBOOT_VERIFY_FIRMWARE || CONFIG_VBOOT2_VERIFY_FIRMWARE
+#include "fmap.h"
 #include "vboot_handoff.h"
+#include <reset.h>
 #endif
 #include <boot/coreboot_tables.h>
 #include <cbfs.h>
@@ -119,6 +121,11 @@ int __attribute((weak)) vboot_get_sw_write_protect(void)
 #endif
 
 #if CONFIG_VBOOT_VERIFY_FIRMWARE || CONFIG_VBOOT2_VERIFY_FIRMWARE
+void vboot_locate_region(const char *name, struct vboot_region *region)
+{
+	region->size = find_fmap_entry(name, (void **)&region->offset_addr);
+}
+
 void *vboot_get_region(uintptr_t offset_addr, size_t size, void *dest)
 {
 	if (IS_ENABLED(CONFIG_SPI_FLASH_MEMORY_MAPPED)) {
@@ -159,13 +166,24 @@ int vboot_get_handoff_info(void **addr, uint32_t *size)
 	*size = sizeof(*vboot_handoff);
 	return 0;
 }
-#endif
 
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
-void *vboot_get_payload(int *len) { return NULL; }
-#endif
+/* This will leak a mapping of a fw region */
+struct vboot_components *vboot_locate_components(struct vboot_region *region)
+{
+	size_t req_size;
+	struct vboot_components *vbc;
 
-#if CONFIG_VBOOT_VERIFY_FIRMWARE
+	req_size = sizeof(*region);
+	req_size += sizeof(struct vboot_component_entry) *
+			MAX_PARSED_FW_COMPONENTS;
+
+	vbc = vboot_get_region(region->offset_addr, req_size, NULL);
+	if (vbc && vbc->num_components > MAX_PARSED_FW_COMPONENTS)
+		vbc = NULL;
+
+	return vbc;
+}
+
 void *vboot_get_payload(int *len)
 {
 	struct vboot_handoff *vboot_handoff;
@@ -191,10 +209,76 @@ void *vboot_get_payload(int *len)
 	if (len != NULL)
 		*len = fwc->size;
 
-	printk(BIOS_DEBUG, "Booting 0x%x byte payload at 0x%08x.\n",
+	printk(BIOS_DEBUG, "Booting 0x%x byte verified payload at 0x%08x.\n",
 	       fwc->size, fwc->address);
 
 	/* This will leak a mapping. */
 	return vboot_get_region(fwc->address, fwc->size, NULL);
+}
+#endif
+
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+void *vboot_load_stage(int stage_index,
+		       struct vboot_region *fw_main,
+		       struct vboot_components *fw_info)
+{
+	struct cbfs_stage *stage;
+	uint32_t fc_addr;
+	uint32_t fc_size;
+
+	if (stage_index >= fw_info->num_components) {
+		printk(BIOS_INFO, "invalid stage index\n");
+		return NULL;
+	}
+
+	fc_addr = fw_main->offset_addr + fw_info->entries[stage_index].offset;
+	fc_size = fw_info->entries[stage_index].size;
+	if (fc_size == 0 ||
+	    fc_addr + fc_size > fw_main->offset_addr + fw_main->size) {
+		printk(BIOS_INFO, "invalid stage address or size\n");
+		return NULL;
+	}
+
+	/* Loading to cbfs cache. This stage data must be retained until it's
+	 * decompressed. */
+	stage = vboot_get_region(fc_addr, fc_size, NULL);
+
+	if (stage == NULL) {
+		printk(BIOS_INFO, "failed to load a stage\n");
+		return NULL;
+	}
+
+	/* Stages rely the below clearing so that the bss is initialized. */
+	memset((void *) (uintptr_t)stage->load, 0, stage->memlen);
+
+	if (cbfs_decompress(stage->compression,
+			    (unsigned char *)stage + sizeof(*stage),
+			    (void *) (uintptr_t) stage->load,
+			    stage->len)) {
+		printk(BIOS_INFO, "failed to decompress a stage\n");
+		return NULL;
+	}
+
+	return (void *)(uintptr_t)stage->entry;
+}
+
+struct vb2_working_data * const vboot_get_working_data(void)
+{
+	return (struct vb2_working_data *)CONFIG_VBOOT_WORK_BUFFER_ADDRESS;
+}
+
+int vboot_is_slot_selected(struct vb2_working_data *wd)
+{
+	return wd->selected_region.size > 0;
+}
+
+int vboot_is_readonly_path(struct vb2_working_data *wd)
+{
+	return wd->selected_region.size == 0;
+}
+
+void vboot_reboot(void)
+{
+	hard_reset();
 }
 #endif

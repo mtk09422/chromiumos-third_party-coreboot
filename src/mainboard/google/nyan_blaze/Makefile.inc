@@ -30,8 +30,8 @@ subdirs-y += bct
 bootblock-y += bootblock.c
 bootblock-y += pmic.c
 bootblock-y += reset.c
-bootblock-y += early_configs.c
 
+verstage-y += early_configs.c
 verstage-y += chromeos.c
 verstage-y += reset.c
 

@@ -48,8 +48,6 @@ static void __attribute__((noinline)) romstage(void)
 	uint64_t romstage_start_time = timestamp_get();
 #endif
 
-	configure_l2_cache();
-
 	console_init();
 	exception_init();
 
@@ -60,6 +58,7 @@ static void __attribute__((noinline)) romstage(void)
 	u32 dram_end = sdram_max_addressable_mb();	/* plus one... */
 	u32 dram_size = dram_end - dram_start;
 
+	configure_l2_cache();
 	mmu_init();
 	/* Device memory below DRAM is uncached. */
 	mmu_config_range(0, dram_start, DCACHE_OFF);
