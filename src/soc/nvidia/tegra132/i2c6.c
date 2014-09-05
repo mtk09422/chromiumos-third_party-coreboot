@@ -26,7 +26,6 @@
 #include <soc/nvidia/tegra132/clk_rst.h>
 #include "delay.h"
 
-#define I2C6_BUS		5
 #define I2C6_PADCTL		0xC001
 #define DPAUX_HYBRID_PADCTL	0x545C0124
 
@@ -90,8 +89,11 @@ void soc_configure_i2c6pad(void)
 	remove_clamps(POWER_PARTID_SOR);
 	unreset_sor_periphs();
 
-	/* Host1X needs a valid clock source so DPAUX can be accessed */
-	clock_configure_source(host1x, PLLP, 204000);
+	/*
+	 * Host1X needs a valid clock source so DPAUX can be accessed. Note that
+	 * 4 is the PLLP_OUT0 source for this register.
+	 */
+	clock_configure_irregular_source(host1x, PLLP, 204000, 4);
 
 	/* Now we can write the I2C6 mux in DPAUX */
 	write32(I2C6_PADCTL, (void *)DPAUX_HYBRID_PADCTL);
