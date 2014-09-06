@@ -89,11 +89,8 @@ void soc_configure_i2c6pad(void)
 	remove_clamps(POWER_PARTID_SOR);
 	unreset_sor_periphs();
 
-	/*
-	 * Host1X needs a valid clock source so DPAUX can be accessed. Note that
-	 * 4 is the PLLP_OUT0 source for this register.
-	 */
-	clock_configure_irregular_source(host1x, PLLP, 204000, 4);
+	/* Host1X needs a valid clock source so DPAUX can be accessed. */
+	clock_configure_source(host1x, PLLP, 204000);
 
 	/* Now we can write the I2C6 mux in DPAUX */
 	write32(I2C6_PADCTL, (void *)DPAUX_HYBRID_PADCTL);
