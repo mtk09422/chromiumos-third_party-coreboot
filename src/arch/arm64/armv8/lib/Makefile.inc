@@ -28,7 +28,7 @@
 ##
 #####################################################################################
 
-lib_access = pstate.c sysctrl.c cache.c tlb.c misc.c clock.c
+lib_access = pstate.c sysctrl.c cache.c tlb.c clock.c
 
 ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V8_64),y)
 bootblock-y += $(lib_access)

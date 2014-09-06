@@ -23,7 +23,7 @@
 #ifndef __ASM_ARM64_ARCH_IO_H
 #define __ASM_ARM64_ARCH_IO_H
 
-#include <arch/cache.h>		/* for dmb() */
+#include <arch/barrier.h>
 #include <stdint.h>
 #include <arch/lib_helpers.h>
 
