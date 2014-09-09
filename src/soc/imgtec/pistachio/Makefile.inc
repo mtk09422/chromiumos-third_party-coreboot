@@ -19,7 +19,7 @@
 # MA 02110-1301 USA
 #
 
-# We enable CBFS_SPI_WRAPPER for Danuibe targets.
+# We enable CBFS_SPI_WRAPPER for Pistachio targets.
 bootblock-y += spi.c
 romstage-y += spi.c
 ramstage-y += spi.c
@@ -39,6 +39,7 @@ ramstage-y += timestamp.c
 
 romstage-y += cbmem.c
 romstage-y += romstage.c
+romstage-y += monotonic_timer.c
 romstage-y += timestamp.c
 
 # Generate the actual coreboot bootblock code
