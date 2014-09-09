@@ -14,6 +14,9 @@ int smbios_write_type41(unsigned long *current, int *handle,
 
 const char *smbios_mainboard_serial_number(void);
 const char *smbios_mainboard_version(void);
+#ifdef CONFIG_MAINBOARD_FAMILY
+const char *smbios_mainboard_family(void);
+#endif
 
 #define BIOS_CHARACTERISTICS_PCI_SUPPORTED  (1 << 7)
 #define BIOS_CHARACTERISTICS_PC_CARD  (1 << 8)
