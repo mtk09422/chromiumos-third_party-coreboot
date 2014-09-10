@@ -79,6 +79,9 @@ HOSTCXX = g++
 HOSTCFLAGS := -g
 HOSTCXXFLAGS := -g
 
+# Pass -undef to avoid predefined legacy macros like 'i386'
+PREPROCESS_ONLY := -E -P -x assembler-with-cpp -undef
+
 DOXYGEN := doxygen
 DOXYGEN_OUTPUT_DIR := doxygen
 
@@ -115,10 +118,20 @@ include $(HAVE_DOTCONFIG)
 
 include toolchain.inc
 
+COMMA:=,
+
+# Function to wrap calls to the linker (will be overridden for CLANG)
+# $1 stage
+# $2 objects to link (will be wrapped in --start-group and --end-group)
+# $3 options passed directly (to GCC or LD) (-nostdlib and -static are default)
+# $4 options passed to LD (wrapped with -Wl, for GCC)
+link=$(CC_$(1)) $(CFLAGS_$(1)) -nostdlib -static $(3) $(foreach opt,$(4),-Wl$(COMMA)$(opt)) -Wl,--start-group $(2) -Wl,--end-group
+
 ifneq ($(INNER_SCANBUILD),y)
 ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
 CC:=clang -m32 -mno-mmx -mno-sse
 HOSTCC:=clang
+link:=$(LD_$(1)) -nostdlib -static $(3) $(4) --start-group $(2) --end-group
 endif
 endif
 
@@ -164,6 +177,12 @@ endif
 
 $(obj)/config.h:
 	$(MAKE) oldconfig
+
+# Dependencies that should be built before all files in all classes
+generic-deps = $(obj)/config.h
+
+# Every file can append to this string. It is simply eval'ed after the scan.
+postprocessors :=
 
 # Add a new class of source/object files to the build system
 add-class= \
@@ -214,12 +233,16 @@ endif
 # Eliminate duplicate mentions of source files in a class
 $(foreach class,$(classes),$(eval $(class)-srcs:=$(sort $($(class)-srcs))))
 
-src-to-obj=$(addsuffix .$(1).o, $(basename $(patsubst src/%, $(obj)/%, $($(1)-srcs))))
-$(foreach class,$(classes),$(eval $(class)-objs:=$(call src-to-obj,$(class))))
+# Converts one or more source file paths to their corresponding build/ paths.
+# Only .c and .S get converted to .o, other files (like .ld) keep their name.
+# $1 stage name
+# $2 file path (list)
+src-to-obj=$(foreach file,$(2),$(basename $(patsubst src/%,$(obj)/%,$(file))).$(1)$(patsubst %.c,%.o,$(patsubst %.S,%.o,$(suffix $(file)))))
+
+$(foreach class,$(classes),$(eval $(class)-objs+=$(call src-to-obj,$(class),$($(class)-srcs))))
 
 # Call post-processors if they're defined
-$(foreach class,$(classes),\
-	$(if $(value $(class)-postprocess),$(eval $(call $(class)-postprocess,$($(class)-objs)))))
+$(eval $(postprocessors))
 
 allsrcs:=$(foreach var, $(addsuffix -srcs,$(classes)), $($(var)))
 allobjs:=$(foreach var, $(addsuffix -objs,$(classes)), $($(var)))
@@ -228,14 +251,14 @@ alldirs:=$(sort $(abspath $(dir $(allobjs))))
 # macro to define template macros that are used by use_template macro
 define create_cc_template
 # $1 obj class
-# $2 source suffix (c, S)
+# $2 source suffix (c, S, ld)
 # $3 additional compiler flags
 # $4 additional dependencies
 ifn$(EMPTY)def $(1)-objs_$(2)_template
 de$(EMPTY)fine $(1)-objs_$(2)_template
-$(obj)/$$(1).$(1).o: src/$$(1).$(2) $(obj)/config.h $(4)
+$$(call src-to-obj,$1,$$(1)): $$(1) $$$$(generic-deps) $(4)
 	@printf "    CC         $$$$(subst $$$$(obj)/,,$$$$(@))\n"
-	$(CC_$(1)) -MMD $$$$(CFLAGS_$(1)) $(3) -c -o $$$$@ $$$$<
+	$(CC_$(1)) -MMD $$$$(CFLAGS_$(1)) -MT $$$$(@) $(3) -c -o $$$$@ $$$$<
 en$(EMPTY)def
 end$(EMPTY)if
 endef
@@ -243,16 +266,17 @@ endef
 filetypes-of-class=$(subst .,,$(sort $(suffix $($(1)-srcs))))
 $(foreach class,$(classes), \
 	$(foreach type,$(call filetypes-of-class,$(class)), \
+		$(eval $(class)-$(type)-ccopts += $(generic-$(type)-ccopts) $($(class)-generic-ccopts)) \
 		$(eval $(call create_cc_template,$(class),$(type),$($(class)-$(type)-ccopts),$($(class)-$(type)-deps)))))
 
-foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(subst src/,,$(basename $(file))))))
+foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(file))))
 $(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
 
-DEPENDENCIES = $(allobjs:.o=.d)
+DEPENDENCIES = $(addsuffix .d,$(basename $(allobjs)))
 -include $(DEPENDENCIES)
 
 printall:
-	@$(foreach class,$(classes),echo $(class)-objs:=$($(class)-objs); )
+	@$(foreach class,$(classes),echo $(class)-objs=$($(class)-objs); )
 	@echo alldirs:=$(alldirs)
 	@echo allsrcs=$(allsrcs)
 	@echo DEPENDENCIES=$(DEPENDENCIES)

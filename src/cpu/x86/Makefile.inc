@@ -9,14 +9,11 @@ SIPI_BIN=$(SIPI_ELF:.elf=)
 SIPI_DOTO=$(SIPI_ELF:.elf=.o)
 
 ifeq ($(CONFIG_PARALLEL_MP),y)
-ramstage-srcs += $(SIPI_BIN)
+ramstage-objs += $(SIPI_BIN).ramstage.o
 endif
 rmodules_$(ARCH-RAMSTAGE-y)-$(CONFIG_PARALLEL_MP) += sipi_vector.S
 
-$(SIPI_DOTO): $(dir $(SIPI_ELF))sipi_vector.rmodules_$(ARCH-RAMSTAGE-y).o
-	$(CC_ramstage) $(LDFLAGS) -nostdlib -r -o $@ $^
-
-$(eval $(call rmodule_link,$(SIPI_ELF), $(SIPI_ELF:.elf=.o), 0,x86_32))
+$(eval $(call rmodule_link,$(SIPI_ELF), $(dir $(SIPI_ELF))sipi_vector.rmodules_$(ARCH-RAMSTAGE-y).o, 0,x86_32))
 
 $(SIPI_BIN): $(SIPI_RMOD)
 	$(OBJCOPY_ramstage) -O binary $< $@

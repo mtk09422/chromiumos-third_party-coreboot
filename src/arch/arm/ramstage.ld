@@ -20,7 +20,6 @@
  */
 
 /* We use ELF as output format. So that we can debug the code in some form. */
-INCLUDE ldoptions
 
 PHDRS
 {

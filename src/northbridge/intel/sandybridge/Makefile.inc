@@ -42,5 +42,3 @@ ifeq ($(CONFIG_NORTHBRIDGE_INTEL_SANDYBRIDGE),y)
 mrc.bin-position := 0xfffe0000
 endif
 mrc.bin-type := 0xab
-
-$(obj)/northbridge/intel/sandybridge/acpi.ramstage.o : $(obj)/build.h

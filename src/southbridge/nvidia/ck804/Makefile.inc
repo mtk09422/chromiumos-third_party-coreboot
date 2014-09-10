@@ -20,6 +20,6 @@ ramstage-$(CONFIG_USBDEBUG) += enable_usbdebug.c
 smm-$(CONFIG_USBDEBUG) += enable_usbdebug.c
 romstage-y += early_smbus.c
 
-chipset_bootblock_inc += $(src)/southbridge/nvidia/ck804/romstrap.inc
-chipset_bootblock_lds += $(src)/southbridge/nvidia/ck804/romstrap.lds
+bootblock-y += romstrap.ld
 
+chipset_bootblock_inc += $(src)/southbridge/nvidia/ck804/romstrap.inc

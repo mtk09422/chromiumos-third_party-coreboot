@@ -37,5 +37,3 @@ cbfs-files-$(CONFIG_HAVE_MRC) += mrc.bin
 mrc.bin-file := $(call strip_quotes,$(CONFIG_MRC_FILE))
 mrc.bin-position := 0xfffa0000
 mrc.bin-type := 0xab
-
-$(obj)/northbridge/intel/haswell/acpi.ramstage.o : $(obj)/build.h

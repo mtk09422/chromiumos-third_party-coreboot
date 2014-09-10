@@ -23,5 +23,6 @@ ramstage-y += vga.c
 ramstage-y += lpc.c
 ramstage-y += ide.c
 
+bootblock-y += romstrap.ld
+
 chipset_bootblock_inc += $(src)/northbridge/via/vx800/romstrap.inc
-chipset_bootblock_lds += $(src)/northbridge/via/vx800/romstrap.lds

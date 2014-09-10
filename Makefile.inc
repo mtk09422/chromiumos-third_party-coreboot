@@ -41,7 +41,7 @@ export objgenerated := $(obj)/generated
 
 #######################################################################
 # root rule to resolve if in build mode (ie. configuration exists)
-real-target: $(obj)/config.h coreboot
+real-target: coreboot
 coreboot: build-dirs $(obj)/coreboot.rom
 
 #######################################################################
@@ -95,17 +95,12 @@ files-in-dir=$(filter-out $(call dir-wildcards,$(call filter-out-dirs,$(1),$(dir
 #######################################################################
 # reduce command line length by linking the objects of each
 # directory into an intermediate file
-ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-LINK=$(LD_ramstage)
-else
-LINK=$(CC_ramstage) $(CFLAGS_ramstage)
-endif
-ramstage-postprocess=$(foreach d,$(sort $(dir $(1))), \
-	$(eval $(d)ramstage.o: $(call files-in-dir,$(d),$(1)); $$(LINK) -o $$@ -r $$^ ) \
-	$(eval ramstage-objs:=$(d)ramstage.o $(filter-out $(call files-in-dir,$(d),$(1)),$(ramstage-objs))))
+postprocessors += $$(foreach d,$$(sort $$(dir $$(filter %.o %.a,$$(ramstage-objs)))), \
+	$$(eval $$(d)ramstage.o: $$(call files-in-dir,$$(d),$$(ramstage-objs)); $$$$(call link,ramstage,$$$$(filter %.o %.a,$$$$(^)),-o $$$$(@),-r)) \
+	$$(eval ramstage-objs:=$$(d)ramstage.o $$(filter-out $$(call files-in-dir,$$(d),$$(filter %.o %.a,$$(ramstage-objs))),$$(ramstage-objs))))
 
-romstage-c-ccopts:=-D__PRE_RAM__
-romstage-S-ccopts:=-D__PRE_RAM__
+bootblock-generic-ccopts += -D__PRE_RAM__ -D__BOOT_BLOCK__
+romstage-generic-ccopts += -D__PRE_RAM__
 ifeq ($(CONFIG_TRACE),y)
 ramstage-c-ccopts:= -finstrument-functions
 endif
@@ -117,38 +112,8 @@ ifeq ($(CONFIG_USE_BLOBS),y)
 forgetthis:=$(shell git submodule update --init --checkout 3rdparty)
 endif
 
-bootblock-c-ccopts:=-D__BOOT_BLOCK__ -D__PRE_RAM__
-bootblock-S-ccopts:=-D__BOOT_BLOCK__ -D__PRE_RAM__
-
-smmstub-c-ccopts:=-D__SMM__
-smmstub-S-ccopts:=-D__SMM__
-smm-c-ccopts:=-D__SMM__
-smm-S-ccopts:=-D__SMM__
-
-# SMM TSEG base is dynamic
-ifneq ($(CONFIG_SMM_MODULES),y)
-ifeq ($(CONFIG_SMM_TSEG),y)
-smm-c-ccopts += -fpic
-endif
-endif
-
-ramstage-c-deps:=$$(OPTION_TABLE_H)
-romstage-c-deps:=$$(OPTION_TABLE_H)
-verstage-c-deps:=$$(OPTION_TABLE_H)
-bootblock-c-deps:=$$(OPTION_TABLE_H)
-
-#######################################################################
-# Add handler to compile ACPI's ASL
-define ramstage-objs_asl_template
-$(obj)/$(1).ramstage.o: src/$(1).asl $(obj)/config.h
-	@printf "    IASL       $$(subst $(top)/,,$$(@))\n"
-	$(CC_ramstage) -x assembler-with-cpp -E -MMD -MT $$(@) -D__ACPI__ -P -include $(src)/include/kconfig.h -I$(obj) -I$(src) -I$(src)/include -I$(src)/arch/$(ARCHDIR-$(ARCH-RAMSTAGE-y))/include -I$(src)/mainboard/$(MAINBOARDDIR) $$< -o $$(basename $$@).asl
-	cd $$(dir $$@); $(IASL) -p $$(notdir $$@) -tc $$(notdir $$(basename $$@)).asl
-	mv $$(basename $$@).hex $$(basename $$@).c
-	$(CC_ramstage) $$(CFLAGS_ramstage) $$(if $$(subst dsdt,,$$(basename $$(notdir $(1)))), -DAmlCode=AmlCode_$$(basename $$(notdir $(1)))) -c -o $$@ $$(basename $$@).c
-	# keep %.o: %.c rule from catching the temporary .c file after a make clean
-	mv $$(basename $$@).c $$(basename $$@).hex
-endef
+# Linker scripts are just preprocessed, not compiled
+generic-ld-ccopts += $(PREPROCESS_ONLY)
 
 #######################################################################
 # Parse plaintext cmos defaults into binary format
@@ -212,7 +177,7 @@ INCLUDES += -Isrc/device/oprom/include
 # abspath is a workaround for romcc
 INCLUDES += -include $(src)/include/kconfig.h
 
-CFLAGS_common = $(INCLUDES) -pipe -g -nostdinc
+CFLAGS_common = -pipe -g -nostdinc
 CFLAGS_common += -nostdlib -Wall -Wundef -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS_common += -Wwrite-strings -Wredundant-decls -Wno-trigraphs
 CFLAGS_common += -Wstrict-aliasing -Wshadow
@@ -253,8 +218,7 @@ $(obj)/build.h: .xcompile
 	printf "#endif\n" >> $(obj)/build.ht
 	mv $(obj)/build.ht $(obj)/build.h
 
-$(obj)/ldoptions: $(obj)/config.h
-	awk '/^#define ([^"])* ([^"])*$$/ {gsub("\\r","",$$3); print $$2 " = " $$3 ";";}' $< > $@
+generic-deps += $(obj)/build.h
 
 build-dirs:
 	mkdir -p $(objcbfs) $(objgenerated)
@@ -310,18 +274,6 @@ romstage-y+=$(obj)/mainboard/$(MAINBOARDDIR)/static.c
 $(objutil)/%.o: $(objutil)/%.c
 	@printf "    HOSTCC     $(subst $(objutil)/,,$(@))\n"
 	$(HOSTCC) -MMD -I$(subst $(objutil)/,util/,$(dir $<)) -I$(dir $<) $(HOSTCFLAGS) -c -o $@ $<
-
-$(obj)/%.ramstage.o $(abspath $(obj))/%.ramstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
-	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC_ramstage) -MMD $(CFLAGS_ramstage) $(ramstage-c-ccopts) -c -o $@ $<
-
-$(obj)/%.romstage.o $(abspath $(obj))/%.romstage.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
-	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC_romstage) -MMD $(CFLAGS_romstage) $(romstage-c-ccopts) -c -o $@ $<
-
-$(obj)/%.bootblock.o $(abspath $(obj))/%.bootblock.o: $(obj)/%.c $(obj)/config.h $(OPTION_TABLE_H)
-	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-	$(CC_bootblock) -MMD $(CFLAGS_bootblock) $(bootblock-c-ccopts) -c -o $@ $<
 
 #######################################################################
 # Clean up rules

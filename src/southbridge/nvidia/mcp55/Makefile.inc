@@ -19,5 +19,6 @@ romstage-$(CONFIG_USBDEBUG) += enable_usbdebug.c
 ramstage-$(CONFIG_USBDEBUG) += enable_usbdebug.c
 smm-$(CONFIG_USBDEBUG) += enable_usbdebug.c
 
+bootblock-y += romstrap.ld
+
 chipset_bootblock_inc += $(src)/southbridge/nvidia/mcp55/romstrap.inc
-chipset_bootblock_lds += $(src)/southbridge/nvidia/mcp55/romstrap.lds

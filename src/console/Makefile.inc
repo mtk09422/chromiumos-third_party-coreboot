@@ -33,8 +33,3 @@ secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += vtxprintf.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += console.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += die.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += printk.c
-
-$(obj)/console/console.ramstage.o : $(obj)/build.h
-$(obj)/console/console.romstage.o : $(obj)/build.h
-$(obj)/console/console.verstage.o : $(obj)/build.h
-$(obj)/console/console.bootblock.o : $(obj)/build.h

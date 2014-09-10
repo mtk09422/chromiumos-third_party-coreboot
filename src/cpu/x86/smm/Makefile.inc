@@ -22,6 +22,9 @@ ramstage-$(CONFIG_BACKUP_DEFAULT_SMM_REGION) += backup_default_smm.c
 $(eval $(call create_class_compiler,smm,x86_32))
 $(eval $(call create_class_compiler,smmstub,x86_32))
 
+smmstub-generic-ccopts += -D__SMM__
+smm-generic-ccopts += -D__SMM__
+
 ifeq ($(CONFIG_SMM_MODULES),y)
 smmstub-y += smm_stub.S
 
@@ -30,16 +33,11 @@ smm-y += smm_module_handler.c
 
 ramstage-y += smm_module_loader.c
 
-ramstage-srcs += $(obj)/cpu/x86/smm/smm
-ramstage-srcs += $(obj)/cpu/x86/smm/smmstub
+ramstage-objs += $(obj)/cpu/x86/smm/smm.ramstage.o
+ramstage-objs += $(obj)/cpu/x86/smm/smmstub.ramstage.o
 
-# SMM Stub Module. The stub is used as a trampoline for relocation and normal
-# SMM handling.
-$(obj)/cpu/x86/smm/smmstub.o: $$(smmstub-objs)
-	$(CC_smmstub) $(LDFLAGS) -nostdlib -r -o $@ $^
-
-# Link the SMM stub module with a 0-byte heap.
-$(eval $(call rmodule_link,$(obj)/cpu/x86/smm/smmstub.elf, $(obj)/cpu/x86/smm/smmstub.o, 0,x86_32))
+# SMM Stub Module. The stub is used as a trampoline for relocation and normal SMM handling.
+$(eval $(call rmodule_link,$(obj)/cpu/x86/smm/smmstub.elf, $$$$(smmstub-objs), 0,x86_32))
 
 $(obj)/cpu/x86/smm/smmstub: $(obj)/cpu/x86/smm/smmstub.elf.rmod
 	$(OBJCOPY_smmstub) -O binary $< $@
@@ -51,8 +49,8 @@ $(obj)/cpu/x86/smm/smmstub.ramstage.o: $(obj)/cpu/x86/smm/smmstub
 # C-based SMM handler.
 
 $(obj)/cpu/x86/smm/smm.o: $$(smm-objs) $(LIBGCC_FILE_NAME_smm)
-	$(CC_smm) $(LDFLAGS) -nostdlib -r -o $@ -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(smm-objs) $(LIBGCC_FILE_NAME_smm) -Wl,--end-group
-
+	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
+	$(call link,smm,$(filter %.a %.o,$(^)),-o $(@),-r $(LIBGCC_WRAP_LDFLAGS))
 
 $(eval $(call rmodule_link,$(obj)/cpu/x86/smm/smm.elf, $(obj)/cpu/x86/smm/smm.o, $(CONFIG_SMM_MODULE_HEAP_SIZE),x86_32))
 
@@ -67,28 +65,33 @@ else # CONFIG_SMM_MODULES
 
 ramstage-$(CONFIG_HAVE_SMI_HANDLER) += smmrelocate.S
 ifeq ($(CONFIG_HAVE_SMI_HANDLER),y)
-ramstage-srcs += $(obj)/cpu/x86/smm/smm_wrap
+ramstage-objs += $(obj)/cpu/x86/smm/smm_wrap.ramstage.o
 endif
 
 # Use TSEG specific entry point and linker script
 ifeq ($(CONFIG_SMM_TSEG),y)
 smm-y += smmhandler_tseg.S
-SMM_LDFLAGS  := $(LDFLAGS) -pie
-SMM_LDSCRIPT := smm_tseg.ld
+smm-c-ccopts += -fpic
+SMM_LDFLAGS  := -pie
+SMM_LDSCRIPT := smm_tseg
 else
 smm-y += smmhandler.S
-SMM_LDFLAGS  := $(LDFLAGFS)
-SMM_LDSCRIPT := smm.ld
+SMM_LDFLAGS  :=
+SMM_LDSCRIPT := smm
 endif
 
 smm-y += smihandler.c
 smm-y += smiutil.c
 
-$(obj)/cpu/x86/smm/smm.o: $$(smm-objs) $(LIBGCC_FILE_NAME_smm)
-	$(CC_smm) $(LDFLAGS) -nostdlib -r -o $@ -Wl,--wrap,__divdi3 -Wl,--wrap,__udivdi3 -Wl,--wrap,__moddi3 -Wl,--wrap,__umoddi3 -Wl,--start-group $(smm-objs) $(LIBGCC_FILE_NAME_smm) -Wl,--end-group
+smm-y += $(SMM_LDSCRIPT).ld
 
-$(obj)/cpu/x86/smm/smm_wrap: $(obj)/cpu/x86/smm/smm.o $(src)/cpu/x86/smm/$(SMM_LDSCRIPT) $(obj)/ldoptions
-	$(CC_smm) $(SMM_LDFLAGS) -nostdlib -nostartfiles -static -o $(obj)/cpu/x86/smm/smm.elf -T $(src)/cpu/x86/smm/$(SMM_LDSCRIPT) $(obj)/cpu/x86/smm/smm.o
+$(obj)/cpu/x86/smm/smm.o: $$(smm-objs) $(LIBGCC_FILE_NAME_smm)
+	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
+	$(call link,smm,$(filter %.a %.o,$(^)),-o $(@),-r $(LIBGCC_WRAP_LDFLAGS))
+
+$(obj)/cpu/x86/smm/smm_wrap: $(obj)/cpu/x86/smm/smm.o
+	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
+	$(call link,smm,$(<),-o $(obj)/cpu/x86/smm/smm.elf -T $(obj)/cpu/x86/smm/$(SMM_LDSCRIPT).smm.ld,$(SMM_LDFLAGS))
 	$(NM_smm) -n $(obj)/cpu/x86/smm/smm.elf | sort > $(obj)/cpu/x86/smm/smm.map
 	$(OBJCOPY_smm) -O binary $(obj)/cpu/x86/smm/smm.elf $(obj)/cpu/x86/smm/smm
 

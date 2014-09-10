@@ -22,14 +22,14 @@
 $(eval $(call create_class_compiler,secmon,arm64))
 
 SECMON_DIR=$(obj)/arch/arm64/armv8/secmon
-SECMON_SRC=$(SECMON_DIR)/secmon
-SECMON_OBJ=$(SECMON_DIR)/secmon.o
+SECMON_BIN=$(SECMON_DIR)/secmon
 SECMON_ELF=$(SECMON_DIR)/secmon.elf
 SECMON_RMOD=$(SECMON_DIR)/secmon.elf.rmod
 SECMON_RAMSTAGE=$(SECMON_DIR)/secmon.ramstage.o
 
-secmon-c-ccopts += -I$(src)/arch/arm64/include/armv8/ -include $(src)/include/kconfig.h -D__SECMON__
-secmon-S-ccopts += -I$(src)/arch/arm64/include/armv8/ -include $(src)/include/kconfig.h -D__SECMON__
+secmon-generic-ccopts += -D__SECMON__
+secmon-c-ccopts += $(armv8_flags)
+secmon-S-ccopts += $(armv8_asm_flags)
 
 secmon-y += secmon_init.c
 secmon-y += psci.c
@@ -39,16 +39,13 @@ secmon-y += ../exception.c
 secmon-y += ../../cpu.c
 secmon-y += ../../transition_asm.S ../../transition.c
 
-ramstage-srcs += $(SECMON_SRC)
+ramstage-objs += $(SECMON_RAMSTAGE)
 
-$(SECMON_OBJ):  $$(secmon-objs)
-		$(CC_secmon) $(LDFLAGS) -nostdlib -r -o $@ $^
+$(eval $(call rmodule_link,$(SECMON_ELF), $$$$(secmon-objs), 0,arm64))
 
-$(eval $(call rmodule_link,$(SECMON_ELF), $(SECMON_OBJ), 0,arm64))
-
-$(SECMON_SRC): $(SECMON_RMOD)
+$(SECMON_BIN): $(SECMON_RMOD)
 	       $(OBJCOPY_secmon) -O binary $< $@
 
-$(SECMON_RAMSTAGE): $(SECMON_SRC)
+$(SECMON_RAMSTAGE): $(SECMON_BIN)
 		    @printf "    OBJCOPY $(subst $(obj)/,,$(@))\n"
 		    cd $(dir $@); $(OBJCOPY_secmon) -I binary $(notdir $<) -O elf64-littleaarch64 -B aarch64 $(notdir $@)

@@ -66,7 +66,6 @@ INCLUDES += $(VB_INCLUDES)
 
 VBOOT_STUB_ELF = $(obj)/vendorcode/google/chromeos/vbootstub.elf
 VBOOT_STUB = $(VBOOT_STUB_ELF).rmod
-VBOOT_STUB_DOTO = $(VBOOT_STUB_ELF:.elf=.o)
 
 # Dependency for the vboot rmodules. Ordering matters.
 VBOOT_STUB_DEPS += $(obj)/vendorcode/google/chromeos/vboot_wrapper.rmodules_$(ARCH-ROMSTAGE-y).o
@@ -90,19 +89,16 @@ VBOOT_CFLAGS += $(patsubst -I%,-I$(top)/%,$(filter-out -include $(src)/include/k
 VBOOT_CFLAGS += -DVBOOT_DEBUG
 VBOOT_CFLAGS += $(rmodules_$(ARCH-ROMSTAGE-y)-c-ccopts)
 
-$(VBOOT_STUB_DOTO): $(VBOOT_STUB_DEPS)
-	$(CC_rmodules_$(ARCH-ROMSTAGE-y)) $(CFLAGS_rmodules_$(ARCH-ROMSTAGE-y)) $(LDFLAGS) -nostdlib -r -o $@ $^
-
 # Link the vbootstub module with a 64KiB-byte heap.
-$(eval $(call rmodule_link,$(VBOOT_STUB_ELF), $(VBOOT_STUB_DOTO), 0x10000,$(ARCH-ROMSTAGE-y)))
+$(eval $(call rmodule_link,$(VBOOT_STUB_ELF), $(VBOOT_STUB_DEPS), 0x10000,$(ARCH-ROMSTAGE-y)))
 
 # Build vboot library without the default includes from coreboot proper.
 $(VB_LIB):
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 	CC="$(CC_romstage)" \
-		CFLAGS="$(VBOOT_CFLAGS)" \
-		make -C $(VB_SOURCE) \
+	CFLAGS="$(VBOOT_CFLAGS)" \
+	$(MAKE) -C $(VB_SOURCE) \
 		$(VBOOT_MAKEFLAGS) \
 		BUILD=$(top)/$(dir $(VB_LIB)) \
 		V=$(V) \
@@ -115,8 +111,7 @@ VB_SOURCE := vboot_reference
 INCLUDES += -I$(VB_SOURCE)/firmware/2lib/include
 INCLUDES += -I$(VB_SOURCE)/firmware/include
 
-verstage-c-ccopts += -D__PRE_RAM__ -D__VER_STAGE__
-verstage-S-ccopts += -D__PRE_RAM__ -D__VER_STAGE__
+verstage-generic-ccopts += -D__PRE_RAM__ -D__VER_STAGE__
 
 ifeq ($(CONFIG_RETURN_FROM_VERSTAGE),y)
 bootblock-y += verstub.c chromeos.c
@@ -134,12 +129,12 @@ VBOOT_CFLAGS += $(verstage-c-ccopts)
 VBOOT_CFLAGS += -include $(top)/src/include/kconfig.h -Wno-missing-prototypes
 VBOOT_CFLAGS += -DVBOOT_DEBUG
 
-$(VB2_LIB): $(obj)/config.h
+$(VB2_LIB): $$(generic-deps)
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 	CC="$(CC_verstage)" \
-		CFLAGS="$(VBOOT_CFLAGS)" VBOOT2="y" \
-		make -C $(VB_SOURCE) \
+	CFLAGS="$(VBOOT_CFLAGS)" VBOOT2="y" \
+	$(MAKE) -C $(VB_SOURCE) \
 		BUILD=$(top)/$(dir $(VB2_LIB)) \
 		V=$(V) \
 		fwlib2

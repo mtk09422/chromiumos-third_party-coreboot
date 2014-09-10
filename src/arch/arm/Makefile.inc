@@ -46,38 +46,27 @@ bootblock-y += div0.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += id.S
 bootblock-y += clock.c
-
-$(obj)/arch/arm/id.bootblock.o: $(obj)/build.h
-
 bootblock-y += stages.c
 bootblock-y += eabi_compat.c
 bootblock-y += memset.S
 bootblock-y += memcpy.S
 bootblock-y += memmove.S
 
-$(objcbfs)/bootblock.debug: $(src)/arch/arm/bootblock.ld $(obj)/ldoptions $$(bootblock-objs)  $(obj)/config.h
-	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD_bootblock) -nostdlib -m armelf_linux_eabi --gc-sections -static -o $@ -L$(obj) $< -T $(src)/arch/arm/bootblock.ld
-else
-	# This is based on the assumption that bootblock and verstage are compatible
-	# from the linker's perspective.
-	$(CC_bootblock) $(CFLAGS_bootblock) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/bootblock.ld -Wl,--start-group $(bootblock-objs) -Wl,--end-group
-endif
+bootblock-y += bootblock.ld
 
-endif
+$(objcbfs)/bootblock.debug: $$(bootblock-objs)
+	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
+	$(call link,bootblock,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/bootblock.bootblock.ld,--gc-sections)
+
+endif # CONFIG_ARCH_BOOTBLOCK_ARM
 
 ###############################################################################
 # verification stage
 ###############################################################################
 
-$(objcbfs)/verstage.debug: $$(verstage-objs) $(src)/arch/arm/verstage.ld $(obj)/ldoptions $$(VB2_LIB)
+$(objcbfs)/verstage.debug: $$(verstage-objs) $$(VB2_LIB)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD_verstage) -nostdlib --gc-sections -static -o $@ -L$(obj) $(verstage-objs) -T $(src)/arch/arm/verstage.ld
-else
-	$(CC_verstage) $(CFLAGS_verstage) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/verstage.ld -Wl,--start-group $(verstage-objs) $(VB2_LIB) -Wl,--end-group
-endif
+	$(call link,verstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/verstage.verstage.ld,--gc-sections)
 
 verstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 verstage-y += div0.c
@@ -86,6 +75,8 @@ verstage-y += memset.S
 verstage-y += memcpy.S
 verstage-y += memmove.S
 verstage-y += stages.c
+
+verstage-y += verstage.ld
 
 ###############################################################################
 # romstage
@@ -108,17 +99,15 @@ rmodules_arm-y += memcpy.S
 rmodules_arm-y += memmove.S
 rmodules_arm-y += eabi_compat.c
 
+romstage-y += romstage.ld
+
 VBOOT_STUB_DEPS += $(obj)/arch/arm/eabi_compat.rmodules_arm.o
 
-$(objcbfs)/romstage.debug: $$(romstage-objs) $(src)/arch/arm/romstage.ld $(obj)/ldoptions
+$(objcbfs)/romstage.debug: $$(romstage-objs)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
-ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD_romstage) -nostdlib --gc-sections -static -o $@ -L$(obj) $(romstage-objs) -T $(src)/arch/arm/romstage.ld
-else
-	$(CC_romstage) $(CFLAGS_romstage) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -T $(src)/arch/arm/romstage.ld -Wl,--start-group $(romstage-objs) -Wl,--end-group
-endif
+	$(call link,romstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/romstage.romstage.ld,--gc-sections)
 
-endif
+endif # CONFIG_ARCH_ROMSTAGE_ARM
 
 ###############################################################################
 # ramstage
@@ -137,6 +126,8 @@ ramstage-y += memcpy.S
 ramstage-y += memmove.S
 ramstage-y += clock.c
 
+ramstage-y += ramstage.ld
+
 rmodules_arm-y += memset.S
 rmodules_arm-y += memcpy.S
 rmodules_arm-y += memmove.S
@@ -146,12 +137,8 @@ ramstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/mainboard.c
 
-$(objcbfs)/ramstage.debug: $$(ramstage-objs) $(src)/arch/arm/ramstage.ld $(obj)/ldoptions
+$(objcbfs)/ramstage.debug: $$(ramstage-objs)
 	@printf "    CC         $(subst $(obj)/,,$(@))\n"
-ifeq ($(CONFIG_COMPILER_LLVM_CLANG),y)
-	$(LD_ramstage) -nostdlib -m armelf_linux_eabi --gc-sections -o $@ --wrap __divdi3 --wrap __udivdi3 --wrap __moddi3 --wrap __umoddi3 --wrap __uidiv --start-group $(ramstage-objs) --end-group -T $(src)/arch/arm/ramstage.ld
-else
-	$(CC_ramstage) $(CFLAGS_ramstage) -nostdlib -Wl,--gc-sections -static -o $@ -L$(obj) -Wl,--start-group $(ramstage-objs) -Wl,--end-group -T $(src)/arch/arm/ramstage.ld
-endif
+	$(call link,ramstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/arch/arm/ramstage.ramstage.ld,--gc-sections)
 
-endif
+endif # CONFIG_ARCH_RAMSTAGE_ARM

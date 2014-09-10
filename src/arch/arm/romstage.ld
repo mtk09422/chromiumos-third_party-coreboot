@@ -20,14 +20,8 @@
  */
 
 /* We use ELF as output format. So that we can debug the code in some form. */
-/*
- INCLUDE ldoptions
- */
-
-/* We use ELF as output format. So that we can debug the code in some form. */
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-INCLUDE ldoptions
 
 PHDRS
 {

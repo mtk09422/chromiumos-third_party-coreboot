@@ -8,5 +8,6 @@ ramstage-y += traf_ctrl.c
 ramstage-y += error.c
 ramstage-y += chrome.c
 
+bootblock-y += romstrap.ld
+
 chipset_bootblock_inc += $(src)/southbridge/via/k8t890/romstrap.inc
-chipset_bootblock_lds += $(src)/southbridge/via/k8t890/romstrap.lds
