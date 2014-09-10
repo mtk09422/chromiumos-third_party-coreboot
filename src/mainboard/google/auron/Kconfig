@@ -48,4 +48,9 @@ config VGA_BIOS_FILE
 	string
 	default "pci8086,0166.rom"
 
+config MAINBOARD_FAMILY
+	string
+	depends on GENERATE_SMBIOS_TABLES
+	default "Google_Auron"
+
 endif
