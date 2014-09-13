@@ -169,38 +169,52 @@ void * cbfs_load_stage(struct cbfs_media *media, const char *name)
 
 #else
 
-void * cbfs_load_stage(struct cbfs_media *media, const char *name)
+void *cbfs_load_stage(struct cbfs_media *media, const char *name)
 {
-	struct cbfs_stage *stage = (struct cbfs_stage *)
-		cbfs_get_file_content(media, name, CBFS_TYPE_STAGE);
-	/* this is a mess. There is no ntohll. */
-	/* for now, assume compatible byte order until we solve this. */
-	uintptr_t entry;
+	struct cbfs_media default_media;
+	struct cbfs_stage stage;
+	struct cbfs_file file;
+	ssize_t offset;
 
-	if (stage == NULL)
-		return (void *) -1;
+	init_media(&media, &default_media);
+
+	offset = cbfs_locate_file(media, &file, name);
+	if (offset < 0 || file.type != CBFS_TYPE_STAGE)
+		return (void *)-1;
+
+	DEBUG("reading stage header: offset=0x%x len=%d type=%d offset=0x%x\n",
+	      offset, file.len, file.type, file.offset);
+	if (cbfs_read(media, &stage, offset, sizeof(stage)) != sizeof(stage))
+		return (void *)-1;
 
 	LOG("loading stage %s @ 0x%llx (%d bytes), entry @ 0x%llx\n",
 			name,
-			stage->load, stage->memlen,
-			stage->entry);
+			stage.load, stage.memlen,
+			stage.entry);
 
 	/* Stages rely the below clearing so that the bss is initialized. */
-	memset((void *) (uintptr_t) stage->load, 0, stage->memlen);
+	memset((void *)(uintptr_t)stage.load, 0, stage.memlen);
 
-	if (cbfs_decompress(stage->compression,
-			     ((unsigned char *) stage) +
-			     sizeof(struct cbfs_stage),
-			     (void *) (uintptr_t) stage->load,
-			     stage->len))
-		return (void *) -1;
+	if (stage.compression == CBFS_COMPRESS_NONE) {
+		if (cbfs_read(media, (void *)(uintptr_t)stage.load,
+			      offset + sizeof(stage), stage.len) != stage.len)
+			return (void *)-1;
+	} else {
+		void *data = media->map(media, offset + sizeof(stage),
+					stage.len);
+		if (data == CBFS_MEDIA_INVALID_MAP_ADDRESS) {
+			ERROR("ERROR: Mapping %s failed.\n", name);
+			return (void *)-1;
+		}
+		if (cbfs_decompress(stage.compression, data,
+				    (void *)(uintptr_t)stage.load, stage.len))
+			return (void *)-1;
+		media->unmap(media, data);
+	}
 
-	DEBUG("stage loaded.\n");
+	DEBUG("stage %s loaded\n", name);
 
-	entry = stage->entry;
-	// entry = ntohll(stage->entry);
-
-	return (void *) entry;
+	return (void *)(uintptr_t)stage.entry;
 }
 #endif /* CONFIG_RELOCATABLE_RAMSTAGE */
 
