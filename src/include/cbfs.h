@@ -85,7 +85,7 @@ void selfboot(void *entry);
 /* Defined in individual arch / board implementation. */
 int init_default_cbfs_media(struct cbfs_media *media);
 
-#if CONFIG_RELOCATABLE_RAMSTAGE && defined(__PRE_RAM__)
+#if CONFIG_RELOCATABLE_RAMSTAGE && defined(__ROMSTAGE__)
 /* The cache_loaded_ramstage() and load_cached_ramstage() functions are defined
  * to be weak so that board and chipset code may override them. Their job is to
  * cache and load the ramstage for quick S3 resume. By default a copy of the

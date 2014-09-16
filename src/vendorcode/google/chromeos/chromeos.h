@@ -32,7 +32,7 @@ int get_write_protect_state(void);
 /*for mainboard use only*/
 void setup_chromeos_gpios(void);
 
-#ifdef __PRE_RAM__
+#ifdef __ROMSTAGE__
 void __attribute__((weak)) save_chromeos_gpios(void);
 #endif
 

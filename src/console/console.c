@@ -101,8 +101,8 @@ int console_tst_byte(void)
 
 void console_init(void)
 {
-#if defined(__BOOT_BLOCK__) && CONFIG_BOOTBLOCK_CONSOLE || \
-    !defined(__BOOT_BLOCK__) && CONFIG_EARLY_CONSOLE
+#if defined(__BOOTBLOCK__) && CONFIG_BOOTBLOCK_CONSOLE || \
+    !defined(__BOOTBLOCK__) && CONFIG_EARLY_CONSOLE
 
 #if CONFIG_USBDEBUG
 	enable_usbdebug(CONFIG_USBDEBUG_DEFAULT_PORT);
@@ -124,9 +124,9 @@ void console_init(void)
 		"\n\ncoreboot-"
 		COREBOOT_VERSION
 		COREBOOT_EXTRA_VERSION
-#if defined(__BOOT_BLOCK__)
+#if defined(__BOOTBLOCK__)
 		" bootblock "
-#elif defined(__VER_STAGE__)
+#elif defined(__VERSTAGE__)
 		" verstage "
 #else
 		" romstage "

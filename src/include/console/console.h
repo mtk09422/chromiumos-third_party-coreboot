@@ -84,8 +84,8 @@ void __attribute__ ((noreturn)) die(const char *msg);
 int do_printk(int msg_level, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 int vprintk(int msg_level, const char *fmt, va_list args);
 
-#if defined(__BOOT_BLOCK__) && !CONFIG_BOOTBLOCK_CONSOLE || \
-    (defined(__PRE_RAM__) && !defined(__BOOT_BLOCK__)) && !CONFIG_EARLY_CONSOLE
+#if defined(__BOOTBLOCK__) && !CONFIG_BOOTBLOCK_CONSOLE || \
+    (defined(__PRE_RAM__) && !defined(__BOOTBLOCK__)) && !CONFIG_EARLY_CONSOLE
 
 static inline void printk(int LEVEL, const char *fmt, ...);
 static inline void printk(int LEVEL, const char *fmt, ...) {

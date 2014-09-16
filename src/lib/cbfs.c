@@ -27,7 +27,7 @@
 # define CBFS_MINI_BUILD
 #elif defined(__SMM__)
 # define CBFS_MINI_BUILD
-#elif defined(__BOOT_BLOCK__) || defined(__VER_STAGE__)
+#elif defined(__PRE_RAM__) && !defined(__ROMSTAGE__)
   /* No LZMA in boot block. */
 #else
 # define CBFS_CORE_WITH_LZMA
@@ -117,7 +117,7 @@ void *cbfs_load_optionrom(struct cbfs_media *media, uint16_t vendor,
 	return dest;
 }
 
-#if CONFIG_RELOCATABLE_RAMSTAGE && defined(__PRE_RAM__) && !defined(__BOOT_BLOCK__)
+#if CONFIG_RELOCATABLE_RAMSTAGE && defined(__ROMSTAGE__)
 
 #include <rmodule.h>
 #include <romstage_handoff.h>
@@ -346,7 +346,7 @@ int cbfs_payload_headers(struct cbfs_media *media,
 	return cur;
 }
 
-#if !CONFIG_ALT_CBFS_LOAD_PAYLOAD && !defined(__BOOT_BLOCK__)
+#if !CONFIG_ALT_CBFS_LOAD_PAYLOAD
 void *cbfs_load_payload(struct cbfs_media *media, const char *name)
 {
 	struct cbfs_payload *payload;

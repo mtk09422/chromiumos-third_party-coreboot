@@ -111,7 +111,7 @@ static inline void init_console_ptr(void *storage, u32 total_space)
 	car_set_var(cbmem_console_p, cbm_cons_p);
 	cbm_cons_p->buffer_size = total_space - sizeof(struct cbmem_console);
 #if !CONFIG_CONSOLE_FIXED_PRERAM_CBMEM_BUFFER || \
-    ((defined __BOOT_BLOCK__ && CONFIG_BOOTBLOCK_CONSOLE) || \
+    ((defined __BOOTBLOCK__ && CONFIG_BOOTBLOCK_CONSOLE) || \
      (defined __PRE_RAM__ && !defined __BOOTBLOCK__ && \
       CONFIG_EARLY_CONSOLE && !CONFIG_BOOTBLOCK_CONSOLE))
 	cbm_cons_p->buffer_cursor = 0;

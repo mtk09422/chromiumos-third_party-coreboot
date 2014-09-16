@@ -40,7 +40,7 @@ struct romstage_handoff {
 	uint32_t ramstage_entry_point;
 };
 
-#if defined(__PRE_RAM__)
+#if defined(__ROMSTAGE__)
 /* The romstage_handoff_find_or_add() function provides the necessary logic
  * for initializng the romstage_handoff structure in cbmem. Different components
  * of the romstage may be responsible for setting up different fields. Therefore

@@ -99,13 +99,14 @@ postprocessors += $$(foreach d,$$(sort $$(dir $$(filter %.o %.a,$$(ramstage-objs
 	$$(eval $$(d)ramstage.o: $$(call files-in-dir,$$(d),$$(ramstage-objs)); $$$$(call link,ramstage,$$$$(filter %.o %.a,$$$$(^)),-o $$$$(@),-r)) \
 	$$(eval ramstage-objs:=$$(d)ramstage.o $$(filter-out $$(call files-in-dir,$$(d),$$(filter %.o %.a,$$(ramstage-objs))),$$(ramstage-objs))))
 
-bootblock-generic-ccopts += -D__PRE_RAM__ -D__BOOT_BLOCK__
-romstage-generic-ccopts += -D__PRE_RAM__
+bootblock-generic-ccopts += -D__PRE_RAM__ -D__BOOTBLOCK__
+romstage-generic-ccopts += -D__PRE_RAM__ -D__ROMSTAGE__
+ramstage-generic-ccopts += -D__RAMSTAGE__
 ifeq ($(CONFIG_TRACE),y)
-ramstage-c-ccopts:= -finstrument-functions
+ramstage-c-ccopts += -finstrument-functions
 endif
 ifeq ($(CONFIG_COVERAGE),y)
-ramstage-c-ccopts+=-fprofile-arcs -ftest-coverage
+ramstage-c-ccopts += -fprofile-arcs -ftest-coverage
 endif
 
 ifeq ($(CONFIG_USE_BLOBS),y)
