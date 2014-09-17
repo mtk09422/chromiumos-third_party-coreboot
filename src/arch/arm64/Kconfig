@@ -15,4 +15,9 @@ config ARCH_USE_SECURE_MONITOR
 	bool
 	default n
 
+config ARCH_SPINTABLE
+	bool
+	default n
+	depends on ARCH_RAMSTAGE_ARM64
+
 source src/arch/arm64/armv8/Kconfig

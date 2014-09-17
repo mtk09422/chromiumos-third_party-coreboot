@@ -76,6 +76,7 @@
 #define CBMEM_ID_RAM_OOPS	0x05430095
 #define CBMEM_ID_SMM_SAVE_SPACE	0x07e9acee
 #define CBMEM_ID_MEMINFO	0x494D454D
+#define CBMEM_ID_SPINTABLE	0x59175917
 #define CBMEM_ID_NONE		0x00000000
 
 #ifndef __ASSEMBLER__
@@ -115,7 +116,8 @@ struct cbmem_id_to_name {
 	{ CBMEM_ID_REFCODE_CACHE,	"REFCODE $  " }, \
 	{ CBMEM_ID_POWER_STATE,		"POWER STATE" }, \
 	{ CBMEM_ID_RAM_OOPS,		"RAMOOPS    " }, \
-	{ CBMEM_ID_MEMINFO,		"MEM INFO   " },
+	{ CBMEM_ID_MEMINFO,		"MEM INFO   " }, \
+	{ CBMEM_ID_SPINTABLE,		"SPIN TABLE " },
 
 struct cbmem_entry;
 
