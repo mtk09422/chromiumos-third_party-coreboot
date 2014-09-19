@@ -20,28 +20,16 @@
 #ifndef __SOC_ROCKCHIP_RK3288_CHIP_H__
 #define __SOC_ROCKCHIP_RK3288_CHIP_H__
 
+#include <soc/gpio.h>
+
 struct soc_rockchip_rk3288_config {
-	int screen_type;
-	int lvds_format;
-	int out_face;
-	int clock_frequency;
-	int hactive;
-	int vactive;
-	int hback_porch;
-	int hfront_porch;
-	int vback_porch;
-	int vfront_porch;
-	int hsync_len;
-	int vsync_len;
-	int hsync_active;
-	int vsync_active;
-	int de_active;
-	int pixelclk_active;
-	int swap_rb;
-	int swap_rg;
-	int swap_gb;
-	int lcd_en_gpio;
-	int lcd_cs_gpio;
+	u32 vop_id;
+	gpio_t lcd_bl_pwm_gpio;
+	gpio_t lcd_bl_en_gpio;
+	u32 lcd_power_on_udelay;
+	u32 bl_power_on_udelay;
+	u32 bl_pwm_to_enable_udelay;
+	u32 framebuffer_bits_per_pixel;
 };
 
 #endif /* __SOC_ROCKCHIP_RK3288_CHIP_H__ */

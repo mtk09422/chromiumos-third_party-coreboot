@@ -17,19 +17,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SOC_ROCKCHIP_RK3288_CPU_H__
-#define __SOC_ROCKCHIP_RK3288_CPU_H__
+#ifndef __SOC_ROCKCHIP_RK3288_DISPLAY_H__
+#define __SOC_ROCKCHIP_RK3288_DISPLAY_H__
 
-#define RK_CLRSETBITS(clr, set) ((((clr) | (set)) << 16) | set)
-#define RK_SETBITS(set) RK_CLRSETBITS(0, set)
-#define RK_CLRBITS(clr) RK_CLRSETBITS(clr, 0)
+void rk_display_init(device_t dev, u32 lcdbase,
+		unsigned long fb_size);
 
-#define FB_SIZE_KB  8192
-#define RAM_BASE_KB (CONFIG_SYS_SDRAM_BASE >> 10)
-#define RAM_SIZE_KB (CONFIG_DRAM_SIZE_MB << 10UL)
-
-static inline u32 get_fb_base_kb(void)
-{
-	return RAM_BASE_KB + RAM_SIZE_KB - FB_SIZE_KB;
-}
 #endif
+
+
+
+
