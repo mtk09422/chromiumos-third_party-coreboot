@@ -219,6 +219,15 @@ config COVERAGE
 	  coverage information in CBMEM for extraction from user space.
 	  If unsure, say N.
 
+config UPDATE_IMAGE
+	bool "Update existing coreboot.rom image"
+	default n
+	help
+	  If this option is enabled, no new coreboot.rom file
+	  is created. Instead it is expected that there already
+	  is a suitable file for further processing.
+	  The bootblock will not be modified.
+
 endmenu
 
 source src/mainboard/Kconfig
@@ -264,6 +273,14 @@ source src/soc/Kconfig
 
 endmenu
 
+config CPU_HAS_BOOTBLOCK_INIT
+	bool
+	default n
+
+config MAINBOARD_HAS_BOOTBLOCK_INIT
+	bool
+	default n
+
 source src/device/Kconfig
 
 menu "Generic Drivers"
@@ -284,6 +301,11 @@ config TPM
 config HEAP_SIZE
 	hex
 	default 0x4000
+
+# Not used for the actual stack by ARM, but still needed in some src/lib/ files.
+config STACK_SIZE
+	hex
+	default 0x1000
 
 config MAX_CPUS
 	int

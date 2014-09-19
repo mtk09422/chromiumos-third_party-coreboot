@@ -26,40 +26,6 @@ config ARM_BOOTBLOCK_CUSTOM
 	bool
 	default n
 
-choice
-	prompt "Bootblock behaviour"
-	default ARM_BOOTBLOCK_SIMPLE
-	depends on !ARM_BOOTBLOCK_CUSTOM
-
-config ARM_BOOTBLOCK_SIMPLE
-	bool "Always load fallback"
-
-config ARM_BOOTBLOCK_NORMAL
-	bool "Switch to normal if non-volatile memory says so"
-
-endchoice
-
-config CBMEM_CONSOLE_PRERAM_BASE
-	hex
-	depends on CONSOLE_CBMEM
-
-config CPU_HAS_BOOTBLOCK_INIT
-	bool
-	default n
-
-config MAINBOARD_HAS_BOOTBLOCK_INIT
-	bool
-	default n
-
-config UPDATE_IMAGE
-	bool "Update existing coreboot.rom image"
-	default n
-	help
-	  If this option is enabled, no new coreboot.rom file
-	  is created. Instead it is expected that there already
-	  is a suitable file for further processing.
-	  The bootblock will not be modified.
-
 config ARM_LPAE
 	bool "Enable LPAE"
 	default n

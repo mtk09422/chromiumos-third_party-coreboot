@@ -29,9 +29,8 @@ ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V4),y)
 
 ifneq ($(CONFIG_ARM_BOOTBLOCK_CUSTOM),y)
 bootblock-y += bootblock.S
+bootblock-y += bootblock_simple.c
 endif
-bootblock-$(CONFIG_ARM_BOOTBLOCK_SIMPLE) += bootblock_simple.c
-bootblock-$(CONFIG_ARM_BOOTBLOCK_NORMAL) += bootblock_normal.c
 bootblock-y += cache.c
 
 bootblock-c-ccopts += $(armv4_flags)
