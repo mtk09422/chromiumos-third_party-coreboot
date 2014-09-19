@@ -169,10 +169,50 @@ void * cbfs_load_stage(struct cbfs_media *media, const char *name)
 
 #else
 
+void *cbfs_load_stage_by_offset(struct cbfs_media *media, ssize_t offset)
+{
+	struct cbfs_stage stage;
+
+	DEBUG("reading stage header: offset=0x%x len=%d type=%d offset=0x%x\n",
+	      offset, file.len, file.type, file.offset);
+	if (cbfs_read(media, &stage, offset, sizeof(stage)) != sizeof(stage)) {
+		ERROR("ERROR: failed to read stage header\n");
+		return (void *)-1;
+	}
+
+	LOG("loading stage @ 0x%llx (%d bytes), entry @ 0x%llx\n",
+	    stage.load, stage.memlen, stage.entry);
+
+	/* Stages rely the below clearing so that the bss is initialized. */
+	memset((void *)(uintptr_t)stage.load, 0, stage.memlen);
+
+	if (stage.compression == CBFS_COMPRESS_NONE) {
+		if (cbfs_read(media, (void *)(uintptr_t)stage.load,
+			      offset + sizeof(stage), stage.len) != stage.len) {
+			ERROR("ERROR: Reading stage failed.\n");
+			return (void *)-1;
+		}
+	} else {
+		void *data = media->map(media, offset + sizeof(stage),
+					stage.len);
+		if (data == CBFS_MEDIA_INVALID_MAP_ADDRESS) {
+			ERROR("ERROR: Mapping stage failed.\n");
+			return (void *)-1;
+		}
+		if (cbfs_decompress(stage.compression, data,
+				    (void *)(uintptr_t)stage.load, stage.len))
+			return (void *)-1;
+		media->unmap(media, data);
+	}
+
+	DEBUG("stage loaded\n");
+
+	return (void *)(uintptr_t)stage.entry;
+}
+
 void *cbfs_load_stage(struct cbfs_media *media, const char *name)
 {
 	struct cbfs_media default_media;
-	struct cbfs_stage stage;
 	struct cbfs_file file;
 	ssize_t offset;
 
@@ -182,39 +222,7 @@ void *cbfs_load_stage(struct cbfs_media *media, const char *name)
 	if (offset < 0 || file.type != CBFS_TYPE_STAGE)
 		return (void *)-1;
 
-	DEBUG("reading stage header: offset=0x%x len=%d type=%d offset=0x%x\n",
-	      offset, file.len, file.type, file.offset);
-	if (cbfs_read(media, &stage, offset, sizeof(stage)) != sizeof(stage))
-		return (void *)-1;
-
-	LOG("loading stage %s @ 0x%llx (%d bytes), entry @ 0x%llx\n",
-			name,
-			stage.load, stage.memlen,
-			stage.entry);
-
-	/* Stages rely the below clearing so that the bss is initialized. */
-	memset((void *)(uintptr_t)stage.load, 0, stage.memlen);
-
-	if (stage.compression == CBFS_COMPRESS_NONE) {
-		if (cbfs_read(media, (void *)(uintptr_t)stage.load,
-			      offset + sizeof(stage), stage.len) != stage.len)
-			return (void *)-1;
-	} else {
-		void *data = media->map(media, offset + sizeof(stage),
-					stage.len);
-		if (data == CBFS_MEDIA_INVALID_MAP_ADDRESS) {
-			ERROR("ERROR: Mapping %s failed.\n", name);
-			return (void *)-1;
-		}
-		if (cbfs_decompress(stage.compression, data,
-				    (void *)(uintptr_t)stage.load, stage.len))
-			return (void *)-1;
-		media->unmap(media, data);
-	}
-
-	DEBUG("stage %s loaded\n", name);
-
-	return (void *)(uintptr_t)stage.entry;
+	return cbfs_load_stage_by_offset(media, offset);
 }
 #endif /* CONFIG_RELOCATABLE_RAMSTAGE */
 
