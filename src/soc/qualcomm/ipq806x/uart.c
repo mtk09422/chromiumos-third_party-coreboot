@@ -34,8 +34,8 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <delay.h>
+#include <gpio.h>
 #include <soc/clock.h>
-#include <soc/gpio.h>
 #include <soc/gsbi.h>
 #include <soc/ipq_uart.h>
 #include <stdint.h>
