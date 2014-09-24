@@ -70,8 +70,6 @@ void main(void)
 		mmu_config_range(dram_end, 4096 - dram_end, DCACHE_OFF);
 	dcache_mmu_enable();
 
-	setup_chromeos_gpios();
-
 	cbmem_initialize_empty();
 #if CONFIG_COLLECT_TIMESTAMPS
 	timestamp_init(base_time);
@@ -79,7 +77,17 @@ void main(void)
 	timestamp_add(TS_BEFORE_INITRAM, before_dram_time);
 	timestamp_add(TS_AFTER_INITRAM, after_dram_time);
 #endif
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
+
+	entry = vboot_load_ramstage();
+
+	if (entry == NULL) {
+		timestamp_add(TS_START_COPYRAM, timestamp_get());
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/ramstage");
+		timestamp_add(TS_END_COPYRAM, timestamp_get());
+		if (entry == (void *)-1)
+			die("failed to load ramstage\n");
+	}
 #if CONFIG_COLLECT_TIMESTAMPS
 	timestamp_add_now(TS_END_ROMSTAGE);
 #endif

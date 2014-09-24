@@ -16,8 +16,10 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
+bootblock-y += chromeos.c
 bootblock-y += reset.c
 
+verstage-y += chromeos.c
 verstage-y += reset.c
 
 romstage-y += romstage.c
