@@ -27,11 +27,11 @@
 #include <cbfs.h>
 #include <console/console.h>
 #include <delay.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 void main(void)
 {
-	const char *stage_name = "fallback/romstage";
-	void *entry;
+	void *entry = (void *)-1;
 
 	bootblock_cpu_init();
 	bootblock_mainboard_init();
@@ -41,8 +41,18 @@ void main(void)
 		exception_init();
 	}
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)) {
+		if (IS_ENABLED(CONFIG_RETURN_FROM_VERSTAGE))
+			vboot2_verify_firmware();	/* doesn't return */
+		else
+			entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+						CONFIG_CBFS_PREFIX "/verstage");
+	} else {
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/romstage");
+	}
 
-	if (entry) stage_exit(entry);
+	if (entry != (void *)-1)
+		stage_exit(entry);
 	hlt();
 }
