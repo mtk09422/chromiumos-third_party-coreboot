@@ -52,6 +52,7 @@ libc-$(CONFIG_LP_TIMER_TEGRA_1US) += timer/tegra_1us.c
 libc-$(CONFIG_LP_TIMER_IPQ806X) += timer/ipq806x.c
 libc-$(CONFIG_LP_TIMER_RK) += timer/rktimer.c
 libc-$(CONFIG_LP_TIMER_BG4CD) += timer/bg4cd.c
+libc-$(CONFIG_LP_TIMER_IMG_PISTACHIO) += timer/img_pistachio.c
 
 # Video console drivers
 libc-$(CONFIG_LP_VIDEO_CONSOLE) += video/video.c
