@@ -195,4 +195,45 @@ Scope (\_SB.PCI0.I2C1)
 			}
 		}
 	}
+
+        Device (ALSI)
+        {
+                /*
+                 * TODO(dlaurie): Need official HID.
+                 *
+                 * The current HID is created from the Intersil PNP
+                 * Vendor ID "LSD" and a shortened device identifier.
+                 */
+                Name (_HID, EisaId ("LSD2918"))
+                Name (_DDN, "Intersil 29018 Ambient Light Sensor")
+                Name (_UID, 6)
+
+                Name (_CRS, ResourceTemplate()
+                {
+                        I2cSerialBus (
+                                0x44,                     // SlaveAddress
+                                ControllerInitiated,      // SlaveMode
+                                400000,                   // ConnectionSpeed
+                                AddressingMode7Bit,       // AddressingMode
+                                "\\_SB.I2C1",             // ResourceSource
+                        )
+
+                        // On Auron/Peppy board, IRQ is hooked to GPIO 51.
+                        // Based on table 5-36, this is PIRQT. Then based on
+                        // table 5-12, this is IRQ #35.
+                        Interrupt (ResourceConsumer, Edge, ActiveLow)
+                        {
+                                35
+                        }
+                })
+
+                Method (_STA)
+                {
+                        If (LEqual (\S2EN, 1)) {
+                                Return (0xF)
+                        } Else {
+                                Return (0x0)
+                        }
+                }
+        }
 }
