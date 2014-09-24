@@ -21,6 +21,7 @@
 #include <cbfs.h>
 #include <cbmem.h>
 #include <console/console.h>
+#include <timer.h>
 #include <arch/exception.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
@@ -40,7 +41,9 @@ void __attribute__((weak)) romstage_mainboard_init(void)
 static void *load_ramstage(void)
 {
 	void *entry;
+	struct stopwatch sw;
 
+	stopwatch_init(&sw);
 	/*
 	 * This platform does not need to cache a loaded ramstage nor do we
 	 * go down this path on resume. Therefore, no romstage_handoff is
@@ -51,6 +54,9 @@ static void *load_ramstage(void)
 	if (entry == NULL)
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 					CONFIG_CBFS_PREFIX "/ramstage");
+
+	printk(BIOS_DEBUG, "Ramstage load time: %ld usecs.\n",
+		stopwatch_duration_usecs(&sw));
 
 	return entry;
 }
