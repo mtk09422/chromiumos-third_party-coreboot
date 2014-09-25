@@ -37,7 +37,6 @@ ifeq ($(CONFIG_ARCH_BOOTBLOCK_MIPS),y)
 bootblock-y += boot.c
 bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += stages.c
-bootblock-y += timer.c
 bootblock-y += ../../lib/memcpy.c
 bootblock-y += ../../lib/memmove.c
 bootblock-y += ../../lib/memset.c
@@ -94,7 +93,6 @@ ifeq ($(CONFIG_ARCH_ROMSTAGE_MIPS),y)
 romstage-y += boot.c
 romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 romstage-y += stages.c
-romstage-y += timer.c
 romstage-y += ../../lib/memcpy.c
 romstage-y += ../../lib/memmove.c
 romstage-y += ../../lib/memset.c
@@ -123,7 +121,6 @@ ramstage-y += ashldi3.c
 ramstage-y += boot.c
 ramstage-y += stages.c
 ramstage-y += tables.c
-ramstage-y += timer.c
 ramstage-y += ../../lib/memcpy.c
 ramstage-y += ../../lib/memmove.c
 ramstage-y += ../../lib/memset.c

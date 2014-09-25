@@ -10,7 +10,6 @@ bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += uart.c
 endif
 bootblock-y += wakeup.c
 bootblock-y += gpio.c
-bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += timer.c
 
 romstage-y += spi.c alternate_cbfs.c
 romstage-y += clock.c
@@ -26,7 +25,6 @@ romstage-$(CONFIG_EARLY_CONSOLE) += uart.c
 endif
 romstage-y += wakeup.c
 romstage-y += gpio.c
-romstage-y += timer.c
 romstage-y += trustzone.c
 romstage-y += i2c.c
 #romstage-y += wdt.c
@@ -42,7 +40,6 @@ ramstage-y += cpu.c
 ramstage-y += tmu.c
 ramstage-y += mct.c
 ramstage-y += monotonic_timer.c
-ramstage-y += timer.c
 ramstage-y += gpio.c
 ramstage-y += i2c.c
 ramstage-y += dp-reg.c

@@ -22,6 +22,8 @@ bootblock-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 bootblock-y += memchr.c
 bootblock-y += memcmp.c
 
+bootblock-$(CONFIG_GENERIC_UDELAY) += timer.c
+
 ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL8250) += uart8250.c
 bootblock-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart8250mem.c
@@ -40,6 +42,7 @@ verstage-y += cbfs.c
 verstage-y += memcmp.c
 verstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
 verstage-y += tlcl.c
+verstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 
 romstage-y += delay.c
 romstage-y += cbfs.c
@@ -58,6 +61,7 @@ romstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 romstage-$(CONFIG_EARLY_CBMEM_INIT) += cbmem.c
 romstage-y += compute_ip_checksum.c
 romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += gcc.c
+romstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 
 ramstage-y += hardwaremain.c
 ramstage-y += selfboot.c
@@ -90,6 +94,7 @@ ramstage-y += memrange.c
 ramstage-$(CONFIG_COOP_MULTITASKING) += thread.c
 ramstage-$(CONFIG_TIMER_QUEUE) += timer_queue.c
 ramstage-$(CONFIG_TERTIARY_BOARD_ID) += tristate_gpios.c
+ramstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 
 # The CBMEM implementations are chosen based on CONFIG_DYNAMIC_CBMEM.
 ifeq ($(CONFIG_DYNAMIC_CBMEM),y)
