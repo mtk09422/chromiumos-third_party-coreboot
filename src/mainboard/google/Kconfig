@@ -178,7 +178,7 @@ config BOARD_GOOGLE_URARA
 	help
 	  Google Urara mainboard.
 	  Urara is an embedded device running on MIPS platorm
-	  based on the Danube SOC.
+	  based on the Pistachio SOC.
 config BOARD_GOOGLE_VEYRON_PINKY
 	bool "Veyron_Pinky"
 	help
