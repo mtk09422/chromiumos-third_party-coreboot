@@ -28,11 +28,12 @@
 #include <broadwell/ramstage.h>
 #include <chip.h>
 
-/* Save bit index for first enabled event in PM1_STS for \_SB._SWS */
-static void s3_save_acpi_wake_source(global_nvs_t *gnvs)
+/* Save bit index for PM1_STS and GPE_STS for ACPI _SWS */
+static void save_acpi_wake_source(global_nvs_t *gnvs)
 {
 	struct chipset_power_state *ps = cbmem_find(CBMEM_ID_POWER_STATE);
 	uint16_t pm1;
+	int gpe_reg;
 
 	if (!ps)
 		return;
@@ -50,8 +51,30 @@ static void s3_save_acpi_wake_source(global_nvs_t *gnvs)
 	if (gnvs->pm1i >= 16)
 		gnvs->pm1i = -1;
 
-	printk(BIOS_DEBUG, "ACPI System Wake Source is PM1 Index %d\n",
-	       gnvs->pm1i);
+	/* Scan for first set bit in GPE registers */
+	for (gpe_reg = 0; gpe_reg < GPE0_REG_MAX; gpe_reg++) {
+		u32 gpe = ps->gpe0_sts[gpe_reg] & ps->gpe0_en[gpe_reg];
+		int start = gpe_reg * GPE0_REG_SIZE;
+		int end = start + GPE0_REG_SIZE;
+
+		if (gpe == 0) {
+			gnvs->gpei = end;
+			continue;
+		}
+
+		for (gnvs->gpei = start; gnvs->gpei < end; gnvs->gpei++) {
+			if (gpe & 1)
+				break;
+			gpe >>= 1;
+		}
+	}
+
+	/* If unable to determine then return -1 */
+	if (gnvs->gpei >= (GPE0_REG_MAX * GPE0_REG_SIZE))
+		gnvs->gpei = -1;
+
+	printk(BIOS_DEBUG, "ACPI _SWS is PM1 Index %d GPE Index %d\n",
+	       gnvs->pm1i, gnvs->gpei);
 }
 
 static inline void set_acpi_sleep_type(int val)
@@ -63,22 +86,20 @@ static inline void set_acpi_sleep_type(int val)
 
 static void s3_resume_prepare(void)
 {
-        global_nvs_t *gnvs;
-        struct romstage_handoff *romstage_handoff;
+	global_nvs_t *gnvs;
+	struct romstage_handoff *romstage_handoff;
 
-        gnvs = cbmem_add(CBMEM_ID_ACPI_GNVS, sizeof(global_nvs_t));
+	gnvs = cbmem_add(CBMEM_ID_ACPI_GNVS, sizeof(global_nvs_t));
 
-        romstage_handoff = cbmem_find(CBMEM_ID_ROMSTAGE_INFO);
-        if (romstage_handoff == NULL || romstage_handoff->s3_resume == 0) {
-                if (gnvs != NULL) {
-                        memset(gnvs, 0, sizeof(global_nvs_t));
-                }
-                set_acpi_sleep_type(0);
-                return;
-        }
+	romstage_handoff = cbmem_find(CBMEM_ID_ROMSTAGE_INFO);
+	if (romstage_handoff == NULL || romstage_handoff->s3_resume == 0) {
+		if (gnvs != NULL)
+			memset(gnvs, 0, sizeof(global_nvs_t));
+		return;
+	}
 
-        set_acpi_sleep_type(3);
-        s3_save_acpi_wake_source(gnvs);
+	set_acpi_sleep_type(3);
+	save_acpi_wake_source(gnvs);
 }
 
 void broadwell_init_pre_device(void *chip_info)
