@@ -46,6 +46,9 @@ endif
 ################################################################################
 ## Verification stage
 ################################################################################
+
+ifeq ($(CONFIG_ARCH_VERSTAGE_ARM_V7),y)
+
 verstage-c-ccopts += $(armv7_flags)
 verstage-S-ccopts += $(armv7_asm_flags)
 verstage-y += cache.c
@@ -54,6 +57,7 @@ verstage-y += exception.c
 verstage-y += exception_asm.S
 verstage-y += mmu.c
 
+endif
 ################################################################################
 ## ROM stage
 ################################################################################
