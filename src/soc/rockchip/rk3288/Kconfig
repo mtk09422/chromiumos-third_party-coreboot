@@ -57,9 +57,4 @@ config CBFS_ROM_OFFSET
 	hex
 	default 0x0018000
 
-config CONSOLE_SERIAL_UART_ADDRESS
-	hex
-	depends on CONSOLE_SERIAL_UART
-	default 0xFF690000
-
 endif
