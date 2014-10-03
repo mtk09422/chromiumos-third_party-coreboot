@@ -186,7 +186,7 @@ ifeq ($(CONFIG_WARNINGS_ARE_ERRORS),y)
 CFLAGS_common += -Werror
 endif
 CFLAGS_common += -fno-common -ffreestanding -fno-builtin -fomit-frame-pointer
-ifneq ($(GDB_DEBUG),)
+ifneq ($(SOURCE_DEBUG),)
 CFLAGS_common += -O0
 else
 CFLAGS_common += -Os

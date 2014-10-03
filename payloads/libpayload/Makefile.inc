@@ -61,7 +61,7 @@ CFLAGS += -Wall -Wundef -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS += -Wwrite-strings -Wredundant-decls -Wno-trigraphs
 CFLAGS += -Wstrict-aliasing -Wshadow -Werror
 
-ifneq ($(GDB_DEBUG),)
+ifneq ($(SOURCE_DEBUG),)
 CFLAGS += -O0 -g
 else
 CFLAGS += -Os
