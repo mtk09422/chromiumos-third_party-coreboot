@@ -262,6 +262,14 @@ config PCIEXP_CLK_PM
 	help
 	  Detect and enable Clock Power Management on PCIe.
 
+config PCIEXP_L1_SUB_STATE
+	prompt "Enable PCIe ASPM L1 SubState"
+	bool
+	depends on PCIEXP_PLUGIN_SUPPORT
+	default n
+	help
+	  Detect and enable ASPM on PCIe links.
+
 config PCI_BUS_SEGN_BITS
 	int
 	default 0
