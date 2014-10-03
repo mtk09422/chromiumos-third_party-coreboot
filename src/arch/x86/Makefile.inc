@@ -114,7 +114,7 @@ bootblock_romccflags = -mcpu=i386
 endif
 bootblock_romccflags += -O2 $(bootblock-c-ccopts) $(bootblock-generic-ccopts)
 
-$(objgenerated)/bootblock.inc: $(src)/arch/x86/init/$(subst ",,$(CONFIG_BOOTBLOCK_SOURCE)) $(objutil)/romcc/romcc $$(generic-deps)
+$(objgenerated)/bootblock.inc: $(src)/arch/x86/init/$(subst ",,$(CONFIG_BOOTBLOCK_SOURCE)) $(objutil)/romcc/romcc | $$(generic-deps)
 	@printf "    ROMCC      $(subst $(obj)/,,$(@))\n"
 	$(CC_bootblock) $(INCLUDES) $(INCLUDES_bootblock) -MM -MT$(objgenerated)/bootblock.inc \
 		$< > $(objgenerated)/bootblock.inc.d
@@ -191,12 +191,12 @@ $(objcbfs)/romstage_%.elf: $(objcbfs)/romstage_%.debug
 	$(OBJCOPY_romstage) --add-gnu-debuglink=$< $@.tmp
 	mv $@.tmp $@
 
-$(obj)/mainboard/$(MAINBOARDDIR)/romstage.inc: $(src)/mainboard/$(MAINBOARDDIR)/romstage.c $(objutil)/romcc/romcc $$(generic-deps)
+$(obj)/mainboard/$(MAINBOARDDIR)/romstage.inc: $(src)/mainboard/$(MAINBOARDDIR)/romstage.c $(objutil)/romcc/romcc | $$(generic-deps)
 	printf "    ROMCC      romstage.inc\n"
 	$(ROMCC) -c -S $(ROMCCFLAGS) -I. $(INCLUDES) $(INCLUDES_romstage) $< -o $@
 else # CONFIG_ROMCC
 
-$(obj)/mainboard/$(MAINBOARDDIR)/romstage.pre.inc: $(src)/mainboard/$(MAINBOARDDIR)/romstage.c $$(generic-deps)
+$(obj)/mainboard/$(MAINBOARDDIR)/romstage.pre.inc: $(src)/mainboard/$(MAINBOARDDIR)/romstage.c | $$(generic-deps)
 	@printf "    CC         romstage.inc\n"
 	$(CC_romstage) -MMD $(CFLAGS_romstage) $(romstage-c-ccopts) $(romstage-generic-ccopts) -I$(src) -I. -I$(obj) -c -S $< -o $@
 

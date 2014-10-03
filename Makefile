@@ -179,6 +179,7 @@ $(obj)/config.h:
 	$(MAKE) oldconfig
 
 # Dependencies that should be built before all files in all classes
+# Careful: interpreted as order-only prerequisites, use only for header files!
 generic-deps = $(obj)/config.h
 
 # Every file can append to this string. It is simply eval'ed after the scan.
@@ -256,7 +257,7 @@ define create_cc_template
 # $4 additional dependencies
 ifn$(EMPTY)def $(1)-objs_$(2)_template
 de$(EMPTY)fine $(1)-objs_$(2)_template
-$$(call src-to-obj,$1,$$(1)): $$(1) $$$$(generic-deps) $(4)
+$$(call src-to-obj,$1,$$(1)): $$(1) $(4) | $$$$(generic-deps)
 	@printf "    CC         $$$$(subst $$$$(obj)/,,$$$$(@))\n"
 	$(CC_$(1)) -MMD $$$$(CFLAGS_$(1)) -MT $$$$(@) $(3) -c -o $$$$@ $$$$<
 en$(EMPTY)def

@@ -131,7 +131,7 @@ VBOOT_CFLAGS += $(verstage-c-ccopts)
 VBOOT_CFLAGS += -include $(top)/src/include/kconfig.h -Wno-missing-prototypes
 VBOOT_CFLAGS += -DVBOOT_DEBUG
 
-$(VB2_LIB): $$(generic-deps)
+$(VB2_LIB): | $$(generic-deps)
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 	CC="$(CC_verstage)" \

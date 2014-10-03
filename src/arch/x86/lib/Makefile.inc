@@ -36,6 +36,4 @@ rmodules_x86_32-y += memset.c
 rmodules_x86_32-y += memcpy.c
 rmodules_x86_32-y += memmove.c
 
-$(obj)/arch/x86/lib/console.ramstage.o :: $(obj)/build.h
-
 endif
