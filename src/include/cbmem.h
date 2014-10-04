@@ -79,6 +79,7 @@
 #define CBMEM_ID_TIMESTAMP	0x54494d45
 #define CBMEM_ID_VBOOT_HANDOFF	0x780074f0
 #define CBMEM_ID_NONE		0x00000000
+#define CBMEM_ID_HOB_POINTER	0x484f4221
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>

@@ -21,6 +21,7 @@
 
 #ifndef __LIB_H__
 #define __LIB_H__
+#include <stddef.h>
 #include <stdint.h>
 
 #ifndef __PRE_RAM__ /* Conflicts with inline function in arch/io.h */
@@ -53,6 +54,7 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx);
 #endif
 
 /* Defined in src/lib/hexdump.c */
-void hexdump(unsigned long memory, int length);
+void hexdump(const void *memory, size_t length);
+void hexdump32(char LEVEL, const void *d, size_t len);
 
 #endif /* __LIB_H__ */
