@@ -13,6 +13,7 @@ config ARCH_RAMSTAGE_ARM64
 
 config ARCH_USE_SECURE_MONITOR
 	bool
+	select RELOCATABLE_MODULES
 	default n
 
 config ARCH_SPINTABLE
