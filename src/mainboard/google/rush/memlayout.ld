@@ -1,1 +1,1 @@
-#include <soc/nvidia/tegra132/memlayout.ld>
+#include <soc/nvidia/tegra132/memlayout_vboot.ld>

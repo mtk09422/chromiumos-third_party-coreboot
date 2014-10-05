@@ -44,12 +44,17 @@ static void *load_ramstage(void)
 	struct stopwatch sw;
 
 	stopwatch_init(&sw);
+
+#if IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)
+	entry = vboot_load_ramstage();
+#else
 	/*
 	 * This platform does not need to cache a loaded ramstage nor do we
 	 * go down this path on resume. Therefore, no romstage_handoff is
 	 * required.
 	 */
 	entry = vboot_verify_firmware_get_entry(NULL);
+#endif
 
 	if (entry == NULL)
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,

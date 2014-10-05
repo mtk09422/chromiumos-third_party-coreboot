@@ -26,6 +26,7 @@
 #include <soc/clock.h>
 #include <soc/nvidia/tegra/apbmisc.h>
 #include <arch/stages.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 #include "power.h"
 
@@ -36,7 +37,7 @@ void __attribute__((weak)) bootblock_mainboard_early_init(void)
 
 void main(void)
 {
-	void *entry;
+	void *entry = NULL;
 
 	// enable pinmux clamp inputs
 	clamp_tristate_inputs();
@@ -72,15 +73,20 @@ void main(void)
 
 	printk(BIOS_INFO, "T132 bootblock: Mainboard bootblock init done\n");
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-				CONFIG_CBFS_PREFIX "/romstage");
-
-	if (entry) {
-		printk(BIOS_INFO, "T132 bootblock: jumping to romstage\n");
-		stage_exit(entry);
+	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)) {
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/verstage");
+		printk(BIOS_DEBUG, "T132 bootblock: jumping to verstage\n");
 	} else {
-		printk(BIOS_INFO, "T132 bootblock: fallback/romstage not found\n");
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/romstage");
+		printk(BIOS_INFO, "T132 bootblock: jumping to romstage\n");
 	}
+
+	if (entry != CBFS_LOAD_ERROR)
+		stage_exit(entry);
+	else
+		printk(BIOS_INFO, "T132 bootblock: stage not found\n");
 
 	hlt();
 }
