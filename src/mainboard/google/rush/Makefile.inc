@@ -31,6 +31,10 @@ bootblock-y += bootblock.c
 bootblock-y += pmic.c
 bootblock-y += reset.c
 
+verstage-y += verstage.c
+verstage-y += chromeos.c
+verstage-y += reset.c
+
 romstage-y += reset.c
 romstage-y += romstage.c
 romstage-y += sdram_configs.c
@@ -44,3 +48,4 @@ ramstage-y += reset.c
 bootblock-y += memlayout.ld
 romstage-y += memlayout.ld
 ramstage-y += memlayout.ld
+verstage-y += memlayout.ld
