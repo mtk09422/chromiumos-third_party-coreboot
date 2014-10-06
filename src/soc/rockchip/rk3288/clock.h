@@ -22,6 +22,8 @@
 
 #include "addressmap.h"
 
+#define OSC_HZ		(24*MHz)
+
 #define APLL_HZ		(816*MHz)
 #define GPLL_HZ		(594*MHz)
 #define CPLL_HZ		(384*MHz)
