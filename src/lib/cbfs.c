@@ -177,7 +177,7 @@ void *cbfs_load_stage_by_offset(struct cbfs_media *media, ssize_t offset)
 	      offset, file.len, file.type, file.offset);
 	if (cbfs_read(media, &stage, offset, sizeof(stage)) != sizeof(stage)) {
 		ERROR("ERROR: failed to read stage header\n");
-		return (void *)-1;
+		return CBFS_LOAD_ERROR;
 	}
 
 	LOG("loading stage @ 0x%llx (%d bytes), entry @ 0x%llx\n",
@@ -190,18 +190,18 @@ void *cbfs_load_stage_by_offset(struct cbfs_media *media, ssize_t offset)
 		if (cbfs_read(media, (void *)(uintptr_t)stage.load,
 			      offset + sizeof(stage), stage.len) != stage.len) {
 			ERROR("ERROR: Reading stage failed.\n");
-			return (void *)-1;
+			return CBFS_LOAD_ERROR;
 		}
 	} else {
 		void *data = media->map(media, offset + sizeof(stage),
 					stage.len);
 		if (data == CBFS_MEDIA_INVALID_MAP_ADDRESS) {
 			ERROR("ERROR: Mapping stage failed.\n");
-			return (void *)-1;
+			return CBFS_LOAD_ERROR;
 		}
 		if (cbfs_decompress(stage.compression, data,
 				    (void *)(uintptr_t)stage.load, stage.len))
-			return (void *)-1;
+			return CBFS_LOAD_ERROR;
 		media->unmap(media, data);
 	}
 
@@ -220,7 +220,7 @@ void *cbfs_load_stage(struct cbfs_media *media, const char *name)
 
 	offset = cbfs_locate_file(media, &file, name);
 	if (offset < 0 || file.type != CBFS_TYPE_STAGE)
-		return (void *)-1;
+		return CBFS_LOAD_ERROR;
 
 	return cbfs_load_stage_by_offset(media, offset);
 }
