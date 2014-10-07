@@ -34,10 +34,6 @@ ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V8_64),y)
 bootblock-y += $(lib_access)
 endif
 
-ifeq ($(CONFIG_ARCH_VERSTAGE_ARM_V8_64),y)
-verstage-y += $(lib_access)
-endif
-
 ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM_V8_64),y)
 romstage-y += $(lib_access)
 endif
