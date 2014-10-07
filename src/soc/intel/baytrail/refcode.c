@@ -26,8 +26,8 @@
 #include <ramstage_cache.h>
 #include <vendorcode/google/chromeos/vboot_handoff.h>
 
-#include <baytrail/ramstage.h>
-#include <baytrail/efi_wrapper.h>
+#include <soc/ramstage.h>
+#include <soc/efi_wrapper.h>
 
 static inline int is_s3_resume(void)
 {

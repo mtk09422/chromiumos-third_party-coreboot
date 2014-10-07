@@ -54,7 +54,7 @@ ramstage-$(CONFIG_ALT_CBFS_LOAD_PAYLOAD) += spi_loading.c
 # Remove as ramstage gets fleshed out
 ramstage-y += placeholders.c
 
-INCLUDES += -Isrc/soc/intel/baytrail/
+INCLUDES += -Isrc/soc/intel/baytrail/include
 
 # Run an intermediate step when producing coreboot.rom
 # that adds additional components to the final firmware

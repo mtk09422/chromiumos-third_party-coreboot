@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <soc/intel/baytrail/baytrail/irq.h>
-#include <soc/intel/baytrail/baytrail/pci_devs.h>
+#include <soc/irq.h>
+#include <soc/pci_devs.h>
 
 #define PCI_DEV_PIRQ_ROUTES \
 	PCI_DEV_PIRQ_ROUTE(GFX_DEV,  A, B, C, D), \

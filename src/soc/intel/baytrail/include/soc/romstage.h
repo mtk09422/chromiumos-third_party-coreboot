@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include <arch/cpu.h>
-#include <baytrail/mrc_wrapper.h>
+#include <soc/mrc_wrapper.h>
 
 #define NUM_ROMSTAGE_TS 4
 struct romstage_timestamps {

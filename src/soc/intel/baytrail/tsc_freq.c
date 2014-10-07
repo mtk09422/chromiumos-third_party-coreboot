@@ -20,11 +20,11 @@
 #include <stdint.h>
 #include <cpu/x86/msr.h>
 #include <cpu/x86/tsc.h>
-#include <baytrail/msr.h>
+#include <soc/msr.h>
 #if !defined(__PRE_RAM__)
-#include <baytrail/ramstage.h>
+#include <soc/ramstage.h>
 #else
-#include <baytrail/romstage.h>
+#include <soc/romstage.h>
 #endif
 
 unsigned bus_freq_khz(void)

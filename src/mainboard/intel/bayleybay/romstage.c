@@ -20,8 +20,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <console/console.h>
-#include <baytrail/mrc_wrapper.h>
-#include <baytrail/romstage.h>
+#include <soc/mrc_wrapper.h>
+#include <soc/romstage.h>
 
 void mainboard_romstage_entry(struct romstage_params *rp)
 {

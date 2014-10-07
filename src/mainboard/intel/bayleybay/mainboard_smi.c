@@ -20,7 +20,7 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <cpu/x86/smm.h>
-#include <baytrail/nvs.h>
+#include <soc/nvs.h>
 
 int mainboard_io_trap_handler(int smif)
 {
