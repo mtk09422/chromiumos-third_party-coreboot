@@ -62,6 +62,8 @@ endif # CONFIG_ARCH_BOOTBLOCK_ARM
 # verification stage
 ###############################################################################
 
+ifeq ($(CONFIG_ARCH_VERSTAGE_ARM),y)
+
 $(objcbfs)/verstage.debug: $$(verstage-objs) $$(VB2_LIB)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 	$(call link,verstage,$(filter %.a %.o,$(^)),-o $(@) -L$(obj) -T $(obj)/mainboard/$(MAINBOARDDIR)/memlayout.verstage.ld,--gc-sections)
@@ -73,6 +75,8 @@ verstage-y += memset.S
 verstage-y += memcpy.S
 verstage-y += memmove.S
 verstage-y += stages.c
+
+endif # CONFIG_ARCH_VERSTAGE_ARM
 
 ###############################################################################
 # romstage
