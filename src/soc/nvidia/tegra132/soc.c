@@ -37,8 +37,8 @@
 static void soc_read_resources(device_t dev)
 {
 	unsigned long index = 0;
-	int i; uintptr_t begin, end, framebuffer_begin;
-	size_t size, framebuffer_size;
+	int i; uintptr_t begin, end;
+	size_t size;
 
 	for (i = 0; i < CARVEOUT_NUM; i++) {
 		carveout_range(i, &begin, &size);
@@ -46,9 +46,6 @@ static void soc_read_resources(device_t dev)
 			continue;
 		reserved_ram_resource(dev, index++, begin * KiB, size * KiB);
 	}
-
-	framebuffer_begin = framebuffer_attributes(&framebuffer_size);
-	//TODO: Frame buffer needs to handled as a carveout from the below_4G
 
 	memory_in_range_below_4gb(&begin, &end);
 	size = end - begin;
