@@ -52,7 +52,7 @@ static const struct gpio_config mainboard_gpio_config[] = {
 	PCH_GPIO_IRQ_EDGE,      /* 26: NFC_IRQ_MGP5 */
 	PCH_GPIO_ACPI_SCI,      /* 27: SMC_WAKE_SCI_N */
 	PCH_GPIO_OUT_LOW,       /* 28: PCH_NFC_RESET */
-	PCH_GPIO_NATIVE,        /* 29: PCH_SLP_WLAN_N */
+	PCH_GPIO_OUT_HIGH,      /* 29: PCH_SLP_WLAN_N */
 	PCH_GPIO_NATIVE,        /* 30: SUS_PWR_ACK_R */
 	PCH_GPIO_NATIVE,        /* 31: AC_PRESENT_R */
 	PCH_GPIO_NATIVE,        /* 32: PM_CKRUN_N */
