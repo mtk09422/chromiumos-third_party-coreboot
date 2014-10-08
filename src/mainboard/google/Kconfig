@@ -33,6 +33,7 @@ config BOARD_GOOGLE_AURON
 	  Enable this config to select the Google Auron mainboard.
 	  Auron is a Chrome OS mainboard.
 	  Auron is based on the Intel Broadwell platform.
+
 config BOARD_GOOGLE_BELTINO
 	bool "Beltino"
 	help
@@ -40,6 +41,7 @@ config BOARD_GOOGLE_BELTINO
 	  Enable this config to select the Google Beltino mainboard.
 	  Beltino is a Chrome OS mainboard.
 	  Beltino is based on the Intel Haswell platform.
+
 config BOARD_GOOGLE_BOLT
 	bool "Bolt"
 	help
@@ -47,6 +49,7 @@ config BOARD_GOOGLE_BOLT
 	  Enable this config to select the Google Bolt mainboard.
 	  Bolt is a Chrome OS mainboard.
 	  Bolt is based on the Intel Haswell platform.
+
 config BOARD_GOOGLE_BUTTERFLY
 	bool "Butterfly"
 	help
@@ -54,6 +57,15 @@ config BOARD_GOOGLE_BUTTERFLY
 	  Enable this config to select the Google Butterfly mainboard.
 	  Butterfly is a Chrome OS mainboard.
 	  Butterfly is based on the Intel Sandy Bridge platform.
+
+config BOARD_GOOGLE_COSMOS
+	bool "Cosmos"
+	help
+	  Google Cosmos mainboard.
+	  Enable this config to select the Google Cosmos mainboard.
+	  Cosmos is a Chrome OS mainboard.
+	  Cosmos is based on the Marvell BG4CD platform.
+
 config BOARD_GOOGLE_DAISY
 	bool "Daisy"
 	help
@@ -61,6 +73,7 @@ config BOARD_GOOGLE_DAISY
 	  Enable this config to select the Google Daisy mainboard.
 	  Daisy is a Chrome OS mainboard.
 	  Daisy is based on the Samsung Exynos 5250 platform.
+
 config BOARD_GOOGLE_FALCO
 	bool "Falco"
 	help
@@ -68,6 +81,7 @@ config BOARD_GOOGLE_FALCO
 	  Enable this config to select the Google Falco mainboard.
 	  Falco is a Chrome OS mainboard.
 	  Falco is based on the Intel Haswell platform.
+
 config BOARD_GOOGLE_LINK
 	bool "Link"
 	help
@@ -75,6 +89,7 @@ config BOARD_GOOGLE_LINK
 	  Enable this config to select the Google Link mainboard.
 	  Link is a Chrome OS mainboard.
 	  Link is based on the Intel Ivy Bridge platform.
+
 config BOARD_GOOGLE_NYAN
 	bool "Nyan"
 	help
@@ -82,6 +97,7 @@ config BOARD_GOOGLE_NYAN
 	  Enable this config to select the Google Nyan mainboard.
 	  Nyan is a Chrome OS mainboard.
 	  Nyan is based on the Nvidia Tegra 124 platform.
+
 config BOARD_GOOGLE_NYAN_BIG
 	bool "Nyan Big"
 	help
@@ -89,6 +105,7 @@ config BOARD_GOOGLE_NYAN_BIG
 	  Enable this config to select the Google Nyan Big mainboard.
 	  Nyan Big is a Chrome OS mainboard.
 	  Nyan Big is based on the Nvidia Tegra 124 platform.
+
 config BOARD_GOOGLE_NYAN_BLAZE
 	bool "Nyan Blaze"
 	help
@@ -96,6 +113,7 @@ config BOARD_GOOGLE_NYAN_BLAZE
 	  Enable this config to select the Google Nyan Blaze mainboard.
 	  Nyan Blaze is a Chrome OS mainboard.
 	  Nyan Blaze is based on the Nvidia Tegra 124 platform.
+
 config BOARD_GOOGLE_PANTHER
 	bool "Panther"
 	help
@@ -103,6 +121,7 @@ config BOARD_GOOGLE_PANTHER
 	  Enable this config to select the Google Panther mainboard.
 	  Panther is a Chrome OS mainboard.
 	  Panther is based on the Intel Haswell platform.
+
 config BOARD_GOOGLE_PARROT
 	bool "Parrot"
 	help
@@ -110,6 +129,7 @@ config BOARD_GOOGLE_PARROT
 	  Enable this config to select the Google Parrot mainboard.
 	  Parrot is a Chrome OS mainboard.
 	  Parrot is based on the Intel Ivy Bridge platform.
+
 config BOARD_GOOGLE_PEACH_PIT
 	bool "Peach Pit"
 	help
@@ -117,6 +137,7 @@ config BOARD_GOOGLE_PEACH_PIT
 	  Enable this config to select the Google Peach Pit mainboard.
 	  Peach Pit is a Chrome OS mainboard.
 	  Peach Pit is based on the Samsung Exynos 5420 platform.
+
 config BOARD_GOOGLE_PEPPY
 	bool "Peppy"
 	help
@@ -124,6 +145,7 @@ config BOARD_GOOGLE_PEPPY
 	  Enable this config to select the Google Peppy mainboard.
 	  Peppy is a Chrome OS mainboard.
 	  Peppy is based on the Intel Haswell platform.
+
 config BOARD_GOOGLE_RAMBI
 	bool "Rambi"
 	help
@@ -131,6 +153,7 @@ config BOARD_GOOGLE_RAMBI
 	  Enable this config to select the Google Rambi mainboard.
 	  Rambi is a Chrome OS mainboard.
 	  Rambi is based on the Intel Baytrail platform.
+
 config BOARD_GOOGLE_RUSH
 	bool "Rush"
 	help
@@ -138,6 +161,7 @@ config BOARD_GOOGLE_RUSH
 	  Enable this config to select the Google Rush mainboard.
 	  Rush is a Chrome OS mainboard.
 	  Rush is based on the Nvidia Tegra 132 platform.
+
 config BOARD_GOOGLE_RUSH_RYU
 	bool "Rush Ryu"
 	help
@@ -145,6 +169,7 @@ config BOARD_GOOGLE_RUSH_RYU
 	  Enable this config to select the Google Ryu mainboard.
 	  Ryu is a Chrome OS mainboard.
 	  Ryu is based on the Nvidia Tegra 132 platform.
+
 config BOARD_GOOGLE_SAMUS
 	bool "Samus"
 	help
@@ -152,6 +177,7 @@ config BOARD_GOOGLE_SAMUS
 	  Enable this config to select the Google Samus mainboard.
 	  Samus is a Chrome OS mainboard.
 	  Samus is based on the Intel Broadwell platform.
+
 config BOARD_GOOGLE_SLIPPY
 	bool "Slippy"
 	help
@@ -159,6 +185,7 @@ config BOARD_GOOGLE_SLIPPY
 	  Enable this config to select the Google Slippy mainboard.
 	  Slippy is a Chrome OS mainboard.
 	  Slippy is based on the Intel Haswell platform.
+
 config BOARD_GOOGLE_STORM
 	bool "Storm"
 	help
@@ -166,6 +193,7 @@ config BOARD_GOOGLE_STORM
 	  Enable this config to select the Google Storm mainboard.
 	  Storm is a Chrome OS mainboard.
 	  Storm is based on the Qualcomm IPQ806X platform.
+
 config BOARD_GOOGLE_STOUT
 	bool "Stout"
 	help
@@ -173,12 +201,14 @@ config BOARD_GOOGLE_STOUT
 	  Enable this config to select the Google Stout mainboard.
 	  Stout is a Chrome OS mainboard.
 	  Stout is based on the Intel Ivy Bridge platform.
+
 config BOARD_GOOGLE_URARA
 	bool "Urara"
 	help
 	  Google Urara mainboard.
 	  Urara is an embedded device running on MIPS platorm
 	  based on the Pistachio SOC.
+
 config BOARD_GOOGLE_VEYRON_PINKY
 	bool "Veyron_Pinky"
 	help
@@ -193,6 +223,7 @@ source "src/mainboard/google/auron/Kconfig"
 source "src/mainboard/google/beltino/Kconfig"
 source "src/mainboard/google/bolt/Kconfig"
 source "src/mainboard/google/butterfly/Kconfig"
+source "src/mainboard/google/cosmos/Kconfig"
 source "src/mainboard/google/daisy/Kconfig"
 source "src/mainboard/google/falco/Kconfig"
 source "src/mainboard/google/link/Kconfig"
