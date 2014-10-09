@@ -16,6 +16,8 @@ CBFSTOOL_COMMON+=elfheaders.o cbfs-mkstage.o cbfs-mkpayload.o xdr.o
 CBFSTOOL_COMMON+=lzma/lzma.o
 CBFSTOOL_COMMON+=lzma/C/LzFind.o  lzma/C/LzmaDec.o  lzma/C/LzmaEnc.o
 
+CBFSTOOL_COMMON+=linux_trampoline.o cbfs-payload-linux.o
+
 CBFSTOOL_COMMON:=$(addprefix $(obj)/,$(CBFSTOOL_COMMON))
 
 RMODTOOL_BINARY:=$(obj)/rmodtool
