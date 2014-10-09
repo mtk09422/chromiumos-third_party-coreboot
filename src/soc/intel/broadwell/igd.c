@@ -523,6 +523,15 @@ static void igd_init(struct device *dev)
 		reg_script_run_on_dev(dev, haswell_late_init_script);
 	}
 
+	if (oprom_is_loaded) {
+		/*
+		 * Work around VBIOS issue that is not clearing first 64
+		 * bytes of the framebuffer during VBE mode set.
+		 */
+		struct resource *fb = find_resource(dev, PCI_BASE_ADDRESS_2);
+		memset((void *)((u32)fb->base), 0, 64);
+	}
+
 	if (!oprom_is_loaded && acpi_slp_type != 3) {
 		/*
 		 * Enable DDI-A if the Option ROM did not execute:
