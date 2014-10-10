@@ -66,7 +66,7 @@ void main(void)
 	timestamp_add(TS_AFTER_INITRAM, after_dram_time);
 #endif
 
-	entry = vboot_load_ramstage();
+	entry = vboot2_load_ramstage();
 
 	if (entry == NULL) {
 		timestamp_add(TS_START_COPYRAM, timestamp_get());

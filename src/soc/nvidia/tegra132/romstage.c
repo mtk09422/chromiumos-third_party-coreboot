@@ -44,7 +44,7 @@ static void *load_ramstage(void)
 	stopwatch_init(&sw);
 
 #if IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)
-	entry = vboot_load_ramstage();
+	entry = vboot2_load_ramstage();
 #else
 	/*
 	 * This platform does not need to cache a loaded ramstage nor do we
