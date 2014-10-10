@@ -173,8 +173,7 @@ void *cbfs_load_stage_by_offset(struct cbfs_media *media, ssize_t offset)
 {
 	struct cbfs_stage stage;
 
-	DEBUG("reading stage header: offset=0x%x len=%d type=%d offset=0x%x\n",
-	      offset, file.len, file.type, file.offset);
+	DEBUG("reading stage header: offset=0x%x\n", offset);
 	if (cbfs_read(media, &stage, offset, sizeof(stage)) != sizeof(stage)) {
 		ERROR("ERROR: failed to read stage header\n");
 		return CBFS_LOAD_ERROR;
