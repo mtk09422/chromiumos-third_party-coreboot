@@ -176,7 +176,8 @@ struct boot_state_init_entry {
 	struct boot_state_callback bscb;
 };
 
-#define BOOT_STATE_INIT_ATTR  __attribute__ ((used,section (".bs_init")))
+#define BOOT_STATE_INIT_ATTR \
+	__attribute__ ((used, aligned(4), section(".bs_init")))
 
 #define BOOT_STATE_INIT_ENTRIES(name_) \
 	static struct boot_state_init_entry name_[] BOOT_STATE_INIT_ATTR
