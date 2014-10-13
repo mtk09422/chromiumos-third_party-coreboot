@@ -28,6 +28,7 @@
 #include <soc/nvidia/tegra/apbmisc.h>
 #include <soc/pmc.h>
 #include <soc/power.h>
+#include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #define BCT_OFFSET_IN_BIT	0x50
@@ -61,6 +62,9 @@ void __attribute__((weak)) bootblock_mainboard_early_init(void)
 void main(void)
 {
 	void *entry = NULL;
+
+	timestamp_early_init(0);
+	timestamp_add_now(TS_START_BOOTBLOCK);
 
 	// enable JTAG at the earliest stage
 	enable_jtag();
@@ -105,6 +109,8 @@ void main(void)
 					CONFIG_CBFS_PREFIX "/romstage");
 		printk(BIOS_INFO, "T132 bootblock: jumping to romstage\n");
 	}
+
+	timestamp_add_now(TS_END_BOOTBLOCK);
 
 	if (entry != CBFS_LOAD_ERROR)
 		stage_exit(entry);

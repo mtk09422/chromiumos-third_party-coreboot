@@ -21,6 +21,7 @@
 #include <arch/exception.h>
 #include <console/console.h>
 #include <soc/verstage.h>
+#include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 void __attribute__((weak)) verstage_mainboard_init(void)
@@ -31,6 +32,7 @@ void __attribute__((weak)) verstage_mainboard_init(void)
 void main(void)
 {
 	console_init();
+	timestamp_add_now(TS_START_VBOOT);
 	exception_init();
 
 	verstage_mainboard_init();

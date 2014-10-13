@@ -29,6 +29,7 @@
 #include <soc/sdram_configs.h>
 #include <soc/romstage.h>
 #include <timer.h>
+#include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 void __attribute__((weak)) romstage_mainboard_init(void)
@@ -42,6 +43,8 @@ static void *load_ramstage(void)
 	struct stopwatch sw;
 
 	stopwatch_init(&sw);
+
+	timestamp_add_now(TS_START_COPYRAM);
 
 #if IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)
 	entry = vboot2_load_ramstage();
@@ -58,6 +61,8 @@ static void *load_ramstage(void)
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 					CONFIG_CBFS_PREFIX "/ramstage");
 
+	timestamp_add_now(TS_END_COPYRAM);
+
 	printk(BIOS_DEBUG, "Ramstage load time: %ld usecs.\n",
 		stopwatch_duration_usecs(&sw));
 
@@ -68,10 +73,14 @@ void romstage(void)
 {
 	void *entry;
 
+	timestamp_add_now(TS_START_ROMSTAGE);
+
 	console_init();
 	exception_init();
 
 	printk(BIOS_INFO, "T132: romstage here\n");
+
+	timestamp_add_now(TS_BEFORE_INITRAM);
 
 #if CONFIG_BOOTROM_SDRAM_INIT
 	printk(BIOS_INFO, "T132 romstage: SDRAM init done by BootROM, RAMCODE = %d\n",
@@ -80,6 +89,8 @@ void romstage(void)
 	sdram_init(get_sdram_config());
 	printk(BIOS_INFO, "T132 romstage: sdram_init done\n");
 #endif
+
+	timestamp_add_now(TS_AFTER_INITRAM);
 
 	/*
 	 * Trust Zone needs to be initialized after the DRAM initialization
@@ -113,6 +124,8 @@ void romstage(void)
 	}
 
 	cbmemc_reinit();
+
+	timestamp_add_now(TS_END_ROMSTAGE);
 
 	ccplex_cpu_start(entry);
 
