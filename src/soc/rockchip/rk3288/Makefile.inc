@@ -57,6 +57,7 @@ romstage-y += spi.c
 romstage-y += media.c
 romstage-y += sdram.c
 romstage-y += pwm.c
+romstage-y += tsadc.c
 
 ramstage-y += soc.c
 ramstage-y += cbmem.c
@@ -69,6 +70,7 @@ ramstage-y += gpio.c
 ramstage-y += media.c
 ramstage-y += rk808.c
 ramstage-y += pwm.c
+
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
 $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
