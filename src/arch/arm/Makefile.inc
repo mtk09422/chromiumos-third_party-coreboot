@@ -51,6 +51,7 @@ bootblock-y += eabi_compat.c
 bootblock-y += memset.S
 bootblock-y += memcpy.S
 bootblock-y += memmove.S
+bootblock-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 $(objcbfs)/bootblock.debug: $$(bootblock-objs)
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
@@ -75,6 +76,7 @@ verstage-y += memset.S
 verstage-y += memcpy.S
 verstage-y += memmove.S
 verstage-y += stages.c
+verstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 endif # CONFIG_ARCH_VERSTAGE_ARM
 
