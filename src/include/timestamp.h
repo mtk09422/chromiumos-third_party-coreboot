@@ -59,18 +59,45 @@ enum timestamp_id {
 };
 
 #if CONFIG_COLLECT_TIMESTAMPS
+/*
+ * Order of usage of timestamp library is:
+ * Call timestamp_early_init / timestamp_init to set base time before any
+ * timestamp_add function is called. timestamp_early_init also ensures that the
+ * cache is valid in _timestamp region.
+ * After this, timestamp_add / timestamp_add_now can be used to record
+ * timestamps. Sync will be automatically taken care of by cbmem_initialize
+ */
+/*
+ * Initialize the cache to a valid state and set the base time.
+ * This function is used before DRAM is setup so that the timestamp cache can
+ * be initialized in _timestamp region.
+ * Both, timestamp_init and timestamp_early_init reset the cbmem state to
+ * timestamp table reset required. Thus, whenever a timestamp_add or
+ * timestamp_sync is done to add new entries into the cbmem timestamp table, it
+ * first resets the table to 0 entries.
+ */
+void timestamp_early_init(uint64_t base);
+/* Initialize the base time for timestamps and mark cache as valid */
 void timestamp_init(uint64_t base);
+/*
+ * Add a new timestamp. Depending on cbmem is available or not, this timestamp
+ * will be stored to cbmem / timestamp cache.
+ */
 void timestamp_add(enum timestamp_id id, uint64_t ts_time);
+/* Calls timestamp_add with current timestamp. */
 void timestamp_add_now(enum timestamp_id id);
-void timestamp_stash(enum timestamp_id id);
+/*
+ * Sync all timestamps from timestamp_cache to cbmem area. Called by
+ * cbmem_initialize.
+ */
 void timestamp_sync(void);
 /* Implemented by the architecture code */
 uint64_t timestamp_get(void);
 #else
+#define timestamp_early_init(base)
 #define timestamp_init(base)
 #define timestamp_add(id, time)
 #define timestamp_add_now(id)
-#define timestamp_stash(id)
 #define timestamp_sync()
 #endif
 

@@ -27,6 +27,7 @@
 #if CONFIG_HAVE_ACPI_RESUME && !defined(__PRE_RAM__)
 #include <arch/acpi.h>
 #endif
+#include <timestamp.h>
 
 #ifndef UINT_MAX
 #define UINT_MAX 4294967295U
@@ -186,6 +187,9 @@ void cbmem_initialize_empty(void)
 
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
+
+	/* Pull in all timestamps from timestamp cache into cbmem area */
+	timestamp_sync();
 }
 
 static inline int cbmem_fail_recovery(void)
@@ -264,6 +268,9 @@ int cbmem_initialize(void)
 
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
+
+	/* Pull in all timestamps from timestamp cache into cbmem area */
+	timestamp_sync();
 
 	/* Recovery successful. */
 	return 0;

@@ -24,7 +24,7 @@ bootblock-y += memcmp.c
 ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V7_M),y)
 bootblock-y += memset.c memcpy.c memmove.c
 endif
-
+bootblock-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 bootblock-$(CONFIG_GENERIC_UDELAY) += timer.c
 
 ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
@@ -51,6 +51,7 @@ verstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
 verstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 verstage-y += tlcl.c
 verstage-$(CONFIG_GENERIC_UDELAY) += timer.c
+verstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 romstage-y += delay.c
 romstage-y += cbfs.c

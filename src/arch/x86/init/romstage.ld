@@ -69,6 +69,11 @@ SECTIONS
 	.car.data . (NOLOAD) : {
 		_car_data_start = .;
 		*(.car.global_data);
+#if IS_ENABLED(CONFIG_HAS_PRECBMEM_TIMESTAMP_REGION)
+		_timestamp = .;
+		. = . + 0x100;
+		_etimestamp = .;
+#endif
 		_car_data_end = .;
 		/* The preram cbmem console area comes last to take advantage
 		 * of a zero-sized array to hold the memconsole contents.

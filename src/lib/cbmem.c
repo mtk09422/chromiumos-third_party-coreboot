@@ -26,6 +26,7 @@
 #if CONFIG_HAVE_ACPI_RESUME && !defined(__PRE_RAM__)
 #include <arch/acpi.h>
 #endif
+#include <timestamp.h>
 
 // The CBMEM TOC reserves 512 bytes to keep
 // the other entries somewhat aligned.
@@ -231,6 +232,9 @@ int cbmem_initialize(void)
 #endif
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
+
+	/* Pull in all timestamps from timestamp cache into cbmem area */
+	timestamp_sync();
 
 	return rv;
 }

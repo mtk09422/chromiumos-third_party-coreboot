@@ -130,7 +130,7 @@ static boot_state_t bs_pre_device(void *arg)
 
 static boot_state_t bs_dev_init_chips(void *arg)
 {
-	timestamp_stash(TS_DEVICE_ENUMERATE);
+	timestamp_add_now(TS_DEVICE_ENUMERATE);
 
 	/* Initialize chips early, they might disable unused devices. */
 	dev_initialize_chips();
@@ -148,7 +148,7 @@ static boot_state_t bs_dev_enumerate(void *arg)
 
 static boot_state_t bs_dev_resources(void *arg)
 {
-	timestamp_stash(TS_DEVICE_CONFIGURE);
+	timestamp_add_now(TS_DEVICE_CONFIGURE);
 
 	/* Now compute and assign the bus resources. */
 	dev_configure();
@@ -158,7 +158,7 @@ static boot_state_t bs_dev_resources(void *arg)
 
 static boot_state_t bs_dev_eanble(void *arg)
 {
-	timestamp_stash(TS_DEVICE_ENABLE);
+	timestamp_add_now(TS_DEVICE_ENABLE);
 
 	/* Now actually enable devices on the bus */
 	dev_enable();
@@ -168,7 +168,7 @@ static boot_state_t bs_dev_eanble(void *arg)
 
 static boot_state_t bs_dev_init(void *arg)
 {
-	timestamp_stash(TS_DEVICE_INITIALIZE);
+	timestamp_add_now(TS_DEVICE_INITIALIZE);
 
 	/* And of course initialize devices on the bus */
 	dev_initialize();
@@ -178,9 +178,7 @@ static boot_state_t bs_dev_init(void *arg)
 
 static boot_state_t bs_post_device(void *arg)
 {
-	timestamp_stash(TS_DEVICE_DONE);
-
-	timestamp_sync();
+	timestamp_add_now(TS_DEVICE_DONE);
 
 	return BS_OS_RESUME_CHECK;
 }
@@ -484,7 +482,7 @@ static void boot_state_schedule_static_entries(void)
 
 void main(void)
 {
-	timestamp_stash(TS_START_RAMSTAGE);
+	timestamp_add_now(TS_START_RAMSTAGE);
 	post_code(POST_ENTRY_RAMSTAGE);
 
 	/* console_init() MUST PRECEDE ALL printk()! */
