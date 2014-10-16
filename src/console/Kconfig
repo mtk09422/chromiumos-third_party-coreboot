@@ -36,6 +36,15 @@ config CONSOLE_SERIAL_IPQ806X
 	help
 	  Send coreboot debug output to an SGMI based uart (ipq806x)
 
+config CONSOLE_SERIAL_BG4CD
+	bool "Serial port console output for Marvell BG4CD"
+	depends on CONSOLE_SERIAL
+	depends on SOC_MARVELL_BG4CD
+	default y
+	help
+	  Enable use of Marvell BG4CD based uart for coreboot serial console
+	  output.
+
 config CONSOLE_SERIAL8250MEM
 	bool "Serial port console output (memory mapped, 8250-compatible)"
 	depends on CONSOLE_SERIAL

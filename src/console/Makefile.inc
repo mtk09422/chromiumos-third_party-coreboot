@@ -28,6 +28,7 @@ ramstage-$(CONFIG_USBDEBUG) += usbdebug_console.c
 ramstage-$(CONFIG_CONSOLE_NE2K) += ne2k_console.c
 ramstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart_wrapper.c
+ramstage-$(CONFIG_CONSOLE_SERIAL_BG4CD) += uart_wrapper.c
 
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += vtxprintf.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += console.c
