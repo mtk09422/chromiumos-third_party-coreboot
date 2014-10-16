@@ -361,6 +361,12 @@ void fill_lb_gpios(struct lb_gpios *gpios);
 /* Define this in mainboard.c to add board-specific table entries. */
 void lb_board(struct lb_header *header);
 
+/*
+ * Function to retrieve MAC address(es) from the VPD and store them in the
+ * coreboot table.
+ */
+void lb_table_add_macs_from_vpd(struct lb_header *header);
+
 struct lb_record *lb_new_record(struct lb_header *header);
 
 #endif /* COREBOOT_TABLES_H */
