@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Tue Jun 24 10:49:14 2014
+# Wed Oct 15 20:53:49 2014
 #
 
 #
@@ -50,15 +50,15 @@ CONFIG_LP_TIMER_NONE=y
 # CONFIG_LP_TIMER_TEGRA_1US is not set
 # CONFIG_LP_TIMER_IPQ806X is not set
 # CONFIG_LP_TIMER_RK is not set
+# CONFIG_LP_TIMER_BG4CD is not set
 CONFIG_LP_USB=y
 # CONFIG_LP_USB_OHCI is not set
 CONFIG_LP_USB_EHCI=y
-# CONFIG_LP_USB_EHCI_HOSTPC_ROOT_HUB_TT is not set
 CONFIG_LP_USB_XHCI=y
 CONFIG_LP_USB_HID=y
 CONFIG_LP_USB_HUB=y
+# CONFIG_LP_USB_EHCI_HOSTPC_ROOT_HUB_TT is not set
 CONFIG_LP_USB_MSC=y
-# CONFIG_LP_USB_DWC2 is not set
 # CONFIG_LP_USB_PCI is not set
 CONFIG_LP_USB_GEN_HUB=y
 # CONFIG_LP_BIG_ENDIAN is not set

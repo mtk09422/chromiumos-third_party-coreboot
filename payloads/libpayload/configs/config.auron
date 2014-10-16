@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Tue Jun 24 10:49:21 2014
+# Wed Oct 15 20:53:54 2014
 #
 
 #
@@ -42,6 +42,7 @@ CONFIG_LP_8250_SERIAL_CONSOLE=y
 # CONFIG_LP_TEGRA_SERIAL_CONSOLE is not set
 # CONFIG_LP_RK_SERIAL_CONSOLE is not set
 # CONFIG_LP_IPQ806X_SERIAL_CONSOLE is not set
+# CONFIG_LP_BG4CD_SERIAL_CONSOLE is not set
 # CONFIG_LP_PL011_SERIAL_CONSOLE is not set
 CONFIG_LP_SERIAL_IOBASE=0x3f8
 # CONFIG_LP_SERIAL_SET_SPEED is not set

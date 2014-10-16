@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # libpayload version: 0.2.0
-# Tue Oct 14 18:32:48 2014
+# Wed Oct 15 20:53:57 2014
 #
 
 #
@@ -27,8 +27,6 @@ CONFIG_LP_ARCH_ARM=y
 #
 CONFIG_LP_LIBC=y
 # CONFIG_LP_CURSES is not set
-# CONFIG_LP_TINYCURSES is not set
-# CONFIG_LP_PDCURSES is not set
 CONFIG_LP_CBFS=y
 CONFIG_LP_LZMA=y
 
