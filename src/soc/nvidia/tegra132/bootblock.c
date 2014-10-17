@@ -63,9 +63,6 @@ void main(void)
 {
 	void *entry = NULL;
 
-	// enable pinmux clamp inputs
-	clamp_tristate_inputs();
-
 	// enable JTAG at the earliest stage
 	enable_jtag();
 
