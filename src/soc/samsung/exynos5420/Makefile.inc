@@ -53,6 +53,8 @@ rmodules_$(ARCH-ROMSTAGE-y)-y += mct.c
 VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/monotonic_timer.rmodules_$(ARCH-ROMSTAGE-y).o
 VBOOT_STUB_DEPS += $(obj)/soc/samsung/exynos5420/mct.rmodules_$(ARCH-ROMSTAGE-y).o
 
+INCLUDES += -Isrc/soc/samsung/exynos5420/include/
+
 $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
 	cp $< $@
 

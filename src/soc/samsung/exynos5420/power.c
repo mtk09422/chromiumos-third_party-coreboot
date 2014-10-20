@@ -19,12 +19,12 @@
 
 /* Power setup code for EXYNOS5 */
 
-#include <arch/io.h>
 #include <arch/hlt.h>
+#include <arch/io.h>
 #include <console/console.h>
-#include "dmc.h"
-#include "power.h"
-#include "setup.h"
+#include <soc/dmc.h>
+#include <soc/power.h>
+#include <soc/setup.h>
 
 void ps_hold_setup(void)
 {
