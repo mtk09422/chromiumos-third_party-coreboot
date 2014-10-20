@@ -19,17 +19,16 @@
 
 #include <arch/exception.h>
 #include <arch/hlt.h>
+#include <arch/stages.h>
 #include <cbfs.h>
 #include <console/console.h>
 #include <soc/addressmap.h>
 #include <soc/bootblock.h>
 #include <soc/clock.h>
 #include <soc/nvidia/tegra/apbmisc.h>
-#include <soc/nvidia/tegra132/pmc.h>
-#include <arch/stages.h>
+#include <soc/pmc.h>
+#include <soc/power.h>
 #include <vendorcode/google/chromeos/chromeos.h>
-
-#include "power.h"
 
 #define BCT_OFFSET_IN_BIT	0x50
 #define ODMDATA_OFFSET_IN_BCT	0x6A8

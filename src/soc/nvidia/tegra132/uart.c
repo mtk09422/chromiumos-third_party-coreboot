@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <uart.h>
 #include <arch/io.h>
 #include <console/console.h>	/* for __console definition */
 #include <stdint.h>
+#include <uart.h>
 #include <uart8250.h>
 
 struct tegra132_uart {
