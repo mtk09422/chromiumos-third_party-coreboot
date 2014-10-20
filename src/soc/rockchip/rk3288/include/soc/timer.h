@@ -17,21 +17,29 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SOC_ROCKCHIP_RK3288_CPU_H__
-#define __SOC_ROCKCHIP_RK3288_CPU_H__
+#ifndef __SOC_ROCKCHIP_RK3288_TIMER_H__
+#define __SOC_ROCKCHIP_RK3288_TIMER_H__
 
-#include <arch/io.h>
+#include <inttypes.h>
+#include <soc/addressmap.h>
+#include <soc/clock.h>
+#include <timer.h>
 
-#define RK_CLRSETBITS(clr, set) ((((clr) | (set)) << 16) | set)
-#define RK_SETBITS(set) RK_CLRSETBITS(0, set)
-#define RK_CLRBITS(clr) RK_CLRSETBITS(clr, 0)
+static const u32 clocks_per_usec = OSC_HZ/USECS_PER_SEC;
 
-#define FB_SIZE_KB  4096
-#define RAM_BASE_KB (CONFIG_SYS_SDRAM_BASE >> 10)
-#define RAM_SIZE_KB (CONFIG_DRAM_SIZE_MB << 10UL)
+struct rk3288_timer {
+	u32 timer_load_count0;
+	u32 timer_load_count1;
+	u32 timer_curr_value0;
+	u32 timer_curr_value1;
+	u32 timer_ctrl_reg;
+	u32 timer_int_status;
+};
 
-static inline u32 get_fb_base_kb(void)
-{
-	return RAM_BASE_KB + RAM_SIZE_KB - FB_SIZE_KB;
-}
-#endif
+static struct rk3288_timer * const timer7_ptr = (void *)TIMER7_BASE;
+
+#define TIMER_LOAD_VAL	0xffffffff
+
+void rk3288_init_timer(void);
+
+#endif	/* __SOC_ROCKCHIP_RK3288_TIMER_H__ */

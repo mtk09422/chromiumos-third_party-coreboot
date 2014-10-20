@@ -73,6 +73,8 @@ ramstage-y += pwm.c
 
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
+INCLUDES += -Isrc/soc/rockchip/rk3288/include/
+
 $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
 	cp $< $@
 
