@@ -34,12 +34,12 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <delay.h>
-#include <clock.h>
-#include <gpio.h>
-#include <gsbi.h>
-#include <uart.h>
-#include <ipq_uart.h>
+#include <soc/clock.h>
+#include <soc/gpio.h>
+#include <soc/gsbi.h>
+#include <soc/ipq_uart.h>
 #include <stdint.h>
+#include <uart.h>
 
 #define FIFO_DATA_SIZE	4
 

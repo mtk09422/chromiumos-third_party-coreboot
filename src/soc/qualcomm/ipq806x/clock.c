@@ -3,7 +3,7 @@
  */
 
 #include <delay.h>
-#include <clock.h>
+#include <soc/clock.h>
 
 /**
  * uart_pll_vote_clk_enable - enables PLL8
