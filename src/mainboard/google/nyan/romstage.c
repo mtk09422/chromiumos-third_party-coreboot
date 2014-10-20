@@ -28,20 +28,21 @@
 #include <console/console.h>
 #include <reset.h>
 #include <romstage_handoff.h>
-#include <vendorcode/google/chromeos/chromeos.h>
-#include "sdram_configs.h"
-#include <soc/nvidia/tegra/i2c.h>
-#include <soc/nvidia/tegra124/cache.h>
-#include <soc/nvidia/tegra124/chip.h>
-#include <soc/nvidia/tegra124/clk_rst.h>
-#include <soc/nvidia/tegra124/early_configs.h>
-#include <soc/nvidia/tegra124/power.h>
-#include <soc/nvidia/tegra124/sdram.h>
 #include <soc/addressmap.h>
+#include <soc/cache.h>
+#include <soc/clk_rst.h>
 #include <soc/clock.h>
 #include <soc/display.h>
+#include <soc/early_configs.h>
+#include <soc/nvidia/tegra/i2c.h>
+#include <soc/nvidia/tegra124/chip.h>
+#include <soc/power.h>
+#include <soc/sdram.h>
 #include <symbols.h>
 #include <timestamp.h>
+#include <vendorcode/google/chromeos/chromeos.h>
+
+#include "sdram_configs.h"
 
 static void __attribute__((noinline)) romstage(void)
 {
