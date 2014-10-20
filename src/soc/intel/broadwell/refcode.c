@@ -26,9 +26,9 @@
 #include <ramstage_cache.h>
 #include <string.h>
 #include <vendorcode/google/chromeos/vboot_handoff.h>
-#include <broadwell/pei_data.h>
-#include <broadwell/pei_wrapper.h>
-#include <broadwell/ramstage.h>
+#include <soc/pei_data.h>
+#include <soc/pei_wrapper.h>
+#include <soc/ramstage.h>
 
 static inline int is_s3_resume(void)
 {

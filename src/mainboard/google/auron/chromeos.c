@@ -24,7 +24,7 @@
 #include <console/console.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 #include <ec/google/chromeec/ec.h>
-#include <broadwell/gpio.h>
+#include <soc/gpio.h>
 #include "ec.h"
 
 /* SPI Write protect is GPIO 16 */

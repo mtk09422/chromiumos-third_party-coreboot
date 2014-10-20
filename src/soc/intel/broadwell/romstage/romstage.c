@@ -32,12 +32,12 @@
 #include <romstage_handoff.h>
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
-#include <broadwell/me.h>
-#include <broadwell/pei_data.h>
-#include <broadwell/pm.h>
-#include <broadwell/reset.h>
-#include <broadwell/romstage.h>
-#include <broadwell/spi.h>
+#include <soc/me.h>
+#include <soc/pei_data.h>
+#include <soc/pm.h>
+#include <soc/reset.h>
+#include <soc/romstage.h>
+#include <soc/spi.h>
 
 static inline void mark_ts(struct romstage_params *rp, uint64_t ts)
 {

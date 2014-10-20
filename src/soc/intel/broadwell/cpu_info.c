@@ -21,10 +21,10 @@
 #include <console/console.h>
 #include <cpu/cpu.h>
 #include <cpu/x86/msr.h>
-#include <broadwell/cpu.h>
-#include <broadwell/msr.h>
-#include <broadwell/ramstage.h>
-#include <broadwell/systemagent.h>
+#include <soc/cpu.h>
+#include <soc/msr.h>
+#include <soc/ramstage.h>
+#include <soc/systemagent.h>
 
 u32 cpu_family_model(void)
 {

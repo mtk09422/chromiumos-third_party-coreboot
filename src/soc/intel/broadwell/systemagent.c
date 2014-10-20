@@ -31,11 +31,11 @@
 #include <cbmem.h>
 #include <romstage_handoff.h>
 #include <vendorcode/google/chromeos/chromeos.h>
-#include <broadwell/cpu.h>
-#include <broadwell/iomap.h>
-#include <broadwell/pci_devs.h>
-#include <broadwell/ramstage.h>
-#include <broadwell/systemagent.h>
+#include <soc/cpu.h>
+#include <soc/iomap.h>
+#include <soc/pci_devs.h>
+#include <soc/ramstage.h>
+#include <soc/systemagent.h>
 
 u8 systemagent_revision(void)
 {

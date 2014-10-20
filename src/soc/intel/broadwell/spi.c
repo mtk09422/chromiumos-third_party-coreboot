@@ -28,7 +28,7 @@
 #include <console/console.h>
 #include <device/pci_ids.h>
 #include <spi-generic.h>
-#include <broadwell/pci_devs.h>
+#include <soc/pci_devs.h>
 
 #define min(a, b) ((a)<(b)?(a):(b))
 

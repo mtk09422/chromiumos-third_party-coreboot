@@ -71,7 +71,7 @@ romstage-y += usbdebug.c
 smm-y      += usbdebug.c
 endif
 
-INCLUDES += -Isrc/soc/intel/broadwell/
+INCLUDES += -Isrc/soc/intel/broadwell/include
 
 # Run an intermediate step when producing coreboot.rom
 # that adds additional components to the final firmware

@@ -23,10 +23,10 @@
 #include <device/device.h>
 #include <romstage_handoff.h>
 #include <stdlib.h>
-#include <broadwell/nvs.h>
-#include <broadwell/pm.h>
-#include <broadwell/ramstage.h>
-#include <chip.h>
+#include <soc/nvs.h>
+#include <soc/pm.h>
+#include <soc/ramstage.h>
+#include <soc/intel/broadwell/chip.h>
 
 /* Save bit index for PM1_STS and GPE_STS for ACPI _SWS */
 static void save_acpi_wake_source(global_nvs_t *gnvs)

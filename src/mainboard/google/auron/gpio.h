@@ -20,7 +20,7 @@
 #ifndef AURON_GPIO_H
 #define AURON_GPIO_H
 
-#include <broadwell/gpio.h>
+#include <soc/gpio.h>
 
 static const struct gpio_config mainboard_gpio_config[] = {
 	PCH_GPIO_UNUSED,        /* 0: UNUSED */

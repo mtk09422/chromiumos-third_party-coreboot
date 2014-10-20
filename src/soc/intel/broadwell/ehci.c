@@ -25,8 +25,8 @@
 #include <device/pci_ids.h>
 #include <usbdebug.h>
 #include <arch/io.h>
-#include <broadwell/ehci.h>
-#include <broadwell/pch.h>
+#include <soc/ehci.h>
+#include <soc/pch.h>
 
 static void usb_ehci_set_subsystem(device_t dev, unsigned vendor, unsigned device)
 {
