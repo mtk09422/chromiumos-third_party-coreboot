@@ -22,7 +22,7 @@
 #include <arch/io.h>
 #include <arch/hlt.h>
 #include <console/console.h>
-#include "power.h"
+#include <soc/power.h>
 
 static void ps_hold_setup(void)
 {

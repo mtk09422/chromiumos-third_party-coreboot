@@ -47,6 +47,8 @@ ramstage-y += fb.c
 ramstage-y += usb.c
 ramstage-y += cbmem.c
 
+INCLUDES += -Isrc/soc/samsung/exynos5250/include/
+
 $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
 	cp $< $@
 
