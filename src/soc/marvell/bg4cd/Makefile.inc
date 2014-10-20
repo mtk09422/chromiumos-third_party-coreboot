@@ -42,6 +42,8 @@ ramstage-y += monotonic_timer.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
 ramstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
+INCLUDES += -Isrc/soc/marvell/bg4cd/include/
+
 $(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
 	cp $< $@
 
