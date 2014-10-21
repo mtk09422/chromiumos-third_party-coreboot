@@ -19,14 +19,12 @@
  * MA 02110-1301 USA
  */
 
-#include <arch/cache.h>
 #include <arch/exception.h>
 #include <arch/hlt.h>
 #include <arch/stages.h>
 #include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
-#include <delay.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 void main(void)
