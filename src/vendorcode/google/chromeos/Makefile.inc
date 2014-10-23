@@ -30,8 +30,7 @@ romstage-y += fmap.c
 ramstage-y += fmap.c
 ramstage-$(CONFIG_CHROMEOS_RAMOOPS) += ramoops.c
 smm-y += fmap.c
-romstage-y += vpd_decode.c cros_vpd.c
-ramstage-y += vpd_decode.c cros_vpd.c vpd_mac.c
+ramstage-y += vpd_decode.c cros_vpd.c vpd_mac.c vpd_calibration.c
 ifneq ($(wildcard src/mainboard/$(MAINBOARDDIR)/chromeos.c),)
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
 romstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
