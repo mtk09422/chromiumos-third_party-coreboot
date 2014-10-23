@@ -53,6 +53,7 @@ bootblock-y += bootblock_m.S
 bootblock-y += bootblock_simple.c
 endif
 bootblock-y += exception_m.c
+bootblock-y += cache_m.c
 
 endif
 
