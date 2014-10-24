@@ -3,7 +3,10 @@
 
 #include <gpio.h>
 #include <soc/cdp.h>
+#include <soc/ebi2.h>
+#include <soc/clock.h>
 #include <types.h>
+#include <boardid.h>
 
 void ipq_configure_gpio(const gpio_func_data_t *gpio, unsigned count)
 {
@@ -204,6 +207,8 @@ void reset_cpu(ulong addr)
 	for(;;);
 }
 
+#endif
+
 static void configure_nand_gpio(void)
 {
 	/* EBI2 CS, CLE, ALE, WE, OE */
@@ -230,24 +235,21 @@ static void configure_nand_gpio(void)
 void board_nand_init(void)
 {
 	struct ebi2cr_regs *ebi2_regs;
-	extern int ipq_spi_init(void);
 
-	if (gboard_param->flashdesc != NOR_MMC) {
+	if (board_id() != BOARD_ID_PROTO_0_2_NAND)
+		return;
 
-		ebi2_regs = (struct ebi2cr_regs *) EBI2CR_BASE;
+	ebi2_regs = (struct ebi2cr_regs *) EBI2CR_BASE;
 
-		nand_clock_config();
-		configure_nand_gpio();
+	nand_clock_config();
+	configure_nand_gpio();
 
-		/* NAND Flash is connected to CS0 */
-		clrsetbits_le32(&ebi2_regs->chip_select_cfg0, CS0_CFG_MASK,
-				CS0_CFG_SERIAL_FLASH_DEVICE);
-
-		ipq_nand_init(IPQ_NAND_LAYOUT_LINUX);
-	}
-
-	ipq_spi_init();
+	/* NAND Flash is connected to CS0 */
+	clrsetbits_le32(&ebi2_regs->chip_select_cfg0, CS0_CFG_MASK,
+			CS0_CFG_SERIAL_FLASH_DEVICE);
 }
+
+#if 0
 
 void ipq_get_part_details(void)
 {
