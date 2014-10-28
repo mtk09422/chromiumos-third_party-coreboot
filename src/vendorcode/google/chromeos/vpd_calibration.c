@@ -161,7 +161,7 @@ void cbmem_add_vpd_calibration_data(void)
 	cbmem_entry_size += sizeof(struct calibration_entry);
 	cbmem_entry = cbmem_add(CBMEM_ID_WIFI_CALIBRATION, cbmem_entry_size);
 	if (!cbmem_entry) {
-		printk(BIOS_ERR, "%s: no room in cbmem table to add %d bytes\n",
+		printk(BIOS_ERR, "%s: no room in cbmem to add %zd bytes\n",
 		       __func__, cbmem_entry_size);
 		return;
 	}
