@@ -41,7 +41,7 @@ secmon-y += ../../transition_asm.S ../../transition.c
 
 ramstage-objs += $(SECMON_RAMSTAGE)
 
-$(eval $(call rmodule_link,$(SECMON_ELF), $$$$(secmon-objs), 0,arm64))
+$(eval $(call rmodule_link,$(SECMON_ELF), $$$$(secmon-objs),8192,arm64))
 
 $(SECMON_BIN): $(SECMON_RMOD)
 	       $(OBJCOPY_secmon) -O binary $< $@
