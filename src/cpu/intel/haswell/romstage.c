@@ -200,17 +200,13 @@ void romstage_common(const struct romstage_params *params)
 	struct romstage_handoff *handoff;
 
 #if CONFIG_COLLECT_TIMESTAMPS
-	uint64_t start_romstage_time;
-	uint64_t before_dram_time;
-	uint64_t after_dram_time;
 	uint64_t base_time =
 		(uint64_t)pci_read_config32(PCI_DEV(0, 0x1f, 2), 0xd0) << 32 ||
 		pci_read_config32(PCI_DEV(0, 0x00, 0), 0xdc);
+	timestamp_early_init(base_time);
 #endif
 
-#if CONFIG_COLLECT_TIMESTAMPS
-	start_romstage_time = timestamp_get();
-#endif
+	timestamp_add_now(TS_START_ROMSTAGE);
 
 	if (params->bist == 0)
 		enable_lapic();
@@ -250,9 +246,7 @@ void romstage_common(const struct romstage_params *params)
 
 	post_code(0x3a);
 	params->pei_data->boot_mode = boot_mode;
-#if CONFIG_COLLECT_TIMESTAMPS
-	before_dram_time = timestamp_get();
-#endif
+	timestamp_add_now(TS_BEFORE_INITRAM);
 
 	report_platform_info();
 
@@ -261,9 +255,7 @@ void romstage_common(const struct romstage_params *params)
 
 	sdram_initialize(params->pei_data);
 
-#if CONFIG_COLLECT_TIMESTAMPS
-	after_dram_time = timestamp_get();
-#endif
+	timestamp_add_now(TS_AFTER_INITRAM);
 	post_code(0x3b);
 
 	intel_early_me_status();
@@ -292,13 +284,7 @@ void romstage_common(const struct romstage_params *params)
 #if CONFIG_CHROMEOS
 	init_chromeos(boot_mode);
 #endif
-#if CONFIG_COLLECT_TIMESTAMPS
-	timestamp_init(base_time);
-	timestamp_add(TS_START_ROMSTAGE, start_romstage_time );
-	timestamp_add(TS_BEFORE_INITRAM, before_dram_time );
-	timestamp_add(TS_AFTER_INITRAM, after_dram_time );
 	timestamp_add_now(TS_END_ROMSTAGE);
-#endif
 }
 
 static inline void prepare_for_resume(struct romstage_handoff *handoff)
