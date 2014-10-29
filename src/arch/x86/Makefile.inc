@@ -211,9 +211,10 @@ endif # CONFIG_ROMCC
 $(objcbfs)/romstage_null.debug: $$(romstage-objs) $(LIBGCC_FILE_NAME_romstage) $(objgenerated)/romstage_null.ld
 	@printf "    LINK       $(subst $(obj)/,,$(@))\n"
 	$(call link,romstage,$(filter %.o %.a,$(^)),-o $(@) -L$(obj) -T $(objgenerated)/romstage_null.ld,$(LIBGCC_WRAP_LDFLAGS))
-	$(NM_romstage) $@ | grep -q " [DdBb] "; if [ $$? -eq 0 ]; then \
+	$(OBJCOPY_romstage) --only-section .illegal_globals $(@) $(objcbfs)/romstage_null.offenders && \
+		$(NM_romstage) $(objcbfs)/romstage_null.offenders | grep -q ""; if [ $$? -eq 0 ]; then \
 		echo "Forbidden global variables in romstage:"; \
-		$(NM_romstage) $@ | grep " [DdBb] "; test "$(CONFIG_CPU_AMD_AGESA)" = y; \
+		$(NM_romstage) $(objcbfs)/romstage_null.offenders; test "$(CONFIG_CPU_AMD_AGESA)" = y; \
 		else true; fi
 
 $(objcbfs)/romstage_xip.debug: $$(romstage-objs) $(LIBGCC_FILE_NAME_romstage) $(objgenerated)/romstage_xip.ld

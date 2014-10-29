@@ -42,6 +42,21 @@ SECTIONS
 		_erom = .;
 	}
 
+#if !IS_ENABLED(CONFIG_CPU_AMD_AGESA)
+	/* Global variables are not allowed in romstage
+	 * This section is checked during stage creation to ensure
+	 * that there are no global variables present
+	 */
+	.illegal_globals . : {
+		*(.data)
+		*(.data.*)
+		*(.bss)
+		*(.bss.*)
+		*(.sbss)
+		*(.sbss.*)
+	}
+#endif
+
 	/DISCARD/ : {
 		*(.comment)
 		*(.note)
