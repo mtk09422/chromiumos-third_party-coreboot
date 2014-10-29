@@ -19,6 +19,7 @@
 # MA 02110-1301 USA
 #
 
+ramstage-y += chromeos.c
 ramstage-y += mainboard.c
 
 bootblock-y += memlayout.ld
