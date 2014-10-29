@@ -31,6 +31,11 @@ Scope (\_SB)
 			Store (\_SB.PCI0.LPCB.EC0.LIDS, \LIDS)
 			Return (\LIDS)
 		}
+
+
+		// There is no GPIO for LID, the EC pulses WAKE# pin instead.
+		// There is no GPE for WAKE#, so fake it with PCI_EXP_WAKE
+		Name (_PRW, Package(){ 0x69, 5 }) // PCI_EXP
 	}
 
 	Device (PWRB)
