@@ -15,14 +15,6 @@ config DRIVERS_PS2_KEYBOARD
 	  this option, then you can say N here to speed up boot time.
 	  Otherwise say Y.
 
-config LPC_TPM
-	bool
-	default n
-	help
-	  Enable this option to enable TPM support in coreboot.
-
-	  If unsure, say N.
-
 config DRIVERS_MC146818_RTC
 	bool
 	default y if ARCH_X86
@@ -37,3 +29,5 @@ config DRIVERS_RTC_HAS_ALTCENTURY
 	bool "The RTC supports alt century"
 	depends on DRIVERS_MC146818_RTC
 	default y
+
+source src/drivers/pc80/tpm/Kconfig

@@ -6,12 +6,11 @@ ramstage-y += i8259.c
 ramstage-$(CONFIG_UDELAY_IO) += udelay_io.c
 ramstage-y += keyboard.c
 
-romstage-$(CONFIG_LPC_TPM) += tpm.c
 ifeq ($(CONFIG_DRIVERS_MC146818_CMOS),y)
 romstage-$(CONFIG_USE_OPTION_TABLE) += mc146818rtc_early.c
 endif
 
-subdirs-y += vga
+subdirs-y += tpm vga
 
 cbfs-files-$(CONFIG_HAVE_CMOS_DEFAULT) += cmos.default
 cmos.default-file = $(CONFIG_CMOS_DEFAULT_FILE):nvramtool
