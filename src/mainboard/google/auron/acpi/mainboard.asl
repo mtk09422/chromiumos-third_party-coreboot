@@ -44,6 +44,14 @@ Scope (\_SB)
 	}
 }
 
+/*
+ * LPC Trusted Platform Module
+ */
+Scope (\_SB.PCI0.LPCB)
+{
+	#include <drivers/pc80/tpm/acpi/tpm.asl>
+}
+
 Scope (\_SB.PCI0.I2C0)
 {
 	Device (ETPA)
