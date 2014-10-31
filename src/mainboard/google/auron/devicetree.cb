@@ -99,7 +99,7 @@ chip soc/intel/broadwell
 			end
 		end # LPC bridge
 		device pci 1f.2 on end # SATA Controller
-		device pci 1f.3 on end # SMBus
+		device pci 1f.3 off end # SMBus
 		device pci 1f.6 on end # Thermal
 	end
 end
