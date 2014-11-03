@@ -79,13 +79,8 @@ static void configure_l2ctlr(void)
 void main(void)
 {
 	void *entry;
-#if CONFIG_COLLECT_TIMESTAMPS
-	uint64_t start_romstage_time;
-	uint64_t before_dram_time;
-	uint64_t after_dram_time;
-	uint64_t base_time = timestamp_get();
-	start_romstage_time = timestamp_get();
-#endif
+
+	timestamp_add_now(TS_START_ROMSTAGE);
 
 	console_init();
 	configure_l2ctlr();
@@ -93,13 +88,9 @@ void main(void)
 
 	/* vdd_log 1200mv is enough for ddr run 666Mhz */
 	regulate_vdd_log(1200);
-#if CONFIG_COLLECT_TIMESTAMPS
-	before_dram_time = timestamp_get();
-#endif
+	timestamp_add_now(TS_BEFORE_INITRAM);
 	sdram_init(get_sdram_config());
-#if CONFIG_COLLECT_TIMESTAMPS
-	after_dram_time = timestamp_get();
-#endif
+	timestamp_add_now(TS_AFTER_INITRAM);
 
 	/* Now that DRAM is up, add mappings for it and DMA coherency buffer. */
 	mmu_config_range((uintptr_t)_dram/MiB,
@@ -108,20 +99,14 @@ void main(void)
 			 _dma_coherent_size/MiB, DCACHE_OFF);
 
 	cbmem_initialize_empty();
-#if CONFIG_COLLECT_TIMESTAMPS
-	timestamp_init(base_time);
-	timestamp_add(TS_START_ROMSTAGE, start_romstage_time);
-	timestamp_add(TS_BEFORE_INITRAM, before_dram_time);
-	timestamp_add(TS_AFTER_INITRAM, after_dram_time);
-#endif
 
 	entry = vboot2_load_ramstage();
 
 	if (entry == NULL) {
-		timestamp_add(TS_START_COPYRAM, timestamp_get());
+		timestamp_add_now(TS_START_COPYRAM);
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 					CONFIG_CBFS_PREFIX "/ramstage");
-		timestamp_add(TS_END_COPYRAM, timestamp_get());
+		timestamp_add_now(TS_END_COPYRAM);
 		if (entry == (void *)-1)
 			die("failed to load ramstage\n");
 	}

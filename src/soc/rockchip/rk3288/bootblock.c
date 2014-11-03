@@ -26,10 +26,13 @@
 #include <soc/grf.h>
 #include <soc/timer.h>
 #include <symbols.h>
+#include <timestamp.h>
 
 void bootblock_cpu_init(void)
 {
 	rk3288_init_timer();
+
+	timestamp_early_init(timestamp_get());
 
 	if (IS_ENABLED(CONFIG_CONSOLE_SERIAL_UART)) {
 		switch (CONFIG_CONSOLE_SERIAL_UART_ADDRESS) {
