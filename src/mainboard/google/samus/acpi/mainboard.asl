@@ -130,7 +130,7 @@ Scope (\_SB.PCI0.I2C0)
 		Name (_UID, 2)
 		Name (_S0W, 4)
 		Name (ISTP, 1) /* Touchpad */
-		Name (GPIO, 13) /* TRACKPAD_INT_L */
+		Name (GPIO, 9) /* TRACKPAD_INT_L (WAKE) */
 
 		Name (_CRS, ResourceTemplate()
 		{
@@ -148,7 +148,6 @@ Scope (\_SB.PCI0.I2C0)
 
 		Name (_PRW, Package() { GPIO, 3 })
 
-#ifdef ENABLE_TOUCH_WAKE
 		Method (_DSW, 3, NotSerialized)
 		{
 			If (LEqual (Arg0, 1)) {
@@ -156,7 +155,6 @@ Scope (\_SB.PCI0.I2C0)
 				\_SB.PCI0.LPCB.GPIO.GWAK (^GPIO)
 			}
 		}
-#endif
 
 		Method (_STA)
 		{
@@ -312,9 +310,9 @@ Scope (\_SB.PCI0.I2C1)
 			Interrupt (ResourceConsumer, Edge, ActiveLow) { 28 }
 		})
 
+#ifdef ENABLE_TOUCH_WAKE
 		Name (_PRW, Package() { GPIO, 3 })
 
-#ifdef ENABLE_TOUCH_WAKE
 		Method (_DSW, 3, NotSerialized)
 		{
 			If (LEqual (Arg0, 1)) {
