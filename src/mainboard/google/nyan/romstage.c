@@ -46,9 +46,7 @@
 
 static void __attribute__((noinline)) romstage(void)
 {
-#if CONFIG_COLLECT_TIMESTAMPS
-	uint64_t romstage_start_time = timestamp_get();
-#endif
+	timestamp_add_now(TS_START_ROMSTAGE);
 
 	console_init();
 	exception_init();
@@ -89,9 +87,6 @@ static void __attribute__((noinline)) romstage(void)
 
 	cbmem_initialize_empty();
 
-	timestamp_init(0);
-	timestamp_add(TS_START_ROMSTAGE, romstage_start_time);
-
 	early_mainboard_init();
 
 #if CONFIG_CONSOLE_CBMEM
@@ -100,10 +95,10 @@ static void __attribute__((noinline)) romstage(void)
 
 	vboot_verify_firmware(romstage_handoff_find_or_add());
 
-	timestamp_add(TS_START_COPYRAM, timestamp_get());
+	timestamp_add_now(TS_START_COPYRAM);
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 				      "fallback/ramstage");
-	timestamp_add(TS_END_COPYRAM, timestamp_get());
+	timestamp_add_now(TS_END_COPYRAM);
 
 	stage_exit(entry);
 }

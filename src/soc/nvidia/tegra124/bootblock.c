@@ -27,6 +27,7 @@
 #include <soc/nvidia/tegra/apbmisc.h>
 #include <soc/pinmux.h>
 #include <soc/power.h>
+#include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 void main(void)
@@ -60,6 +61,8 @@ void main(void)
 	}
 
 	clock_init();
+
+	timestamp_early_init(0);
 
 	bootblock_mainboard_init();
 
