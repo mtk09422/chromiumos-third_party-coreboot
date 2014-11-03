@@ -44,6 +44,7 @@ romstage-y += sdram_configs.c
 ramstage-y += boardid.c
 ramstage-y += mainboard.c
 ramstage-y += reset.c
+ramstage-y += pmic.c
 
 bootblock-y += memlayout.ld
 romstage-y += memlayout.ld
