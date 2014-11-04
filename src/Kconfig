@@ -1087,6 +1087,13 @@ config BOARD_ID_SUPPORT
 	  running on and reports it through the coreboot table to the rest of
 	  the system.
 
+config RAM_CODE_SUPPORT
+	bool "Discover RAM configuration code and store it in coreboot table"
+	default n
+	help
+	  If enabled, coreboot discovers RAM configuration (value obtained by
+	  reading board straps) and stores it in coreboot table.
+
 endmenu
 
 # These probably belong somewhere else, but they are needed somewhere.

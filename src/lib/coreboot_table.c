@@ -251,6 +251,19 @@ static void lb_board_id(struct lb_header *header)
 #endif
 }
 
+static void lb_ram_code(struct lb_header *header)
+{
+#if CONFIG_RAM_CODE_SUPPORT
+	struct lb_ram_code *code;
+
+	code = (struct lb_ram_code *)lb_new_record(header);
+
+	code->tag = LB_TAG_RAM_CODE;
+	code->size = sizeof(*code);
+	code->ram_code = ram_code();
+#endif
+}
+
 static void lb_x86_rom_cache(struct lb_header *header)
 {
 #if CONFIG_ARCH_X86
@@ -591,6 +604,9 @@ unsigned long write_coreboot_table(
 
 	/* Add board ID if available */
 	lb_board_id(head);
+
+	/* Add RAM config if available */
+	lb_ram_code(head);
 
 	add_cbmem_pointers(head);
 
