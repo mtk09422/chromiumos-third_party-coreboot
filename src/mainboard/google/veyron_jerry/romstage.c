@@ -110,8 +110,8 @@ void main(void)
 		if (entry == (void *)-1)
 			die("failed to load ramstage\n");
 	}
-#if CONFIG_COLLECT_TIMESTAMPS
+
 	timestamp_add_now(TS_END_ROMSTAGE);
-#endif
+
 	stage_exit(entry);
 }

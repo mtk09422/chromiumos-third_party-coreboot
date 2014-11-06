@@ -199,13 +199,10 @@ void romstage_common(const struct romstage_params *params)
 	int wake_from_s3;
 	struct romstage_handoff *handoff;
 
-#if CONFIG_COLLECT_TIMESTAMPS
 	uint64_t base_time =
 		(uint64_t)pci_read_config32(PCI_DEV(0, 0x1f, 2), 0xd0) << 32 ||
 		pci_read_config32(PCI_DEV(0, 0x00, 0), 0xdc);
 	timestamp_early_init(base_time);
-#endif
-
 	timestamp_add_now(TS_START_ROMSTAGE);
 
 	if (params->bist == 0)

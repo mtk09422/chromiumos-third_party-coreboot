@@ -228,14 +228,13 @@ void main(void)
 	void *entry;
 	int is_resume = (get_wakeup_state() != IS_NOT_WAKEUP);
 	int power_init_failed;
-#if CONFIG_COLLECT_TIMESTAMPS
 	uint64_t start_romstage_time;
 	uint64_t before_dram_time;
 	uint64_t after_dram_time;
 	uint64_t base_time = timestamp_get();
 
 	start_romstage_time = timestamp_get();
-#endif
+
 	exynos5420_config_smp();
 	power_init_failed = setup_power(is_resume);
 
@@ -253,14 +252,11 @@ void main(void)
 	/* re-initialize PMIC I2C channel after (re-)setting system clocks */
 	i2c_init(PMIC_I2C_BUS, 1000000, 0x00); /* 1MHz */
 
-#if CONFIG_COLLECT_TIMESTAMPS
 	before_dram_time = timestamp_get();
-#endif
+
 	setup_memory(&mem_timings, is_resume);
 
-#if CONFIG_COLLECT_TIMESTAMPS
 	after_dram_time = timestamp_get();
-#endif
 
 	primitive_mem_test();
 
@@ -282,19 +278,15 @@ void main(void)
 
 	cbmem_initialize_empty();
 
-#if CONFIG_COLLECT_TIMESTAMPS
 	timestamp_init(base_time);
 	timestamp_add(TS_START_ROMSTAGE, start_romstage_time );
 	timestamp_add(TS_BEFORE_INITRAM, before_dram_time );
 	timestamp_add(TS_AFTER_INITRAM, after_dram_time );
-#endif
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 	simple_spi_test();
 
-#if CONFIG_COLLECT_TIMESTAMPS
 	timestamp_add_now(TS_END_ROMSTAGE);
-#endif
 
 	stage_exit(entry);
 }

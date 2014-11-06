@@ -30,9 +30,7 @@
 #include <symbols.h>
 #include <cbfs.h>
 #include <lib.h>
-#if CONFIG_COLLECT_TIMESTAMPS
 #include <timestamp.h>
-#endif
 
 /* Maximum physical address we can use for the coreboot bounce buffer. */
 #ifndef MAX_ADDR
@@ -538,9 +536,7 @@ void selfboot(void *entry)
 	printk(BIOS_DEBUG, "Jumping to boot code at %p\n", entry);
 	post_code(POST_ENTER_ELF_BOOT);
 
-#if CONFIG_COLLECT_TIMESTAMPS
 	timestamp_add_now(TS_SELFBOOT_JUMP);
-#endif
 
 	/* Before we go off to run the payload, see if
 	 * we stayed within our bounds.

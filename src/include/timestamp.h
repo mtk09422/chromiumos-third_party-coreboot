@@ -94,11 +94,12 @@ void timestamp_sync(void);
 /* Implemented by the architecture code */
 uint64_t timestamp_get(void);
 #else
-#define timestamp_early_init(base)
-#define timestamp_init(base)
-#define timestamp_add(id, time)
-#define timestamp_add_now(id)
-#define timestamp_sync()
+static inline void timestamp_early_init(uint64_t base) { }
+static inline void timestamp_init(uint64_t base) { }
+static inline void timestamp_add(enum timestamp_id id, uint64_t ts_time) { }
+static inline void timestamp_add_now(enum timestamp_id id) { }
+static inline void timestamp_sync(void) { }
+static inline uint64_t timestamp_get(void) { return 0; }
 #endif
 
 #endif
