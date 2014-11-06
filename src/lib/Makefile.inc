@@ -19,6 +19,7 @@
 
 bootblock-y += cbfs.c
 bootblock-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
+bootblock-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 bootblock-y += memchr.c
 bootblock-y += memcmp.c
 ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V7_M),y)
@@ -52,6 +53,7 @@ verstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 verstage-y += tlcl.c
 verstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 verstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
+verstage-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 
 romstage-y += delay.c
 romstage-y += cbfs.c
@@ -71,6 +73,7 @@ romstage-$(CONFIG_EARLY_CBMEM_INIT) += cbmem.c
 romstage-y += compute_ip_checksum.c
 romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += gcc.c
 romstage-$(CONFIG_GENERIC_UDELAY) += timer.c
+romstage-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 
 ramstage-y += hardwaremain.c
 ramstage-y += selfboot.c
