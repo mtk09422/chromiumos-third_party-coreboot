@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2014 Google Inc.
+ * Copyright (C) 2012 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* mainboard configuration */
-#include <mainboard/google/jecht/ec.h>
+/* Values should match those defined in devicetree.cb */
 
-#define SIO_EC_MEMMAP_ENABLE     // EC Memory Map Resources
-#define SIO_EC_HOST_ENABLE       // EC Host Interface Resources
-#define SIO_EC_ENABLE_PS2K       // Enable PS/2 Keyboard
-#define SIO_EC_ENABLE_COM1       // Enable Serial Port 1
+#undef SIO_ENABLE_FDC0           // pnp 2e.0: Disable Floppy Controller
+#undef SIO_ENABLE_INFR           // pnp 2e.a: Disable Consumer IR
 
-/* ACPI code for EC SuperIO functions */
-#include <ec/google/chromeec/acpi/superio.asl>
+#define SIO_ENABLE_PS2K          // pnp 2e.5: Enable PS/2 Keyboard
+#define SIO_ENABLE_PS2M          // pnp 2e.6: Enable PS/2 Mouse
+#define SIO_ENABLE_COM1          // pnp 2e.1: Enable Serial Port 1
+#define SIO_ENABLE_ENVC          // pnp 2e.4: Enable Environmental Controller
+#define SIO_ENVC_IO0      0x700  // pnp 2e.4: io 0x60
+#define SIO_ENVC_IO1      0x710  // pnp 2e.4: io 0x62
+#define SIO_ENABLE_GPIO          // pnp 2e.7: Enable GPIO
+#define SIO_GPIO_IO0      0x720  // pnp 2e.7: io 0x60
+#define SIO_GPIO_IO1      0x730  // pnp 2e.7: io 0x60
+
+#include "superio/ite/it8772f/acpi/superio.asl"
+

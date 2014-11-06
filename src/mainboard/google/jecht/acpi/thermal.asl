@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2014 Google Inc.
+ * Copyright (C) 2014 The Chromium OS Authors. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,53 +63,48 @@ Scope (\_TZ)
 
 		Method (TCHK, 0, Serialized)
 		{
-			// Get Temperature from TIN# set in NVS
-			Store (\_SB.PCI0.LPCB.EC0.TINS (TMPS), Local0)
+			// Get CPU Temperature from PECI via SuperIO TMPIN3
+			Store (\_SB.PCI0.LPCB.SIO.ENVC.TIN3, Local0)
 
-			// Check for sensor not calibrated
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNCA)) {
-				Return (CTOK(0))
+			// Check for "no reading available
+			If (LEqual (Local0, 0x80)) {
+				Return (CTOK (0))
 			}
 
-			// Check for sensor not present
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNPR)) {
-				Return (CTOK(0))
+			// Check for invalid readings
+			If (LOr (LEqual (Local0, 255), LEqual (Local0, 0))) {
+				Return (CTOK (0))
 			}
 
-			// Check for sensor not powered
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TNOP)) {
-				Return (CTOK(0))
+			// PECI raw value is an offset from Tj_max
+			Subtract (255, Local0, Local1)
+
+			// Handle values greater than Tj_max
+			If (LGreaterEqual (Local1, \TMAX)) {
+				Return (CTOK (0))
 			}
 
-			// Check for sensor bad reading
-			If (LEqual (Local0, \_SB.PCI0.LPCB.EC0.TBAD)) {
-				Return (CTOK(0))
-			}
-
-			// Adjust by offset to get Kelvin
-			Add (\_SB.PCI0.LPCB.EC0.TOFS, Local0, Local0)
-
-			// Convert to 1/10 Kelvin
-			Multiply (Local0, 10, Local0)
-			Return (Local0)
+			// Subtract from Tj_max to get temperature
+			Subtract (\TMAX, Local1, Local0)
+			Return (CTOK (Local0))
 		}
 
 		Method (_TMP, 0, Serialized)
 		{
-			// Get temperature from EC in deci-kelvin
+			// Get temperature from SuperIO in deci-kelvin
 			Store (TCHK (), Local0)
 
 			// Critical temperature in deci-kelvin
-			Store (CTOK (\TCRT), Local1)
+			Store (CTOK (\TMAX), Local1)
 
 			If (LGreaterEqual (Local0, Local1)) {
 				Store ("CRITICAL TEMPERATURE", Debug)
 				Store (Local0, Debug)
 
-				// Wait 1 second for EC to re-poll
+				// Wait 1 second for SuperIO to re-poll
 				Sleep (1000)
 
-				// Re-read temperature from EC
+				// Re-read temperature from SuperIO
 				Store (TCHK (), Local0)
 
 				Store ("RE-READ TEMPERATURE", Debug)

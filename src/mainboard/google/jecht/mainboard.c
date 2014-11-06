@@ -35,8 +35,13 @@
 #include <arch/interrupt.h>
 #include <boot/coreboot_tables.h>
 #include "hda_verb.h"
-#include "ec.h"
 #include "onboard.h"
+
+void mainboard_suspend_resume(void)
+{
+	/* Call SMM finalize() handlers before resume */
+	outb(0xcb, 0xb2);
+}
 
 #if CONFIG_PCI_ROM_RUN || CONFIG_VGA_ROM_RUN
 static int int15_handler(void)
@@ -47,20 +52,32 @@ static int int15_handler(void)
 	       __func__, X86_AX, X86_BX, X86_CX, X86_DX);
 
 	switch (X86_AX) {
+	case 0x5f34:
+		/*
+		 * Set Panel Fitting Hook:
+		 *  bit 2 = Graphics Stretching
+		 *  bit 1 = Text Stretching
+		 *  bit 0 = Centering (do not set with bit1 or bit2)
+		 *  0     = video bios default
+		 */
+		X86_AX = 0x005f;
+		X86_CX = 0x0001;
+		res = 1;
+		break;
 	case 0x5f35:
 		/*
 		 * Boot Display Device Hook:
 		 *  bit 0 = CRT
-		 *  bit 1 = RESERVED
-		 *  bit 2 = EFP
+		 *  bit 1 = TV (eDP) *
+		 *  bit 2 = EFP *
 		 *  bit 3 = LFP
-		 *  bit 4 = RESERVED
-		 *  bit 5 = EFP3
-		 *  bit 6 = EFP2
-		 *  bit 7 = RESERVED
+		 *  bit 4 = CRT2
+		 *  bit 5 = TV2 (eDP) *
+		 *  bit 6 = EFP2 *
+		 *  bit 7 = LFP2
 		 */
 		X86_AX = 0x005f;
-		X86_CX = 0x0008;
+		X86_CX = 0x0000;
 		res = 1;
 		break;
 	case 0x5f51:
@@ -130,42 +147,7 @@ static void verb_setup(void)
 
 static void mainboard_init(device_t dev)
 {
-	mainboard_ec_init();
-}
-
-static int mainboard_smbios_data(device_t dev, int *handle,
-				 unsigned long *current)
-{
-	int len = 0;
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_LIGHTSENSOR_NAME,		/* name */
-		BOARD_LIGHTSENSOR_IRQ,		/* instance */
-		BOARD_LIGHTSENSOR_I2C_BUS,	/* segment */
-		BOARD_LIGHTSENSOR_I2C_ADDR,	/* bus */
-		0,				/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_TRACKPAD_NAME,		/* name */
-		BOARD_TRACKPAD_IRQ,		/* instance */
-		BOARD_TRACKPAD_I2C_BUS,		/* segment */
-		BOARD_TRACKPAD_I2C_ADDR,	/* bus */
-		0,				/* device */
-		0);				/* function */
-
-	len += smbios_write_type41(
-		current, handle,
-		BOARD_TOUCHSCREEN_NAME,		/* name */
-		BOARD_TOUCHSCREEN_IRQ,		/* instance */
-		BOARD_TOUCHSCREEN_I2C_BUS,	/* segment */
-		BOARD_TOUCHSCREEN_I2C_ADDR,	/* bus */
-		0,				/* device */
-		0);				/* function */
-
-	return len;
+	lan_init();
 }
 
 // mainboard_enable is executed as first thing after
@@ -174,7 +156,6 @@ static int mainboard_smbios_data(device_t dev, int *handle,
 static void mainboard_enable(device_t dev)
 {
 	dev->ops->init = mainboard_init;
-	dev->ops->get_smbios_data = mainboard_smbios_data;
 #if CONFIG_PCI_ROM_RUN || CONFIG_VGA_ROM_RUN
 	/* Install custom int15 handler for VGA OPROM */
 	mainboard_interrupt_handlers(0x15, &int15_handler);

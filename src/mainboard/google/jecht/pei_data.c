@@ -25,43 +25,39 @@
 
 void mainboard_fill_pei_data(struct pei_data *pei_data)
 {
-	pei_data->ec_present = 1;
+	pei_data->ec_present = 0;
 
-	/* One installed DIMM per channel -- can be changed by SPD init */
-	pei_data->dimm_channel0_disabled = 2;
-	pei_data->dimm_channel1_disabled = 2;
-
-	/* P0: LTE */
-	pei_data_usb2_port(pei_data, 0, 0x0150, 1, USB_OC_PIN_SKIP,
+	/* P0: VP8 */
+	pei_data_usb2_port(pei_data, 0, 0x0064, 1, 0,
 			   USB_PORT_MINI_PCIE);
-	/* P1: POrt A, CN10 */
+	/* P1: Port A, CN22 */
 	pei_data_usb2_port(pei_data, 1, 0x0040, 1, 0,
-			   USB_PORT_BACK_PANEL);
-	/* P2: CCD */
-	pei_data_usb2_port(pei_data, 2, 0x0080, 1, USB_OC_PIN_SKIP,
 			   USB_PORT_INTERNAL);
-	/* P3: BT */
+	/* P2: Port B, CN23 */
+	pei_data_usb2_port(pei_data, 2, 0x0040, 1, 1,
+			   USB_PORT_INTERNAL);
+	/* P3: WLAN */
 	pei_data_usb2_port(pei_data, 3, 0x0040, 1, USB_OC_PIN_SKIP,
 			   USB_PORT_MINI_PCIE);
-	/* P4: Port B, CN6 */
+	/* P4: Port C, CN25 */
 	pei_data_usb2_port(pei_data, 4, 0x0040, 1, 2,
-			   USB_PORT_BACK_PANEL);
-	/* P5: EMPTY */
-	pei_data_usb2_port(pei_data, 5, 0x0000, 0, USB_OC_PIN_SKIP,
-			   USB_PORT_SKIP);
-	/* P6: SD Card */
-	pei_data_usb2_port(pei_data, 6, 0x0150, 1, USB_OC_PIN_SKIP,
-			   USB_PORT_FLEX);
+			   USB_PORT_INTERNAL);
+	/* P5: Port D, CN25 */
+	pei_data_usb2_port(pei_data, 5, 0x0040, 1, 2,
+			   USB_PORT_INTERNAL);
+	/* P6: Card Reader */
+	pei_data_usb2_port(pei_data, 6, 0x0040, 1, USB_OC_PIN_SKIP,
+			   USB_PORT_INTERNAL);
 	/* P7: EMPTY */
-	pei_data_usb2_port(pei_data, 7, 0x0000, 0, USB_OC_PIN_SKIP,
+	pei_data_usb2_port(pei_data, 7, 0x0000, 0, 0,
 			   USB_PORT_SKIP);
 
-	/* P1: Port A, CN6 */
+	/* P1: CN22 */
 	pei_data_usb3_port(pei_data, 0, 1, 0, 0);
-	/* P2: EMPTY */
-	pei_data_usb3_port(pei_data, 1, 0, USB_OC_PIN_SKIP, 0);
-	/* P3: EMPTY */
-	pei_data_usb3_port(pei_data, 2, 0, USB_OC_PIN_SKIP, 0);
-	/* P4: EMPTY */
-	pei_data_usb3_port(pei_data, 3, 0, USB_OC_PIN_SKIP, 0);
+	/* P2: CN23 */
+	pei_data_usb3_port(pei_data, 1, 1, 1, 0);
+	/* P3: CN25 */
+	pei_data_usb3_port(pei_data, 2, 1, 2, 0);
+	/* P4: CN25 */
+	pei_data_usb3_port(pei_data, 3, 1, 2, 0);
 }
