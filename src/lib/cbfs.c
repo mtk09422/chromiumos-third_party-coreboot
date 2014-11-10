@@ -54,13 +54,6 @@
 # endif
 #endif
 
-#if defined(CONFIG_CBFS_HEADER_ROM_OFFSET) && (CONFIG_CBFS_HEADER_ROM_OFFSET)
-# define CBFS_HEADER_ROM_ADDRESS (CONFIG_CBFS_HEADER_ROM_OFFSET)
-#else
-// Indirect address: only works on 32bit top-aligned systems.
-# define CBFS_HEADER_ROM_ADDRESS (*(uint32_t *)0xfffffffc)
-#endif
-
 #include "cbfs_core.c"
 
 #include <vendorcode/google/chromeos/chromeos.h>

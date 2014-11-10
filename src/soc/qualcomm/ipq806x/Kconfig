@@ -13,18 +13,6 @@ config SOC_QC_IPQ806X
 
 if SOC_QC_IPQ806X
 
-config BOOTBLOCK_ROM_OFFSET
-	hex
-	default 0x0
-
-config CBFS_HEADER_ROM_OFFSET
-	hex "offset of master CBFS header in ROM"
-	default 0x1b4000
-
-config CBFS_ROM_OFFSET
-	hex "offset of CBFS data in ROM"
-	default 0x1b4080
-
 config MBN_ENCAPSULATION
 	depends on USE_BLOBS
 	bool "bootblock encapsulation for ipq8064"
