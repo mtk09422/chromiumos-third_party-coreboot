@@ -607,7 +607,6 @@ int main(int argc, char **argv)
 				break;
 			case 'l':
 				param.loadaddress = strtoul(optarg, NULL, 0);
-
 				break;
 			case 'e':
 				param.entrypoint = strtoul(optarg, NULL, 0);
@@ -620,6 +619,7 @@ int main(int argc, char **argv)
 				if (tolower(suffix[0])=='m') {
 					param.size *= 1024 * 1024;
 				}
+				break;
 			case 'B':
 				param.bootblock = optarg;
 				break;
