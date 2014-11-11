@@ -18,7 +18,9 @@
  */
 
 #include <arch/mmu.h>
+#include <boardid.h>
 #include <boot/coreboot_tables.h>
+#include <cbmem.h>
 #include <device/device.h>
 #include <memrange.h>
 #include <soc/addressmap.h>
@@ -27,6 +29,11 @@
 #include <soc/funitcfg.h>
 #include <soc/nvidia/tegra/i2c.h>
 #include <soc/padconfig.h>
+#include <vboot_struct.h>
+#include <vendorcode/google/chromeos/vboot_handoff.h>
+#include <vendorcode/google/chromeos/vboot2/misc.h>
+
+#include "gpio.h"
 
 static const struct pad_config mmcpads[] = {
 	/* MMC4 (eMMC) */
@@ -56,6 +63,25 @@ static const struct funit_cfg funits[] = {
 	FUNIT_CFG_USB(USBD),
 };
 
+/* HACK: For proto boards before proto3, we want to disable ec sw sync */
+static void fix_ec_sw_sync(void)
+{
+	struct vboot_handoff *vh;
+
+	if (board_id() >= BOARD_ID_PROTO_3)
+		return;
+
+	vh = cbmem_find(CBMEM_ID_VBOOT_HANDOFF);
+
+	if (vh == NULL) {
+		printk(BIOS_ERR, "No vboot handoff struct found\n");
+		return;
+	}
+
+	VbSharedDataHeader *vb_sd = (VbSharedDataHeader *)vh->shared_data;
+	vb_sd->flags &= ~VBSD_EC_SOFTWARE_SYNC;
+}
+
 static void mainboard_init(device_t dev)
 {
 	/* PLLD should be 2 * pixel clock (301620khz). */
@@ -72,6 +98,8 @@ static void mainboard_init(device_t dev)
 	/* I2C6 bus (audio, etc.) */
 	soc_configure_i2c6pad();
 	i2c_init(I2C6_BUS);
+
+	fix_ec_sw_sync();
 }
 
 static void mainboard_enable(device_t dev)
