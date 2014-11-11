@@ -25,7 +25,7 @@ config BOARD_SPECIFIC_OPTIONS
 	def_bool y
 	select BOOTBLOCK_CONSOLE
 	select CHROMEOS
-	select CONFIG_SPI_FLASH_WINBOND
+	select SPI_FLASH_WINBOND
 	select CPU_IMGTEC_PISTACHIO
         select COMMON_CBFS_SPI_WRAPPER
         select MAINBOARD_HAS_BOOTBLOCK_INIT
@@ -46,5 +46,9 @@ config DRAM_SIZE_MB
 config TTYS0_LCS
 	int
 	default 3
+
+config BOOT_MEDIA_SPI_BUS
+	int "SPI bus for boot media"
+	default 1
 
 endif
