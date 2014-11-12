@@ -20,13 +20,11 @@
 #include <arch/cache.h>
 #include <boardid.h>
 #include <boot/coreboot_tables.h>
-#include <console/console.h>
 #include <delay.h>
 #include <device/device.h>
 #include <gpio.h>
 #include <soc/clock.h>
 #include <soc/usb.h>
-#include <string.h>
 #include <symbols.h>
 
 #include <vendorcode/google/chromeos/chromeos.h>
@@ -144,52 +142,4 @@ void lb_board(struct lb_header *header)
 
 	/* Retrieve the switch interface MAC addressses. */
 	lb_table_add_macs_from_vpd(header);
-}
-
-#define FAKE_GPIO_NUM		-1
-
-struct gpio_desc {
-	gpio_t gpio_num;
-	const char *gpio_name;
-	uint32_t fake_value;
-};
-
-static const struct gpio_desc descriptors[] = {
-	{ 15, "developer" },
-	{ 16, "recovery" },
-	{ 17, "write protect" },
-	{ FAKE_GPIO_NUM, "power", 1 },	/* Power never pressed. */
-	{ FAKE_GPIO_NUM, "lid", 0 }	/* Lid always open. */
-};
-
-static void fill_lb_gpio(struct lb_gpio *pgpio, const struct gpio_desc *pdesc)
-{
-	gpio_t gpio_num = pdesc->gpio_num;
-
-	pgpio->port = gpio_num;
-	if (gpio_num == FAKE_GPIO_NUM) {
-		pgpio->value = pdesc->fake_value;
-	} else {
-		gpio_tlmm_config_set(gpio_num, GPIO_FUNC_DISABLE,
-				     GPIO_NO_PULL, GPIO_2MA, GPIO_DISABLE);
-		udelay(10); /* Should be enough to settle. */
-		pgpio->value = gpio_get(gpio_num);
-	}
-	pgpio->polarity = ACTIVE_LOW;
-	strncpy((char *)pgpio->name, pdesc->gpio_name, sizeof(pgpio->name));
-
-	printk(BIOS_INFO, "%s: %s: port %d value %d\n",
-	       __func__, pgpio->name, pgpio->port, pgpio->value);
-}
-
-void fill_lb_gpios(struct lb_gpios *gpios)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(descriptors); i++)
-		fill_lb_gpio(gpios->gpios + i, descriptors + i);
-
-
-	gpios->size = sizeof(*gpios) + sizeof(struct lb_gpio) * i;
-	gpios->count = i;
 }

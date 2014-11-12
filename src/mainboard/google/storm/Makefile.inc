@@ -24,6 +24,7 @@ romstage-y += cdp.c
 
 ramstage-y += boardid.c
 ramstage-y += cdp.c
+ramstage-y += chromeos.c
 ramstage-y += mainboard.c
 
 bootblock-y += memlayout.ld
