@@ -108,23 +108,8 @@ static inline u32 elog_flash_address_to_offset(u8 *address)
 
 	return (u32)address - ((u32)~0UL - rom_size + 1);
 #else
-	return (u32)address;
+	return (u32)(uintptr_t)address;
 #endif
-}
-
-/*
- * Convert a flash offset into a memory mapped flash address
- */
-static inline u8* elog_flash_offset_to_address(u32 offset)
-{
-	u32 rom_size;
-
-	if (!elog_spi)
-		return NULL;
-
-	rom_size = get_rom_size();
-
-	return (u8*)((u32)~0UL - rom_size + 1 + offset);
 }
 
 /*
@@ -210,7 +195,7 @@ static int elog_is_header_valid(struct elog_header *header)
 		return 0;
 	}
 	if (header->header_size != sizeof(*header)) {
-		printk(BIOS_ERR, "ELOG: header size mismatch %u != %u\n",
+		printk(BIOS_ERR, "ELOG: header size mismatch %u != %zu\n",
 		       header->header_size, sizeof(*header));
 		return 0;
 	}
@@ -452,6 +437,23 @@ static int elog_shrink(void)
 }
 
 #ifndef __SMM__
+#if IS_ENABLED(CONFIG_ARCH_X86)
+
+/*
+ * Convert a flash offset into a memory mapped flash address
+ */
+static inline u8 *elog_flash_offset_to_address(u32 offset)
+{
+	u32 rom_size;
+
+	if (!elog_spi)
+		return NULL;
+
+	rom_size = get_rom_size();
+
+	return (u8 *)((u32)~0UL - rom_size + 1 + offset);
+}
+
 /*
  * Fill out SMBIOS Type 15 table entry so the
  * event log can be discovered at runtime.
@@ -491,6 +493,7 @@ int elog_smbios_write_type15(unsigned long *current, int handle)
 	*current += len;
 	return len;
 }
+#endif
 #endif
 
 /*
