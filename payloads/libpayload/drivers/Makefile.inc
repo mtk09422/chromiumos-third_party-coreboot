@@ -65,9 +65,6 @@ libc-$(CONFIG_LP_GEODELX_VIDEO_CONSOLE) += video/font8x16.c
 libc-$(CONFIG_LP_COREBOOT_VIDEO_CONSOLE) += video/corebootfb.c
 libc-$(CONFIG_LP_COREBOOT_VIDEO_CONSOLE) += video/font8x16.c
 
-# Tegra132 framebuffer init driver
-libc-$(CONFIG_LP_TEGRA_VIDEO_CONSOLE_INIT) += video/tegra.c
-
 libc-$(CONFIG_LP_STORAGE) += storage/storage.c
 libc-$(CONFIG_LP_STORAGE_ATA) += storage/ata.c
 libc-$(CONFIG_LP_STORAGE_ATAPI) += storage/atapi.c

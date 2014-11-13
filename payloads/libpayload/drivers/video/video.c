@@ -43,23 +43,8 @@ extern struct video_console coreboot_video_console;
 extern struct video_console vga_video_console;
 #endif
 
-#ifdef CONFIG_LP_TEGRA_VIDEO_CONSOLE_INIT
-extern struct video_console tegra_video_console;
-#endif
-
 static struct video_console *console_list[] =
 {
-/*
- * tegra_video_console only provides the init function to do a few
- * dc configuration settings. Since it is not a full-fledged video
- * driver, its init function will not return success so that
- * function video_init() can find the real video driver. Also
- * tegra_video_console must be placed at first position in this
- * console_list[] to ensure the tegra init function is being called.
- */
-#ifdef CONFIG_LP_TEGRA_VIDEO_CONSOLE_INIT
-	&tegra_video_console,
-#endif
 #ifdef CONFIG_LP_GEODELX_VIDEO_CONSOLE
 	&geodelx_video_console,
 #endif
