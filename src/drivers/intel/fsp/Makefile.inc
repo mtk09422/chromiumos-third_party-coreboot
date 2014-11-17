@@ -19,8 +19,11 @@
 
 ramstage-y += fsp_util.c
 romstage-y += fsp_util.c
+romstage-$(CONFIG_USING_FSP_1_0) += fsp_util_1_0.c
 ramstage-$(CONFIG_ENABLE_MRC_CACHE) += fastboot_cache.c
 romstage-$(CONFIG_ENABLE_MRC_CACHE) += fastboot_cache.c
+romstage-y += fsp_hob.c
+ramstage-y += fsp_hob.c
 
 CPPFLAGS_common += -Isrc/drivers/intel/fsp
 
@@ -35,14 +38,14 @@ fsp.bin-position := $(CONFIG_FSP_LOC)
 fsp.bin-type := 0xab
 endif
 
-ifeq ($(CONFIG_ENABLE_MRC_CACHE),y)
+ifeq ($(CONFIG_ENABLE_MRC_CACHE_FILE),y)
 $(obj)/mrc.cache:
 	dd if=/dev/zero count=1 \
 	bs=$(shell printf "%d" $(CONFIG_MRC_CACHE_SIZE) ) | \
 	tr '\000' '\377' > $@
 
 cbfs-files-y += mrc.cache
-mrc.cache-file := $(obj)/mrc.cache
+mrc.cache-file := $(call strip_quotes,$(CONFIG_MRC_CACHE_FILE))
 mrc.cache-position := $(CONFIG_MRC_CACHE_LOC)
 mrc.cache-type := 0xac
 endif

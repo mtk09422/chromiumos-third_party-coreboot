@@ -63,7 +63,7 @@ config MICROCODE_INCLUDE_PATH
 	default "src/soc/intel/broadwell/microcode"
 
 config MMCONF_BASE_ADDRESS
-	hex
+	hex "MMIO Base Address"
 	default 0xf0000000
 
 config SERIAL_CPU_INIT
@@ -91,11 +91,11 @@ config CACHE_MRC_SIZE_KB
 	default 512
 
 config DCACHE_RAM_BASE
-	hex
+	hex "Base address of cache-as-RAM"
 	default 0xff7c0000
 
 config DCACHE_RAM_SIZE
-	hex
+	hex "Length in bytes of cache-as-RAM"
 	default 0x10000
 	help
 	  The size of the cache-as-ram region required during bootblock

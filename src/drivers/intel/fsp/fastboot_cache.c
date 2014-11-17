@@ -36,8 +36,9 @@
 #endif
 
 /* convert a pointer to flash area into the offset inside the flash */
-static inline u32 to_flash_offset(void *p) {
-	return ((u32)p + CONFIG_VIRTUAL_ROM_SIZE);
+static inline u32 to_flash_offset(void *p)
+{
+	return (u32)p + CONFIG_VIRTUAL_ROM_SIZE;
 }
 
 static struct mrc_data_container *next_mrc_block(
@@ -50,24 +51,35 @@ static struct mrc_data_container *next_mrc_block(
 		mrc_size += MRC_DATA_ALIGN;
 	}
 
-	u8 *region_ptr = (u8*)mrc_cache;
+	u8 *region_ptr = (u8 *)mrc_cache;
 	region_ptr += mrc_size;
 	return (struct mrc_data_container *)region_ptr;
 }
 
 static int is_mrc_cache(struct mrc_data_container *mrc_cache)
 {
-	return (!!mrc_cache) && (mrc_cache->mrc_signature == MRC_DATA_SIGNATURE);
+	return (!!mrc_cache)
+		&& (mrc_cache->mrc_signature == MRC_DATA_SIGNATURE);
 }
 
 static u32 get_mrc_cache_region(struct mrc_data_container **mrc_region_ptr)
 {
-	size_t region_size;
-	*mrc_region_ptr = cbfs_get_file_content(CBFS_DEFAULT_MEDIA,
-						"mrc.cache", 0xac,
-						&region_size);
+	const char *name = "mrc.cache";
+	int type = 0xac;
+	struct cbfs_file *file = cbfs_get_file(CBFS_DEFAULT_MEDIA, name);
 
-	return region_size;
+	if (file == NULL) {
+		printk(BIOS_ERR, "Could not find file '%s'.\n", name);
+		return 0;
+	}
+
+	if (ntohl(file->type) != type) {
+		printk(BIOS_ERR, "File '%s' is of type %x, but we requested %x.\n",
+			name, ntohl(file->type), type);
+		return 0;
+	}
+
+	return ntohl(file->len);
 }
 
 /*
@@ -95,7 +107,8 @@ static struct mrc_data_container *find_current_mrc_cache_local
 	}
 
 	if (entry_id == 0) {
-		printk(BIOS_ERR, "%s: No valid fast boot cache found.\n", __func__);
+		printk(BIOS_ERR, "%s: No valid fast boot cache found.\n",
+			__func__);
 		return NULL;
 	}
 
@@ -103,7 +116,8 @@ static struct mrc_data_container *find_current_mrc_cache_local
 	if (mrc_cache->mrc_checksum !=
 	    compute_ip_checksum(mrc_cache->mrc_data,
 				mrc_cache->mrc_data_size)) {
-		printk(BIOS_ERR, "%s: fast boot cache checksum mismatch\n", __func__);
+		printk(BIOS_ERR, "%s: fast boot cache checksum mismatch\n",
+			__func__);
 		return NULL;
 	}
 
@@ -163,6 +177,7 @@ void update_mrc_cache(void *unused)
 		return;
 	}
 
+	cache_base = NULL;
 	cache_size = get_mrc_cache_region(&cache_base);
 	if (cache_base == NULL) {
 		printk(BIOS_ERR, "%s: could not find fast boot cache area\n",
@@ -219,17 +234,19 @@ void update_mrc_cache(void *unused)
 
 #endif	/* !defined(__PRE_RAM__) */
 
-void * find_and_set_fastboot_cache(void)
+void *find_and_set_fastboot_cache(void)
 {
 	struct mrc_data_container *mrc_cache = NULL;
-	if (((mrc_cache = find_current_mrc_cache()) == NULL) ||
+	mrc_cache = find_current_mrc_cache();
+	if ((mrc_cache == NULL) ||
 	    (mrc_cache->mrc_data_size == -1UL)) {
 		printk(BIOS_DEBUG, "FSP MRC cache not present.\n");
 		return NULL;
 	}
 	printk(BIOS_DEBUG, "FSP MRC cache present at %x.\n", (u32)mrc_cache);
 	printk(BIOS_SPEW, "Saved MRC data:\n");
-	hexdump32(BIOS_SPEW, (void *)mrc_cache->mrc_data, mrc_cache->mrc_data_size);
+	hexdump32(BIOS_SPEW, (void *)mrc_cache->mrc_data,
+		mrc_cache->mrc_data_size);
 	return (void *) mrc_cache->mrc_data;
 }
 
@@ -238,6 +255,7 @@ struct mrc_data_container *find_current_mrc_cache(void)
 	struct mrc_data_container *cache_base;
 	u32 cache_size;
 
+	cache_base = NULL;
 	cache_size = get_mrc_cache_region(&cache_base);
 	if (cache_base == NULL) {
 		printk(BIOS_ERR, "%s: could not find fast boot cache area\n",

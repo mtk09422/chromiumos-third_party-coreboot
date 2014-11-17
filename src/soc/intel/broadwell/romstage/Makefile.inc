@@ -1,4 +1,10 @@
+ifeq ($(CONFIG_HAVE_MRC),y)
 cpu_incs += $(src)/soc/intel/broadwell/romstage/cache_as_ram.inc
+else
+ifeq ($(CONFIG_PLATFORM_USES_FSP),y)
+cpu_incs += $(src)/soc/intel/broadwell/romstage/fsp_1_1.inc
+endif
+endif
 
 romstage-y += cpu.c
 romstage-y += pch.c
@@ -11,3 +17,4 @@ romstage-y += spi.c
 romstage-y += stack.c
 romstage-y += systemagent.c
 romstage-$(CONFIG_CONSOLE_SERIAL8250MEM) += uart.c
+

@@ -31,10 +31,58 @@ struct romstage_params {
 	struct pei_data *pei_data;
 };
 
+/*
+ * FSP Boot Flow:
+ *   1.  src/cpu/x86/16bit/reset.inc
+ *   2.  src/cpu/x86/16bit/entry.inc
+ *   3.  other modules
+ *   4.  src/soc/intel/broadwell/romstage/fsp_1_1.inc
+ *   5.  src/drivers/intel/fsp/fsp_util.c/find_fsp
+ *   6.  FSP binary/TempRamInit
+ *   7.  src/soc/intel/broadwell/romstage/fsp_1_1.inc - return
+ *   8.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main
+ *   9.  src/mainboard/.../romstage.c/mainboard_romstage_entry
+ *  10.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common
+ *  11.  src/soc/intel/broadwell/romstage/fsp.c/chipset_fsp_memory_init_params
+ *  12.  src/mainboard/.../fsp.c/board_fsp_memory_init_params
+ *  13.  FSP binary/MemoryInit
+ *  14.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common - return
+ *  15.  src/mainboard/.../romstage.c/mainboard_romstage_entry - return
+ *  16.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main - return
+ *  17.  src/soc/intel/broadwell/stack.c/setup_stack_and_mttrs
+ *  18.  src/soc/intel/broadwell/romstage/fsp_1_1.inc - return, cleanup
+ *       after call to romstage_main
+ *  19.  FSP binary/TempRamExit
+ *  20.  src/soc/intel/broadwell/romstage.c/romstage_after_car
+ *  21.  FSP binary/SiliconInit
+ *  22.  src/soc/intel/broadwell/romstage.c/romstage_after_car - return
+ *  23.  src/soc/intel/broadwell/chip.c/broadwell_final
+ *  24.  src/drivers/intel/fsp/fsp_util.c/fsp_notify
+ *  25.  FSP binary/FspNotify
+ *
+ *
+ * MRC Boot Flow:
+ *   1.  src/cpu/x86/16bit/reset.inc
+ *   2.  src/cpu/x86/16bit/entry.inc
+ *   3.  other modules
+ *   4.  src/soc/intel/broadwell/romstage/cache_as_ram.inc
+ *   5.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main
+ *   6.  src/mainboard/.../romstage.c/mainboard_romstage_entry
+ *   7.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common
+ *   8.  src/soc/intel/broadwell/ram_init.c/ram_init
+ *   9.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common - return
+ *  10.  src/mainboard/.../romstage.c/mainboard_romstage_entry - return
+ *  11.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main - return
+ *  12.  src/soc/intel/broadwell/stack.c/setup_stack_and_mttrs
+ *  13.  src/soc/intel/broadwell/romstage/cache_as_ram.inc - return, cleanup
+ *       after call to romstage_main
+ *  14.  src/soc/intel/broadwell/romstage.c/romstage_after_car
+ */
+
+asmlinkage void *romstage_main(unsigned int bist, uint32_t tsc_lo,
+			       uint32_t tsc_high);
 void mainboard_romstage_entry(struct romstage_params *params);
 void romstage_common(struct romstage_params *params);
-void *asmlinkage romstage_main(unsigned long bist, uint32_t tsc_lo,
-			       uint32_t tsc_high);
 void asmlinkage romstage_after_car(void);
 void raminit(struct pei_data *pei_data);
 void *setup_stack_and_mttrs(void);

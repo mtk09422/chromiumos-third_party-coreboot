@@ -20,6 +20,21 @@
 #ifndef FSP_UTIL_H
 #define FSP_UTIL_H
 
+#include <types.h>
+#include <arch/cpu.h>
+
+/*
+ * The following are functions with prototypes defined in the EDK2 headers. The
+ * EDK2 headers are included with chipset_fsp_util.h.  Define the following
+ * names to reduce the use of CamelCase in the other source files.
+ */
+#define GetHobList	get_hob_list
+#define GetNextHob	get_next_hob
+#define GetFirstHob	get_first_hob
+#define GetNextGuidHob	get_next_guid_hob
+#define GetFirstGuidHob	get_first_guid_hob
+
+/* Include the EDK2 headers */
 #include <chipset_fsp_util.h>
 
 #if IS_ENABLED(CONFIG_ENABLE_MRC_CACHE)
@@ -27,17 +42,26 @@ int save_mrc_data(void *hob_start);
 void * find_and_set_fastboot_cache(void);
 #endif
 
-volatile u8 * find_fsp (void);
+FSP_INFO_HEADER *find_fsp(void);
 void fsp_early_init(FSP_INFO_HEADER *fsp_info);
-void FspNotify(u32 Phase);
-void FspNotifyReturnPoint(EFI_STATUS Status, VOID *HobListPtr);
-void print_hob_type_structure(u16 Hobtype, void *Hoblistptr);
-void romstage_fsp_rt_buffer_callback(FSP_INIT_RT_BUFFER *FspRtBuffer);
-void print_fsp_info(void);
+void fsp_notify(u32 phase);
+void print_hob_type_structure(u16 hob_type, void *hob_list_ptr);
+void print_fsp_info(FSP_INFO_HEADER *fsp_header);
+void set_hob_list(void *hob_list_ptr);
 
-void chipset_fsp_early_init(FSP_INIT_PARAMS *FspInitParams,
+/* The following are chipset support routines */
+#if IS_ENABLED(CONFIG_USING_FSP_1_0)
+void chipset_fsp_early_init(FSP_INIT_PARAMS * fsp_init_params,
 	FSP_INFO_HEADER *fsp_ptr);
-void ChipsetFspReturnPoint(EFI_STATUS Status, VOID *HobListPtr);
+void chipset_fsp_return_point(EFI_STATUS status, VOID *hob_list_ptr);
+#endif
+
+/* The following are board support routines */
+#if IS_ENABLED(CONFIG_USING_FSP_1_0)
+void romstage_fsp_rt_buffer_callback(
+	FSP_INIT_RT_COMMON_BUFFER * fsp_rt_common_buffer);
+#endif
+
 
 /* Additional HOB types not included in the FSP:
  * #define EFI_HOB_TYPE_HANDOFF 0x0001
@@ -68,24 +92,22 @@ struct mrc_data_container {
 
 struct mrc_data_container *find_current_mrc_cache(void);
 
-#if !defined(__PRE_RAM__)
 void update_mrc_cache(void *unused);
-#endif
 
-#endif
+#endif	/* CONFIG_ENABLE_MRC_CACHE */
 
 /* The offset in bytes from the start of the info structure */
-#define FSP_IMAGE_SIG_LOC				0
-#define FSP_IMAGE_ID_LOC				16
-#define FSP_IMAGE_BASE_LOC				28
+#define FSP_IMAGE_SIG_LOC			0
+#define FSP_IMAGE_ID_LOC			16
+#define FSP_IMAGE_BASE_LOC			28
 
-#define FSP_SIG						0x48505346	/* 'FSPH' */
+#define FSP_SIG					0x48505346	/* 'FSPH' */
 
 #define ERROR_NO_FV_SIG				1
-#define ERROR_NO_FFS_GUID				2
+#define ERROR_NO_FFS_GUID			2
 #define ERROR_NO_INFO_HEADER			3
 #define ERROR_IMAGEBASE_MISMATCH		4
-#define ERROR_INFO_HEAD_SIG_MISMATCH	5
+#define ERROR_INFO_HEAD_SIG_MISMATCH		5
 #define ERROR_FSP_SIG_MISMATCH			6
 
 #ifndef __PRE_RAM__

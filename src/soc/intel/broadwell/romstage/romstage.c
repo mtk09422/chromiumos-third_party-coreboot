@@ -38,10 +38,13 @@
 #include <soc/reset.h>
 #include <soc/romstage.h>
 #include <soc/spi.h>
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+#include <fsp_util.h>
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 
 /* Entry from cache-as-ram.inc. */
-void * asmlinkage romstage_main(unsigned long bist,
-                                uint32_t tsc_low, uint32_t tsc_hi)
+asmlinkage void *romstage_main(unsigned int bist,
+				uint32_t tsc_low, uint32_t tsc_hi)
 {
 	struct romstage_params rp = {
 		.bist = bist,
@@ -65,6 +68,32 @@ void * asmlinkage romstage_main(unsigned long bist,
 
 	/* Start console drivers */
 	console_init();
+
+	/* Display parameters */
+	printk(BIOS_SPEW, "bist: 0x%08x\n", bist);
+	printk(BIOS_SPEW, "tsc_low: 0x%08x\n", tsc_low);
+	printk(BIOS_SPEW, "tsc_hi: 0x%08x\n", tsc_hi);
+	printk(BIOS_SPEW, "CONFIG_MMCONF_BASE_ADDRESS: 0x%08x\n",
+		 CONFIG_MMCONF_BASE_ADDRESS);
+	printk(BIOS_INFO, "Using: %s\n",
+		IS_ENABLED(CONFIG_PLATFORM_USES_FSP) ? "FSP" :
+		(IS_ENABLED(CONFIG_HAVE_MRC) ? "MRC" :
+		"No Memory Support"));
+
+	/* Display FSP banner */
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+	printk(BIOS_DEBUG, "FSP TempRamInit successful\n");
+	print_fsp_info(find_fsp());
+#endif	/* CONFIG_PLATFORM_USES_FSP */
+
+
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+/* TODO: Remove this code.  Temporary code to hang after FSP TempRamInit API */
+	printk(BIOS_DEBUG, "Hanging in romstage_main!\n");
+	post_code(0x35);
+	while (1)
+		;
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 
 	/* Get power state */
 	rp.power_state = fill_power_state();

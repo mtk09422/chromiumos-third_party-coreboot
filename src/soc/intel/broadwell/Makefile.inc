@@ -72,6 +72,14 @@ smm-y      += usbdebug.c
 endif
 
 INCLUDES += -Isrc/soc/intel/broadwell/include
+ifeq ($(CONFIG_PLATFORM_USES_FSP),y)
+INCLUDES += -Isrc/drivers/intel/fsp
+INCLUDES += -Isrc/vendorcode/intel/fsp/fsp_1_1
+INCLUDES += -Isrc/vendorcode/intel/edk2/uefi_2.4
+INCLUDES += -Isrc/vendorcode/intel/edk2/uefi_2.4/MdePkg/Include
+INCLUDES += -Isrc/vendorcode/intel/edk2/uefi_2.4/MdePkg/Include/Ia32
+INCLUDES += -I$(CONFIG_FSP_INCLUDE_PATH)
+endif
 
 # Run an intermediate step when producing coreboot.rom
 # that adds additional components to the final firmware
