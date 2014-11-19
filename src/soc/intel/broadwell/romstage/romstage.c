@@ -27,20 +27,20 @@
 #include <console/console.h>
 #include <cbmem.h>
 #include <cpu/x86/mtrr.h>
+#include <ec/google/chromeec/ec.h>
+#include <ec/google/chromeec/ec_commands.h>
 #include <elog.h>
 #include <ramstage_cache.h>
 #include <romstage_handoff.h>
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 #include <soc/me.h>
-#include <soc/pei_data.h>
+#include <soc/intel/common/mrc_cache.h>
+#include <soc/pei_wrapper.h>
 #include <soc/pm.h>
 #include <soc/reset.h>
 #include <soc/romstage.h>
 #include <soc/spi.h>
-#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-#include <fsp_util.h>
-#endif	/* CONFIG_PLATFORM_USES_FSP */
 
 /* Entry from cache-as-ram.inc. */
 asmlinkage void *romstage_main(unsigned int bist,
@@ -86,15 +86,6 @@ asmlinkage void *romstage_main(unsigned int bist,
 	print_fsp_info(find_fsp());
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 
-
-#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-/* TODO: Remove this code.  Temporary code to hang after FSP TempRamInit API */
-	printk(BIOS_DEBUG, "Hanging in romstage_main!\n");
-	post_code(0x35);
-	while (1)
-		;
-#endif	/* CONFIG_PLATFORM_USES_FSP */
-
 	/* Get power state */
 	rp.power_state = fill_power_state();
 
@@ -122,12 +113,14 @@ static inline void chromeos_init(int prev_sleep_state)
 void romstage_common(struct romstage_params *params)
 {
 	struct romstage_handoff *handoff;
+	struct pei_data *pei_data;
 
 	post_code(0x32);
 
 	timestamp_add_now(TS_BEFORE_INITRAM);
 
-	params->pei_data->boot_mode = params->power_state->prev_sleep_state;
+	pei_data = params->pei_data;
+	pei_data->boot_mode = params->power_state->prev_sleep_state;
 
 #if CONFIG_ELOG_BOOT_COUNT
 	if (params->power_state->prev_sleep_state != SLEEP_STATE_S3)
@@ -141,9 +134,66 @@ void romstage_common(struct romstage_params *params)
 	intel_me_hsio_version(&params->power_state->hsio_version,
 			      &params->power_state->hsio_checksum);
 
+	/* Prepare to initialize memory */
+	const struct mrc_saved_data *cache;
+	struct memory_info *mem_info;
+
+	broadwell_fill_pei_data(pei_data);
+
+	if (recovery_mode_enabled()) {
+		/* Recovery mode does not use MRC cache */
+		printk(BIOS_DEBUG, "Recovery mode: not using MRC cache.\n");
+	} else if (!mrc_cache_get_current(&cache)) {
+		/* MRC cache found */
+		pei_data->saved_data_size = cache->size;
+		pei_data->saved_data = &cache->data[0];
+	} else if (pei_data->boot_mode == SLEEP_STATE_S3) {
+		/* Waking from S3 and no cache. */
+		printk(BIOS_DEBUG, "No MRC cache found in S3 resume path.\n");
+		post_code(POST_RESUME_FAILURE);
+		reset_system();
+	} else {
+		printk(BIOS_DEBUG, "No MRC cache found.\n");
+#if CONFIG_EC_GOOGLE_CHROMEEC
+		if (pei_data->boot_mode == SLEEP_STATE_S0) {
+			/* Ensure EC is running RO firmware. */
+			google_chromeec_check_ec_image(EC_IMAGE_RO);
+		}
+#endif
+	}
+
+	/*
+	 * Do not use saved pei data.  Can be set by mainboard romstage
+	 * to force a full train of memory on every boot.
+	 */
+	if (pei_data->disable_saved_data) {
+		printk(BIOS_DEBUG, "Disabling PEI saved data by request\n");
+		pei_data->saved_data = NULL;
+		pei_data->saved_data_size = 0;
+	}
+
 	/* Initialize RAM */
-	raminit(params->pei_data);
+	raminit(params, pei_data);
 	timestamp_add_now(TS_AFTER_INITRAM);
+
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+/* TODO: Remove this code.  Temporary code to hang after FspMemoryInit API */
+	printk(BIOS_DEBUG, "Hanging in romstage_common!\n");
+	post_code(0x35);
+	while (1)
+		;
+#endif	/* CONFIG_PLATFORM_USES_FSP */
+
+	printk(BIOS_DEBUG, "MRC data at %p %d bytes\n", pei_data->data_to_save,
+	       pei_data->data_to_save_size);
+
+	if (pei_data->data_to_save != NULL && pei_data->data_to_save_size > 0)
+		mrc_cache_stash_data(pei_data->data_to_save,
+				     pei_data->data_to_save_size);
+
+	printk(BIOS_DEBUG, "create cbmem for dimm information\n");
+	mem_info = cbmem_add(CBMEM_ID_MEMINFO, sizeof(struct memory_info));
+	memcpy(mem_info, &pei_data->meminfo, sizeof(struct memory_info));
 
 	handoff = romstage_handoff_find_or_add();
 	if (handoff != NULL)

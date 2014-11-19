@@ -7,9 +7,10 @@ endif
 endif
 
 romstage-y += cpu.c
+romstage-$(CONFIG_PLATFORM_USES_FSP) += fsp.c
 romstage-y += pch.c
 romstage-y += power_state.c
-romstage-y += raminit.c
+romstage-$(CONFIG_HAVE_MRC) += raminit.c
 romstage-y += report_platform.c
 romstage-y += romstage.c
 romstage-y += smbus.c

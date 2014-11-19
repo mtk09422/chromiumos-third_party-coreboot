@@ -22,9 +22,12 @@
 
 #include <stdint.h>
 #include <arch/cpu.h>
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+#include <fsp_util.h>
+#endif	/* CONFIG_PLATFORM_USES_FSP */
+#include <soc/pei_data.h>
+#include <soc/pm.h>
 
-struct chipset_power_state;
-struct pei_data;
 struct romstage_params {
 	unsigned long bist;
 	struct chipset_power_state *power_state;
@@ -43,22 +46,21 @@ struct romstage_params {
  *   8.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main
  *   9.  src/mainboard/.../romstage.c/mainboard_romstage_entry
  *  10.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common
- *  11.  src/soc/intel/broadwell/romstage/fsp.c/chipset_fsp_memory_init_params
- *  12.  src/mainboard/.../fsp.c/board_fsp_memory_init_params
- *  13.  FSP binary/MemoryInit
- *  14.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common - return
- *  15.  src/mainboard/.../romstage.c/mainboard_romstage_entry - return
- *  16.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main - return
- *  17.  src/soc/intel/broadwell/stack.c/setup_stack_and_mttrs
- *  18.  src/soc/intel/broadwell/romstage/fsp_1_1.inc - return, cleanup
+ *  11.  src/mainboard/.../fsp.c/board_fsp_memory_init_params
+ *  12.  FSP binary/MemoryInit
+ *  13.  src/soc/intel/broadwell/romstage/romstage.c/romstage_common - return
+ *  14.  src/mainboard/.../romstage.c/mainboard_romstage_entry - return
+ *  15.  src/soc/intel/broadwell/romstage/romstage.c/romstage_main - return
+ *  16.  src/soc/intel/broadwell/stack.c/setup_stack_and_mttrs
+ *  17.  src/soc/intel/broadwell/romstage/fsp_1_1.inc - return, cleanup
  *       after call to romstage_main
- *  19.  FSP binary/TempRamExit
- *  20.  src/soc/intel/broadwell/romstage.c/romstage_after_car
- *  21.  FSP binary/SiliconInit
- *  22.  src/soc/intel/broadwell/romstage.c/romstage_after_car - return
- *  23.  src/soc/intel/broadwell/chip.c/broadwell_final
- *  24.  src/drivers/intel/fsp/fsp_util.c/fsp_notify
- *  25.  FSP binary/FspNotify
+ *  18.  FSP binary/TempRamExit
+ *  19.  src/soc/intel/broadwell/romstage.c/romstage_after_car
+ *  20.  FSP binary/SiliconInit
+ *  21.  src/soc/intel/broadwell/romstage.c/romstage_after_car - return
+ *  22.  src/soc/intel/broadwell/chip.c/broadwell_final
+ *  23.  src/drivers/intel/fsp/fsp_util.c/fsp_notify
+ *  24.  FSP binary/FspNotify
  *
  *
  * MRC Boot Flow:
@@ -83,8 +85,14 @@ asmlinkage void *romstage_main(unsigned int bist, uint32_t tsc_lo,
 			       uint32_t tsc_high);
 void mainboard_romstage_entry(struct romstage_params *params);
 void romstage_common(struct romstage_params *params);
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+void board_fsp_memory_init_params(
+	struct romstage_params *params,
+	FSP_INFO_HEADER *fsp_header,
+	FSP_MEMORY_INIT_PARAMS *fsp_memory_init_params);
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 void asmlinkage romstage_after_car(void);
-void raminit(struct pei_data *pei_data);
+void raminit(struct romstage_params *params, struct pei_data *pei_data);
 void *setup_stack_and_mttrs(void);
 
 struct chipset_power_state;
