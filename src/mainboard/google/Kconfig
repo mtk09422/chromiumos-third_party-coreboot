@@ -225,6 +225,14 @@ config BOARD_GOOGLE_VEYRON_JERRY
 	  Veyron_Jerry is a Chrome OS mainboard.
 	  Veyron_Jerry is based on the Rockchip RK3288 platform.
 
+config BOARD_GOOGLE_VEYRON_MIGHTY
+	bool "Veyron_Mighty"
+	help
+	  Google Veyron_Mighty mainboard.
+	  Enable this config to select the Google Veyron_Mighty mainboard.
+	  Veyron_Mighty is a Chrome OS mainboard.
+	  Veyron_Mighty is based on the Rockchip RK3288 platform.
+
 config BOARD_GOOGLE_VEYRON_PINKY
 	bool "Veyron_Pinky"
 	help
@@ -260,6 +268,7 @@ source "src/mainboard/google/storm/Kconfig"
 source "src/mainboard/google/stout/Kconfig"
 source "src/mainboard/google/urara/Kconfig"
 source "src/mainboard/google/veyron_jerry/Kconfig"
+source "src/mainboard/google/veyron_mighty/Kconfig"
 source "src/mainboard/google/veyron_pinky/Kconfig"
 
 config MAINBOARD_VENDOR
