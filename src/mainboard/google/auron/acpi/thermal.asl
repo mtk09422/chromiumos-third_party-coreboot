@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <mainboard/google/auron/thermal.h>
+
 // Thermal Zone
 
 Scope (\_TZ)
@@ -117,6 +119,87 @@ Scope (\_TZ)
 			}
 
 			Return (Local0)
+		}
+
+		/* CTDP Down */
+		Method (_AC0) {
+			If (LLessEqual (\FLVL, 0)) {
+				Return (CTOK (CTL_TDP_THRESHOLD_OFF))
+			} Else {
+				Return (CTOK (CTL_TDP_THRESHOLD_ON))
+			}
+		}
+
+		/* CTDP Nominal */
+		Method (_AC1) {
+			If (LLessEqual (\FLVL, 1)) {
+				Return (CTOK (CTL_TDP_THRESHILD_NORMAL))
+			} Else {
+				Return (CTOK (CTL_TDP_THRESHILD_NORMAL))
+			}
+		}
+
+		Name (_AL0, Package () { TDP0 })
+		Name (_AL1, Package () { TDP1 })
+
+		PowerResource (TNP0, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 0)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (0, \FLVL)
+
+				/* Enable Power Limit */
+				\_SB.PCI0.MCHC.CTLE (CTL_TDP_POWER_LIMIT)
+
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (1, \FLVL)
+
+				/* Disable Power Limit */
+				\_SB.PCI0.MCHC.CTLD ()
+
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		PowerResource (TNP1, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 1)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				Store (1, \FLVL)
+				Notify (\_TZ.THRM, 0x81)
+			}
+			Method (_OFF) {
+				Store (1, \FLVL)
+				Notify (\_TZ.THRM, 0x81)
+			}
+		}
+
+		Device (TDP0)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 0)
+			Name (_PR0, Package () { TNP0 })
+		}
+
+		Device (TDP1)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 1)
+			Name (_PR0, Package () { TNP1 })
 		}
 	}
 }
