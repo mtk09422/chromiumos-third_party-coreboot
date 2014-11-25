@@ -28,7 +28,7 @@
 #include <symbols.h>
 #include <timestamp.h>
 
-void bootblock_cpu_init(void)
+void bootblock_soc_init(void)
 {
 	rk3288_init_timer();
 

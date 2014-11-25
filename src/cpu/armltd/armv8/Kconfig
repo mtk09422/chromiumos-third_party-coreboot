@@ -6,10 +6,5 @@ config CPU_ARMLTD_ARMV8
 
 if CPU_ARMLTD_ARMV8
 
-config BOOTBLOCK_CPU_INIT
-	string
-	default "cpu/armltd/armv8/bootblock.c"
-	help
-	  CPU/SoC-specific bootblock code.
 endif
 

@@ -19,6 +19,7 @@
 
 #include <bootblock_common.h>
 
-void bootblock_cpu_init(void)
+void bootblock_soc_init(void)
 {
+/* TODO: I assume this is a placeholder. If it's not really needed delete it. */
 }

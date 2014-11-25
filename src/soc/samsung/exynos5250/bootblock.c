@@ -21,7 +21,7 @@
 #include <soc/clk.h>
 #include <soc/wakeup.h>
 
-void bootblock_cpu_init(void)
+void bootblock_soc_init(void)
 {
 	/* kick off the multi-core timer.
 	 * We want to do this as early as we can.
