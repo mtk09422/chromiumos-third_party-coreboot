@@ -34,17 +34,6 @@ void bootblock_soc_init(void)
 
 	timestamp_early_init(timestamp_get());
 
-	if (IS_ENABLED(CONFIG_CONSOLE_SERIAL_UART)) {
-		switch (CONFIG_CONSOLE_SERIAL_UART_ADDRESS) {
-		case UART2_BASE:
-			writel(IOMUX_UART2, &rk3288_grf->iomux_uart2);
-			break;
-		default:
-			die("TODO: Handle setup for console UART if needed");
-		}
-		console_init();
-	}
-
 	rkclk_init();
 
 	mmu_init();
