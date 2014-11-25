@@ -27,6 +27,7 @@
 #include <console/console.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
+__attribute__((weak)) void bootblock_mainboard_early_init(void) { /* no-op */ }
 __attribute__((weak)) void bootblock_soc_init(void) { /* do nothing */ }
 __attribute__((weak)) void bootblock_mainboard_init(void) { /* do nothing */ }
 
@@ -34,13 +35,15 @@ void main(void)
 {
 	void *entry = (void *)-1;
 
-	bootblock_soc_init();
-	bootblock_mainboard_init();
+	bootblock_mainboard_early_init();
 
 	if (CONFIG_BOOTBLOCK_CONSOLE) {
 		console_init();
 		exception_init();
 	}
+
+	bootblock_soc_init();
+	bootblock_mainboard_init();
 
 	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)) {
 		if (IS_ENABLED(CONFIG_RETURN_FROM_VERSTAGE))

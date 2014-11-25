@@ -20,10 +20,10 @@
 #include <arch/exception.h>
 #include <arch/hlt.h>
 #include <arch/stages.h>
+#include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
 #include <soc/addressmap.h>
-#include <soc/bootblock.h>
 #include <soc/clock.h>
 #include <soc/nvidia/tegra/apbmisc.h>
 #include <soc/pmc.h>

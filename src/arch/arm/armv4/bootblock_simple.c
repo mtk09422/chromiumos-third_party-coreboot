@@ -26,6 +26,7 @@
 #include <cbfs.h>
 #include <console/console.h>
 
+__attribute__((weak)) void bootblock_mainboard_early_init(void) { /* no-op */ }
 __attribute__((weak)) void bootblock_soc_init(void) { /* do nothing */ }
 __attribute__((weak)) void bootblock_mainboard_init(void) { /* do nothing */ }
 
@@ -34,13 +35,15 @@ void main(void)
 	const char *stage_name = "fallback/romstage";
 	void *entry;
 
-	bootblock_soc_init();
-	bootblock_mainboard_init();
+	bootblock_mainboard_early_init();
 
 	if (CONFIG_BOOTBLOCK_CONSOLE) {
 		console_init();
 		exception_init();
 	}
+
+	bootblock_soc_init();
+	bootblock_mainboard_init();
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
 
