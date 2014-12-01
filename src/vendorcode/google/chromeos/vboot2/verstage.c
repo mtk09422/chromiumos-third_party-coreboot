@@ -20,6 +20,7 @@
 #include <2api.h>
 #include <2struct.h>
 #include <antirollback.h>
+#include <arch/exception.h>
 #include <console/console.h>
 #include <console/vtxprintf.h>
 #include <string.h>
@@ -167,11 +168,7 @@ static void save_if_needed(struct vb2_context *ctx)
  * TODO: Avoid loading a stage twice (once in hash_body & again in load_stage).
  * when per-stage verification is ready.
  */
-#if CONFIG_RETURN_FROM_VERSTAGE
-void main(void)
-#else
 void verstage_main(void)
-#endif /* CONFIG_RETURN_FROM_VERSTAGE */
 {
 	struct vb2_context ctx;
 	struct vboot_region fw_main;
@@ -250,3 +247,12 @@ void verstage_main(void)
 	printk(BIOS_INFO, "Slot %c is selected\n", is_slot_a(&ctx) ? 'A' : 'B');
 	vb2_set_selected_region(wd, &fw_main);
 }
+
+#if IS_ENABLED(CONFIG_RETURN_FROM_VERSTAGE)
+void main(void)
+{
+	console_init();
+	exception_init();
+	verstage_main();
+}
+#endif
