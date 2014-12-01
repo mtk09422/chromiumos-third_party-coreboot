@@ -46,6 +46,7 @@
 asmlinkage void *romstage_main(unsigned int bist,
 				uint32_t tsc_low, uint32_t tsc_hi)
 {
+	void *top_of_stack;
 	struct romstage_params rp = {
 		.bist = bist,
 		.pei_data = NULL,
@@ -98,7 +99,13 @@ asmlinkage void *romstage_main(unsigned int bist,
 	/* Call into mainboard. */
 	mainboard_romstage_entry(&rp);
 
-	return setup_stack_and_mttrs();
+	top_of_stack = setup_stack_and_mttrs();
+
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+	printk(BIOS_DEBUG, "Calling FspTempRamExit API\n");
+#endif	/* CONFIG_PLATFORM_USES_FSP */
+
+	return top_of_stack;
 }
 
 static inline void chromeos_init(int prev_sleep_state)
@@ -176,14 +183,6 @@ void romstage_common(struct romstage_params *params)
 	raminit(params, pei_data);
 	timestamp_add_now(TS_AFTER_INITRAM);
 
-#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-/* TODO: Remove this code.  Temporary code to hang after FspMemoryInit API */
-	printk(BIOS_DEBUG, "Hanging in romstage_common!\n");
-	post_code(0x35);
-	while (1)
-		;
-#endif	/* CONFIG_PLATFORM_USES_FSP */
-
 	printk(BIOS_DEBUG, "MRC data at %p %d bytes\n", pei_data->data_to_save,
 	       pei_data->data_to_save_size);
 
@@ -207,7 +206,19 @@ void romstage_common(struct romstage_params *params)
 
 void asmlinkage romstage_after_car(void)
 {
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+	printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
+#endif	/* CONFIG_PLATFORM_USES_FSP */
+
 	timestamp_add_now(TS_END_ROMSTAGE);
+
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+/* TODO: Remove this code.  Temporary code to hang after FSP TempRamInit API */
+	printk(BIOS_ERR, "Hanging in romstage_after_car!\n");
+	post_code(0x35);
+	while (1)
+		;
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 
 	/* Run vboot verification if configured. */
 	vboot_verify_firmware(romstage_handoff_find_or_add());

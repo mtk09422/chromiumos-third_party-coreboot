@@ -157,8 +157,81 @@ before_romstage:
 	call  romstage_main
 
 	/*
+	 * eax:  New stack address
 	 * ebx:  FSP_INFO_HEADER address
 	 */
+
+	/* Switch to the stack in RAM */
+	movl	%eax, %esp
+
+	/* Calculate TempRamExit entry into FSP */
+	movl	%ebx, %ebp
+	mov	0x40(%ebp), %eax
+	add	0x1c(%ebp), %eax
+
+	/* Build the call frame */
+	movl	%esp, %ebx
+	pushl	$0
+
+	/* Call TempRamExit */
+	call	*%eax
+
+	/*
+	 * ebx:  FSP_INFO_HEADER address
+	 */
+
+	/* Get number of MTRRs. */
+	popl	%ebx
+	movl	$MTRRphysBase_MSR(0), %ecx
+1:
+	testl	%ebx, %ebx
+	jz	1f
+
+	/* Low 32 bits of MTRR base. */
+	popl	%eax
+	/* Upper 32 bits of MTRR base. */
+	popl	%edx
+	/* Write MTRR base. */
+	wrmsr
+	inc	%ecx
+	/* Low 32 bits of MTRR mask. */
+	popl	%eax
+	/* Upper 32 bits of MTRR mask. */
+	popl	%edx
+	/* Write MTRR mask. */
+	wrmsr
+	inc	%ecx
+
+	dec	%ebx
+	jmp	1b
+1:
+	post_code(0x39)
+
+	/* And enable cache again after setting MTRRs. */
+	movl	%cr0, %eax
+	andl	$~(CR0_CacheDisable | CR0_NoWriteThrough), %eax
+	movl	%eax, %cr0
+
+	post_code(0x3a)
+
+	/* Enable MTRR. */
+	movl	$MTRRdefType_MSR, %ecx
+	rdmsr
+	orl	$MTRRdefTypeEn, %eax
+	wrmsr
+
+	post_code(0x3b)
+
+	/* Invalidate the cache again. */
+	invd
+
+	post_code(0x3c)
+
+__main:
+	post_code(POST_PREPARE_RAMSTAGE)
+	cld			/* Clear direction flag. */
+	call	romstage_after_car
+
 
 	movb  $0x69, %ah
 	jmp   .Lhlt
