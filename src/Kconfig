@@ -299,7 +299,7 @@ config TPM
 	  If unsure, say N.
 
 config HEAP_SIZE
-	hex
+	hex "Heap size in bytes"
 	default 0x4000
 
 # Not used for the actual stack by ARM, but still needed in some src/lib/ files.

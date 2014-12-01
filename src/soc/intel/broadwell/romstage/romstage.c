@@ -225,14 +225,6 @@ void asmlinkage romstage_after_car(void)
 	printk(BIOS_DEBUG, "FspSiliconInit returned 0x%08x\n", status);
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 
-#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-/* TODO: Remove this code.  Temporary code to hang after FSP TempRamInit API */
-	printk(BIOS_ERR, "Hanging in romstage_after_car!\n");
-	post_code(0x35);
-	while (1)
-		;
-#endif	/* CONFIG_PLATFORM_USES_FSP */
-
 	/* Run vboot verification if configured. */
 	vboot_verify_firmware(romstage_handoff_find_or_add());
 
