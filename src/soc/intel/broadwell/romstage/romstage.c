@@ -207,10 +207,23 @@ void romstage_common(struct romstage_params *params)
 void asmlinkage romstage_after_car(void)
 {
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+	FSP_INFO_HEADER *fsp_info_header;
+	FSP_SILICON_INIT fsp_silicon_init;
+	EFI_STATUS status;
+
 	printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 
 	timestamp_add_now(TS_END_ROMSTAGE);
+
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+	printk(BIOS_DEBUG, "Calling FspSiliconInit\n");
+	fsp_info_header = find_fsp();
+	fsp_silicon_init = (FSP_SILICON_INIT)(fsp_info_header->ImageBase
+		+ fsp_info_header->FspSiliconInitEntryOffset);
+	status = fsp_silicon_init(NULL);
+	printk(BIOS_DEBUG, "FspSiliconInit returned 0x%08x\n", status);
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 /* TODO: Remove this code.  Temporary code to hang after FSP TempRamInit API */
