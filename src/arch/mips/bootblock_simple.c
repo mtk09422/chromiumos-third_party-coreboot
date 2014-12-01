@@ -24,6 +24,7 @@
 #include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <symbols.h>
 
 void main(void)
 {
@@ -38,7 +39,7 @@ void main(void)
 #endif
 
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
-	if (entry != (void *)-1)
+	if (entry != CBFS_LOAD_ERROR)
 		stage_exit(entry);
 
 	hlt();

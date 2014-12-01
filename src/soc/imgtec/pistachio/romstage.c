@@ -26,14 +26,13 @@
 
 void main(void)
 {
+	const char *stage_name = CONFIG_CBFS_PREFIX "/ramstage";
 	void *entry;
 
 	console_init();
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-				CONFIG_CBFS_PREFIX "/ramstage");
-	if (entry != (void *)-1)
+	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+	if (entry != CBFS_LOAD_ERROR)
 		stage_exit(entry);
-
 	hlt();
 }
