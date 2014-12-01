@@ -84,7 +84,11 @@ struct lb_memory;
 void *selfload(struct lb_memory *mem, struct cbfs_payload *payload);
 void selfboot(void *entry);
 
-/* Defined in individual arch / board implementation. */
+/*
+ * Defined in individual arch / board implementation.
+ *
+ * it returns 0 on success and non-zero on error.
+ */
 int init_default_cbfs_media(struct cbfs_media *media);
 
 #if CONFIG_RELOCATABLE_RAMSTAGE && defined(__ROMSTAGE__)
