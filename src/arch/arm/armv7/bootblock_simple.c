@@ -54,7 +54,7 @@ void main(void)
 	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)) {
 		timestamp_add_now(TS_START_COPYVER);
 		if (IS_ENABLED(CONFIG_RETURN_FROM_VERSTAGE))
-			vboot2_verify_firmware();	/* doesn't return */
+			entry = vboot2_verify_firmware();
 		else
 			entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 						CONFIG_CBFS_PREFIX "/verstage");
