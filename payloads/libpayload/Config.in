@@ -266,11 +266,6 @@ config COREBOOT_VIDEO_CONSOLE
 	  Say Y here if coreboot switched to a graphics mode and
 	  your payload wants to use it.
 
-config TEGRA_VIDEO_CONSOLE_INIT
-	bool "Tegra SOC framebuffer init driver"
-	depends on COREBOOT_VIDEO_CONSOLE
-	default n
-
 config PC_KEYBOARD
 	bool "Allow input from a PC keyboard"
 	default y
