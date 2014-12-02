@@ -155,7 +155,7 @@ static void timestamp_add_table_entry(struct timestamp_table *ts_table,
 	tse->entry_stamp = ts_time - ts_table->base_time;
 }
 
-void timestamp_sync(void)
+static void timestamp_sync(void)
 {
 	uint32_t i;
 
@@ -214,6 +214,7 @@ void timestamp_sync(void)
 	if (ts_cbmem_table->base_time == 0)
 		ts_cbmem_table->base_time = ts_cache_table->base_time;
 }
+CBMEM_INIT_HOOK(timestamp_sync)
 
 void timestamp_early_init(uint64_t base)
 {

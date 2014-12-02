@@ -23,11 +23,6 @@
 #include <cbmem.h>
 #include <arch/early_variables.h>
 
-typedef void (* const car_migration_func_t)(void);
-
-extern car_migration_func_t _car_migrate_start;
-extern car_migration_func_t _car_migrate_end;
-
 extern char _car_data_start[];
 extern char _car_data_end[];
 
@@ -77,7 +72,6 @@ void *car_get_var_ptr(void *var)
 void car_migrate_variables(void)
 {
 	void *migrated_base;
-	car_migration_func_t *migrate_func;
 	size_t car_data_size = &_car_data_end[0] - &_car_data_start[0];
 
 	migrated_base = cbmem_add(CBMEM_ID_CAR_GLOBALS, car_data_size);
@@ -91,11 +85,4 @@ void car_migrate_variables(void)
 
 	/* Mark that the data has been moved. */
 	car_migrated = ~0;
-
-	/* Call all the migration functions. */
-	migrate_func = &_car_migrate_start;
-	while (migrate_func != &_car_migrate_end) {
-		(*migrate_func)();
-		migrate_func++;
-	}
 }

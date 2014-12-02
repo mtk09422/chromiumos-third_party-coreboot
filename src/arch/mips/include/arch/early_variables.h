@@ -21,7 +21,6 @@
 #define __MIPS_ARCH_EARLY_VARIABLES_H
 
 #define CAR_GLOBAL
-#define CAR_MIGRATE(migrate_fn_)
 
 static inline void car_migrate_variables(void) {}
 #define car_get_var(var) (var)

@@ -92,10 +92,6 @@ static void __attribute__((noinline)) romstage(void)
 
 	cbmem_initialize_empty();
 
-#if CONFIG_CONSOLE_CBMEM
-	cbmemc_reinit();
-#endif
-
 #if CONFIG_VBOOT2_VERIFY_FIRMWARE
 	entry = vboot2_load_ramstage();
 #else

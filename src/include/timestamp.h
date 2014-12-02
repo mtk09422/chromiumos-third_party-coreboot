@@ -90,11 +90,6 @@ void timestamp_init(uint64_t base);
 void timestamp_add(enum timestamp_id id, uint64_t ts_time);
 /* Calls timestamp_add with current timestamp. */
 void timestamp_add_now(enum timestamp_id id);
-/*
- * Sync all timestamps from timestamp_cache to cbmem area. Called by
- * cbmem_initialize.
- */
-void timestamp_sync(void);
 /* Implemented by the architecture code */
 uint64_t timestamp_get(void);
 #else

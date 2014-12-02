@@ -233,5 +233,5 @@ void cbmemc_reinit(void)
 	current_console_set(cbm_cons_p);
 }
 
-/* Call cbmemc_reinit() at CAR migration time. */
-CAR_MIGRATE(cbmemc_reinit)
+/* Call cbmemc_reinit() at cbmem_initialize() time. */
+CBMEM_INIT_HOOK(cbmemc_reinit)

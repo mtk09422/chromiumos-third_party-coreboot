@@ -31,13 +31,13 @@ SECTIONS
 		_rom = .;
 		*(.rom.text);
 		*(.rom.data);
+		. = ALIGN(4);
+		_cbmem_init_hooks = .;
+		KEEP(*(.rodata.cbmem_init_hooks));
+		_ecbmem_init_hooks = .;
 		*(.rodata);
 		*(.rodata.*);
 		*(.rom.data.*);
-		. = ALIGN(16);
-		_car_migrate_start = .;
-		*(.car.migrate);
-		_car_migrate_end = .;
 		. = ALIGN(16);
 		_erom = .;
 	}

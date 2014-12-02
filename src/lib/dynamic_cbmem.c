@@ -184,20 +184,16 @@ void cbmem_initialize_empty(void)
 	       root, root->max_entries);
 
 	cbmem_arch_init();
+	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
-
-	/* Pull in all timestamps from timestamp cache into cbmem area */
-	timestamp_sync();
 }
 
 static inline int cbmem_fail_recovery(void)
 {
 	cbmem_initialize_empty();
 	cbmem_handle_acpi_resume();
-	/* Migrate cache-as-ram variables. */
-	car_migrate_variables();
 	return 1;
 }
 
@@ -265,12 +261,10 @@ int cbmem_initialize(void)
 #endif
 
 	cbmem_arch_init();
+	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
-
-	/* Pull in all timestamps from timestamp cache into cbmem area */
-	timestamp_sync();
 
 	/* Recovery successful. */
 	return 0;

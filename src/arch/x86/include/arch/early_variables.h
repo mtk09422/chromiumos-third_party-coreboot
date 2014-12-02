@@ -27,12 +27,6 @@
 #endif
 
 #if CONFIG_CAR_MIGRATION && defined(__PRE_RAM__)
-#define CAR_MIGRATE_ATTR __attribute__ ((used,section (".car.migrate")))
-
-/* Call migrate_fn_() when CAR globals are migrated. */
-#define CAR_MIGRATE(migrate_fn_) \
-	static void (* const migrate_fn_ ## _ptr)(void) CAR_MIGRATE_ATTR = \
-	migrate_fn_;
 
 /* Get the correct pointer for the CAR global variable. */
 void *car_get_var_ptr(void *var);
@@ -47,7 +41,6 @@ void *car_get_var_ptr(void *var);
 void car_migrate_variables(void);
 
 #else
-#define CAR_MIGRATE(migrate_fn_)
 static inline void *car_get_var_ptr(void *var) { return var; }
 #define car_get_var(var) (var)
 #define car_set_var(var, val) do { (var) = (val); } while (0)

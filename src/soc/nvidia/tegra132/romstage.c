@@ -123,8 +123,6 @@ void romstage(void)
 		clock_halt_avp();
 	}
 
-	cbmemc_reinit();
-
 	timestamp_add_now(TS_END_ROMSTAGE);
 
 	ccplex_cpu_start(entry);

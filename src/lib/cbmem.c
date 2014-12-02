@@ -230,11 +230,10 @@ int cbmem_initialize(void)
 #ifndef __PRE_RAM__
 	cbmem_arch_init();
 #endif
+	cbmem_run_init_hooks();
+
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
-
-	/* Pull in all timestamps from timestamp cache into cbmem area */
-	timestamp_sync();
 
 	return rv;
 }
@@ -271,6 +270,6 @@ void cbmem_list(void)
 		                  cbmem_toc[i].size);
 	}
 }
-#endif
+#endif	/* ! __PRE_RAM__ */
 
 

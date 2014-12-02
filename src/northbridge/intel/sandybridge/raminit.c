@@ -63,6 +63,9 @@ static void save_mrc_data(struct pei_data *pei_data)
 	int output_len = ALIGN(pei_data->mrc_output_len, 16);
 
 	/* Save the MRC S3 restore data to cbmem */
+	/* TODO: cbmem_initialize() must not be called twice! Most sandybridge
+	 * boards call it again from mainboard/romstage.c. Clean up these code
+	 * paths to ensure it is called at most once with every config. */
 	cbmem_initialize();
 	mrcdata = cbmem_add
 		(CBMEM_ID_MRCDATA,
