@@ -18,6 +18,7 @@
 ##
 
 bootblock-y += bootblock.c
+bootblock-y += bootblock_asm.S
 bootblock-y += cbmem.c
 bootblock-y += i2c.c
 bootblock-y += monotonic_timer.c
@@ -44,10 +45,19 @@ ramstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
 INCLUDES += -Isrc/soc/marvell/bg4cd/include/
 
-$(objcbfs)/bootblock.raw.elf: $(objcbfs)/bootblock.elf
-	cp $< $@
+# bootblock and verstage are built in one piece.
+postprocessors += $$(eval bootblock-objs += $$(call src-to-obj,bootblock,$$(verstage-srcs)))
+postprocessors += $$(eval bootblock-objs += $$(VB2_LIB))
+postprocessors += $$(eval bootblock-srcs += $$(verstage-srcs))
+postprocessors += $$(eval bootblock-srcs:=$$(sort $$(bootblock-srcs)))
+# we need to avoid building verstage.elf
+postprocessors += $$(eval cbfs-files:=$$(filter-out $$(VERSTAGE_ELF)|%, $$(cbfs-files)))
 
-$(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin
+$(objcbfs)/bootblock.raw: $(objcbfs)/bootblock.elf
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(OBJCOPY_bootblock) -O binary $< $@.tmp
+	@mv $@.tmp $@
+
+$(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw
 	@printf "Generating: $(subst $(obj)/,,$(@))\n"
-	@mkdir -p $(dir $@)
-	@mv $< $@
+	@cp $< $@

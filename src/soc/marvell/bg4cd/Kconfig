@@ -24,6 +24,7 @@ config SOC_MARVELL_BG4CD
 	select ARCH_RAMSTAGE_ARM_V7
 	select ARCH_ROMSTAGE_ARM_V7
 	select ARCH_VERSTAGE_ARM_V7_M
+	select ARM_BOOTBLOCK_CUSTOM
 	select BOOTBLOCK_CONSOLE
 	select CPU_HAS_BOOTBLOCK_INIT
 	select DYNAMIC_CBMEM
@@ -32,6 +33,9 @@ config SOC_MARVELL_BG4CD
 	select HAVE_MONOTONIC_TIMER
 	select HAVE_UART_MEMORY_MAPPED
 	select HAVE_UART_SPECIAL
+	# RETURN_FROM_VERSTAGE is disabled because vboot2_verify_firmware is
+	# part of bootblock, so, verstage is called as a function instead of
+	# as a stage
 
 if SOC_MARVELL_BG4CD
 

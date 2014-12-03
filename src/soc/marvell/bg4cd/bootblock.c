@@ -17,9 +17,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootblock_common.h>
+#include <console/console.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
-void bootblock_soc_init(void)
+void main(void)
 {
-/* TODO: I assume this is a placeholder. If it's not really needed delete it. */
+	console_init();
+	vboot2_verify_firmware();
 }
