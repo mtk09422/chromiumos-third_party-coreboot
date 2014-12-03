@@ -48,11 +48,9 @@ bootblock-y += id.S
 bootblock-y += clock.c
 bootblock-y += stages.c
 bootblock-y += eabi_compat.c
-ifneq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V7_M),y)
 bootblock-y += memset.S
 bootblock-y += memcpy.S
 bootblock-y += memmove.S
-endif
 bootblock-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 
 $(objcbfs)/bootblock.debug: $$(bootblock-objs)
@@ -74,11 +72,9 @@ $(objcbfs)/verstage.debug: $$(verstage-objs) $$(VB2_LIB)
 verstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
 verstage-y += div0.c
 verstage-y += eabi_compat.c
-ifneq ($(CONFIG_ARCH_VERSTAGE_ARM_V7_M),y)
 verstage-y += memset.S
 verstage-y += memcpy.S
 verstage-y += memmove.S
-endif
 verstage-y += stages.c
 verstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 

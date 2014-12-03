@@ -22,9 +22,6 @@ bootblock-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 bootblock-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 bootblock-y += memchr.c
 bootblock-y += memcmp.c
-ifeq ($(CONFIG_ARCH_BOOTBLOCK_ARM_V7_M),y)
-bootblock-y += memset.c memcpy.c memmove.c
-endif
 bootblock-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 bootblock-$(CONFIG_GENERIC_UDELAY) += timer.c
 
@@ -45,9 +42,6 @@ $(foreach arch,$(ARCH_SUPPORTED),\
 verstage-y += delay.c
 verstage-y += cbfs.c
 verstage-y += memcmp.c
-ifeq ($(CONFIG_ARCH_VERSTAGE_ARM_V7_M),y)
-verstage-y += memset.c memcpy.c memmove.c
-endif
 verstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
 verstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 verstage-y += tlcl.c
