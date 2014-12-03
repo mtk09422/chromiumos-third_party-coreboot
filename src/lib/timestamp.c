@@ -26,9 +26,9 @@
 #include <timestamp.h>
 #include <arch/early_variables.h>
 
-#define MAX_TIMESTAMPS 30
+#define MAX_TIMESTAMPS 60
 
-#define MAX_TIMESTAMP_CACHE 16
+#define MAX_TIMESTAMP_CACHE 30
 
 struct __attribute__((__packed__)) timestamp_cache {
 	uint16_t cache_state;

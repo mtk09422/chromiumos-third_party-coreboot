@@ -71,7 +71,7 @@ SECTIONS
 		*(.car.global_data);
 #if IS_ENABLED(CONFIG_HAS_PRECBMEM_TIMESTAMP_REGION)
 		_timestamp = .;
-		. = . + 0x100;
+		. = . + 0x180;
 		_etimestamp = .;
 #endif
 		_car_data_end = .;

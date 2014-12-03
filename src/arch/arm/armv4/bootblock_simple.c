@@ -51,7 +51,9 @@ void main(void)
 	bootblock_soc_init();
 	bootblock_mainboard_init();
 
+	timestamp_add_now(TS_START_COPYROM);
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+	timestamp_add_now(TS_END_COPYROM);
 
 	if (entry) stage_exit(entry);
 	hlt();
