@@ -55,5 +55,4 @@ endif
 VB_SOURCE := vboot_reference
 subdirs-$(CONFIG_VBOOT_VERIFY_FIRMWARE) += vboot1
 subdirs-$(CONFIG_VBOOT2_VERIFY_FIRMWARE) += vboot2
-INCLUDES += -I$(VB_SOURCE)/firmware/2lib/include
 INCLUDES += -I$(VB_SOURCE)/firmware/include
