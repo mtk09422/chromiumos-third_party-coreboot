@@ -95,7 +95,8 @@ files-in-dir=$(filter-out $(call dir-wildcards,$(call filter-out-dirs,$(1),$(dir
 #######################################################################
 # reduce command line length by linking the objects of each
 # directory into an intermediate file
-postprocessors += $$(foreach d,$$(sort $$(dir $$(filter %.o %.a,$$(ramstage-objs)))), \
+postprocessors += $$(eval DEPENDENCIES+=$$(addsuffix .d,$$(basename $$(ramstage-objs)))) \
+	$$(foreach d,$$(sort $$(dir $$(filter %.o %.a,$$(ramstage-objs)))), \
 	$$(eval $$(d)ramstage.o: $$(call files-in-dir,$$(d),$$(ramstage-objs)); $$$$(call link,ramstage,$$$$(filter %.o %.a,$$$$(^)),-o $$$$(@),-r)) \
 	$$(eval ramstage-objs:=$$(d)ramstage.o $$(filter-out $$(call files-in-dir,$$(d),$$(filter %.o %.a,$$(ramstage-objs))),$$(ramstage-objs))))
 
