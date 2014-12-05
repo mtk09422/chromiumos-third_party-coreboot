@@ -227,9 +227,6 @@ int cbmem_initialize(void)
 		cbmem_init(high_tables_base, high_tables_size);
 		rv = 1;
 	}
-#ifndef __PRE_RAM__
-	cbmem_arch_init();
-#endif
 	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
@@ -243,9 +240,6 @@ int cbmem_initialize(void)
 static void init_cbmem_post_device(void *unused)
 {
 	cbmem_initialize();
-#if CONFIG_CONSOLE_CBMEM
-	cbmemc_reinit();
-#endif
 }
 
 BOOT_STATE_INIT_ENTRIES(cbmem_bscb) = {

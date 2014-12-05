@@ -20,7 +20,7 @@
 #include <cbmem.h>
 #include <stdlib.h>
 
-#ifndef __PRE_RAM__
+#ifndef __PRE_RAM__	/* TODO clean up ifdefs after x86 has --gc-sections */
 
 static const struct cbmem_id_to_name cbmem_ids[] = { CBMEM_ID_TO_NAME_TABLE };
 
@@ -46,7 +46,7 @@ void cbmem_print_entry(int n, u32 id, u64 base, u64 size)
 	printk(BIOS_DEBUG, "%08llx\n", size);
 }
 
-#else	/* __PRE_RAM__ */
+#endif	/* !__PRE_RAM__ */
 
 extern cbmem_init_hook_t _cbmem_init_hooks;
 extern cbmem_init_hook_t _ecbmem_init_hooks;
@@ -59,5 +59,3 @@ void cbmem_run_init_hooks(void)
 		init_hook_ptr++;
 	}
 }
-
-#endif	/* __PRE_RAM__ */

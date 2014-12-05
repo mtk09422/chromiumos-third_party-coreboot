@@ -204,19 +204,24 @@ void *cbmem_add(u32 id, u64 size);
 void *cbmem_find(u32 id);
 
 typedef void (* const cbmem_init_hook_t)(void);
-#define CBMEM_INIT_HOOK(init_fn_) static cbmem_init_hook_t init_fn_ ## _ptr \
-	__attribute__((used, section(".rodata.cbmem_init_hooks"))) = init_fn_;
+void cbmem_run_init_hooks(void);
 
 #ifndef __PRE_RAM__
 /* Ramstage only functions. */
 void cbmem_list(void);
-void cbmem_arch_init(void);
 void cbmem_print_entry(int n, u32 id, u64 start, u64 size);
-static inline void cbmem_run_init_hooks(void) {}
-#else
-static inline void cbmem_arch_init(void) {}
-void cbmem_run_init_hooks(void);
-#endif /* __PRE_RAM__ */
+#define ROMSTAGE_CBMEM_INIT_HOOK(init_fn_) static cbmem_init_hook_t \
+	init_fn_ ## _unused_ __attribute__((unused)) = init_fn_;
+#define RAMSTAGE_CBMEM_INIT_HOOK(init_fn_) \
+	static cbmem_init_hook_t init_fn_ ## _ptr_ __attribute__((used, \
+	section(".rodata.cbmem_init_hooks"))) = init_fn_;
+#else /* __PRE_RAM__ */
+#define ROMSTAGE_CBMEM_INIT_HOOK(init_fn_) \
+	static cbmem_init_hook_t init_fn_ ## _ptr_ __attribute__((used, \
+	section(".rodata.cbmem_init_hooks"))) = init_fn_;
+#define RAMSTAGE_CBMEM_INIT_HOOK(init_fn_) static cbmem_init_hook_t \
+	init_fn_ ## _unused_ __attribute__((unused)) = init_fn_;
+#endif /* !__PRE_RAM__ */
 
 #endif /* __ASSEMBLER__ */
 

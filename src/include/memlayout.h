@@ -51,7 +51,9 @@
 	REGION(timestamp, addr, size, 8)
 
 #define PRERAM_CBMEM_CONSOLE(addr, size) \
-	REGION(preram_cbmem_console, addr, size, 4)
+	REGION(preram_cbmem_console, addr, size, 4) \
+	_ = ASSERT(size <= CONFIG_CONSOLE_CBMEM_BUFFER_SIZE, \
+		"pre-RAM CBMEM console size must not be larger than post-RAM!");
 
 /* Use either CBFS_CACHE (unified) or both (PRERAM|POSTRAM)_CBFS_CACHE */
 #define CBFS_CACHE(addr, size) REGION(cbfs_cache, addr, size, 4)

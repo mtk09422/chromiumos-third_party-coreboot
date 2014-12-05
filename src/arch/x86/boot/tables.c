@@ -35,11 +35,12 @@
 uint64_t high_tables_base = 0;
 uint64_t high_tables_size;
 
-void cbmem_arch_init(void)
+static void cbmem_arch_init(void)
 {
 	/* defined in gdt.c */
 	move_gdt();
 }
+RAMSTAGE_CBMEM_INIT_HOOK(cbmem_arch_init)
 
 struct lb_memory *write_tables(void)
 {

@@ -183,7 +183,6 @@ void cbmem_initialize_empty(void)
 	printk(BIOS_DEBUG, "CBMEM: root @ %p %d entries.\n",
 	       root, root->max_entries);
 
-	cbmem_arch_init();
 	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
@@ -260,7 +259,6 @@ int cbmem_initialize(void)
 	root->locked = 1;
 #endif
 
-	cbmem_arch_init();
 	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
@@ -425,9 +423,6 @@ void *cbmem_entry_start(const struct cbmem_entry *entry)
 static void init_cbmem_pre_device(void *unused)
 {
 	cbmem_initialize();
-#if CONFIG_CONSOLE_CBMEM
-	cbmemc_reinit();
-#endif /* CONFIG_CONSOLE_CBMEM */
 }
 
 BOOT_STATE_INIT_ENTRIES(cbmem_bscb) = {

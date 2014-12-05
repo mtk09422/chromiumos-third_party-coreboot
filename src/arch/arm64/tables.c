@@ -38,10 +38,6 @@ uint64_t high_tables_base = 0;
 uint64_t high_tables_size;
 #endif
 
-void cbmem_arch_init(void)
-{
-}
-
 struct lb_memory *write_tables(void)
 {
 	unsigned long table_pointer, new_table_pointer;

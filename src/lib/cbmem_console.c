@@ -234,4 +234,5 @@ void cbmemc_reinit(void)
 }
 
 /* Call cbmemc_reinit() at cbmem_initialize() time. */
-CBMEM_INIT_HOOK(cbmemc_reinit)
+ROMSTAGE_CBMEM_INIT_HOOK(cbmemc_reinit)
+RAMSTAGE_CBMEM_INIT_HOOK(cbmemc_reinit)

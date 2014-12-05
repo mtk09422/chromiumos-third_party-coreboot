@@ -154,7 +154,7 @@ static void migrate_power_state(void)
 	}
 	memcpy(ps_cbmem, ps_car, sizeof(*ps_cbmem));
 }
-CBMEM_INIT_HOOK(migrate_power_state)
+ROMSTAGE_CBMEM_INIT_HOOK(migrate_power_state)
 
 static struct chipset_power_state *fill_power_state(void)
 {

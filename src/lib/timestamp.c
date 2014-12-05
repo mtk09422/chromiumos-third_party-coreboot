@@ -214,7 +214,8 @@ static void timestamp_sync(void)
 	if (ts_cbmem_table->base_time == 0)
 		ts_cbmem_table->base_time = ts_cache_table->base_time;
 }
-CBMEM_INIT_HOOK(timestamp_sync)
+ROMSTAGE_CBMEM_INIT_HOOK(timestamp_sync)
+RAMSTAGE_CBMEM_INIT_HOOK(timestamp_sync)
 
 void timestamp_early_init(uint64_t base)
 {
