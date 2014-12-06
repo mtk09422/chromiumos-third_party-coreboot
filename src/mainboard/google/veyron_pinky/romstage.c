@@ -31,6 +31,7 @@
 #include <soc/clock.h>
 #include <soc/pwm.h>
 #include <soc/grf.h>
+#include <soc/rk808.h>
 #include <soc/tsadc.h>
 #include <stdlib.h>
 #include <symbols.h>
@@ -38,7 +39,7 @@
 #include <types.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
-#include "timer.h"
+#include "board.h"
 
 static void regulate_vdd_log(unsigned int mv)
 {
@@ -76,6 +77,20 @@ static void configure_l2ctlr(void)
 	write_l2ctlr(l2ctlr);
 }
 
+static void sdmmc_power_off(void)
+{
+	switch (board_id()) {
+	case 0:
+		rk808_configure_ldo(PMIC_BUS, 8, 0);	/* VCCIO_SD */
+		gpio_output(GPIO(7, C, 5), 0);		/* SD_EN */
+		break;
+	default:
+		rk808_configure_ldo(PMIC_BUS, 4, 0); /* VCCIO_SD */
+		rk808_configure_ldo(PMIC_BUS, 5, 0); /* VCC33_SD */
+		break;
+	}
+}
+
 void main(void)
 {
 	void *entry;
@@ -86,9 +101,11 @@ void main(void)
 	configure_l2ctlr();
 	tsadc_init();
 
+	/* Need to power cycle SD card to ensure it is properly reset. */
+	sdmmc_power_off();
+
 	/* vdd_log 1200mv is enough for ddr run 666Mhz */
 	regulate_vdd_log(1200);
-
 	timestamp_add_now(TS_BEFORE_INITRAM);
 	sdram_init(get_sdram_config());
 	timestamp_add_now(TS_AFTER_INITRAM);
