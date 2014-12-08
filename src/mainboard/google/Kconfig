@@ -241,6 +241,13 @@ config BOARD_GOOGLE_VEYRON_PINKY
 	  Veyron_Pinky is a Chrome OS mainboard.
 	  Veyron_Pinky is based on the Rockchip RK3288 platform.
 
+config BOARD_GOOGLE_VEYRON_SPEEDY
+	bool "Veyron_Speedy"
+	help
+	  Google Veyron_Speedy mainboard.
+	  Enable this config to select the Google Veyron_Speedy mainboard.
+	  Veyron_Speedy is a Chrome OS mainboard.
+	  Veyron_Speedy is based on the Rockchip RK3288 platform.
 endchoice
 
 source "src/mainboard/google/auron/Kconfig"
@@ -270,6 +277,7 @@ source "src/mainboard/google/urara/Kconfig"
 source "src/mainboard/google/veyron_jerry/Kconfig"
 source "src/mainboard/google/veyron_mighty/Kconfig"
 source "src/mainboard/google/veyron_pinky/Kconfig"
+source "src/mainboard/google/veyron_speedy/Kconfig"
 
 config MAINBOARD_VENDOR
 	string "Mainboard Vendor"
