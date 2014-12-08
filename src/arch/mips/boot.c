@@ -19,9 +19,13 @@
 
 #include <console/console.h>
 #include <arch/stages.h>
+#include <cbmem.h>
 
 void jmp_to_elf_entry(void *entry, unsigned long buffer, unsigned long size)
 {
+	void *cb_tables = cbmem_find(CBMEM_ID_CBTABLE);
+	void (*doit)(void *) = entry;
+
 	printk(BIOS_SPEW, "entry    = %p\n", entry);
-	stage_exit(entry);
+	doit(cb_tables);
 }
