@@ -30,10 +30,6 @@
 
 void bootblock_soc_init(void)
 {
-	rk3288_init_timer();
-
-	timestamp_early_init(timestamp_get());
-
 	rkclk_init();
 
 	mmu_init();

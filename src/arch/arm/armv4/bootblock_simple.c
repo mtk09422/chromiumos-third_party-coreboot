@@ -25,6 +25,8 @@
 #include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <delay.h>
+#include <timestamp.h>
 
 __attribute__((weak)) void bootblock_mainboard_early_init(void) { /* no-op */ }
 __attribute__((weak)) void bootblock_soc_init(void) { /* do nothing */ }
@@ -34,6 +36,10 @@ void main(void)
 {
 	const char *stage_name = "fallback/romstage";
 	void *entry;
+
+	init_timer();
+	if (IS_ENABLED(CONFIG_HAS_PRECBMEM_TIMESTAMP_REGION))
+		timestamp_early_init(timestamp_get());
 
 	bootblock_mainboard_early_init();
 
