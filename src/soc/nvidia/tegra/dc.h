@@ -25,6 +25,7 @@
 #ifndef __SOC_NVIDIA_TEGRA_DC_H
 #define __SOC_NVIDIA_TEGRA_DC_H
 #include <stddef.h>
+#include <device/device.h>
 
 /* Register definitions for the Tegra display controller */
 
@@ -503,7 +504,9 @@ struct tegra_dc {
 unsigned long READL(void * p);
 void WRITEL(unsigned long value, void * p);
 
+#ifndef __PRE_RAM__
 void display_startup(device_t dev);
+#endif
 void dp_init(void * _config);
 void dp_enable(void * _dp);
 unsigned int fb_base_mb(void);
