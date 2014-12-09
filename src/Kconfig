@@ -20,6 +20,49 @@
 
 mainmenu "coreboot configuration"
 
+source src/mainboard/Kconfig
+
+# This option is used to set the architecture of a mainboard to X86.
+# It is usually set in mainboard/*/Kconfig.
+config ARCH_X86
+	bool
+	default n
+	select PCI
+
+config ARCH_ARM
+	bool
+	default n
+
+config ARCH_ARM64
+	bool
+	default n
+
+config ARCH_MIPS
+	bool
+	default n
+
+source src/arch/x86/Kconfig
+source src/arch/arm/Kconfig
+source src/arch/arm64/Kconfig
+source src/arch/mips/Kconfig
+
+menu "Chipset"
+
+comment "CPU"
+source src/cpu/Kconfig
+comment "Northbridge"
+source src/northbridge/Kconfig
+comment "Southbridge"
+source src/southbridge/Kconfig
+comment "Super I/O"
+source src/superio/Kconfig
+comment "Embedded Controllers"
+source src/ec/Kconfig
+comment "SoC"
+source src/soc/Kconfig
+
+endmenu
+
 menu "General setup"
 
 config EXPERT
@@ -235,49 +278,6 @@ config UPDATE_IMAGE
 	  is created. Instead it is expected that there already
 	  is a suitable file for further processing.
 	  The bootblock will not be modified.
-
-endmenu
-
-source src/mainboard/Kconfig
-
-# This option is used to set the architecture of a mainboard to X86.
-# It is usually set in mainboard/*/Kconfig.
-config ARCH_X86
-	bool
-	default n
-	select PCI
-
-config ARCH_ARM
-	bool
-	default n
-
-config ARCH_ARM64
-	bool
-	default n
-
-config ARCH_MIPS
-	bool
-	default n
-
-source src/arch/x86/Kconfig
-source src/arch/arm/Kconfig
-source src/arch/arm64/Kconfig
-source src/arch/mips/Kconfig
-
-menu "Chipset"
-
-comment "CPU"
-source src/cpu/Kconfig
-comment "Northbridge"
-source src/northbridge/Kconfig
-comment "Southbridge"
-source src/southbridge/Kconfig
-comment "Super I/O"
-source src/superio/Kconfig
-comment "Embedded Controllers"
-source src/ec/Kconfig
-comment "SoC"
-source src/soc/Kconfig
 
 endmenu
 

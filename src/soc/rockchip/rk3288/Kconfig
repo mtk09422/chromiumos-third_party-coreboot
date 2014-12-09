@@ -40,4 +40,11 @@ config BOOTBLOCK_CPU_INIT
 	string
 	default "soc/rockchip/rk3288/bootblock.c"
 
+config COMPRESS_RAMSTAGE
+	bool "Compress ramstage with LZMA"
+	default n
+	help
+	  The ramstage is loaded from code running in uncached SRAM, you
+	  probably don't want LZMA running on that.
+
 endif
