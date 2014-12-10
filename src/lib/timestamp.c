@@ -146,7 +146,7 @@ static void timestamp_add_table_entry(struct timestamp_table *ts_table,
 	struct timestamp_entry *tse;
 
 	if (ts_table->num_entries == ts_table->max_entries) {
-		printk(BIOS_ERR, "ERROR: dropped a timestamp entry\n");
+		printk(BIOS_ERR, "ERROR: Dropped a timestamp entry\n");
 		return;
 	}
 
@@ -167,7 +167,7 @@ static void timestamp_sync(void)
 
 	/* No timestamp cache found */
 	if (ts_cache == NULL) {
-		printk(BIOS_ERR, "ERROR: No timestamp table allocated\n");
+		printk(BIOS_ERR, "ERROR: No timestamp cache found\n");
 		return;
 	}
 
@@ -187,7 +187,7 @@ static void timestamp_sync(void)
 	}
 
 	if (ts_cbmem_table == ts_cache_table) {
-		printk(BIOS_ERR, "ERROR: table error to sync timestamps\n");
+		printk(BIOS_ERR, "ERROR: Table error to sync timestamps\n");
 		return;
 	}
 
@@ -252,7 +252,7 @@ void timestamp_add(enum timestamp_id id, uint64_t ts_time)
 	ts_table = timestamp_table_get();
 
 	if (!ts_table) {
-		printk(BIOS_ERR, "ERROR: dropped a timestamp entry\n");
+		printk(BIOS_ERR, "ERROR: No timestamp table found\n");
 		return;
 	}
 
