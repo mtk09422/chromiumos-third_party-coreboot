@@ -17,31 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/stages.h>
-#include <cbfs.h>
-#include <cbmem.h>
-#include <console/console.h>
-#include <romstage_handoff.h>
-#include <vendorcode/google/chromeos/chromeos.h>
-#include <soc/soc_services.h>
+#ifndef __SOC_QUALCOMM_IPQ806X_INCLUDE_SOC_SOC_SERVICES_H__
+#define __SOC_QUALCOMM_IPQ806X_INCLUDE_SOC_SOC_SERVICES_H__
 
+/* Returns zero on success, nonzero on failure. */
+int initialize_dram(void);
 
-void main(void)
-{
-	void *entry;
-
-	cbmem_initialize();
-
-	console_init();
-
-	initialize_dram();
-
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
-	entry = vboot2_load_ramstage();
-#else
-	vboot_verify_firmware(romstage_handoff_find_or_add());
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
 #endif
-
-	stage_exit(entry);
-}
