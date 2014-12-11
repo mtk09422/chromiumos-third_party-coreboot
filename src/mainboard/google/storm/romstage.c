@@ -30,18 +30,22 @@ void main(void)
 {
 	void *entry;
 
-	cbmem_initialize();
-
 	console_init();
 
 	initialize_dram();
 
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+	cbmem_initialize_empty();
+
 	entry = vboot2_load_ramstage();
-#else
-	vboot_verify_firmware(romstage_handoff_find_or_add());
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
-#endif
+
+	/*
+	 * Presumably the only reason vboot2 would return NULL is that we're
+	 * running in recovgery mode, otherwise it would have reset the
+	 * device.
+	 */
+	if (!entry)
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+					CONFIG_CBFS_PREFIX "/ramstage");
 
 	stage_exit(entry);
 }
