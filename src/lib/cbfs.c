@@ -27,8 +27,9 @@
 # define CBFS_MINI_BUILD
 #elif defined(__SMM__)
 # define CBFS_MINI_BUILD
-#elif defined(__PRE_RAM__) && !defined(__ROMSTAGE__)
-  /* No LZMA in boot block. */
+#elif defined(__PRE_RAM__) && \
+	(!defined(__ROMSTAGE__) || !IS_ENABLED(CONFIG_COMPRESS_RAMSTAGE))
+  /* No LZMA before romstage, and not even there without ramstage compression */
 #else
 # define CBFS_CORE_WITH_LZMA
 # include <lib.h>
