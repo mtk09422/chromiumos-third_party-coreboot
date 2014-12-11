@@ -28,12 +28,15 @@ void main(void)
 {
 	void *entry;
 
-	cbmem_initialize_empty();
-
+	cbmem_initialize();
 	console_init();
 
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+	entry = vboot2_load_ramstage();
+#else
 	vboot_verify_firmware(romstage_handoff_find_or_add());
-
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, "fallback/ramstage");
+#endif
+
 	stage_exit(entry);
 }
