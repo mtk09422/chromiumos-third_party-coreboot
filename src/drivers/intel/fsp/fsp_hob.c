@@ -45,8 +45,6 @@ are permitted provided that the following conditions are met:
 #include <lib.h> // hexdump
 #include <string.h>
 
-#define CBMEM_ID_HOB_LIST	0x486f624c	/* HobL */
-
 void *fsp_hob_list_ptr CAR_GLOBAL;
 
 /*
