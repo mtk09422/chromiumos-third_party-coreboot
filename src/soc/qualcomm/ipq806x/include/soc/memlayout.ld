@@ -32,7 +32,9 @@ SECTIONS
 	OVERLAP_VERSTAGE_ROMSTAGE(0x2A012000, 64K)
 	VBOOT2_WORK(0x2A022000, 16K)
 	PRERAM_CBMEM_CONSOLE(0x2A026000, 32K)
-/*	0x2e000..0x3F000  68 KB free */
+	TIMESTAMP(0x2A02E000, 1K)
+
+/*	0x2e000..0x3F000  67 KB free */
 
 /* Keep the below area reserved at all times, it is used by various QCA
    components as shared data
