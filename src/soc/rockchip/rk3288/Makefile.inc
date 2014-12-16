@@ -27,7 +27,6 @@ endif
 bootblock-y += timer.c
 bootblock-y += clock.c
 bootblock-y += spi.c
-bootblock-y += media.c
 bootblock-y += gpio.c
 bootblock-y += i2c.c
 bootblock-y += rk808.c
@@ -38,7 +37,6 @@ verstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 verstage-y += gpio.c
 verstage-y += clock.c
 verstage-y += i2c.c
-verstage-y += media.c
 
 romstage-y += cbmem.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
@@ -49,7 +47,6 @@ romstage-y += i2c.c
 romstage-y += clock.c
 romstage-y += gpio.c
 romstage-y += spi.c
-romstage-y += media.c
 romstage-y += sdram.c
 romstage-y += rk808.c
 romstage-y += pwm.c
@@ -62,7 +59,6 @@ ramstage-y += i2c.c
 ramstage-y += clock.c
 ramstage-y += spi.c
 ramstage-y += gpio.c
-ramstage-y += media.c
 ramstage-y += rk808.c
 ramstage-y += pwm.c
 ramstage-y += vop.c
