@@ -34,4 +34,9 @@ config ARCH_RAMSTAGE_MIPS
 	bool
 	default n
 
+# Mark SMP stack size as 0 since we keep using SRAM stack throughout ramstage.
+config STACK_SIZE
+	hex
+	default 0x0
+
 endmenu
