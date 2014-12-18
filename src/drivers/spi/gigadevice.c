@@ -203,9 +203,6 @@ struct spi_flash *spi_flash_probe_gigadevice(struct spi_slave *spi, u8 *idcode)
 	unsigned page_size;
 	unsigned int i;
 
-	if (stm.params)
-		die("Gigadevice driver already initialized.");
-
 	for (i = 0; i < ARRAY_SIZE(gigadevice_spi_flash_table); i++) {
 		params = &gigadevice_spi_flash_table[i];
 		if (params->id == ((idcode[1] << 8) | idcode[2]))

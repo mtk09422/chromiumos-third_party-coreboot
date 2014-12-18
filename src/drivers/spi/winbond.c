@@ -192,9 +192,6 @@ struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 	unsigned page_size;
 	unsigned int i;
 
-	if (stm.params)
-		die("Winbond driver already initialized.");
-
 	for (i = 0; i < ARRAY_SIZE(winbond_spi_flash_table); i++) {
 		params = &winbond_spi_flash_table[i];
 		if (params->id == ((idcode[1] << 8) | idcode[2]))
