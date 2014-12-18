@@ -45,11 +45,11 @@ Scope (\_SB.PCI0.RP01)
 	Device (ETH0)
 	{
 		Name (_ADR, 0x00000000)
-		Name (_PRW, Package() { PANTHER_NIC_WAKE_GPIO, 3 })
+		Name (_PRW, Package() { JECHT_NIC_WAKE_GPIO, 3 })
 
 		Method (_DSW, 3, NotSerialized)
 		{
-			Store (PANTHER_NIC_WAKE_GPIO, Local0)
+			Store (JECHT_NIC_WAKE_GPIO, Local0)
 
 			If (LEqual (Arg0, 1)) {
 				// Enable GPIO as wake source
@@ -67,11 +67,11 @@ Scope (\_SB.PCI0.RP02)
 	Device (WLAN)
 	{
 		Name (_ADR, 0x00000000)
-		Name (_PRW, Package() { PANTHER_WLAN_WAKE_GPIO, 3 })
+		Name (_PRW, Package() { JECHT_WLAN_WAKE_GPIO, 3 })
 
 		Method (_DSW, 3, NotSerialized)
 		{
-			Store (PANTHER_WLAN_WAKE_GPIO, Local0)
+			Store (JECHT_WLAN_WAKE_GPIO, Local0)
 
 			If (LEqual (Arg0, 1)) {
 				// Enable GPIO as wake source
