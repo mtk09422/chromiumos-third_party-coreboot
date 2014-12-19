@@ -302,9 +302,10 @@ config HEAP_SIZE
 	hex "Heap size in bytes"
 	default 0x4000
 
-# Not used for the actual stack by ARM, but still needed in some src/lib/ files.
+# Size of per-cpu stacks in ramstage. Set to 0 for non-SMP architectures.
 config STACK_SIZE
 	hex
+	default 0x0 if (ARCH_RAMSTAGE_ARM || ARCH_RAMSTAGE_MIPS)
 	default 0x1000
 
 config MAX_CPUS
