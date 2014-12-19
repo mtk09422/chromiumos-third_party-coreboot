@@ -50,7 +50,18 @@ void board_fsp_memory_init_params(
 			upd_data->SpdDataBuffer_0_1);
 	}
 
+	/* Set the I/O map */
+	upd_data->PcdPmBase = ACPI_BASE_ADDRESS;
+	upd_data->PcdGpioBase = GPIO_BASE_ADDRESS;
+
 	/* Enable/disable the devices */
+	upd_data->PcdEnableAudioDsp = 1;
+	upd_data->PcdEnableAzalia = 0;
 	upd_data->PcdEnableLan = 0;
+	upd_data->PcdEnableSata = 1;	/* Port bitmap */
+	upd_data->PcdSataMode = 1;	/* AHCI */
+	upd_data->PcdPchPcieRootPortEnable = 7;	/* Port bitmap */
+	upd_data->PcdPchPcieSlotImplemented = 7;
+	upd_data->PcdPchPcieRootPortFunctionSwappingEnable = 0;
 }
 
