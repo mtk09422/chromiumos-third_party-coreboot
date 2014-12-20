@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <assert.h>
 #include <base3.h>
 #include <console/console.h>
 #include <delay.h>
@@ -49,7 +50,8 @@ int gpio_base3_value(gpio_t gpio[], int num_gpio)
 	int temp;
 	int index;
 	int result = 0;
-	char value[num_gpio];
+	char value[32];
+	assert(num_gpio <= 32);
 
 	/* Enable internal pull up */
 	for (index = 0; index < num_gpio; ++index)

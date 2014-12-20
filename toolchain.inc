@@ -34,9 +34,24 @@ ARCHDIR-arm64     := arm64
 ARCHDIR-x86_32    := x86
 ARCHDIR-mipsel    := mips
 
-CFLAGS_arm        := -mno-unaligned-access -ffunction-sections -fdata-sections
-CFLAGS_arm64      := -ffunction-sections -fdata-sections
-CFLAGS_mipsel     := -mips32r2 -G 0  -ffunction-sections -fdata-sections
+# About -Wstack-usage: if you arrived here via grep, you were probably trying to
+# do something naughty that could've caused boards with 2K stack size to have a
+# very bad time somewhere down the road. Since stack overflows are both very
+# dangerous and almost impossible to prevent, we're drawing the line at 1.5K
+# for a single function frame (with the assumption that you hopefully don't
+# chain more than one of that size together). Buffers larger than that should
+# be allocated in the BSS (use MAYBE_STATIC if you need to share code with
+# __PRE_RAM__ x86). Since GCCs detection of dynamic array bounds unfortunately
+# seems to be very basic, you'll sometimes have to use a static upper bound
+# for the size and an assert() to make sure it's honored (see gpio_base3_value()
+# for an example). (If you absolutely need a larger stack frame and are 100%
+# sure it cannot cause problems, you can whitelist it with #pragma diagnostic.)
+
+CFLAGS_nonx86     := -ffunction-sections -fdata-sections -Wstack-usage=1536
+
+CFLAGS_arm        := $(CFLAGS_nonx86) -mno-unaligned-access
+CFLAGS_arm64      := $(CFLAGS_nonx86)
+CFLAGS_mipsel     := $(CFLAGS_nonx86) -mips32r2 -G 0
 
 toolchain_to_dir = \
 	$(foreach arch,$(ARCH_SUPPORTED),\
