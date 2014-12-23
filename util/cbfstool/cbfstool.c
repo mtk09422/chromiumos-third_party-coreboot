@@ -63,6 +63,7 @@ static struct param {
 } param = {
 	/* All variables not listed are initialized as zero. */
 	.algo = CBFS_COMPRESS_NONE,
+	.headeroffset = ~0,
 };
 
 typedef int (*convert_buffer_t)(struct buffer *buffer, uint32_t *offset);
@@ -72,6 +73,7 @@ static int cbfs_add_component(const char *cbfs_name,
 			      const char *name,
 			      uint32_t type,
 			      uint32_t offset,
+			      uint32_t headeroffset,
 			      convert_buffer_t convert)
 {
 	struct cbfs_image image;
@@ -92,7 +94,7 @@ static int cbfs_add_component(const char *cbfs_name,
 		return 1;
 	}
 
-	if (cbfs_image_from_file(&image, cbfs_name))
+	if (cbfs_image_from_file(&image, cbfs_name, headeroffset))
 		return 1;
 
 	if (buffer_from_file(&buffer, filename) != 0) {
@@ -199,6 +201,7 @@ static int cbfs_add(void)
 				  param.name,
 				  param.type,
 				  param.baseaddress,
+				  param.headeroffset,
 				  NULL);
 }
 
@@ -209,6 +212,7 @@ static int cbfs_add_stage(void)
 				  param.name,
 				  CBFS_COMPONENT_STAGE,
 				  param.baseaddress,
+				  param.headeroffset,
 				  cbfstool_convert_mkstage);
 }
 
@@ -219,6 +223,7 @@ static int cbfs_add_payload(void)
 				  param.name,
 				  CBFS_COMPONENT_PAYLOAD,
 				  param.baseaddress,
+				  param.headeroffset,
 				  cbfstool_convert_mkpayload);
 }
 
@@ -239,6 +244,7 @@ static int cbfs_add_flat_binary(void)
 				  param.name,
 				  CBFS_COMPONENT_PAYLOAD,
 				  param.baseaddress,
+				  param.headeroffset,
 				  cbfstool_convert_mkflatpayload);
 }
 
@@ -251,7 +257,7 @@ static int cbfs_remove(void)
 		return 1;
 	}
 
-	if (cbfs_image_from_file(&image, param.cbfs_name))
+	if (cbfs_image_from_file(&image, param.cbfs_name, param.headeroffset))
 		return 1;
 
 	if (cbfs_remove_entry(&image, param.name) != 0) {
@@ -373,7 +379,7 @@ static int cbfs_locate(void)
 		return 1;
 	}
 
-	if (cbfs_image_from_file(&image, param.cbfs_name))
+	if (cbfs_image_from_file(&image, param.cbfs_name, param.headeroffset))
 		return 1;
 
 	if (cbfs_get_entry(&image, param.name))
@@ -408,7 +414,7 @@ static int cbfs_print(void)
 {
 	struct cbfs_image image;
 
-	if (cbfs_image_from_file(&image, param.cbfs_name))
+	if (cbfs_image_from_file(&image, param.cbfs_name, param.headeroffset))
 		return 1;
 
 	cbfs_print_directory(&image);
@@ -431,7 +437,7 @@ static int cbfs_extract(void)
 		return 1;
 	}
 
-	if (cbfs_image_from_file(&image, param.cbfs_name))
+	if (cbfs_image_from_file(&image, param.cbfs_name, param.headeroffset))
 		result = 1;
 	else if (cbfs_export_entry(&image, param.name,
 				   param.filename))
@@ -457,7 +463,7 @@ static int cbfs_update_fit(void)
 		return 1;
 	}
 
-	if (cbfs_image_from_file(&image, param.cbfs_name))
+	if (cbfs_image_from_file(&image, param.cbfs_name, param.headeroffset))
 		return 1;
 
 	ret = fit_update_table(&image, param.fit_empty_entries, param.name);
@@ -469,16 +475,16 @@ static int cbfs_update_fit(void)
 }
 
 static const struct command commands[] = {
-	{"add", "f:n:t:b:vh?", cbfs_add},
-	{"add-flat-binary", "f:n:l:e:c:b:vh?", cbfs_add_flat_binary},
-	{"add-payload", "f:n:t:c:b:vh?C:I:", cbfs_add_payload},
-	{"add-stage", "f:n:t:c:b:S:vh?", cbfs_add_stage},
+	{"add", "H:f:n:t:b:vh?", cbfs_add},
+	{"add-flat-binary", "H:f:n:l:e:c:b:vh?", cbfs_add_flat_binary},
+	{"add-payload", "H:f:n:t:c:b:vh?C:I:", cbfs_add_payload},
+	{"add-stage", "H:f:n:t:c:b:S:vh?", cbfs_add_stage},
 	{"create", "s:B:b:H:a:o:m:vh?", cbfs_create},
-	{"extract", "n:f:vh?", cbfs_extract},
-	{"locate", "f:n:P:a:Tvh?", cbfs_locate},
-	{"print", "vh?", cbfs_print},
-	{"remove", "n:vh?", cbfs_remove},
-	{"update-fit", "n:x:vh?", cbfs_update_fit},
+	{"extract", "H:n:f:vh?", cbfs_extract},
+	{"locate", "H:f:n:P:a:Tvh?", cbfs_locate},
+	{"print", "H:vh?", cbfs_print},
+	{"remove", "H:n:vh?", cbfs_remove},
+	{"update-fit", "H:n:x:vh?", cbfs_update_fit},
 };
 
 static struct option long_options[] = {
@@ -512,9 +518,10 @@ static void usage(char *name)
 	    ("cbfstool: Management utility for CBFS formatted ROM images\n\n"
 	     "USAGE:\n" " %s [-h]\n"
 	     " %s FILE COMMAND [-v] [PARAMETERS]...\n\n" "OPTIONs:\n"
-	     "  -T              Output top-aligned memory address\n"
-	     "  -v              Provide verbose output\n"
-	     "  -h              Display this help message\n\n"
+	     "  -H header_offset  Do not search for header, use this offset\n"
+	     "  -T                Output top-aligned memory address\n"
+	     "  -v                Provide verbose output\n"
+	     "  -h                Display this help message\n\n"
 	     "COMMANDs:\n"
 	     " add -f FILE -n NAME -t TYPE [-b base-address]               "
 			"Add a component\n"
