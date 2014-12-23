@@ -240,7 +240,7 @@ int cbfs_image_create(struct cbfs_image *image,
 	if (header_offset > entries_offset && header_offset < cbfs_len)
 		cbfs_len = header_offset;
 	cbfs_len -= entries_offset + align + entry_header_len;
-	cbfs_create_empty_entry(image, entry, cbfs_len, "");
+	cbfs_create_empty_entry(entry, cbfs_len, "");
 	LOG("Created CBFS image (capacity = %d bytes)\n", cbfs_len);
 	return 0;
 }
@@ -306,14 +306,14 @@ static int cbfs_add_entry_at(struct cbfs_image *image,
 	if (target - addr > min_entry_size) {
 		DEBUG("|min|...|header|content|... <create new entry>\n");
 		len = target - addr - min_entry_size;
-		cbfs_create_empty_entry(image, entry, len, "");
+		cbfs_create_empty_entry(entry, len, "");
 		if (verbose > 1) cbfs_print_entry_info(image, entry, stderr);
 		entry = cbfs_find_next_entry(image, entry);
 		addr = cbfs_get_entry_addr(image, entry);
 	}
 
 	len = size + (content_offset - addr - header_size);
-	cbfs_create_empty_entry(image, entry, len, name);
+	cbfs_create_empty_entry(entry, len, name);
 	if (len != size) {
 		DEBUG("|..|header|content|... <use offset to create entry>\n");
 		DEBUG("before: offset=0x%x, len=0x%x\n",
@@ -347,7 +347,7 @@ static int cbfs_add_entry_at(struct cbfs_image *image,
 	}
 
 	len = addr_next - addr - min_entry_size;
-	cbfs_create_empty_entry(image, entry, len, "");
+	cbfs_create_empty_entry(entry, len, "");
 	if (verbose > 1) cbfs_print_entry_info(image, entry, stderr);
 	return 0;
 }
@@ -403,8 +403,7 @@ int cbfs_add_entry(struct cbfs_image *image, struct buffer *buffer,
 		if (!content_offset || content_offset == addr + header_size) {
 			DEBUG("Filling new entry data (%zd bytes).\n",
 			      buffer->size);
-			cbfs_create_empty_entry(image, entry, buffer->size,
-						name);
+			cbfs_create_empty_entry(entry, buffer->size, name);
 			entry->type = htonl(type);
 			memcpy(CBFS_SUBHEADER(entry), buffer->data, buffer->size);
 			if (verbose)
@@ -427,7 +426,7 @@ int cbfs_add_entry(struct cbfs_image *image, struct buffer *buffer,
 			}
 			new_size -= cbfs_calculate_file_header_size("");
 			DEBUG("new size: %d\n", new_size);
-			cbfs_create_empty_entry(image, entry, new_size, "");
+			cbfs_create_empty_entry(entry, new_size, "");
 			if (verbose)
 				cbfs_print_entry_info(image, entry, stderr);
 			return 0;
@@ -712,7 +711,7 @@ int cbfs_merge_empty_entry(struct cbfs_image *image, struct cbfs_file *entry,
 		DEBUG("join_empty_entry: combine 0x%x+0x%x and 0x%x+0x%x.\n",
 		      cbfs_get_entry_addr(image, entry), ntohl(entry->len),
 		      cbfs_get_entry_addr(image, next), ntohl(next->len));
-		cbfs_create_empty_entry(image, entry,
+		cbfs_create_empty_entry(entry,
 					(last_addr - addr -
 					 cbfs_calculate_file_header_size("")),
 					"");
@@ -813,8 +812,8 @@ int cbfs_is_valid_entry(struct cbfs_image *image, struct cbfs_file *entry)
 		       sizeof(entry->magic)) == 0);
 }
 
-int cbfs_create_empty_entry(struct cbfs_image *image, struct cbfs_file *entry,
-		      size_t len, const char *name)
+int cbfs_create_empty_entry(struct cbfs_file *entry,
+			    size_t len, const char *name)
 {
 	memset(entry, CBFS_CONTENT_DEFAULT_VALUE, sizeof(*entry));
 	memcpy(entry->magic, CBFS_FILE_MAGIC, sizeof(entry->magic));
