@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#define FIELD_SIZEOF(t, f) (sizeof(((t *)0)->f))
 
 #define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1UL)
 #define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
