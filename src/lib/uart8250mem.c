@@ -29,6 +29,10 @@
 #endif
 #include <delay.h>
 
+/* Ugly hack... drop on rebase to the glorious new upstream version! */
+#define read8(a) read8((void *)(a))
+#define write8(a, v) write8((void *)(a), v)
+
 /* Should support 8250, 16450, 16550, 16550A type UARTs */
 
 /* Expected character delay at 1200bps is 9ms for a working UART

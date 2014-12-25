@@ -187,8 +187,7 @@ static void smp_write_bus(struct mp_config_table *mc,
 }
 
 void smp_write_ioapic(struct mp_config_table *mc,
-	unsigned char id, unsigned char ver,
-	unsigned long apicaddr)
+	u8 id, u8 ver, void *apicaddr)
 {
 	struct mpc_config_ioapic *mpc;
 	mpc = smp_next_mpc_entry(mc);

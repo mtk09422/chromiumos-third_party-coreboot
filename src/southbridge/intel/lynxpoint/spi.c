@@ -217,12 +217,12 @@ static void writel_(u32 b, const void *addr)
 
 #else /* CONFIG_DEBUG_SPI_FLASH ^^^ enabled  vvv NOT enabled */
 
-#define readb_(a) read8((uint32_t)a)
-#define readw_(a) read16((uint32_t)a)
-#define readl_(a) read32((uint32_t)a)
-#define writeb_(val, addr) write8((uint32_t)addr, val)
-#define writew_(val, addr) write16((uint32_t)addr, val)
-#define writel_(val, addr) write32((uint32_t)addr, val)
+#define readb_(a) read8(a)
+#define readw_(a) read16(a)
+#define readl_(a) read32(a)
+#define writeb_(val, addr) write8(addr, val)
+#define writew_(val, addr) write16(addr, val)
+#define writel_(val, addr) write32(addr, val)
 
 #endif  /* CONFIG_DEBUG_SPI_FLASH ^^^ NOT enabled */
 

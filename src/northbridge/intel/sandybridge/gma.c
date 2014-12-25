@@ -334,12 +334,12 @@ static struct resource *gtt_res = NULL;
 
 static inline u32 gtt_read(u32 reg)
 {
-	return read32(gtt_res->base + reg);
+	return read32(res2mmio(gtt_res, reg, 0));
 }
 
 static inline void gtt_write(u32 reg, u32 data)
 {
-	write32(gtt_res->base + reg, data);
+	write32(res2mmio(gtt_res, reg, 0), data);
 }
 
 static inline void gtt_write_powermeter(const struct gt_powermeter *pm)
@@ -642,13 +642,14 @@ static void gma_func0_init(struct device *dev)
 #if CONFIG_MAINBOARD_DO_NATIVE_VGA_INIT
 	/* This should probably run before post VBIOS init. */
 	printk(BIOS_SPEW, "Initializing VGA without OPROM.\n");
-	u32 iobase, mmiobase, physbase, graphics_base;
+	u8 *mmiobase;
+	u32 iobase, physbase, graphics_base;
 	iobase = dev->resource_list[2].base;
-	mmiobase = dev->resource_list[0].base;
+	mmiobase = res2mmio(&dev->resource_list[0], 0, 0);
 	physbase = pci_read_config32(dev, 0x5c) & ~0xf;
 	graphics_base = dev->resource_list[1].base;
 
-	int i915lightup(u32 physbase, u32 iobase, u32 mmiobase, u32 gfx);
+	int i915lightup(u32 physbase, u32 iobase, void *mmiobase, u32 gfx);
 	i915lightup(physbase, iobase, mmiobase, graphics_base);
 #endif
 }

@@ -118,14 +118,14 @@ static void busmaster_disable_on_bus(int bus)
  */
 static void backlight_off(void)
 {
-	uint32_t reg_base;
+	u8 *base;
 	uint32_t pp_ctrl;
 	uint32_t bl_off_delay;
 
-	reg_base = pci_read_config32(SA_DEV_IGD, PCI_BASE_ADDRESS_0) & ~0xf;
+	base = (u8 *)(pci_read_config32(SA_DEV_IGD, PCI_BASE_ADDRESS_0) & ~0xf);
 
 	/* Check if backlight is enabled */
-	pp_ctrl = read32(reg_base + PCH_PP_CONTROL);
+	pp_ctrl = read32(base + PCH_PP_CONTROL);
 	if (!(pp_ctrl & EDP_BLC_ENABLE))
 		return;
 
@@ -136,11 +136,11 @@ static void backlight_off(void)
 	/* Turn off backlight */
 	pp_ctrl &= ~EDP_BLC_ENABLE;
 
-	write32(reg_base + PCH_PP_CONTROL, pp_ctrl);
-	read32(reg_base + PCH_PP_CONTROL);
+	write32(base + PCH_PP_CONTROL, pp_ctrl);
+	read32(base + PCH_PP_CONTROL);
 
 	/* Read backlight off delay in 100us units */
-	bl_off_delay = read32(reg_base + PCH_PP_OFF_DELAYS);
+	bl_off_delay = read32(base + PCH_PP_OFF_DELAYS);
 	bl_off_delay &= PANEL_LIGHT_OFF_DELAY_MASK;
 	bl_off_delay *= 100;
 

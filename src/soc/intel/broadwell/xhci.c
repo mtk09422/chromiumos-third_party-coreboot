@@ -28,7 +28,7 @@
 #include <soc/cpu.h>
 
 #ifdef __SMM__
-static u32 usb_xhci_mem_base(device_t dev)
+static u8 *usb_xhci_mem_base(device_t dev)
 {
 	u32 mem_base = pci_read_config32(dev, PCI_BASE_ADDRESS_0);
 
@@ -36,7 +36,7 @@ static u32 usb_xhci_mem_base(device_t dev)
 	if (mem_base == 0 || mem_base == 0xffffffff)
 		return 0;
 
-	return mem_base & ~0xf;
+	return (u8 *)(mem_base & ~0xf);
 }
 
 static int usb_xhci_port_count_usb3(device_t dev)
@@ -45,9 +45,9 @@ static int usb_xhci_port_count_usb3(device_t dev)
 	return 4;
 }
 
-static void usb_xhci_reset_status_usb3(u32 mem_base, int port)
+static void usb_xhci_reset_status_usb3(u8 *mem_base, int port)
 {
-	u32 portsc = mem_base + XHCI_USB3_PORTSC(port);
+	u8 *portsc = mem_base + XHCI_USB3_PORTSC(port);
 	u32 status = read32(portsc);
 	/* Do not set Port Enabled/Disabled field */
 	status &= ~XHCI_USB3_PORTSC_PED;
@@ -56,9 +56,9 @@ static void usb_xhci_reset_status_usb3(u32 mem_base, int port)
 	write32(portsc, status);
 }
 
-static void usb_xhci_reset_port_usb3(u32 mem_base, int port)
+static void usb_xhci_reset_port_usb3(u8 *mem_base, int port)
 {
-	u32 portsc = mem_base + XHCI_USB3_PORTSC(port);
+	u8 *portsc = mem_base + XHCI_USB3_PORTSC(port);
 	write32(portsc, read32(portsc) | XHCI_USB3_PORTSC_WPR);
 }
 
@@ -77,7 +77,7 @@ static void usb_xhci_reset_usb3(device_t dev, int all)
 	u32 status, port_disabled;
 	int timeout, port;
 	int port_count = usb_xhci_port_count_usb3(dev);
-	u32 mem_base = usb_xhci_mem_base(dev);
+	u8 *mem_base = usb_xhci_mem_base(dev);
 
 	if (!mem_base || !port_count)
 		return;
@@ -106,7 +106,7 @@ static void usb_xhci_reset_usb3(device_t dev, int all)
 
 	/* Reset all requested ports */
 	for (port = 0; port < port_count; port++) {
-		u32 portsc = mem_base + XHCI_USB3_PORTSC(port);
+		u8 *portsc = mem_base + XHCI_USB3_PORTSC(port);
 		/* Skip disabled ports */
 		if (port_disabled & (1 << port))
 			continue;
@@ -147,7 +147,7 @@ void usb_xhci_sleep_prepare(device_t dev, u8 slp_typ)
 {
 	u16 reg16;
 	u32 reg32;
-	u32 mem_base = usb_xhci_mem_base(dev);
+	u8 *mem_base = usb_xhci_mem_base(dev);
 	u8 is_broadwell = !!(cpu_family_model() == BROADWELL_FAMILY_ULT);
 
 	if (!mem_base || slp_typ < 3)
@@ -214,9 +214,9 @@ static void xhci_init(struct device *dev)
 	pci_write_config16(dev, XHCI_PWR_CTL_STS, reg16);
 
 	/* Disable Compliance Mode Entry */
-	reg32 = read32(res->base + 0x80ec);
+	reg32 = read32(res2mmio(res, 0x80ec, 0));
 	reg32 |= (1 << 0);
-	write32(res->base + 0x80ec, reg32);
+	write32(res2mmio(res, 0x80ec, 0), reg32);
 }
 
 static struct device_operations usb_xhci_ops = {

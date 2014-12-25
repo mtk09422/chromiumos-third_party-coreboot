@@ -104,7 +104,7 @@ struct mpc_config_ioapic
 	unsigned char mpc_apicver;
 	unsigned char mpc_flags;
 #define MPC_APIC_USABLE		0x01
-	unsigned long mpc_apicaddr;
+	void *mpc_apicaddr;
 } __attribute__((packed));
 
 struct mpc_config_intsrc
@@ -242,8 +242,7 @@ void smp_write_processor(struct mp_config_table *mc,
 	unsigned int featureflag);
 void smp_write_processors(struct mp_config_table *mc);
 void smp_write_ioapic(struct mp_config_table *mc,
-	unsigned char id, unsigned char ver,
-	unsigned long apicaddr);
+	u8 id, u8 ver, void *apicaddr);
 void smp_write_intsrc(struct mp_config_table *mc,
 	unsigned char irqtype, unsigned short irqflag,
 	unsigned char srcbus, unsigned char srcbusirq,

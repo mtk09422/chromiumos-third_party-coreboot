@@ -60,7 +60,7 @@ static const char *me_bios_path_values[] = {
 };
 
 /* MMIO base address for MEI interface */
-static u32 mei_base_address;
+static u8 *mei_base_address;
 
 #if CONFIG_DEBUG_INTEL_ME
 static void mei_dump(void *ptr, int dword, int offset, const char *type)
@@ -621,7 +621,7 @@ static void intel_me_finalize(device_t dev)
 	u32 reg32;
 
 	/* S3 path will have hidden this device already */
-	if (!mei_base_address || mei_base_address == 0xfffffff0)
+	if (!mei_base_address || mei_base_address == (u8 *)0xfffffff0)
 		return;
 
 	/* Make sure IO is disabled */
@@ -742,7 +742,7 @@ static int intel_mei_setup(device_t dev)
 		printk(BIOS_DEBUG, "ME: MEI resource not present!\n");
 		return -1;
 	}
-	mei_base_address = res->base;
+	mei_base_address = res2mmio(res, 0, 0);
 
 	/* Ensure Memory and Bus Master bits are set */
 	reg32 = pci_read_config32(dev, PCI_COMMAND);
