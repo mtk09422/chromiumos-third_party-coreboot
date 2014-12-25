@@ -48,6 +48,8 @@ void main(void)
 		exception_init();
 	}
 
+	cbfs_set_header_offset(0);
+
 	bootblock_soc_init();
 	bootblock_mainboard_init();
 
