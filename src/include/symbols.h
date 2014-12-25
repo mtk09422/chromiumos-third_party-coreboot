@@ -27,6 +27,7 @@ extern u8 _esram[];
 #define _sram_size (_esram - _sram)
 
 extern u8 _dram[];
+extern u32 _cbfs_header_offset[];
 
 extern u8 _timestamp[];
 extern u8 _etimestamp[];

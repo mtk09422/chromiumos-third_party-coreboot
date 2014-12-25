@@ -115,5 +115,10 @@ load_cached_ramstage(struct romstage_handoff *handoff,
                      const struct cbmem_entry *ramstage);
 #endif /* CONFIG_RELOCATABLE_RAMSTAGE */
 
+#if (IS_ENABLED(CONFIG_MULTIPLE_CBFS_INSTANCES))
+void cbfs_set_header_offset(size_t offset);
+#else
+static inline void cbfs_set_header_offset(size_t offset) {}
+#endif
 #endif
 
