@@ -49,7 +49,9 @@ static void seed_stack(void)
 
 static void arm64_init(void)
 {
+#if !defined(__PRE_RAM__)
 	cpu_set_bsp();
+#endif
 	seed_stack();
 	arm64_soc_init();
 	main();
