@@ -33,8 +33,9 @@ SECTIONS
 	VBOOT2_WORK(0x2A022000, 16K)
 	PRERAM_CBMEM_CONSOLE(0x2A026000, 32K)
 	TIMESTAMP(0x2A02E000, 1K)
+	CBFS_HEADER_OFFSET(0x2A02E400)
 
-/*	0x2e000..0x3F000  67 KB free */
+/*	0x2e404..0x3F000 4 bytes shy of 67KB free */
 
 /* Keep the below area reserved at all times, it is used by various QCA
    components as shared data
