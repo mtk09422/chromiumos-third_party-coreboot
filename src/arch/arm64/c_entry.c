@@ -57,6 +57,9 @@ static void arm64_init(void)
 	main();
 }
 
+#if defined(__PRE_RAM__)
+void (*c_entry[2])(void) = { &arm64_init, NULL };
+#else
 /*
  * This variable holds entry point for CPUs starting up. The first
  * element is the BSP path, and the second is the non-BSP path.
@@ -69,3 +72,4 @@ void *prepare_secondary_cpu_startup(void)
 
 	return secondary_entry_point(&arm64_cpu_startup_resume);
 }
+#endif
