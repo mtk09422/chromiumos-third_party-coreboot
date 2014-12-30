@@ -30,6 +30,7 @@ verstage-y += monotonic_timer.c
 verstage-$(CONFIG_SPI_FLASH) += spi.c
 verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
+romstage-y += romstage.S
 romstage-y += cbmem.c
 romstage-y += i2c.c
 romstage-y += monotonic_timer.c
