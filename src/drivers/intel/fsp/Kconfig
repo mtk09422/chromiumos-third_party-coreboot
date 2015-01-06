@@ -204,4 +204,16 @@ config POST_IO_PORT
 	hex
 	default 0x80
 
+config DISPLAY_FAST_BOOT_DATA
+	bool "Display fast boot data"
+	default n
+
+config DISPLAY_HOBS
+	bool "Display hand-off-blocks (HOBs)"
+	default n
+
+config DISPLAY_FSP_ENTRY_POINTS
+	bool "Display FSP entry points"
+	default n
+
 endif #PLATFORM_USES_FSP

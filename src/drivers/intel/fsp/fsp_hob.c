@@ -454,8 +454,10 @@ int save_mrc_data(void *hob_start)
 	mrc_data->mrc_checksum = compute_ip_checksum(mrc_data->mrc_data,
 			mrc_data->mrc_data_size);
 
+#if IS_ENABLED(CONFIG_DISPLAY_FAST_BOOT_DATA)
 	printk(BIOS_SPEW, "Fast boot data (includes align and checksum):\n");
 	hexdump32(BIOS_SPEW, (void *)mrc_data->mrc_data, output_len);
+#endif
 	return 1;
 }
 #endif /* CONFIG_ENABLE_MRC_CACHE */
@@ -466,7 +468,9 @@ static void find_fsp_hob_update_mrc(void *unused)
 
 	/* 0x0000: Print all types */
 	hob_list_ptr = get_hob_list();
+#if IS_ENABLED(CONFIG_DISPLAY_HOBS)
 	print_hob_type_structure(0x000, hob_list_ptr);
+#endif
 
 	#if IS_ENABLED(CONFIG_ENABLE_MRC_CACHE)
 	if (save_mrc_data(hob_list_ptr))

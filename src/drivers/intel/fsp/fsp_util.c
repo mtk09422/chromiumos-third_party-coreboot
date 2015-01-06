@@ -113,6 +113,7 @@ void print_fsp_info(FSP_INFO_HEADER *fsp_header)
 	printk(BIOS_INFO, "FSP Revision: %d.%d\n",
 			(u8)((fsp_header->ImageRevision >> 8) & 0xff),
 			(u8)(fsp_header->ImageRevision  & 0xff));
+#if IS_ENABLED(CONFIG_DISPLAY_FSP_ENTRY_POINTS)
 	printk(BIOS_SPEW, "FSP Entry Points:\n");
 	printk(BIOS_SPEW, "    0x%p: Image Base\n", fsp_base);
 	printk(BIOS_SPEW, "    0x%p: TempRamInit\n",
@@ -131,6 +132,7 @@ void print_fsp_info(FSP_INFO_HEADER *fsp_header)
 		&fsp_base[fsp_header->NotifyPhaseEntryOffset]);
 	printk(BIOS_SPEW, "    0x%p: Image End\n",
 			&fsp_base[fsp_header->ImageSize]);
+#endif
 }
 
 #ifndef __PRE_RAM__
