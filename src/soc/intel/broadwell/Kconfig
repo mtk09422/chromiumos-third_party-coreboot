@@ -224,4 +224,11 @@ config LOCK_MANAGEMENT_ENGINE
 
 	  If unsure, say N.
 
+config DISPLAY_UPD_DATA
+	bool "Display UPD data"
+	default n
+	help
+	  Display the user specified product data prior to memory
+	  initialization.
+
 endif

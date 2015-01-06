@@ -67,8 +67,10 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 		&fsp_memory_init_params);
 
 	/* Display the UPD data */
+#if IS_ENABLED(CONFIG_DISPLAY_UPD_DATA)
 	printk(BIOS_SPEW, "Updated Product Data (UPD):\n");
 	hexdump32(BIOS_SPEW, (void *)&upd_data_buffer, sizeof(upd_data_buffer));
+#endif
 
 	/* Call FspMemoryInit to initialize RAM */
 	fsp_memory_init = (FSP_MEMORY_INIT)(fsp_header->ImageBase
@@ -102,7 +104,9 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	set_hob_list(hob_list_ptr);
 
 	/* Display the HOBs */
+#if IS_ENABLED(CONFIG_DISPLAY_HOBS)
 	if (hob_list_ptr == NULL)
 		die("ERROR - HOB pointer is NULL!\n");
 	print_hob_type_structure(0, hob_list_ptr);
+#endif
 }
