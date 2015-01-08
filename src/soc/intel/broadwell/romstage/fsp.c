@@ -34,6 +34,8 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	FSP_MEMORY_INIT_PARAMS fsp_memory_init_params;
 	FSP_INIT_RT_COMMON_BUFFER fsp_rt_common_buffer;
 	void *hob_list_ptr;
+	const EFI_GUID mrc_guid = FSP_NON_VOLATILE_STORAGE_HOB_GUID;
+	u32 *mrc_hob;
 	EFI_STATUS status;
 	VPD_DATA_REGION *vpd_data;
 	UPD_DATA_REGION *upd_data;
@@ -61,7 +63,7 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	fsp_rt_common_buffer.UpdDataRgnPtr = &upd_data_buffer;
 
 	/* Get any board specific changes */
-	fsp_memory_init_params.NvsBufferPtr = NULL;
+	fsp_memory_init_params.NvsBufferPtr = (void *)pei_data->saved_data;
 	fsp_memory_init_params.RtBufferPtr = &fsp_rt_common_buffer;
 	fsp_memory_init_params.HobListPtr = &hob_list_ptr;
 	board_fsp_memory_init_params(params, fsp_header,
@@ -114,4 +116,15 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 		die("ERROR - HOB pointer is NULL!\n");
 	print_hob_type_structure(0, hob_list_ptr);
 #endif
+
+	/* Locate the memory configuration data to speed up the next reboot */
+	mrc_hob = get_next_guid_hob(&mrc_guid, hob_list_ptr);
+	if (mrc_hob == NULL)
+		printk(BIOS_DEBUG,
+			"Memory Configure Data Hob is not present\n");
+	else {
+		pei_data->data_to_save = GET_GUID_HOB_DATA(mrc_hob);
+		pei_data->data_to_save_size = ALIGN(
+			((u32)GET_HOB_LENGTH(mrc_hob)), 16);
+	}
 }
