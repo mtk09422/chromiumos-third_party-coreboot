@@ -25,6 +25,7 @@
 #include <soc/reset.h>
 #include <soc/romstage.h>
 #include <string.h>
+#include <timestamp.h>
 
 void raminit(struct romstage_params *params, struct pei_data *pei_data)
 {
@@ -82,7 +83,11 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 		fsp_memory_init_params.RtBufferPtr);
 	printk(BIOS_SPEW, "    0x%p: HobListPtr\n",
 		fsp_memory_init_params.HobListPtr);
+
+	timestamp_add_now(TS_FSP_MEMORY_INIT_START);
 	status = fsp_memory_init(&fsp_memory_init_params);
+	timestamp_add_now(TS_FSP_MEMORY_INIT_END);
+
 	printk(BIOS_DEBUG, "FspMemoryInit returned 0x%08x\n", status);
 	if (status != EFI_SUCCESS)
 		die("ERROR - FspMemoryInit failed to initialize memory!\n");
