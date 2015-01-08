@@ -31,6 +31,7 @@
 #include <cbfs.h>
 #include <cbmem.h>
 #include <memrange.h>
+#include <spi_flash.h>
 #if CONFIG_USE_OPTION_TABLE
 #include <option_table.h>
 #endif
@@ -613,6 +614,11 @@ unsigned long write_coreboot_table(
 
 	/* Add RAM config if available */
 	lb_ram_code(head);
+
+#if IS_ENABLED(CONFIG_SPI_FLASH)
+	/* Add SPI flash description if available */
+	lb_spi_flash(head);
+#endif
 
 	add_cbmem_pointers(head);
 

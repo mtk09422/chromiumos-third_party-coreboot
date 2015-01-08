@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <console/console.h>
 #include <spi-generic.h>
+#include <boot/coreboot_tables.h>
 
 /**
  * container_of - cast a member of a structure out to the containing structure
@@ -58,6 +59,8 @@ struct spi_flash {
 
 	u32		sector_size;
 
+	u8		erase_cmd;
+
 	int		(*read)(struct spi_flash *flash, u32 offset,
 				size_t len, void *buf);
 	int		(*write)(struct spi_flash *flash, u32 offset,
@@ -85,5 +88,7 @@ static inline int spi_flash_erase(struct spi_flash *flash, u32 offset,
 {
 	return flash->erase(flash, offset, len);
 }
+
+void lb_spi_flash(struct lb_header *header);
 
 #endif /* _SPI_FLASH_H_ */
