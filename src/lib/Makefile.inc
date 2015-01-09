@@ -17,6 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
+bootblock-y += arch_ops.c
 bootblock-y += cbfs.c
 bootblock-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
 bootblock-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
@@ -39,6 +40,7 @@ $(foreach arch,$(ARCH_SUPPORTED),\
 	  $(eval rmodules_$(ARCH_TO_TOOLCHAIN_$(arch))-y += memcmp.c) \
 	  $(eval rmodules_$(ARCH_TO_TOOLCHAIN_$(arch))-y += rmodule.ld))
 
+verstage-y += arch_ops.c
 verstage-y += delay.c
 verstage-y += cbfs.c
 verstage-y += memcmp.c
@@ -49,6 +51,7 @@ verstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 verstage-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 verstage-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 
+romstage-y += arch_ops.c
 romstage-y += delay.c
 romstage-y += cbfs.c
 romstage-$(CONFIG_COMMON_CBFS_SPI_WRAPPER) += cbfs_spi.c
@@ -69,6 +72,7 @@ romstage-$(CONFIG_ARCH_ROMSTAGE_X86_32) += gcc.c
 romstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 romstage-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 
+ramstage-y += arch_ops.c
 ramstage-y += hardwaremain.c
 ramstage-y += selfboot.c
 ramstage-y += coreboot_table.c

@@ -38,6 +38,7 @@
 #include <cbfs.h>
 #include <string.h>
 #include <cbmem.h>
+#include <arch_ops.h>
 
 #ifdef LIBPAYLOAD
 # include <stdio.h>
@@ -118,6 +119,9 @@ void *cbfs_load_optionrom(struct cbfs_media *media, uint16_t vendor,
 static void *load_stage_from_cbfs(struct cbfs_media *media, const char *name,
                                   struct romstage_handoff *handoff)
 {
+	size_t ramstage_size;
+	uintptr_t ramstage_base;
+
 	struct rmod_stage_load rmod_ram = {
 		.cbmem_id = CBMEM_ID_RAMSTAGE,
 		.name = name,
@@ -129,6 +133,15 @@ static void *load_stage_from_cbfs(struct cbfs_media *media, const char *name,
 	}
 
 	cache_loaded_ramstage(handoff, rmod_ram.cbmem_entry, rmod_ram.entry);
+
+	/*
+	 * Each architecture can perform additonal operations once the
+	 * stage is loaded
+	 */
+	ramstage_size = cbmem_entry_size(rmod_ram.cbmem_entry);
+	ramstage_base = (uintptr_t)cbmem_entry_start(rmod_ram.cbmem_entry);
+	arch_program_segment_loaded(ramstage_base, ramstage_size);
+	arch_program_loaded();
 
 	return rmod_ram.entry;
 }
@@ -197,6 +210,13 @@ void *cbfs_load_stage_by_offset(struct cbfs_media *media, ssize_t offset)
 			return CBFS_LOAD_ERROR;
 		media->unmap(media, data);
 	}
+
+	/*
+	 * Each architecture can perform additonal operations once the
+	 * stage is loaded
+	 */
+	arch_program_segment_loaded((uintptr_t)stage.load, stage.memlen);
+	arch_program_loaded();
 
 	DEBUG("stage loaded\n");
 
