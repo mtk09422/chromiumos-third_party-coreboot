@@ -678,6 +678,7 @@ int main(int argc, char **argv)
 			case 'D':
 				param.copyoffset = strtoul(optarg, NULL, 0);
 				param.copyoffset_assigned = 1;
+				break;
 			case 'a':
 				param.alignment = strtoul(optarg, NULL, 0);
 				break;
