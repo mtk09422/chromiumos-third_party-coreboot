@@ -44,6 +44,7 @@
 #if CONFIG_ARCH_X86
 #include <cpu/x86/mtrr.h>
 #endif
+#include <uart.h>
 
 static struct lb_header *lb_table_init(unsigned long addr)
 {
@@ -105,6 +106,9 @@ static struct lb_memory *lb_memory(struct lb_header *header)
 	return mem;
 }
 
+/* default UART register width is one byte */
+unsigned __attribute__((weak)) uartmem_getregwidth(void) { return 1; }
+
 static struct lb_serial *lb_serial(struct lb_header *header)
 {
 #if CONFIG_CONSOLE_SERIAL8250
@@ -117,6 +121,7 @@ static struct lb_serial *lb_serial(struct lb_header *header)
 	serial->type = LB_SERIAL_TYPE_IO_MAPPED;
 	serial->baseaddr = CONFIG_TTYS0_BASE;
 	serial->baud = CONFIG_TTYS0_BAUD;
+	serial->regwidth = 1; /* One byte is the default register width. */
 	return serial;
 #elif CONFIG_CONSOLE_SERIAL8250MEM || CONFIG_CONSOLE_SERIAL_UART
 	if (uartmem_getbaseaddr()) {
@@ -128,6 +133,7 @@ static struct lb_serial *lb_serial(struct lb_header *header)
 		serial->size = sizeof(*serial);
 		serial->type = LB_SERIAL_TYPE_MEMORY_MAPPED;
 		serial->baseaddr = uartmem_getbaseaddr();
+		serial->regwidth = uartmem_getregwidth();
 		serial->baud = CONFIG_TTYS0_BAUD;
 		return serial;
 	} else {

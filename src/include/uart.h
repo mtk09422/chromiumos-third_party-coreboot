@@ -40,8 +40,7 @@ void uart_init(void);
 int uart_can_rx_byte(void);
 #endif
 
-#if CONFIG_HAVE_UART_MEMORY_MAPPED
 uint32_t uartmem_getbaseaddr(void);
-#endif
+uint32_t uartmem_getregwidth(void);
 
 #endif /* UART_H */
