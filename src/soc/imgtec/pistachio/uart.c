@@ -192,6 +192,11 @@ uint32_t uartmem_getbaseaddr(void)
 	return uart_platform_base(0);
 }
 
+uint32_t uartmem_getregwidth(void)
+{
+	return 1 << UART_SHIFT;
+}
+
 #else /* __PRE_RAM__ */
 
 void uart_init(void)
