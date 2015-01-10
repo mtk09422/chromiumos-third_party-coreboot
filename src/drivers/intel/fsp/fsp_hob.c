@@ -460,6 +460,11 @@ int save_mrc_data(void *hob_start)
 #endif
 	return 1;
 }
+
+void __attribute__ ((weak)) update_mrc_cache(void *unused)
+{
+	printk(BIOS_ERR, "Add routine %s to save the MRC data.\n", __func__);
+}
 #endif /* CONFIG_ENABLE_MRC_CACHE */
 
 static void find_fsp_hob_update_mrc(void *unused)
@@ -478,11 +483,6 @@ static void find_fsp_hob_update_mrc(void *unused)
 	else
 		printk(BIOS_DEBUG, "Not updating MRC data in flash.\n");
 	#endif
-}
-
-void __attribute__ ((weak)) update_mrc_cache(void *unused)
-{
-	printk(BIOS_ERR, "Add routine %s to save the MRC data.\n", __func__);
 }
 
 /* Update the MRC/fast boot cache as part of the late table writing stage */
