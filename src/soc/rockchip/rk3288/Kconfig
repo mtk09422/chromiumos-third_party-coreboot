@@ -47,4 +47,8 @@ config COMPRESS_RAMSTAGE
 	  The ramstage is loaded from code running in uncached SRAM, you
 	  probably don't want LZMA running on that.
 
+config PMIC_BUS
+	int
+	default -1
+
 endif

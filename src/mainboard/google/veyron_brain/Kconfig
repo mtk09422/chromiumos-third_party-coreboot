@@ -82,4 +82,8 @@ config SKIP_DISPLAY_INIT_HACK
 	int
 	default 1
 
+config PMIC_BUS
+	int
+	default 0
+
 endif #  BOARD_GOOGLE_VEYRON_BRAIN
