@@ -1,6 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
+ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
  * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +25,7 @@
 #include <romstage_handoff.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 #include <soc/soc_services.h>
-
+#include "mmu.h"
 
 void main(void)
 {
@@ -33,6 +34,9 @@ void main(void)
 	console_init();
 
 	initialize_dram();
+
+	/* Add dram mappings to mmu tables. */
+	setup_dram_mappings(DRAM_INITIALIZED);
 
 	cbmem_initialize_empty();
 
