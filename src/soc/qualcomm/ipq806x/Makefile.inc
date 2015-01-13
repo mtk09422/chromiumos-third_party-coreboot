@@ -47,7 +47,7 @@ ramstage-y += gpio.c
 ramstage-y += soc.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
 ramstage-y += timer.c
-ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart.c
+ramstage-y += uart.c  # Want the UART always ready for the kernels' earlyprintk
 ramstage-y += usb.c
 ramstage-y += tz_wrapper.S
 
