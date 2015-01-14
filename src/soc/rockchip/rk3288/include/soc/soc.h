@@ -24,12 +24,4 @@
 #define RK_SETBITS(set) RK_CLRSETBITS(0, set)
 #define RK_CLRBITS(clr) RK_CLRSETBITS(clr, 0)
 
-#define FB_SIZE_KB  8192
-#define RAM_BASE_KB (CONFIG_SYS_SDRAM_BASE >> 10)
-#define RAM_SIZE_KB (CONFIG_DRAM_SIZE_MB << 10UL)
-
-static inline u32 get_fb_base_kb(void)
-{
-	return RAM_BASE_KB + RAM_SIZE_KB - FB_SIZE_KB;
-}
 #endif
