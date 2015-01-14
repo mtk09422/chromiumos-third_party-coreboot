@@ -308,8 +308,28 @@ void romstage_common(struct romstage_params *rp)
 
 asmlinkage void romstage_after_car(void)
 {
+	FSP_INFO_HEADER *fsp_info_header;
+	FSP_SILICON_INIT fsp_silicon_init;
+	EFI_STATUS status;
+
 	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_END);
 	printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
+
+	/* Find the FSP image */
+	timestamp_add_now(TS_FSP_FIND_START);
+	fsp_info_header = find_fsp();
+	timestamp_add_now(TS_FSP_FIND_END);
+
+	/* Perform silicon initialization after RAM is configured */
+	printk(BIOS_DEBUG, "Calling FspSiliconInit\n");
+	fsp_silicon_init = (FSP_SILICON_INIT)(fsp_info_header->ImageBase
+		+ fsp_info_header->FspSiliconInitEntryOffset);
+	timestamp_add_now(TS_FSP_SILICON_INIT_START);
+	status = fsp_silicon_init(NULL);
+	timestamp_add_now(TS_FSP_SILICON_INIT_END);
+	printk(BIOS_DEBUG, "FspSiliconInit returned 0x%08x\n", status);
+
+	timestamp_add_now(TS_END_ROMSTAGE);
 
 	printk(BIOS_ERR, "Hanging in romstage_after_car!\n");
 	post_code(0x35);
