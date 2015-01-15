@@ -618,11 +618,11 @@ void acpi_write_hest(acpi_hest_t *hest)
 	header->checksum = acpi_checksum((void *)hest, header->length);
 }
 
+#if CONFIG_HAVE_ACPI_RESUME
 void __attribute__((weak)) mainboard_suspend_resume(void)
 {
 }
 
-#if CONFIG_HAVE_ACPI_RESUME
 void acpi_resume(void *wake_vec)
 {
 #if CONFIG_HAVE_SMI_HANDLER
