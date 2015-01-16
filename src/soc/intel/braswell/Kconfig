@@ -1,0 +1,102 @@
+
+config SOC_INTEL_BRASWELL
+	bool
+	help
+	  Braswell M/D part support.
+
+if SOC_INTEL_BRASWELL
+
+config CPU_SPECIFIC_OPTIONS
+	def_bool y
+	select ARCH_BOOTBLOCK_X86_32
+	select ARCH_ROMSTAGE_X86_32
+	select ARCH_RAMSTAGE_X86_32
+	select ALT_CBFS_LOAD_PAYLOAD
+	select CACHE_RELOCATED_RAMSTAGE_OUTSIDE_CBMEM
+	select CACHE_ROM
+	select CAR_MIGRATION
+	select COLLECT_TIMESTAMPS
+	select CPU_MICROCODE_IN_CBFS
+	select CPU_INTEL_TURBO_NOT_PACKAGE_SCOPED
+	select DYNAMIC_CBMEM
+	select HAS_PRECBMEM_TIMESTAMP_REGION
+	select HAVE_MONOTONIC_TIMER
+	select HAVE_HARD_RESET
+	select MMCONF_SUPPORT
+	select MMCONF_SUPPORT_DEFAULT
+	select RELOCATABLE_MODULES
+	select PARALLEL_MP
+	select PCIEXP_ASPM
+	select PCIEXP_COMMON_CLOCK
+	select SMM_MODULES
+	select SSE2
+	select TSC_CONSTANT_RATE
+	select TSC_MONOTONIC_TIMER
+	select TSC_SYNC_MFENCE
+	select UDELAY_TSC
+
+config BOOTBLOCK_CPU_INIT
+	string
+	default "soc/intel/braswell/bootblock/bootblock.c"
+
+config MMCONF_BASE_ADDRESS
+	hex "PCIe CFG Base Address"
+	default 0xe0000000
+
+config MAX_CPUS
+	int
+	default 4
+
+# Cache As RAM region layout:
+#
+# +-------------+ DCACHE_RAM_BASE + DCACHE_RAM_SIZE
+# |  Stack      |\
+# |    |        | * DCACHE_RAM_ROMSTAGE_STACK_SIZE
+# |    v        |/
+# +-------------+
+# |    ^        |
+# |    |        |
+# | CAR Globals |
+# +-------------+ DCACHE_RAM_BASE
+#
+
+config DCACHE_RAM_BASE
+	hex "Temporary RAM Base Address"
+	default 0xfef00000
+
+config DCACHE_RAM_SIZE
+	hex "Temporary RAM Size"
+	default 0x4000
+	help
+	  The size of the cache-as-ram region required during bootblock
+	  and/or romstage. Note DCACHE_RAM_SIZE and DCACHE_RAM_MRC_VAR_SIZE
+	  must add up to a power of 2.
+
+config DCACHE_RAM_ROMSTAGE_STACK_SIZE
+	hex
+	default 0x800
+	help
+	  The amount of anticipated stack usage from the data cache
+	  during pre-ram rom stage execution.
+
+config CBFS_SIZE
+	hex "Size of CBFS filesystem in ROM"
+	default 0x100000
+	help
+	  The firmware image has to store a lot more than just coreboot,
+	  including:
+	   - a firmware descriptor
+	   - Intel Management Engine firmware
+	   - MRC cache information
+	  This option allows to limit the size of the CBFS portion in the
+	  firmware image.
+
+config ENABLE_BUILTIN_COM1
+	bool "Enable builtin COM1 Serial Port"
+	default n
+	help
+	  The PMC has a legacy COM1 serial port. Choose this option to
+	  configure the pads and enable it. This serial port can be used for
+	  the debug console.
+
+endif
