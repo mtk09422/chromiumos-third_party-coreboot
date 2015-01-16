@@ -225,6 +225,14 @@ config BOARD_GOOGLE_VEYRON_BRAIN
 	  Veyron_Brain is a Chrome OS mainboard.
 	  Veyron_Brain is based on the Rockchip RK3288 platform.
 
+config BOARD_GOOGLE_VEYRON_DANGER
+	bool "Veyron_Danger"
+	help
+	  Google Veyron_Danger mainboard.
+	  Enable this config to select the Google Veyron_Danger mainboard.
+	  Veyron_Danger is a Chrome OS mainboard.
+	  Veyron_Danger is based on the Rockchip RK3288 platform.
+
 config BOARD_GOOGLE_VEYRON_JERRY
 	bool "Veyron_Jerry"
 	help
@@ -283,6 +291,7 @@ source "src/mainboard/google/storm/Kconfig"
 source "src/mainboard/google/stout/Kconfig"
 source "src/mainboard/google/urara/Kconfig"
 source "src/mainboard/google/veyron_brain/Kconfig"
+source "src/mainboard/google/veyron_danger/Kconfig"
 source "src/mainboard/google/veyron_jerry/Kconfig"
 source "src/mainboard/google/veyron_mighty/Kconfig"
 source "src/mainboard/google/veyron_pinky/Kconfig"
