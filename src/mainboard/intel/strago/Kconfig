@@ -1,0 +1,22 @@
+if BOARD_INTEL_STRAGO
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select SOC_INTEL_BRASWELL
+	select ENABLE_BUILTIN_COM1
+	select BOARD_ROMSIZE_KB_8192
+	select CHROMEOS
+
+config MAINBOARD_DIR
+	string
+	default intel/strago
+
+config MAINBOARD_PART_NUMBER
+	string
+	default "Strago"
+
+config VGA_BIOS_FILE
+	string
+	default "pci8086,22B0.rom"
+
+endif # BOARD_INTEL_STRAGO

@@ -27,6 +27,9 @@ config BOARD_INTEL_BAYLEYBAY
 	bool "Bayley Bay CRB"
 config BOARD_INTEL_PEARLVALLEY
 	bool "Pearl Valley CRB"
+config BOARD_INTEL_STRAGO
+	bool "Braswell CRB"
+
 
 endchoice
 
@@ -42,6 +45,7 @@ source "src/mainboard/intel/xe7501devkit/Kconfig"
 source "src/mainboard/intel/wtm2/Kconfig"
 source "src/mainboard/intel/bayleybay/Kconfig"
 source "src/mainboard/intel/pearlvalley/Kconfig"
+source "src/mainboard/intel/strago/Kconfig"
 
 config MAINBOARD_VENDOR
 	string
