@@ -18,7 +18,6 @@
  */
 
 #include <cbmem.h>
-#include <arch/hlt.h>
 #include <console/console.h>
 #include <fsp_util.h>
 #include <lib.h> /* hexdump */
@@ -93,4 +92,20 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	printk(BIOS_DEBUG, "FspMemoryInit returned 0x%08x\n", status);
 	if (status != EFI_SUCCESS)
 		die("ERROR - FspMemoryInit failed to initialize memory!\n");
+
+	/* Migrate CAR data */
+	cbmem_initialize_empty();
+
+	/* Save the HOB list */
+	set_hob_list(hob_list_ptr);
+
+	/* Display the HOBs */
+#if IS_ENABLED(CONFIG_DISPLAY_HOBS)
+	if (hob_list_ptr == NULL)
+		die("ERROR - HOB pointer is NULL!\n");
+	print_hob_type_structure(0, hob_list_ptr);
+#endif
+
+	/* Check FSP reserved memory size information. */
+	fsp_check_reserved_mem_size(hob_list_ptr, smm_region_start());
 }

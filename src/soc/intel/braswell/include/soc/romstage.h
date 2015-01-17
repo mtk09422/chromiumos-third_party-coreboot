@@ -87,7 +87,6 @@ static inline void config_com1_and_enable(void) { }
 
 /* romstage_common.c functions */
 void program_base_addresses(void);
-void reset_system(void);
 void spi_init(void);
 void migrate_power_state(void);
 struct chipset_power_state *fill_power_state(void);

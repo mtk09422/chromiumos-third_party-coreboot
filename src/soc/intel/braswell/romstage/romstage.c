@@ -20,30 +20,31 @@
 
 #include <arch/early_variables.h>
 #include <arch/cpu.h>
-#include <arch/hlt.h>
+#include <cpu/x86/mtrr.h>
+#include <console/console.h>
+#include <romstage_handoff.h>
+#include <timestamp.h>
+#include <ramstage_cache.h>
+#include <reset.h>
+#include <vendorcode/google/chromeos/chromeos.h>
+#include <fsp_util.h>
 #include <soc/intel/common/mrc_cache.h>
 
 #include <soc/gpio.h>
 #include <soc/iomap.h>
+#include <soc/iosf.h>
 #include <soc/lpc.h>
 #include <soc/pci_devs.h>
 #include <soc/pmc.h>
-#include <soc/reset.h>
 #include <soc/romstage.h>
 #include <soc/smm.h>
 #include <soc/spi.h>
-#include <console/console.h>
-#include <fsp_util.h>
-#include <rmodule.h>
-#include <ramstage_cache.h>
-#include <timestamp.h>
-#include <vendorcode/google/chromeos/chromeos.h>
 
+#include <rmodule.h>
 int get_recovery_mode_from_vbnv(void)
 {
 	return 0;
 }
-
 int rmodule_stage_load_from_cbfs(struct rmod_stage_load *rsl)
 {
 	return 0;
@@ -96,6 +97,22 @@ void spi_init(void)
 
 static struct chipset_power_state power_state CAR_GLOBAL;
 
+void migrate_power_state(void)
+{
+	struct chipset_power_state *ps_cbmem;
+	struct chipset_power_state *ps_car;
+
+	ps_car = car_get_var_ptr(&power_state);
+	ps_cbmem = cbmem_add(CBMEM_ID_POWER_STATE, sizeof(*ps_cbmem));
+
+	if (ps_cbmem == NULL) {
+		printk(BIOS_DEBUG, "Not adding power state to cbmem!\n");
+		return;
+	}
+	memcpy(ps_cbmem, ps_car, sizeof(*ps_cbmem));
+}
+ROMSTAGE_CBMEM_INIT_HOOK(migrate_power_state);
+
 struct chipset_power_state *fill_power_state(void)
 {
 	struct chipset_power_state *ps = car_get_var_ptr(&power_state);
@@ -138,6 +155,14 @@ int chipset_prev_sleep_state(struct chipset_power_state *ps)
 	return prev_sleep_state;
 }
 
+inline void chromeos_init(int prev_sleep_state)
+{
+#if IS_ENABLED(CONFIG_CHROMEOS)
+	/* Normalize the sleep state to what init_chromeos() wants for S3: 2. */
+	init_chromeos(0);
+#endif
+}
+
 void ramstage_cache_invalid(struct ramstage_cache *cache)
 {
 }
@@ -157,6 +182,7 @@ void ramstage_cache_invalid(struct ramstage_cache *cache)
 asmlinkage void *romstage_main(unsigned int bist,
 			      uint32_t tsc_low, uint32_t tsc_high)
 {
+	void *stack_data;
 	struct romstage_params rp = {
 		.bist = bist,
 		.power_state = NULL,
@@ -206,16 +232,28 @@ asmlinkage void *romstage_main(unsigned int bist,
 	/* Call into mainboard. */
 	mainboard_romstage_entry(&rp);
 
-	printk(BIOS_ERR, "Hanging in romstage_main!\n");
-	post_code(0x35);
-	while (1)
-		;
+	stack_data = setup_stack_and_mtrrs();
 
-	return NULL;
+	printk(BIOS_DEBUG, "Calling FspTempRamExit\n");
+	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_START);
+	return stack_data;
+}
+
+void disable_rom_shadow(void)
+{
+	u32 value;
+
+	/* Make sure that E0000 and F0000 are RAM */
+	printk(BIOS_DEBUG, "Disable ROM shadow below 1MB.\n");
+	value = iosf_bunit_read(BUNIT_BMISC);
+	value |= 3;
+	iosf_bunit_write(BUNIT_BMISC, value);
 }
 
 void romstage_common(struct romstage_params *rp)
 {
+	struct romstage_handoff *handoff;
+
 	timestamp_add_now(TS_BEFORE_INITRAM);
 
 	/* Fill in any extra pei_data fields */
@@ -247,4 +285,34 @@ void romstage_common(struct romstage_params *rp)
 	/* Perform RAM initialization */
 	raminit(rp, rp->pei_data);
 	timestamp_add_now(TS_AFTER_INITRAM);
+
+	/* Make sure that E0000 and F0000 are RAM */
+	disable_rom_shadow();
+
+	/* Create romstage handoff information */
+	handoff = romstage_handoff_find_or_add();
+	if (handoff != NULL) {
+		handoff->s3_resume =
+			(rp->pei_data->boot_mode == SLEEP_STATE_S3);
+	} else {
+		printk(BIOS_DEBUG, "Romstage handoff structure not added!\n");
+		if (rp->pei_data->boot_mode == SLEEP_STATE_S3)
+			hard_reset();
+	}
+
+	/* Do chrome OS initialization */
+	chromeos_init(rp->pei_data->boot_mode);
+	printk(BIOS_DEBUG, "Calling FspTempRamExit\n");
+	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_START);
+}
+
+asmlinkage void romstage_after_car(void)
+{
+	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_END);
+	printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
+
+	printk(BIOS_ERR, "Hanging in romstage_after_car!\n");
+	post_code(0x35);
+	while (1)
+		;
 }

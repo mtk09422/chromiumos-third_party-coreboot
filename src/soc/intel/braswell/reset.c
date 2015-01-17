@@ -18,33 +18,33 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/hlt.h>
 #include <arch/io.h>
+#include <fsp_util.h>
+#include <reset.h>
 #include <soc/pmc.h>
-#include <soc/reset.h>
 
-void cold_reset(void)
+void hard_reset(void)
 {
 	/* S0->S5->S0 trip. */
 	outb(RST_CPU | SYS_RST | FULL_RST, RST_CNT);
-}
-
-void warm_reset(void)
-{
-	/* PMC_PLTRST# asserted. */
-	outb(RST_CPU | SYS_RST, RST_CNT);
+	while (1)
+		hlt();
 }
 
 void soft_reset(void)
 {
-	/* Sends INIT# to CPU */
-	outb(RST_CPU, RST_CNT);
+	/* PMC_PLTRST# asserted. */
+	outb(RST_CPU | SYS_RST, RST_CNT);
+	while (1)
+		hlt();
 }
 
-void hard_reset(void)
+void cpu_reset(void)
 {
-	/*
-	 * Don't power cycle on hard_reset(). It's not really clear what the
-	 * semantics should be for the meaning of hard_reset().
-	 */
-	warm_reset();
+	/* Sends INIT# to CPU */
+	outb(RST_CPU, RST_CNT);
+	while (1)
+		hlt();
 }
+

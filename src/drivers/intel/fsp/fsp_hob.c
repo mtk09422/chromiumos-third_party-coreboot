@@ -37,6 +37,7 @@ are permitted provided that the following conditions are met:
  **********************************************************************/
 
 #include <arch/early_variables.h>
+#include <arch/hlt.h>
 #include <bootstate.h>
 #include <cbmem.h>
 #include <console/console.h>
@@ -396,6 +397,48 @@ void print_hob_type_structure(u16 hob_type, void *hob_list_ptr)
 		}
 	} while (!last_hob);
 	printk(BIOS_DEBUG, "=== End of FSP HOB Data Structure ===\n\n");
+}
+
+void fsp_check_reserved_mem_size(void *hob_list_ptr, void *end_of_region)
+{
+	EFI_HOB_GENERIC_HEADER *current_hob;
+	EFI_HOB_MEMORY_ALLOCATION *alloc_hob;
+	u8 list_end;
+	uint32_t real_fsp_mem;
+	uint32_t region_end;
+	uint32_t fsp_base;
+	uint64_t tmp_base;
+
+	/* Determine the amount of memory below 4GB. */
+	current_hob = hob_list_ptr;
+	region_end = (uint32_t)end_of_region;
+	fsp_base = region_end;
+	do {
+		if (current_hob->HobType == EFI_HOB_TYPE_MEMORY_ALLOCATION) {
+			alloc_hob = (EFI_HOB_MEMORY_ALLOCATION *) current_hob;
+			tmp_base = alloc_hob->AllocDescriptor.MemoryBaseAddress;
+			if (tmp_base < fsp_base)
+				fsp_base = (uint32_t)tmp_base;
+		}
+
+		list_end = END_OF_HOB_LIST(current_hob);
+		if (!list_end)
+			current_hob = GET_NEXT_HOB(current_hob);
+	} while (!list_end);
+
+	/* Next detemine how much memory was reserved by FSP. */
+	real_fsp_mem = region_end - fsp_base;
+	printk(BIOS_DEBUG, "CBMEM TOP: 0x%08x\n", fsp_base);
+	printk(BIOS_DEBUG, "FSP Reserved: 0x%08x\n", real_fsp_mem);
+	printk(BIOS_DEBUG, "Firmware Expected: 0x%08x\n",
+	       CONFIG_FSP_RESERVED_MEM_SIZE);
+	if (real_fsp_mem > CONFIG_FSP_RESERVED_MEM_SIZE) {
+		printk(BIOS_DEBUG,
+			"Update CONFIG_FSP_RESERVED_MEM_SIZE >= 0x%08x",
+			real_fsp_mem);
+		while (1)
+			hlt();
+	}
 }
 
 #if IS_ENABLED(CONFIG_ENABLE_MRC_CACHE)

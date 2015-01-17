@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2013 Google Inc.
+ * Copyright (C) 2013 Google Inc
  * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,21 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _BRASWELL_RESET_H_
-#define _BRASWELL_RESET_H_
-#include <reset.h>
+#ifndef _COMMON_STACK_H_
+#define _COMMON_STACK_H_
 
-/*
- * The SOC has the following types of resets:
- * - Soft reset (INIT# to cpu) - write 0x1 to I/O 0x92
- * - Soft reset (INIT# to cpu)- write 0x4 to I/0 0xcf9
- * - Cold reset (S0->S5->S0) - write 0xe to I/0 0xcf9
- * - Warm reset (PMC_PLTRST# assertion) - write 0x6 to I/O 0xcf9
- * - Global reset (S0->S5->S0 with TXE reset) - write 0x6 or 0xe to 0xcf9 but
- *   with ETR[20] set.
- */
+#include <stdint.h>
 
-void cold_reset(void);
-void warm_reset(void);
+static inline void *stack_push32(void *stack, uint32_t value)
+{
+	uint32_t *stack32 = stack;
 
-#endif /* _BRASWELL_RESET_H_ */
+	stack32 = &stack32[-1];
+	*stack32 = value;
+	return stack32;
+}
+
+#endif /* _COMMON_STACK_H_ */
