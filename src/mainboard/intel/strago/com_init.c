@@ -58,6 +58,7 @@ void config_com1_and_enable(void)
 {
 	uint32_t reg;
 	uint16_t fpad;
+	uint32_t *pad_config_reg;
 
 	/* Enable the UART hardware for COM1. */
 	reg = 1;
@@ -69,10 +70,10 @@ void config_com1_and_enable(void)
 	 * AD10 SW20(UART1_DATAOUT/UART0_DATAOUT) - Setting Mode 2 for UART0_TXD
 	 */
 	fpad = family_number(GP_SOUTHWEST, UART1_RXD_PAD);
-	write32(COMMUNITY_GPSOUTHWEST_BASE + 0x4400 + 0x400*(fpad >> 8)
-		 + 8*(fpad&0xff), 0x00920300);
+	pad_config_reg = (uint32_t *)(COMMUNITY_GPSOUTHWEST_BASE + 0x4400 +
+		(0x400 * (fpad >> 8)) + (8 * (fpad & 0xff)));
+	write32(pad_config_reg, 0x00920300);
 
 	fpad = family_number(GP_SOUTHWEST, UART1_TXD_PAD);
-	write32(COMMUNITY_GPSOUTHWEST_BASE + 0x4400 + 0x400*(fpad >> 8)
-		 + 8*(fpad&0xff), 0x00920300);
+	write32(pad_config_reg, 0x00920300);
 }

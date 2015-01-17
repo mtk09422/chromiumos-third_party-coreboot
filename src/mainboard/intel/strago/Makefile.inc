@@ -18,4 +18,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
+subdirs-y += spd
+
+romstage-y += fsp.c
 romstage-$(CONFIG_ENABLE_BUILTIN_COM1) += com_init.c
