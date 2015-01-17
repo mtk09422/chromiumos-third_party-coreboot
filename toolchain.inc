@@ -118,7 +118,7 @@ $(eval $(call create_class_compiler,arm64,aarch64))
 
 CFLAGS_nonx86     += -ffunction-sections -fdata-sections -Wstack-usage=1536
 
-CFLAGS_arm        += $(CFLAGS_nonx86) -mno-unaligned-access
+CFLAGS_arm        += $(CFLAGS_nonx86)
 
 CFLAGS_arm64      += $(CFLAGS_nonx86)
 CFLAGS_mipsel     += $(CFLAGS_nonx86) -mips32r2 -G 0
