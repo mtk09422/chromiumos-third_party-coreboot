@@ -99,6 +99,10 @@ asmlinkage void *romstage_main(unsigned int bist,
 	/* Call into mainboard. */
 	mainboard_romstage_entry(&rp);
 
+#if CONFIG_CHROMEOS
+	save_chromeos_gpios();
+#endif
+
 	top_of_stack = setup_stack_and_mttrs();
 
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
