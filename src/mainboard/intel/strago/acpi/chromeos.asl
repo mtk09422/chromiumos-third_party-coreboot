@@ -1,7 +1,6 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2007-2009 coresystems GmbH
  * Copyright (C) 2011 Google Inc.
  * Copyright (C) 2015 Intel Corp.
  *
@@ -19,9 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootstate.h>
-#include <device/device.h>
-#include <soc/gpio.h>
+/*
+ * Fields are in the following order.
+ * - Type: recovery = 1 developer mode = 2 write protect = 3
+ * - Active Level - if -1 not a valid gpio
+ * - GPIO number encoding - if -1 not a valid gpio
+ * - Chipset Name
+ *
+ * Note: We need to encode gpios within the 3 separate banks
+ * with the MMIO offset of each banks space. e.g. GPIO_SUS[8] would be encoded
+ * as 0x2008 where the SUS offset (IO_BASE_OFFSET_GPSSUS) is 0x2000.
+ */
 
-struct chip_operations mainboard_ops = {
-};
+Name(OIPG, Package() {
+	/* No physical recovery button */
+	Package () { 0x0001, 0, 0xFFFFFFFF, "Braswell" },
+	Package () { 0x0003, 1, 0x2006, "Braswell" },
+})

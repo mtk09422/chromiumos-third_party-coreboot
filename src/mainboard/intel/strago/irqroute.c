@@ -1,8 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2007-2009 coresystems GmbH
- * Copyright (C) 2011 Google Inc.
+ * Copyright (C) 2013 Google Inc.
  * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,9 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootstate.h>
-#include <device/device.h>
-#include <soc/gpio.h>
+#include "irqroute.h"
 
-struct chip_operations mainboard_ops = {
-};
+DEFINE_IRQ_ROUTES;

@@ -18,16 +18,13 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
+romstage-y += spd.c
 SPD_BIN = $(obj)/spd.bin
 
-ifeq ($(CONFIG_RVP_SUPPORT),y)
-# Add RVP SPD information as needed here.  If left blank a NULL SPD pointer
-# will be passed to FSP.
-SPD_SOURCES =
-else
-# This spd data can be used only on EVT 1.7
 SPD_SOURCES = samsung_2GiB_dimm_K4B4G1646Q-HYK0
-endif
+SPD_SOURCES += hynix_2GiB_dimm_HMT425S6CFR6A_H5TC4G63CFR
+SPD_SOURCES += samsung_2GiB_dimm_K4B4G1646Q-HYK0
+SPD_SOURCES += hynix_2GiB_dimm_HMT425S6CFR6A_H5TC4G63CFR
 
 SPD_DEPS := $(foreach f, $(SPD_SOURCES), src/mainboard/$(MAINBOARDDIR)/spd/$(f).spd.hex)
 
@@ -42,4 +39,3 @@ $(SPD_BIN): $(SPD_DEPS)
 cbfs-files-y += spd.bin
 spd.bin-file := $(SPD_BIN)
 spd.bin-type := 0xab
-spd.bin-position := $(CONFIG_SPD_CBFS_ADDRESS)

@@ -1,9 +1,8 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2007-2009 coresystems GmbH
- * Copyright (C) 2011 Google Inc.
- * Copyright (C) 2015 Intel Corp.
+ * Copyright (C) 2012 Google Inc.
+ * Copyright (C) 2105 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootstate.h>
-#include <device/device.h>
-#include <soc/gpio.h>
+/* mainboard configuration */
+#include <mainboard/intel/strago/ec.h>
 
-struct chip_operations mainboard_ops = {
-};
+/* ACPI code for EC functions */
+#include <ec/google/chromeec/acpi/ec.asl>
