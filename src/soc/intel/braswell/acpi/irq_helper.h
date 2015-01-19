@@ -2,7 +2,6 @@
  * This file is part of the coreboot project.
  *
  * Copyright (C) 2013 Google Inc.
- * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,22 +17,32 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _BRASWELL_RAMSTAGE_H_
-#define _BRASWELL_RAMSTAGE_H_
+#undef PCI_DEV_PIRQ_ROUTES
+#undef ACPI_DEV_APIC_IRQ
+#undef PCI_DEV_PIRQ_ROUTE
+#undef PIRQ_PIC_ROUTES
+#undef PIRQ_PIC
 
-#include <device/device.h>
-#include <chip.h>
+#if defined(PIC_MODE)
 
-/*
- * The braswell_init_pre_device() function is called prior to device
- * initialization, but it's after console and cbmem has been reinitialized.
- */
-void braswell_init_pre_device(struct soc_intel_braswell_config *config);
-void braswell_init_cpus(device_t dev);
-void set_max_freq(void);
-void southcluster_enable_dev(device_t dev);
-void scc_enable_acpi_mode(device_t dev, int iosf_reg, int nvs_index);
+#define ACPI_DEV_APIC_IRQ(dev_, pin_, pin_name_) \
+	Package() { ## dev_ ## ffff, pin_, \_SB.PCI0.LPCB.LNK ## pin_name_, 0 }
 
-extern struct pci_operations soc_pci_ops;
+#else /* defined(PIC_MODE) */
 
-#endif /* _BRASWELL_RAMSTAGE_H_ */
+#define ACPI_DEV_APIC_IRQ(dev_, pin_, pin_name_) \
+	Package() { ## dev_ ## ffff, pin_, 0, PIRQ ## pin_name_ ## _APIC_IRQ }
+
+#endif
+
+#define PCI_DEV_PIRQ_ROUTE(dev_, a_, b_, c_, d_) \
+	ACPI_DEV_APIC_IRQ(dev_, 0, a_), \
+	ACPI_DEV_APIC_IRQ(dev_, 1, b_), \
+	ACPI_DEV_APIC_IRQ(dev_, 2, c_), \
+	ACPI_DEV_APIC_IRQ(dev_, 3, d_)
+
+/* Empty PIRQ_PIC definition. */
+#define PIRQ_PIC(pirq_, pic_irq_)
+
+/* Include the mainboard irq route definition. */
+#include "irqroute.h"

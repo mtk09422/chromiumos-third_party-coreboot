@@ -199,6 +199,8 @@
 
 #define PAD_CONFIG0_DEFAULT1	0x00110300
 
+#define PAD_CONFIG0_GPI_DEFAULT	0x00010200
+
 /* pad config1 reg power-on values */
 #define PAD_CONFIG1_DEFAULT0	0x05C00000
 #define PAD_CONFIG1_CSEN	0x0DC00000
@@ -206,12 +208,12 @@
 
 #define GPIO_INPUT_NO_PULL \
 	{ .pad_conf0 = PAD_PULL_DISABLE | PAD_GPIO_ENABLE \
-		     | PAD_CONFIG0_DEFAULT, \
+		     | PAD_CONFIG0_GPI_DEFAULT, \
 	  .pad_conf1 = PAD_CONFIG1_DEFAULT0 }
 
 #define GPIO_INPUT_PU_20K \
 	{ .pad_conf0 = PAD_PULL_UP_20K | PAD_GPIO_ENABLE \
-		     | PAD_CONFIG0_DEFAULT, \
+		     | PAD_CONFIG0_GPI_DEFAULT, \
 	  .pad_conf1 = PAD_CONFIG1_DEFAULT0 }
 
 #define GPI(int_type, int_sel, term, int_msk, glitch_cfg, wake_msk, gpe_val) { \
@@ -281,6 +283,8 @@
 	.int_mask   = 1,\
 	.gpe        = SMI }
 
+#define GPIO_SKIP { .skip_config = 1 }
+
 /* common gpio settings */
 #define NATIVE_DEFAULT(mode)	NATIVE_FUNC(mode, 0, 0) /* no pull */
 #define NATIVE_PU20K(mode)	NATIVE_FUNC(mode, 9, 0) /* PH 20k */
@@ -346,6 +350,7 @@ struct soc_gpio_map {
 	u32 int_mask:1;
 	u32 wake_mask:1;
 	u32 is_gpio:1;
+	u32 skip_config:1;
 } __attribute__ ((packed));
 
 struct soc_gpio_config {
@@ -519,5 +524,23 @@ typedef enum {
 
 void setup_soc_gpios(struct soc_gpio_config *config, u8 enable_xdp_tap);
 struct soc_gpio_config *mainboard_get_gpios(void);
+
+static inline void ncore_select_func(int pad, int func)
+{
+
+}
+
+/* These functions require that the input pad be configured as an input GPIO */
+
+static inline int ssus_get_gpio(int pad)
+{
+	return 0;
+}
+
+static inline void ssus_disable_internal_pull(int pad)
+{
+}
+
+int get_gpio(int community_base, int pad0_offset);
 
 #endif /* _BRASWELL_GPIO_H_ */

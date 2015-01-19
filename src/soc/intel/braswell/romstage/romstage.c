@@ -18,10 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <cbmem.h>
+#include <stddef.h>
 #include <arch/early_variables.h>
 #include <arch/cpu.h>
+#include <arch/io.h>
+#include <arch/cbfs.h>
+#include <arch/stages.h>
 #include <cpu/x86/mtrr.h>
 #include <console/console.h>
+#if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
+#include <ec/google/chromeec/ec.h>
+#include <ec/google/chromeec/ec_commands.h>
+#endif
+#include <elog.h>
 #include <romstage_handoff.h>
 #include <timestamp.h>
 #include <ramstage_cache.h>
@@ -38,16 +48,6 @@
 #include <soc/romstage.h>
 #include <soc/smm.h>
 #include <soc/spi.h>
-
-#include <rmodule.h>
-int get_recovery_mode_from_vbnv(void)
-{
-	return 0;
-}
-int rmodule_stage_load_from_cbfs(struct rmod_stage_load *rsl)
-{
-	return 0;
-}
 
 void program_base_addresses(void)
 {
@@ -156,6 +156,10 @@ int chipset_prev_sleep_state(struct chipset_power_state *ps)
 
 void ramstage_cache_invalid(struct ramstage_cache *cache)
 {
+#if IS_ENABLED(CONFIG_RESET_ON_INVALID_RAMSTAGE_CACHE)
+	/* Perform cold reset on invalid ramstage cache. */
+	hard_reset();
+#endif
 }
 
 /* SOC initialization before the console is enabled */
@@ -189,13 +193,4 @@ void soc_after_ram_init(struct romstage_params *params)
 	value = iosf_bunit_read(BUNIT_BMISC);
 	value |= 3;
 	iosf_bunit_write(BUNIT_BMISC, value);
-}
-
-/* SOC initialization after FSP silicon init */
-__attribute__((weak)) void soc_after_silicon_init(void)
-{
-	printk(BIOS_ERR, "Hanging in soc_after_silicon_init!\n");
-	post_code(0x35);
-	while (1)
-		;
 }

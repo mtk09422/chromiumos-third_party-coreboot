@@ -2,17 +2,45 @@ subdirs-y += bootblock
 subdirs-y += microcode
 subdirs-y += romstage
 subdirs-y += ../common
+subdirs-y += ../../../cpu/x86/lapic
+subdirs-y += ../../../cpu/x86/mtrr
+subdirs-y += ../../../cpu/x86/smm
 subdirs-y += ../../../cpu/x86/tsc
+subdirs-y += ../../../cpu/intel/microcode
+subdirs-y += ../../../cpu/intel/turbo
 
 romstage-y += iosf.c
 romstage-y += memmap.c
+romstage-y += stage_cache.c
 romstage-y += tsc_freq.c
 
+ramstage-y += acpi.c
+ramstage-y += chip.c
+ramstage-y += cpu.c
+ramstage-$(CONFIG_ELOG) += elog.c
+ramstage-y += gpio.c
+ramstage-y += gfx.c
 ramstage-y += iosf.c
 ramstage-y += memmap.c
+ramstage-y += northcluster.c
+ramstage-y += pcie.c
+ramstage-y += pmutil.c
 ramstage-y += ramstage.c
-romstage-y += stage_cache.c
+ramstage-y += scc.c
+ramstage-y += smm.c
+ramstage-y += southcluster.c
+ramstage-y += spi.c
+ramstage-$(CONFIG_ALT_CBFS_LOAD_PAYLOAD) += spi_loading.c
+ramstage-y += stage_cache.c
 ramstage-y += tsc_freq.c
+
+# Remove as ramstage gets fleshed out
+ramstage-y += placeholders.c
+
+smm-y += pmutil.c
+smm-y += smihandler.c
+smm-y += spi.c
+smm-y += tsc_freq.c
 
 INCLUDES += -Isrc/soc/intel/braswell/
 INCLUDES += -Isrc/soc/intel/braswell/include

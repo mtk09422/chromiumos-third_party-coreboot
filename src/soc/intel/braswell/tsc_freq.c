@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdint.h>
 #include <cpu/x86/msr.h>
 #include <cpu/x86/tsc.h>
 #include <soc/msr.h>
@@ -28,6 +27,7 @@
 #else
 #include <soc/romstage.h>
 #endif
+#include <stdint.h>
 
 unsigned long tsc_freq_mhz(void)
 {

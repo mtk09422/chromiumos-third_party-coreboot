@@ -1,8 +1,8 @@
 /*
  * This file is part of the coreboot project.
  *
+ * Copyright (C) 2007-2009 coresystems GmbH
  * Copyright (C) 2013 Google Inc.
- * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,22 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _BRASWELL_RAMSTAGE_H_
-#define _BRASWELL_RAMSTAGE_H_
-
-#include <device/device.h>
-#include <chip.h>
-
-/*
- * The braswell_init_pre_device() function is called prior to device
- * initialization, but it's after console and cbmem has been reinitialized.
- */
-void braswell_init_pre_device(struct soc_intel_braswell_config *config);
-void braswell_init_cpus(device_t dev);
-void set_max_freq(void);
-void southcluster_enable_dev(device_t dev);
-void scc_enable_acpi_mode(device_t dev, int iosf_reg, int nvs_index);
-
-extern struct pci_operations soc_pci_ops;
-
-#endif /* _BRASWELL_RAMSTAGE_H_ */
+/* PCI Interrupt Routing */
+Method(_PRT)
+{
+	If (PICM) {
+		Return (Package() {
+			#undef PIC_MODE
+			#include <soc/intel/braswell/acpi/irq_helper.h>
+			PCI_DEV_PIRQ_ROUTES
+		})
+	} Else {
+		Return (Package() {
+			#define PIC_MODE
+			#include <soc/intel/braswell/acpi/irq_helper.h>
+			PCI_DEV_PIRQ_ROUTES
+		})
+	}
+}

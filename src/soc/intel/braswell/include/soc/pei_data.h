@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PEI_DATA_H
-#define PEI_DATA_H
+#ifndef _PEI_DATA_H_
+#define _PEI_DATA_H_
 
 #include <types.h>
 
@@ -65,4 +65,4 @@ struct pei_data {
 
 typedef struct pei_data PEI_DATA;
 
-#endif
+#endif /* _PEI_DATA_H_ */

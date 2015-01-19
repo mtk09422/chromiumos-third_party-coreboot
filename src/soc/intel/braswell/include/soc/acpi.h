@@ -18,29 +18,21 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <arch/io.h>
-#include <cbmem.h>
-#include <console/console.h>
-#include <soc/iosf.h>
-#include <soc/smm.h>
+#ifndef _BRASWELL_ACPI_H_
+#define _BRASWELL_ACPI_H_
 
+#include <arch/acpi.h>
+#include <soc/nvs.h>
 
-void *smm_region_start(void)
-{
-	return (void *)((iosf_bunit_read(BUNIT_SMRRL) & 0xFFFF) << 20);
-}
+#if CONFIG_GOP_SUPPORT
+#include "gma.h"
+int init_igd_opregion(igd_opregion_t *igd_opregion);
+#endif
 
-int smm_region_size(void)
-{
-	u32 smm_size;
-	smm_size = iosf_bunit_read(BUNIT_SMRRH) & 0xFFFF;
-	smm_size -= iosf_bunit_read(BUNIT_SMRRL) & 0xFFFF;
-	smm_size = (smm_size + 1) << 20;
-	printk(BIOS_DEBUG, "TSEG Size: 0x%08x\n", smm_size);
-	return smm_size;
-}
+void acpi_create_intel_hpet(acpi_hpet_t *hpet);
+void acpi_fill_in_fadt(acpi_fadt_t *fadt);
+unsigned long acpi_madt_irq_overrides(unsigned long current);
+void acpi_init_gnvs(global_nvs_t *gnvs);
 
-void *cbmem_top(void)
-{
-	return smm_region_start() - CONFIG_FSP_RESERVED_MEM_SIZE;
-}
+#endif /* _BRASWELL_ACPI_H_ */
+

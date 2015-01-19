@@ -31,7 +31,7 @@
 /* Graphics and Display */
 #define GFX_DEV 0x2
 #define GFX_FUNC 0
-# define GFX_DEVID 0x22b0
+# define GFX_DEVID 0x22b1
 
 /* MMC Port */
 #define MMC_DEV 0x10
@@ -56,7 +56,7 @@
 /* xHCI */
 #define XHCI_DEV 0x14
 #define XHCI_FUNC 0
-# define XHCI_DEVID 0x22b5
+#define XHCI_DEVID 0x22b5
 
 /* LPE Audio */
 #define LPE_DEV 0x15
