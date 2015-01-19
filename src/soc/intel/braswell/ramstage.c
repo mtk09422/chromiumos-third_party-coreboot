@@ -146,13 +146,3 @@ void braswell_init_pre_device(struct soc_intel_braswell_config *config)
 	gpio_config = mainboard_get_gpios();
 	setup_soc_gpios(gpio_config, config->enable_xdp_tap);
 }
-
-static void fsp_hang(void *arg)
-{
-	post_code(0x35);
-	die("Hang_after_fsp_notify2!");
-}
-
-BOOT_STATE_INIT_ENTRIES(fsp_bscbs) = {
-	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_BOOT, BS_ON_ENTRY, fsp_hang, NULL)
-};
