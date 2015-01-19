@@ -44,7 +44,7 @@
 
 #define CONFIG_ICH_SPI
 #ifdef CONFIG_ICH_SPI
-#define CONTROLLER_PAGE_LIMIT	64
+#define CONTROLLER_PAGE_LIMIT CONFIG_SPI_CONTROLLER_BYTE_LIMIT
 #else
 /* any number larger than 4K would do, actually */
 #define CONTROLLER_PAGE_LIMIT	((int)(~0U>>1))

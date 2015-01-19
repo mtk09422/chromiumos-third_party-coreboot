@@ -120,3 +120,10 @@ config SPI_FLASH_FAST_READ_DUAL_OUTPUT_3B
 	  Select this option if your SPI flash supports the fast read dual-
 	  output command (opcode 0x3b) where the opcode and address are sent
 	  to the chip on MOSI and data is received on both MOSI and MISO.
+
+config SPI_CONTROLLER_BYTE_LIMIT
+	int "Maximum Data Bytes"
+	default 64
+	help
+	  Sets the maximum number of data bytes in a single write transaction
+	  allowed by the controller.
