@@ -23,16 +23,22 @@
 #include <arch/stages.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <soc/ddr_init.h>
 
 void main(void)
 {
 	const char *stage_name = CONFIG_CBFS_PREFIX "/ramstage";
 	void *entry;
+	int error;
 
 	console_init();
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
-	if (entry != CBFS_LOAD_ERROR)
-		stage_exit(entry);
+	error = init_ddr2();
+
+	if (!error) {
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+		if (entry != CBFS_LOAD_ERROR)
+			stage_exit(entry);
+	}
 	hlt();
 }
