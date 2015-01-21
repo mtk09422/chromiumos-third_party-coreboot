@@ -251,6 +251,37 @@ void acpi_fill_in_fadt(acpi_fadt_t *fadt)
 	fadt->x_gpe1_blk.addrh = 0x0;
 }
 
+static acpi_tstate_t braswell_tss_table[] = {
+	{ 100, 1000, 0, 0x00, 0 },
+	{ 88, 875, 0, 0x1e, 0 },
+	{ 75, 750, 0, 0x1c, 0 },
+	{ 63, 625, 0, 0x1a, 0 },
+	{ 50, 500, 0, 0x18, 0 },
+	{ 38, 375, 0, 0x16, 0 },
+	{ 25, 250, 0, 0x14, 0 },
+	{ 13, 125, 0, 0x12, 0 },
+};
+
+static int generate_t_state_entries(int core, int cores_per_package)
+{
+	int len;
+
+	/* Indicate SW_ALL coordination for T-states */
+	len = acpigen_write_TSD_package(core, cores_per_package, SW_ALL);
+
+	/* Indicate FFixedHW so OS will use MSR */
+	len += acpigen_write_empty_PTC();
+
+	/* Set NVS controlled T-state limit */
+	len += acpigen_write_TPC("\\TLVL");
+
+	/* Write TSS table for MSR access */
+	len += acpigen_write_TSS_package(
+		ARRAY_SIZE(braswell_tss_table), braswell_tss_table);
+
+	return len;
+}
+
 static int calculate_power(int tdp, int p1_ratio, int ratio)
 {
 	u32 m;
@@ -414,6 +445,10 @@ void generate_cpu_entries(void)
 		/* Generate C-state tables */
 		len_pr += acpigen_write_CST_package(
 			cstate_map, ARRAY_SIZE(cstate_map));
+
+		/* Generate T-state tables */
+		len_pr += generate_t_state_entries(
+			core, pattrs->num_cpus);
 
 		len_pr--;
 		acpigen_patch_len(len_pr);
