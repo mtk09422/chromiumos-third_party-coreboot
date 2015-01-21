@@ -41,6 +41,40 @@
 #include <types.h>
 #include <vendorcode/google/chromeos/gnvs.h>
 
+#define MWAIT_RES(state, sub_state)                         \
+	{                                                   \
+		.addrl = (((state) << 4) | (sub_state)),    \
+		.space_id = ACPI_ADDRESS_SPACE_FIXED,       \
+		.bit_width = ACPI_FFIXEDHW_VENDOR_INTEL,    \
+		.bit_offset = ACPI_FFIXEDHW_CLASS_MWAIT,    \
+		.access_size = ACPI_FFIXEDHW_FLAG_HW_COORD, \
+	}
+
+/* C-state map without S0ix */
+static acpi_cstate_t cstate_map[] = {
+	{
+		/* C1 */
+		.ctype = 1, /* ACPI C1 */
+		.latency = 1,
+		.power = 1000,
+		.resource = MWAIT_RES(0, 0),
+	},
+	{
+		/* C6NS with no L2 shrink */
+		/* NOTE: this substate is above CPUID limit */
+		.ctype = 2, /* ACPI C2 */
+		.latency = 500,
+		.power = 10,
+		.resource = MWAIT_RES(5, 1),
+	},
+	{
+		/* C6FS with full L2 shrink */
+		.ctype = 3, /* ACPI C3 */
+		.latency = 1500, /* 1.5ms worst case */
+		.power = 1,
+		.resource = MWAIT_RES(5, 2),
+	}
+};
 
 void acpi_init_gnvs(global_nvs_t *gnvs)
 {
@@ -376,6 +410,10 @@ void generate_cpu_entries(void)
 		/* Generate  P-state tables */
 		len_pr += generate_p_state_entries(
 			core, pattrs->num_cpus);
+
+		/* Generate C-state tables */
+		len_pr += acpigen_write_CST_package(
+			cstate_map, ARRAY_SIZE(cstate_map));
 
 		len_pr--;
 		acpigen_patch_len(len_pr);
