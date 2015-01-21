@@ -51,7 +51,7 @@
 /* SATA */
 #define SATA_DEV 0x13
 #define SATA_FUNC 0
-#define AHCI1_DEVID 0x22e0
+#define AHCI1_DEVID 0x22a3
 
 /* xHCI */
 #define XHCI_DEV 0x14

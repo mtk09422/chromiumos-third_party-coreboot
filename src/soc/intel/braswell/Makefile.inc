@@ -28,6 +28,7 @@ ramstage-y += northcluster.c
 ramstage-y += pcie.c
 ramstage-y += pmutil.c
 ramstage-y += ramstage.c
+ramstage-y += sata.c
 ramstage-y += scc.c
 ramstage-y += smm.c
 ramstage-y += southcluster.c
