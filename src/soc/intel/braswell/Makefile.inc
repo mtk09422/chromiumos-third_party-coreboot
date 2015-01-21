@@ -21,6 +21,7 @@ ramstage-$(CONFIG_ELOG) += elog.c
 ramstage-y += gpio.c
 ramstage-y += gfx.c
 ramstage-y += iosf.c
+ramstage-y += lpss.c
 ramstage-y += memmap.c
 ramstage-y += northcluster.c
 ramstage-y += pcie.c
