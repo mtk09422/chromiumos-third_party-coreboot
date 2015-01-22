@@ -57,12 +57,18 @@ void init_chromeos(int bootmode);
 
 /* functions implemented in elog.c */
 void elog_add_boot_reason(void);
+
+/* functions implemented in watchdog.c */
+void elog_add_watchdog_reset(void);
+void reboot_from_watchdog(void);
 #else
 static inline int developer_mode_enabled(void) { return 0; }
 static inline int recovery_mode_enabled(void) { return 0; }
 static inline int vboot_skip_display_init(void) { return 0; }
 static inline void init_chromeos(int bootmode) { }
 static inline void elog_add_boot_reason(void) { return; }
+static inline void elog_add_watchdog_reset(void) { return; }
+static inline void reboot_from_watchdog(void) { return; }
 #endif /* CONFIG_CHROMEOS */
 
 struct romstage_handoff;

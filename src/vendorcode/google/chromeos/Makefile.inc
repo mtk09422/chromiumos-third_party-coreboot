@@ -45,6 +45,10 @@ ifneq ($(wildcard src/mainboard/$(MAINBOARDDIR)/chromeos.c),)
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
 romstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
 endif
+ifneq ($(CONFIG_ARCH_X86),y)
+bootblock-y += watchdog.c
+ramstage-y += watchdog.c
+endif
 
 ifeq ($(MOCK_TPM),1)
 CFLAGS_common += -DMOCK_TPM=1
