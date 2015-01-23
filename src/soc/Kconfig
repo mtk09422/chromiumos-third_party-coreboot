@@ -1,3 +1,4 @@
+source src/soc/broadcom/Kconfig
 source src/soc/imgtec/Kconfig
 source src/soc/intel/Kconfig
 source src/soc/marvell/Kconfig
