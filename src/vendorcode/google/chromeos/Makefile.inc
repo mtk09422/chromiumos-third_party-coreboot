@@ -45,7 +45,7 @@ ifneq ($(wildcard src/mainboard/$(MAINBOARDDIR)/chromeos.c),)
 ramstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
 romstage-srcs += src/mainboard/$(MAINBOARDDIR)/chromeos.c
 endif
-ifneq ($(CONFIG_ARCH_X86),y)
+ifeq ($(CONFIG_ARCH_X86)$(CONFIG_ARCH_MIPS),)
 bootblock-y += watchdog.c
 ramstage-y += watchdog.c
 endif
