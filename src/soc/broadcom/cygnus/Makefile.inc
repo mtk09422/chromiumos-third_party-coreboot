@@ -1,7 +1,7 @@
 ##
 ## This file is part of the coreboot project.
 ##
-## Copyright 2014 Google Inc.
+## Copyright 2015 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -22,12 +22,16 @@ bootblock-y += cbmem.c
 bootblock-y += i2c.c
 bootblock-y += monotonic_timer.c
 bootblock-$(CONFIG_SPI_FLASH) += spi.c
-bootblock-$(CONFIG_CONSOLE_SERIAL) += uart.c
+ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
+bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
+endif
 
 verstage-y += i2c.c
 verstage-y += monotonic_timer.c
 verstage-$(CONFIG_SPI_FLASH) += spi.c
-verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
+ifeq($(CONFIG_EARLY_CONSOLE),y)
+verstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
+endif
 
 romstage-y += cbmem.c
 romstage-y += i2c.c
@@ -35,13 +39,15 @@ romstage-y += monotonic_timer.c
 romstage-y += romstage.c
 romstage-y += sdram.c
 romstage-$(CONFIG_SPI_FLASH) += spi.c
-romstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
+ifeq($(CONFIG_EARLY_CONSOLE),y)
+romstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
+endif
 
 ramstage-y += cbmem.c
 ramstage-y += i2c.c
 ramstage-y += monotonic_timer.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
-ramstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
+ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
 
 INCLUDES += -Isrc/soc/broadcom/cygnus/include/
 
