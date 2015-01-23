@@ -154,6 +154,14 @@ config BOARD_GOOGLE_PEPPY
 	  Peppy is a Chrome OS mainboard.
 	  Peppy is based on the Intel Haswell platform.
 
+config BOARD_GOOGLE_PURIN
+	bool "Purin"
+	help
+	  Google Purin mainboard.
+	  Enable this config to select the Google Purin mainboard.
+	  Purin is a Chrome OS mainboard.
+	  Purin is based on the Broadcom Cygnus platform.
+
 config BOARD_GOOGLE_RAMBI
 	bool "Rambi"
 	help
@@ -290,6 +298,7 @@ source "src/mainboard/google/panther/Kconfig"
 source "src/mainboard/google/parrot/Kconfig"
 source "src/mainboard/google/peach_pit/Kconfig"
 source "src/mainboard/google/peppy/Kconfig"
+source "src/mainboard/google/purin/Kconfig"
 source "src/mainboard/google/rambi/Kconfig"
 source "src/mainboard/google/rush/Kconfig"
 source "src/mainboard/google/rush_ryu/Kconfig"
