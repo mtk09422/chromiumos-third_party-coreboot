@@ -199,6 +199,17 @@ config S5P_SERIAL_CONSOLE
 	depends on SERIAL_CONSOLE
 	default n
 
+config MTK_SERIAL_CONSOLE
+	bool "MTK SOC compatible serial port driver"
+	depends on SERIAL_CONSOLE
+	default n
+
+config MTK_SERIAL_BASE
+        hex "mtk uart base address"
+        depends on MTK_SERIAL_CONSOLE
+        default 0x11002000
+
+
 config 8250_MMIO32_SERIAL_CONSOLE
 	bool "Memory-mapped 8250-compatible serial port driver with 32-bit regs"
 	depends on SERIAL_CONSOLE
@@ -401,6 +412,9 @@ config TIMER_BG4CD
 config TIMER_IMG_PISTACHIO
 	bool "Timer for IMG Pistachio"
 
+config TIMER_MTK
+	bool "Timer for MTK"
+
 endchoice
 
 config TIMER_MCT_HZ
@@ -437,6 +451,20 @@ config IPQ806X_TIMER_REG
 	depends on TIMER_IPQ806X
 	help
 	  Address of the register to read a free running timer value.
+
+config TIMER_MTK_HZ
+	int "MTK GPT frequency"
+	depends on TIMER_MTK
+	default 13000000
+	help
+	  Clock frequency of MTK General Purpose Timer.
+
+config TIMER_MTK_ADDRESS
+	hex "MTK GPT register address"
+	depends on TIMER_MTK
+	default 0x10008048
+	help
+	  Address of GPT4's counter register to read the FREERUN-mode timer value.
 
 config USB
 	bool "USB Support"

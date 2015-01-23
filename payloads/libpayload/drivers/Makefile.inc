@@ -35,6 +35,7 @@ libc-$(CONFIG_LP_SPEAKER) += speaker.c
 
 libc-$(CONFIG_LP_8250_SERIAL_CONSOLE) += serial/8250.c
 libc-$(CONFIG_LP_S5P_SERIAL_CONSOLE) += serial/s5p.c
+libc-$(CONFIG_LP_MTK_SERIAL_CONSOLE) += serial/mtk_uart.c
 libc-$(CONFIG_LP_8250_MMIO32_SERIAL_CONSOLE) += serial/8250_mmio32.c
 libc-$(CONFIG_LP_IPQ806X_SERIAL_CONSOLE) += serial/ipq806x.c
 libc-$(CONFIG_LP_BG4CD_SERIAL_CONSOLE) += serial/bg4cd.c
@@ -46,6 +47,7 @@ libc-$(CONFIG_LP_NVRAM) += nvram.c
 libc-$(CONFIG_LP_NVRAM) += options.c
 
 # Timer drivers
+libc-$(CONFIG_LP_TIMER_MTK) += timer/mtk_timer.c
 libc-$(CONFIG_LP_TIMER_MCT) += timer/mct.c
 libc-$(CONFIG_LP_TIMER_RDTSC) += timer/rdtsc.c
 libc-$(CONFIG_LP_TIMER_TEGRA_1US) += timer/tegra_1us.c
