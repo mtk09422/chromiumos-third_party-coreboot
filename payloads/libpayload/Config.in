@@ -531,6 +531,21 @@ config USB_GEN_HUB
 	default n if (!USB_HUB && !USB_XHCI)
 	default y if (USB_HUB || USB_XHCI)
 
+config UDC
+	bool "USB device mode support"
+	default n
+	help
+	  Select this option to add support for running as
+	  a USB device.
+
+config UDC_CI
+	bool "ChipIdea driver for USB device mode"
+	depends on UDC
+	default n
+	help
+	  Select this option to add the driver for ChipIdea
+	  USB device controller.
+
 endmenu
 
 menu "Debugging"
