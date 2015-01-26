@@ -121,20 +121,6 @@ static unsigned int uart_platform_refclk(void)
 	return 1843318;
 }
 
-static unsigned int uart_platform_base(int idx)
-{
-	switch (idx) {
-	case 0:
-		return 0xb8101400;
-
-	case 1:
-		return 0xb8101500;
-
-	default:
-		return 0x0;
-	}
-}
-
 /* Calculate divisor. Do not floor but round to nearest integer. */
 static unsigned int uart_baudrate_divisor(unsigned int baudrate,
 	unsigned int refclk, unsigned int oversample)
@@ -144,38 +130,26 @@ static unsigned int uart_baudrate_divisor(unsigned int baudrate,
 
 static void pistachio_uart_init(void)
 {
-	u32 base = uart_platform_base(0);
-	if (!base)
-		return;
-
 	unsigned int div;
+
 	div = uart_baudrate_divisor(CONFIG_TTYS0_BAUD,
 				    uart_platform_refclk(), 16);
-	uart8250_mem_init(base, div);
+	uart8250_mem_init(CONFIG_CONSOLE_SERIAL_UART_ADDRESS, div);
 }
 
 static void pistachio_uart_tx_byte(unsigned char data)
 {
-	u32 base = uart_platform_base(0);
-	if (!base)
-		return;
-	uart8250_mem_tx_byte(base, data);
+	uart8250_mem_tx_byte(CONFIG_CONSOLE_SERIAL_UART_ADDRESS, data);
 }
 
 static unsigned char pistachio_uart_rx_byte(void)
 {
-	u32 base = uart_platform_base(0);
-	if (!base)
-		return 0xff;
-	return uart8250_mem_rx_byte(base);
+	return uart8250_mem_rx_byte(CONFIG_CONSOLE_SERIAL_UART_ADDRESS);
 }
 
 static void pistachio_uart_tx_flush(void)
 {
-	u32 base = uart_platform_base(0);
-	if (!base)
-		return;
-	uart8250_mem_tx_flush(base);
+	uart8250_mem_tx_flush(CONFIG_CONSOLE_SERIAL_UART_ADDRESS);
 }
 
 #if !defined(__PRE_RAM__)
@@ -189,7 +163,7 @@ static const struct console_driver pistachio_uart_console __console = {
 
 uint32_t uartmem_getbaseaddr(void)
 {
-	return uart_platform_base(0);
+	return CONFIG_CONSOLE_SERIAL_UART_ADDRESS;
 }
 
 uint32_t uartmem_getregwidth(void)
