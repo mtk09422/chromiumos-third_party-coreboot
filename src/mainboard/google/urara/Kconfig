@@ -56,4 +56,9 @@ config BOOT_MEDIA_SPI_BUS
 	int "SPI bus for boot media"
 	default 1
 
+config CONSOLE_SERIAL_UART_ADDRESS
+	hex
+	depends on CONSOLE_SERIAL_UART
+	default 0xB8101500
+
 endif
