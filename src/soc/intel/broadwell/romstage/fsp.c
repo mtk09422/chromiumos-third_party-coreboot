@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2014 Intel Corporation
+ * Copyright (C) 2014-2015 Intel Corporation
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <fsp_util.h>
-#include <lib.h> // hexdump
+#include <lib.h> /* hexdump */
 #include <soc/pei_data.h>
 #include <soc/reset.h>
 #include <soc/romstage.h>
@@ -37,29 +37,38 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	const EFI_GUID mrc_guid = FSP_NON_VOLATILE_STORAGE_HOB_GUID;
 	u32 *mrc_hob;
 	EFI_STATUS status;
-	VPD_DATA_REGION *vpd_data;
-	UPD_DATA_REGION *upd_data;
+	VPD_DATA_REGION *vpd_ptr;
+	UPD_DATA_REGION *upd_ptr;
 	UPD_DATA_REGION upd_data_buffer;
 
-	/* Find and copy the UPD region to the stack so the platform can modify
+	/*
+	 * Find and copy the UPD region to the stack so the platform can modify
 	 * the settings if needed.  Modifications to the UPD buffer are done in
 	 * the platform callback code.  The platform callback code is also
 	 * responsible for assigning the UpdDataRngPtr to this buffer if any
 	 * updates are made.  The default state is to leave the UpdDataRngPtr
 	 * set to NULL.  This indicates that the FSP code will use the UPD
-	 * region in the FSP binary.*/
+	 * region in the FSP binary.
+	 */
 	fsp_header = find_fsp();
-	vpd_data = (VPD_DATA_REGION *)(fsp_header->CfgRegionOffset +
+	vpd_ptr = (VPD_DATA_REGION *)(fsp_header->CfgRegionOffset +
 					fsp_header->ImageBase);
-	printk(BIOS_DEBUG, "VPD Data: 0x%p\n", vpd_data);
-	upd_data = (UPD_DATA_REGION *)(vpd_data->PcdUpdRegionOffset +
+	printk(BIOS_DEBUG, "VPD Data: 0x%p\n", vpd_ptr);
+	upd_ptr = (UPD_DATA_REGION *)(vpd_ptr->PcdUpdRegionOffset +
 					fsp_header->ImageBase);
-	printk(BIOS_DEBUG, "UPD Data: 0x%p\n", upd_data);
-	memcpy(&upd_data_buffer, upd_data, sizeof(upd_data_buffer));
+	printk(BIOS_DEBUG, "UPD Data: 0x%p\n", upd_ptr);
+	memcpy(&upd_data_buffer, upd_ptr, sizeof(upd_data_buffer));
 
 	/* Zero fill RT Buffer data and start populating fields. */
 	memset(&fsp_rt_common_buffer, sizeof(fsp_rt_common_buffer), 0);
-	fsp_rt_common_buffer.BootMode = pei_data->boot_mode;
+	if (pei_data->boot_mode == SLEEP_STATE_S3) {
+		fsp_rt_common_buffer.BootMode = BOOT_ON_S3_RESUME;
+	} else if (pei_data->saved_data != NULL) {
+		fsp_rt_common_buffer.BootMode =
+			BOOT_ASSUMING_NO_CONFIGURATION_CHANGES;
+	} else {
+		fsp_rt_common_buffer.BootMode = BOOT_WITH_FULL_CONFIGURATION;
+	}
 	fsp_rt_common_buffer.UpdDataRgnPtr = &upd_data_buffer;
 
 	/* Get any board specific changes */
@@ -97,10 +106,11 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	/* Display the memory configuration */
 	report_memory_config();
 
+	/* Migrate CAR data */
 	if (pei_data->boot_mode != SLEEP_STATE_S3) {
 		cbmem_initialize_empty();
 	} else if (cbmem_initialize()) {
-#if CONFIG_HAVE_ACPI_RESUME
+#if IS_ENABLED(CONFIG_HAVE_ACPI_RESUME)
 		printk(BIOS_DEBUG, "Failed to recover CBMEM in S3 resume.\n");
 		/* Failed S3 resume, reset to come up cleanly */
 		reset_system();
@@ -121,7 +131,7 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	mrc_hob = get_next_guid_hob(&mrc_guid, hob_list_ptr);
 	if (mrc_hob == NULL)
 		printk(BIOS_DEBUG,
-			"Memory Configure Data Hob is not present\n");
+			"Memory Configuration Data Hob not present\n");
 	else {
 		pei_data->data_to_save = GET_GUID_HOB_DATA(mrc_hob);
 		pei_data->data_to_save_size = ALIGN(
