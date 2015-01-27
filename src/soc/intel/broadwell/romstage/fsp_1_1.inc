@@ -4,6 +4,7 @@
  * Copyright (C) 2000,2007 Ronald G. Minnich <rminnich@gmail.com>
  * Copyright (C) 2007-2008 coresystems GmbH
  * Copyright (C) 2013-2014 Sage Electronic Engineering, LLC.
+ * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +42,7 @@
 # error "CONFIG_POST_IO must be set."
 #endif
 
-#if CONFIG_POST_IO
+#if IS_ENABLED(CONFIG_POST_IO)
 # ifndef CONFIG_POST_IO_PORT
 #  error "CONFIG_POST_IO_PORT must be set."
 # endif
@@ -95,29 +96,46 @@ find_fsp_ret:
 	 */
 	lea   CAR_init_stack, %esp
 
+	/* Save TSC value */
+	movd  %mm0, %edi
+	movd  %mm1, %esi
+
 	/*
 	 *       BIST value is zero
 	 * eax:  TempRamInitApi address
 	 * ebp:  FSP_INFO_HEADER address
-	 * mm0:  low 32-bits of TSC value
-	 * mm1:  high 32-bits of TSC value
+	 * edi:  low 32-bits of TSC value
+	 * esi:  high 32-bits of TSC value
 	 */
 
 	/* call FSP binary to setup temporary stack */
 	jmp   *%eax
 
 CAR_init_done:
-	addl  $4, %esp
+
+	/*
+	 * ebp:  FSP_INFO_HEADER address
+	 * ecx:  Temp RAM base
+	 * edx:  Temp RAM top
+	 * edi:  low 32-bits of TSC value
+	 * esi:  high 32-bits of TSC value
+	 */
+
 	cmp   $0, %eax
 	jne   halt2
 
 	/* Setup bootloader stack */
-	lea   -4(%edx), %esp
+	movl  %edx, %esp
+
+	/* Save TSC value */
+	movd  %edi, %mm0
+	movd  %esi, %mm1
 
 	/*
 	 * ebp:  FSP_INFO_HEADER address
-	 * ecx:  temp RAM base (stack base)
-	 * edx:  temp RAM top (stack top)
+	 * ecx:  Temp RAM base
+	 * edx:  Temp RAM top
+	 * esp:  Top of stack in temp RAM
 	 * mm0:  low 32-bits of TSC value
 	 * mm1:  high 32-bits of TSC value
 	 */
@@ -137,13 +155,13 @@ CAR_init_done:
 
 	/*
 	 * ebx:  FSP_INFO_HEADER address
-	 * esi:  temp RAM base
+	 * esi:  Temp RAM base
+	 * esp:  Top of stack in temp RAM
 	 * mm0:  low 32-bits of TSC value
 	 * mm1:  high 32-bits of TSC value
 	 */
 
 	/* Build the call frame */
-	movl	%esp, %ebp
 	movd	%mm1, %eax
 	pushl	%eax
 	movd	%mm0, %eax
@@ -170,15 +188,13 @@ before_romstage:
 	add	0x1c(%ebp), %eax
 
 	/* Build the call frame */
-	movl	%esp, %ebx
 	pushl	$0
 
 	/* Call TempRamExit */
 	call	*%eax
-
-	/*
-	 * ebx:  FSP_INFO_HEADER address
-	 */
+	add	$4, %esp
+	cmp	$0, %eax
+	jne	halt3
 
 	/* Get number of MTRRs. */
 	popl	%ebx
@@ -262,16 +278,28 @@ halt2:
 	 *
 	 * 0x00 - FSP_SUCCESS: Temp RAM was initialized successfully.
 	 * 0x02 - FSP_INVALID_PARAMETER: Input parameters are invalid.
-	 * 0x0E - FSP_NOT_FOUND: No valid microcode was found in the microcode region.
 	 * 0x03 - FSP_UNSUPPORTED: The FSP calling conditions were not met.
 	 * 0x07 - FSP_DEVICE_ERROR: Temp RAM initialization failed
+	 * 0x0E - FSP_NOT_FOUND: No valid microcode was found in the microcode region.
 	 * 0x14 - FSP_ALREADY_STARTED: Temp RAM initialization has been invoked
 	 */
 	movb  $0xBB, %ah
+	jmp	.Lhlt
+
+halt3:
+	/*
+	 * Failures for post code BC - failed in TempRamExit
+	 *
+	 * 0x00 - FSP_SUCCESS: Temp RAM Exit completed successfully.
+	 * 0x02 - FSP_INVALID_PARAMETER: Input parameters are invalid.
+	 * 0x03 - FSP_UNSUPPORTED: The FSP calling conditions were not met.
+	 * 0x07 - FSP_DEVICE_ERROR: Temp RAM Exit failed.
+	 */
+	movb	$0xBC, %ah
 
 .Lhlt:
 	xchg  %al, %ah
-#if CONFIG_POST_IO
+#if IS_ENABLED(CONFIG_POST_IO)
 	outb  %al, $CONFIG_POST_IO_PORT
 #else
 	post_code(POST_DEAD_CODE)
