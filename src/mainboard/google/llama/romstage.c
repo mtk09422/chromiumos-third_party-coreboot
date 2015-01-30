@@ -27,6 +27,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <symbols.h>
+#include <timestamp.h>
 
 #include <soc/mt8135.h>
 #include <soc/pll.h>
@@ -37,6 +38,8 @@
 
 void main(void)
 {
+	timestamp_add_now(TS_START_ROMSTAGE);
+
 	/* Clear UART0 reset signal */
 	clrbits_le32((void *)AP_PERI_GLOBALCON_RST0, UART0_SW_RST);
 	/* Clear UART0 power down signal */
@@ -88,8 +91,10 @@ void main(void)
 	/* Setup TPM */
 	mtk_i2c_init(6, 1, 0x20, 0);
 
+	timestamp_add_now(TS_START_COPYRAM);
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 				      "fallback/ramstage");
+	timestamp_add_now(TS_END_COPYRAM);
 
 	stage_exit(entry);
 }
