@@ -5,6 +5,7 @@
 #include <soc/mt8135.h>
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic_6397.h>
+#include <soc/i2c.h>
 
 #if CONFIG_DEBUG_PMIC
 #define DEBUG_PMIC(level, x...)		printk(level, x)
