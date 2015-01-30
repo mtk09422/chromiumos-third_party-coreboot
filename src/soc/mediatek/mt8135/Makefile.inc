@@ -41,7 +41,7 @@ romstage-y += pmic_wrap_init.c i2c.c pmic_6397.c
 romstage-y += 	wdt.c \
 		emi.c dramc_calib.c dramc_dle_cal.c \
 		dramc_dqs_gw.c stdlib.c \
-		memory.c
+		rtc.c memory.c
 
 ################################################################################
 

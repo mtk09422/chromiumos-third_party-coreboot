@@ -32,6 +32,7 @@
 #include <soc/pll.h>
 #include <soc/i2c.h>
 #include <soc/wdt.h>
+#include <soc/rtc.h>
 #include <soc/memory.h>
 
 void main(void)
@@ -40,6 +41,10 @@ void main(void)
 	clrbits_le32((void *)AP_PERI_GLOBALCON_RST0, UART0_SW_RST);
 	/* Clear UART0 power down signal */
 	clrbits_le32((void *)AP_PERI_GLOBALCON_PDN0, UART0_PDN);
+
+	rtc_boot_check();
+
+	rtc_bbpu_power_on();
 
 	/* init memory */
 	mt_mem_init();
