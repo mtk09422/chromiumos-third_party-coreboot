@@ -30,6 +30,7 @@
 
 #include <soc/mt8135.h>
 #include <soc/pll.h>
+#include <soc/i2c.h>
 #include <soc/wdt.h>
 #include <soc/memory.h>
 
@@ -78,6 +79,9 @@ void main(void)
 
 	/* post init pll */
 	mt_pll_post_init();
+
+	/* Setup TPM */
+	mtk_i2c_init(6, 1, 0x20, 0);
 
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 				      "fallback/ramstage");
