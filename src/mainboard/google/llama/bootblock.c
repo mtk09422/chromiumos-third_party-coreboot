@@ -38,4 +38,6 @@ void bootblock_mainboard_init(void)
 	/* retry 3 times for pmic wrapper init */
 	pwrap_init_preloader();
 	pmic6397_init();
+
+	bootblock_soc_init();
 }

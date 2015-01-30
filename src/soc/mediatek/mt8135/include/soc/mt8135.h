@@ -153,4 +153,75 @@ enum {
 #define UNUSED	0
 #define NOT_IMPLEMENTED	0
 
+#define BOOTROM_PWR_CTRL        ((volatile uint32_t *)0x10002020)
+#define BOOTROM_PWR_ADDR        ((volatile uint32_t *)0x10002030)
+
+#define POWERON_CONFIG_SET      ((volatile uint32_t *)0x10006000)
+#define SPM_CA15_CX0_PWR_CON    ((volatile uint32_t *)0x1000629C)
+#define SPM_CA15_CX1_PWR_CON    ((volatile uint32_t *)0x100062A0)
+#define SPM_CA15_CPU0_PWR_CON   ((volatile uint32_t *)0x100062A4)
+#define SPM_CA15_CPU1_PWR_CON   ((volatile uint32_t *)0x100062A8)
+#define SPM_CA15_CPUTOP_PWR_CON ((volatile uint32_t *)0x100062AC)
+#define SPM_CA15_L1_PWR_CON     ((volatile uint32_t *)0x100062B0)
+#define SPM_CA15_L2_PWR_CON     ((volatile uint32_t *)0x100062B4)
+#define SPM_MD1_PWR_CON         ((volatile uint32_t *)0x10006284)
+#define SPM_PWR_STATUS          ((volatile uint32_t *)0x1000660C)
+#define SPM_PWR_STATUS_S        ((volatile uint32_t *)0x10006610)
+#define SPM_SLEEP_TIMER_STA     ((volatile uint32_t *)0x10006720)
+
+#define CA15_CA7_CONNECT    ((volatile uint32_t *)0x10200018)
+#define CA15_MISC_DBG       ((volatile uint32_t *)0x1020020C)
+#define CA15_CCI400_DVM_EN  ((volatile uint32_t *)0x10324000)
+#define CA7_CCI400_DVM_EN   ((volatile uint32_t *)0x10325000)
+#define CONFIG_RES	        ((volatile uint32_t *)0x10200268)
+#define RGUCFG              ((volatile uint32_t *)0x10200254)
+#define CA15_RST_CTL        ((volatile uint32_t *)0x10200244)
+
+#define SRAM_ISOINT_B   (1U << 6)
+#define SRAM_CKISO      (1U << 5)
+#define PWR_CLK_DIS     (1U << 4)
+#define PWR_ON_S        (1U << 3)
+#define PWR_ON          (1U << 2)
+#define PWR_ISO         (1U << 1)
+#define PWR_RST_B       (1U << 0)
+
+#define CA15_CX0        (1U << 17)
+#define CA15_CX1        (1U << 18)
+#define CA15_CPU0       (1U << 19)
+#define CA15_CPU1       (1U << 20)
+#define CA15_CPUTOP     (1U << 21)
+
+/* SPM_CA15 */
+#define CPU0_L1_PDN_ACK (1U << 8)
+#define CPU0_L1_PDN     (1U << 0)
+#define CPU0_L1_PDN_ISO (1U << 4)
+#define CPU1_L1_PDN_ACK (1U << 9)
+#define CPU1_L1_PDN     (1U << 1)
+#define CPU1_L1_PDN_ISO (1U << 5)
+
+#define CA15_L2_PDN_ACK (1U << 8)
+#define CA15_L2_PDN     (1U << 0)
+#define CA15_L2_ISO     (1U << 4)
+
+#define CA15_L2RSTDISABLE (1U << 10)
+#define EXT_CA15_OFF      (1U << 1)
+
+extern volatile int g_ca15_ready;
+
+#define barrier() __asm__ __volatile__("" : : : "memory")
+
+/* Slave CPU */
+#define BOOT_SHARE_BASE 0x80002000
+#define NS_SLAVE_JUMP_REG (BOOT_SHARE_BASE+1020)
+#define NS_SLAVE_MAGIC_REG (BOOT_SHARE_BASE+1016)
+#define NS_SLAVE_BOOT_ADDR (BOOT_SHARE_BASE+1012)
+
+#define SLAVE1_MAGIC_NUM 0x534C4131
+#define SLAVE2_MAGIC_NUM 0x4C415332
+#define SLAVE3_MAGIC_NUM 0x41534C33
+
+extern unsigned char _sram_m4u[];
+extern unsigned char _esram_m4u[];
+#define _sram_m4u_size (_esram_m4u - _sram_m4u)
+
 #endif /* SOC_MEDIATEK_MT8135_MT8135_H */
