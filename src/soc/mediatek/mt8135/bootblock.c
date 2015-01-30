@@ -28,6 +28,7 @@
 #include <timestamp.h>
 
 #include <soc/mt8135.h>
+#include <soc/mmc_common_inter.h>
 
 #define AP_M4U_SRAM_CTRL    0x10205100 + 0x4
 #define AUDIO_TOP_CON0      0x12070000 + 0x0
