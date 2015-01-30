@@ -22,6 +22,7 @@ bootblock-y += bootblock_asm.S
 bootblock-y += emmc_cbfs.c
 bootblock-y += pll.c
 bootblock-y += gpio.c gpio_init.c
+bootblock-y	+= spi.c
 ##	bootblock-$(CONFIG_SPI_FLASH) += spi.c
 bootblock-y += timer.c monotonic_timer.c
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
@@ -39,6 +40,7 @@ romstage-y += pll.c
 romstage-y += timer.c monotonic_timer.c
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
+romstage-y += spi.c
 
 romstage-y += pmic_wrap_init.c i2c.c pmic_6397.c
 
@@ -50,6 +52,7 @@ romstage-y += 	wdt.c \
 ################################################################################
 
 ramstage-y += cbmem.c
+ramstage-y += spi.c
 ramstage-y += emmc_cbfs.c   blkdev.c mmc_common_inter.c addr_trans.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 ramstage-y += soc.c
 ##	ramstage-$(CONFIG_SPI_FLASH) += spi.c
