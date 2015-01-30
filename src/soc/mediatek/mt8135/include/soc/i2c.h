@@ -25,6 +25,7 @@
 #include <device/i2c.h>
 #include <soc/mt8135.h>
 #include <soc/pmic_wrap_init.h>
+#include <soc/gpio.h>
 
 /* ==============================================================================
    I2C Configuration

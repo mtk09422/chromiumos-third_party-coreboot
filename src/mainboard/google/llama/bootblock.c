@@ -23,6 +23,7 @@
 #include <delay.h>
 #include <soc/mt8135.h>
 #include <soc/pll.h>
+#include <soc/gpio.h>
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic_6397.h>
 
@@ -33,6 +34,7 @@ void bootblock_mainboard_init(void)
 	init_timer();
 
 	mt_pll_init();
+	mt_gpio_init();
 
 	/* init pmic i2c interface and pmic */
 	/* retry 3 times for pmic wrapper init */
@@ -40,4 +42,6 @@ void bootblock_mainboard_init(void)
 	pmic6397_init();
 
 	bootblock_soc_init();
+
+	mt_gpio_set_default();
 }

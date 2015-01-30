@@ -21,6 +21,7 @@ bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
 bootblock-y += emmc_cbfs.c
 bootblock-y += pll.c
+bootblock-y += gpio.c gpio_init.c
 ##	bootblock-$(CONFIG_SPI_FLASH) += spi.c
 bootblock-y += timer.c monotonic_timer.c
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
