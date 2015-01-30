@@ -30,6 +30,7 @@
 
 #include <soc/mt8135.h>
 #include <soc/wdt.h>
+#include <soc/memory.h>
 
 void main(void)
 {
@@ -37,6 +38,9 @@ void main(void)
 	clrbits_le32((void *)AP_PERI_GLOBALCON_RST0, UART0_SW_RST);
 	/* Clear UART0 power down signal */
 	clrbits_le32((void *)AP_PERI_GLOBALCON_PDN0, UART0_PDN);
+
+	/* init memory */
+	mt_mem_init();
 
 	/* init uart baudrate when pll on */
 	console_init();

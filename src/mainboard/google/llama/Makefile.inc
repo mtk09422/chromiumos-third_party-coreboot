@@ -20,7 +20,7 @@
 bootblock-y += bootblock.c
 bootblock-y += memlayout.ld
 
-romstage-y += romstage.c
+romstage-y += romstage.c custom_emi.c
 romstage-y += memlayout.ld
 
 ramstage-y += mainboard.c
