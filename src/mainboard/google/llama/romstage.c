@@ -29,6 +29,7 @@
 #include <symbols.h>
 
 #include <soc/mt8135.h>
+#include <soc/wdt.h>
 
 void main(void)
 {

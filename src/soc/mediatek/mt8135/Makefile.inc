@@ -32,6 +32,8 @@ romstage-y += timer.c monotonic_timer.c
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 
+romstage-y += 	wdt.c
+
 ################################################################################
 
 ramstage-y += cbmem.c
