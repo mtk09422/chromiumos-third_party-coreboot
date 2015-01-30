@@ -28,6 +28,8 @@
 #include <console/console.h>
 #include <symbols.h>
 #include <timestamp.h>
+#include <romstage_handoff.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/mt8135.h>
 #include <soc/pll.h>
@@ -90,6 +92,8 @@ void main(void)
 
 	/* Setup TPM */
 	mtk_i2c_init(6, 1, 0x20, 0);
+
+	vboot_verify_firmware(romstage_handoff_find_or_add());
 
 	timestamp_add_now(TS_START_COPYRAM);
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
