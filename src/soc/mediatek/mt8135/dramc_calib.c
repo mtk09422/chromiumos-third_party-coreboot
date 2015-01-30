@@ -24,6 +24,7 @@
 #include <soc/dramc.h>
 #include <soc/emi_hw.h>
 #include <soc/emi.h>
+#include <soc/pmic_6397.h>
 
 #if CONFIG_DEBUG_MEMORY_DRAM
 #define DEBUG_DRAM_CALIB(x...)		printk(BIOS_INFO, "DRAM_CALIB: " x)

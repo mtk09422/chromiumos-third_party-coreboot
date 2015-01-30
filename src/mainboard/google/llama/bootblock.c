@@ -23,6 +23,8 @@
 #include <delay.h>
 #include <soc/mt8135.h>
 #include <soc/pll.h>
+#include <soc/pmic_wrap_init.h>
+#include <soc/pmic_6397.h>
 
 void bootblock_mainboard_init(void)
 {
@@ -31,4 +33,9 @@ void bootblock_mainboard_init(void)
 	init_timer();
 
 	mt_pll_init();
+
+	/* init pmic i2c interface and pmic */
+	/* retry 3 times for pmic wrapper init */
+	pwrap_init_preloader();
+	pmic6397_init();
 }
