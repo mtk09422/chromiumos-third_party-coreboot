@@ -1,0 +1,97 @@
+config SOC_MEDIATEK_MT8135
+	bool
+	default n
+	select ARM_BOOTBLOCK_CUSTOM
+	select ARCH_BOOTBLOCK_ARM_V7
+	select ARCH_RAMSTAGE_ARM_V7
+	select ARCH_ROMSTAGE_ARM_V7
+	select BOOTBLOCK_CONSOLE
+	select DYNAMIC_CBMEM
+	select EARLY_CONSOLE
+	select HAVE_UART_MEMORY_MAPPED
+	select HAVE_UART_SPECIAL
+	select SPI_ATOMIC_SEQUENCING
+	select HAVE_MONOTONIC_TIMER
+	select HAVE_INIT_TIMER
+	select HAS_PRECBMEM_TIMESTAMP_REGION
+	select DEBUG_CBFS
+#	select DEBUG_SOC_DRIVER
+
+if SOC_MEDIATEK_MT8135
+
+# ROM Image Layout
+# 0x0000 0000    Combined Bootblock, DH and GFH headers
+# 0x0001 8000    CBFS Header
+# 0x0001 8080    CBFS Data (Romstage, Ramstage, Depthcharge)
+
+# SRAM Layout
+# 0x0010_0000    TTB (16K+32B). 32B is for L1 table of LPAE.
+# 0x0010_4020    CBMEM console area (8K-32B) See confing.llama CONFIG_CONSOLE_PRERAM_BUFFER_SIZE=0x1fe0
+# 0x0010_6000    STACK (16KB) (0x4000)
+# 0x0010_A000    CBFS Cache 64K (0x10000)
+# 0x0011_A000    ROMSTAGE 88K (0x16000)
+
+# 0x1200_0000    - Is it in use? 4K (0x1000)
+# 0x1200_1000    BOOTBLOCK 48K (0xB000)
+#                !!! Try to reuse BOOTBLOCK area for TTB_BUFFER !!!
+
+config DEBUG_SOC_DRIVER
+	bool "The top level switch for soc driver debug message"
+	default n
+#	select DEBUG_CBFS_EMMC
+#	select DEBUG_MEMORY_DRAM
+#	select DEBUG_I2C
+#	select DEBUG_KEY
+#	select DEBUG_MMC
+#	select DEBUG_MSDC
+#	select DEBUG_PMIC
+#	select DEBUG_PMIC_WRAP
+
+config DEBUG_CBFS_EMMC
+	bool "Output verbose EMMC CBFS debug messages"
+	default n
+	help
+	  This option enables additional EMMC CBFS related debug messages.
+
+config DEBUG_MEMORY_DRAM
+	bool "Output verbose DRAM related debug message"
+	default n
+	help
+	  This option enables additional DRAM related debug messages.
+
+config DEBUG_I2C
+	bool "Output verbose I2C related debug message"
+	default n
+	help
+	  This option enables I2C related debug message.
+
+config DEBUG_KEY
+	bool "Output verbose key related debug message"
+	default n
+	help
+	  This option enables key related debug message.
+
+config DEBUG_MMC
+	bool "Output verbose eMMC related debug message"
+	default n
+	help
+	  This option enables eMMC related debug message.
+
+config DEBUG_MSDC
+	bool "Output verbose MSDC related debug message"
+	default n
+	help
+	  This option enables MSDC related debug message.
+
+config DEBUG_PMIC
+	bool "Output verbose PMIC related debug message"
+	default n
+	help
+	  This option enables PMIC related debug message.
+
+config DEBUG_PMIC_WRAP
+	bool "Output verbose PMIC WRAP related debug message"
+	default n
+	help
+	  This option enables PMIC WRAP related debug message.
+endif

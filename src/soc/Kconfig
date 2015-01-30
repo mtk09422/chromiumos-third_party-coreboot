@@ -6,3 +6,4 @@ source src/soc/nvidia/Kconfig
 source src/soc/qualcomm/Kconfig
 source src/soc/samsung/Kconfig
 source src/soc/rockchip/Kconfig
+source src/soc/mediatek/Kconfig

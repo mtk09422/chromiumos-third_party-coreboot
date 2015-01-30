@@ -98,6 +98,14 @@ config BOARD_GOOGLE_LINK
 	  Link is a Chrome OS mainboard.
 	  Link is based on the Intel Ivy Bridge platform.
 
+config BOARD_GOOGLE_LLAMA
+	bool "Llama"
+	help
+	  Google Llama mainboard.
+	  Enable this config to select the Google Llama mainboard.
+	  Llama is a Chrome OS mainboard.
+	  Llama is based on the MediaTek MT8135 platform.
+
 config BOARD_GOOGLE_NYAN
 	bool "Nyan"
 	help
@@ -291,6 +299,7 @@ source "src/mainboard/google/daisy/Kconfig"
 source "src/mainboard/google/falco/Kconfig"
 source "src/mainboard/google/jecht/Kconfig"
 source "src/mainboard/google/link/Kconfig"
+source "src/mainboard/google/llama/Kconfig"
 source "src/mainboard/google/nyan/Kconfig"
 source "src/mainboard/google/nyan_big/Kconfig"
 source "src/mainboard/google/nyan_blaze/Kconfig"
