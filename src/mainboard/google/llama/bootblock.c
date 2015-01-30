@@ -26,6 +26,7 @@
 #include <soc/gpio.h>
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic_6397.h>
+#include <soc/key.h>
 
 void bootblock_mainboard_init(void)
 {
@@ -44,4 +45,7 @@ void bootblock_mainboard_init(void)
 	bootblock_soc_init();
 
 	mt_gpio_set_default();
+
+	/*init kpd PMIC mode support */
+	set_kpd_pmic_mode();
 }

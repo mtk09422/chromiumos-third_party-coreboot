@@ -27,6 +27,7 @@ bootblock-y += timer.c monotonic_timer.c
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 
 bootblock-y += pmic_wrap_init.c i2c.c pmic_6397.c
+bootblock-y += key.c
 
 ################################################################################
 
