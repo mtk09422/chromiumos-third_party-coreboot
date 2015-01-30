@@ -22,10 +22,13 @@
 #include <console/console.h>
 #include <delay.h>
 #include <soc/mt8135.h>
+#include <soc/pll.h>
 
 void bootblock_mainboard_init(void)
 {
 	printk(BIOS_INFO, "bootblock_mainboard_init\n");
 
 	init_timer();
+
+	mt_pll_init();
 }

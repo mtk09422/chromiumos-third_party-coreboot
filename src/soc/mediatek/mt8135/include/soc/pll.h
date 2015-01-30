@@ -1,0 +1,155 @@
+/*
+ * This file is part of the coreboot project.
+ *
+ * Copyright 2014 MediaTek Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+#ifndef SOC_MEDIATEK_MT8135_PLL_H
+#define SOC_MEDIATEK_MT8135_PLL_H
+
+enum {
+	AP_PLL_CON0 = 0x10209000,
+	AP_PLL_CON1 = 0x10209004,
+	AP_PLL_CON2 = 0x10209008,
+	AP_PLL_CON3 = 0x1020900C
+};
+
+#define PLL_HP_CON0         (0x10209014)
+
+enum {
+	PLL_TEST_CON0 = 0x10209054,
+	PLL_TEST_CON1 = 0x10209058
+};
+
+enum {
+	ARMPLL_CON0 = 0x10209200,
+	ARMPLL_CON1 = 0x10209204,
+	ARMPLL_CON2 = 0x10209208,
+	ARMPLL_PWR_CON0 = 0x10209218
+};
+
+enum {
+	MAINPLL_CON0 = 0x1020921C,
+	MAINPLL_CON1 = 0x10209220,
+	MAINPLL_CON2 = 0x10209224,
+	MAINPLL_PWR_CON0 = 0x10209234
+};
+
+#define UNIVPLL_CON0        (0x10209238)
+
+enum {
+	MMPLL_CON0 = 0x10209254,
+	MMPLL_CON1 = 0x10209258,
+	MMPLL_PWR_CON0 = 0x1020926C
+};
+
+enum {
+	MSDCPLL_CON0 = 0x10209278,
+	MSDCPLL_CON1 = 0x1020927C,
+	MSDCPLL_CON2 = 0x10209280,
+	MSDCPLL_PWR_CON0 = 0x10209290
+};
+
+enum {
+	TVDPLL_CON0 = 0x10209294,
+	TVDPLL_CON1 = 0x10209298,
+	TVDPLL_PWR_CON0 = 0x102092AC
+};
+
+enum {
+	LVDSPLL_CON0 = 0x102092B0,
+	LVDSPLL_CON1 = 0x102092B4,
+	LVDSPLL_PWR_CON0 = 0x102092C8
+};
+
+enum {
+	VDECPLL_CON0 = 0x10209304,
+	VDECPLL_CON1 = 0x10209308,
+	VDECPLL_PWR_CON0 = 0x1020931C
+};
+
+enum {
+	AUDPLL_CON0 = 0x102092E8,
+	AUDPLL_CON1 = 0x102092EC,
+	AUDPLL_PWR_CON0 = 0x10209300
+};
+
+enum {
+	ARMPLL2_CON0 = 0x102092CC,
+	ARMPLL2_CON1 = 0x102092D0,
+	ARMPLL2_PWR_CON0 = 0x102092E4
+};
+
+enum {
+	AP_AUXADC_CON0 = 0x10209400,
+	AP_AUXADC_CON1 = 0x10209404
+};
+
+enum {
+	TS_CON0 = 0x10209600,
+	TS_CON1 = 0x10209604
+};
+
+enum {
+	AP_BB_CON0 = 0x10209800,
+	AP_ABIST_MON_CON0 = 0x10209E00,
+	AP_ABIST_MON_CON1 = 0x10209E04,
+	AP_ABIST_MON_CON2 = 0x10209E08,
+	AP_ABIST_MON_CON3 = 0x10209E0C
+};
+
+enum {
+	CLK_MODE = 0x10000100,
+	DCM_CFG	 = 0x10000104,
+	CLK_CFG_0 = 0x10000140,
+	CLK_CFG_1 = 0x10000144,
+	CLK_CFG_2 = 0x10000148,
+	CLK_CFG_3 = 0x1000014C,
+	CLK_CFG_4 = 0x10000150,
+	CLK_CFG_5 = 0x10000154,
+	CLK_CFG_6 = 0x10000158,
+	CLK_CFG_7 = 0x1000015C,
+	CLK_MISC_CFG_2 = 0x10000160,
+	CLK_CFG_8 = 0x10000164,
+	CLK_CFG_9 = 0x10000168
+};
+
+enum {
+	TOP_CKMUXSEL = 0x10001000,
+	TOP_CKDIV1 = 0x10001008,
+	TOP_DCMCTL = 0x10001010,
+	TOP_CKDIV2 = 0x1000100C
+};
+
+enum {
+	INFRA_PDN_SET = 0x10001040,
+	INFRA_PDN_CLR = 0x10001044,
+	INFRA_PDN_STA = 0x10001048
+};
+
+enum {
+	PERI_PDN0_SET = 0x10003008,
+	PERI_PDN0_CLR = 0x10003010,
+	PERI_PDN0_STA = 0x10003018,
+	PERI_PDN1_SET = 0x1000300C,
+	PERI_PDN1_CLR = 0x10003014,
+	PERI_PDN1_STA = 0x1000301C
+};
+
+void mt_pll_post_init(void);
+int mt_pll_init(void);
+
+#endif /* SOC_MEDIATEK_MT8135_PLL_H */

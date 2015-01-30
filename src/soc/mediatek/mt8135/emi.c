@@ -25,6 +25,7 @@
 #include <soc/emi.h>
 #include <soc/emi_hw.h>
 #include <soc/dramc.h>
+#include <soc/pll.h>
 #include <soc/wdt.h>
 
 #if CONFIG_DEBUG_MEMORY_DRAM

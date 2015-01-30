@@ -20,6 +20,7 @@
 bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
 bootblock-y += emmc_cbfs.c
+bootblock-y += pll.c
 ##	bootblock-$(CONFIG_SPI_FLASH) += spi.c
 bootblock-y += timer.c monotonic_timer.c
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
@@ -27,6 +28,7 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ################################################################################
 
 romstage-y += emmc_cbfs.c
+romstage-y += pll.c
 ##	romstage-$(CONFIG_SPI_FLASH) += spi.c
 romstage-y += timer.c monotonic_timer.c
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c

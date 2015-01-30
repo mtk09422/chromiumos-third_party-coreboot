@@ -29,6 +29,7 @@
 #include <symbols.h>
 
 #include <soc/mt8135.h>
+#include <soc/pll.h>
 #include <soc/wdt.h>
 #include <soc/memory.h>
 
@@ -74,6 +75,9 @@ void main(void)
 	dcache_mmu_enable();
 
 	cbmem_initialize_empty();
+
+	/* post init pll */
+	mt_pll_post_init();
 
 	void *entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 				      "fallback/ramstage");
