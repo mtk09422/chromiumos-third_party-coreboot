@@ -63,4 +63,10 @@ ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
 VBOOT_STUB_DEPS += $(obj)/soc/mediatek/mt8135/monotonic_timer.rmodules_$(ARCH-ROMSTAGE-y).o
 
+# Generate the actual coreboot bootblock code
+$(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.elf
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(OBJCOPY_bootblock) -O binary $< $@.tmp
+	./util/mtkheader/gen-bl-img.py mt8135 $@.tmp $@
+
 INCLUDES += -Isrc/soc/mediatek/mt8135/include
