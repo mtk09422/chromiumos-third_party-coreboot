@@ -132,3 +132,8 @@ void lb_board(struct lb_header *header)
 	dma->range_start = (uintptr_t)_dma_coherent;
 	dma->range_size = _dma_coherent_size;
 }
+
+void mainboard_power_on_backlight(void)
+{
+	gpio_output(GPIO_BACKLIGHT, 1);	/* BL_EN */
+}
