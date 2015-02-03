@@ -1,2 +1,3 @@
 subdirs-$(CONFIG_SOC_NVIDIA_TEGRA124) += tegra124
 subdirs-$(CONFIG_SOC_NVIDIA_TEGRA132) += tegra132
+subdirs-$(CONFIG_SOC_NVIDIA_TEGRA210) += tegra210

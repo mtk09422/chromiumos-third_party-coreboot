@@ -1,0 +1,100 @@
+config SOC_NVIDIA_TEGRA210
+	bool
+	default n
+	select ARCH_BOOTBLOCK_ARM_V4
+	select ARCH_VERSTAGE_ARM_V4
+	select ARCH_ROMSTAGE_ARM_V4
+	select ARCH_RAMSTAGE_ARM_V8_64
+	select BOOTBLOCK_CONSOLE
+	select GIC
+	select HAVE_MONOTONIC_TIMER
+	select GENERIC_UDELAY
+	select HAVE_HARD_RESET
+	select HAVE_UART_SPECIAL
+	select HAVE_UART_MEMORY_MAPPED
+	select EARLY_CONSOLE
+	select ARM_BOOTBLOCK_CUSTOM
+	select DYNAMIC_CBMEM
+	select SMP
+	select ARCH_USE_SECURE_MONITOR
+	select COLLECT_TIMESTAMPS
+	select HAS_PRECBMEM_TIMESTAMP_REGION
+	select CHROMEOS_RAMOOPS_NON_ACPI
+
+if SOC_NVIDIA_TEGRA210
+
+config MAINBOARD_DO_DSI_INIT
+	bool "Use dsi graphics interface"
+	depends on MAINBOARD_DO_NATIVE_VGA_INIT
+	default n
+	help
+	  Initialize dsi display
+
+config MAINBOARD_DO_SOR_INIT
+	bool "Use dp graphics interface"
+	depends on MAINBOARD_DO_NATIVE_VGA_INIT
+	default n
+	help
+	  Initialize dp display
+
+config BOOTBLOCK_CPU_INIT
+	string
+	default "soc/nvidia/tegra210/bootblock.c"
+	help
+	  CPU/SoC-specific bootblock code. This is useful if the
+	  bootblock must load microcode or copy data from ROM before
+	  searching for the bootblock.
+
+config MAX_CPUS
+	int
+	default 2
+
+choice CONSOLE_SERIAL_TEGRA210_UART_CHOICES
+	prompt "Serial Console UART"
+	default CONSOLE_SERIAL_TEGRA210_UARTA
+	depends on CONSOLE_SERIAL_UART
+
+config CONSOLE_SERIAL_TEGRA210_UARTA
+	bool "UARTA"
+	help
+	  Serial console on UART A.
+
+config CONSOLE_SERIAL_TEGRA210_UARTB
+	bool "UARTB"
+	help
+	  Serial console on UART B.
+
+config CONSOLE_SERIAL_TEGRA210_UARTC
+	bool "UARTC"
+	help
+	  Serial console on UART C.
+
+config CONSOLE_SERIAL_TEGRA210_UARTD
+	bool "UARTD"
+	help
+	  Serial console on UART D.
+
+config CONSOLE_SERIAL_TEGRA210_UARTE
+	bool "UARTE"
+	help
+	  Serial console on UART E.
+
+endchoice
+
+config CONSOLE_SERIAL_TEGRA210_UART_ADDRESS
+	hex
+	depends on CONSOLE_SERIAL_UART
+	default 0x70006000 if CONSOLE_SERIAL_TEGRA210_UARTA
+	default 0x70006040 if CONSOLE_SERIAL_TEGRA210_UARTB
+	default 0x70006200 if CONSOLE_SERIAL_TEGRA210_UARTC
+	default 0x70006300 if CONSOLE_SERIAL_TEGRA210_UARTD
+	default 0x70006400 if CONSOLE_SERIAL_TEGRA210_UARTE
+	help
+	  Map the UART names to the respective MMIO addres.
+
+# Default to 700MHz. This value is based on nv bootloader setting.
+config PLLX_KHZ
+        int
+        default 700000
+endif
+

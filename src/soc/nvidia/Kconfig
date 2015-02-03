@@ -1,2 +1,3 @@
 source src/soc/nvidia/tegra124/Kconfig
 source src/soc/nvidia/tegra132/Kconfig
+source src/soc/nvidia/tegra210/Kconfig
