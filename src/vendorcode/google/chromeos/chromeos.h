@@ -25,7 +25,6 @@
 #include <stddef.h>
 #include "fmap.h"
 #include "vboot_common.h"
-#include "vboot_handoff.h"
 #include "vboot2/misc.h"
 
 /* functions implemented per mainboard: */
