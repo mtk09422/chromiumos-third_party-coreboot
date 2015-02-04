@@ -4,7 +4,11 @@ subdirs-y += romstage
 subdirs-y += ../common
 subdirs-y += ../../../cpu/x86/tsc
 
+romstage-y += iobp.c
+romstage-y += me_status.c
 romstage-y += memmap.c
+romstage-y += pch.c
+romstage-y += pei_data.c
 romstage-y += stage_cache.c
 romstage-y += tsc_freq.c
 

@@ -20,6 +20,8 @@
 
 #include <console/console.h>
 #include <ramstage_cache.h>
+#include <soc/me.h>
+#include <soc/pei_wrapper.h>
 #include <soc/romstage.h>
 #include <timestamp.h>
 
@@ -37,10 +39,23 @@ void soc_pre_console_init(struct romstage_params *params)
 }
 
 /* SOC initialization before RAM is enabled */
-void soc_romstage_init(struct romstage_params *params)
+void soc_pre_ram_init(struct romstage_params *params)
+{
+	/* Print ME state before MRC */
+	intel_me_status();
+
+	/* Save ME HSIO version */
+	intel_me_hsio_version(&params->power_state->hsio_version,
+			      &params->power_state->hsio_checksum);
+
+	/* Prepare to initialize memory */
+	skylake_fill_pei_data(params->pei_data);
+}
+
+void soc_after_ram_init(struct romstage_params *params)
 {
 	post_code(0x35);
-	die("Hang in romstage_main!\n");
+	die("Hang in soc_after_ram_init!\n");
 }
 
 void ramstage_cache_invalid(struct ramstage_cache *cache)

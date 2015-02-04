@@ -13,6 +13,7 @@ config CPU_SPECIFIC_OPTIONS
 	select CACHE_RELOCATED_RAMSTAGE_OUTSIDE_CBMEM
 	select CACHE_ROM
 	select CAR_MIGRATION
+	select COMMON_RAM_INIT
 	select COMMON_RESET
 	select COMMON_ROMSTAGE
 	select COLLECT_TIMESTAMPS
@@ -70,6 +71,13 @@ config DCACHE_RAM_SIZE
 	help
 	  The size of the cache-as-ram region required during bootblock
 	  and/or romstage.
+
+config DISPLAY_UPD_DATA
+	bool "Display UPD data"
+	default n
+	help
+	  Display the user specified product data prior to memory
+	  initialization.
 
 config EXTRA_MICROCODE_INCLUDE_PATH
 	string "Include path for extra microcode patches."
