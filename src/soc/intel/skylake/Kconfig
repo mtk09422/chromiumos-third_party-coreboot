@@ -1,0 +1,100 @@
+config SOC_INTEL_SKYLAKE
+	bool
+	help
+	  Intel Skylake support.
+
+if SOC_INTEL_SKYLAKE
+
+config CPU_SPECIFIC_OPTIONS
+	def_bool y
+	select ARCH_BOOTBLOCK_X86_32
+	select ARCH_ROMSTAGE_X86_32
+	select ARCH_RAMSTAGE_X86_32
+	select CACHE_RELOCATED_RAMSTAGE_OUTSIDE_CBMEM
+	select CACHE_ROM
+	select CAR_MIGRATION
+	select COMMON_RESET
+	select COMMON_ROMSTAGE
+	select COLLECT_TIMESTAMPS
+	select CPU_MICROCODE_IN_CBFS
+	select DYNAMIC_CBMEM
+	select HAS_PRECBMEM_TIMESTAMP_REGION
+	select HAVE_HARD_RESET
+	select HAVE_MONOTONIC_TIMER
+	select MMCONF_SUPPORT
+	select MMCONF_SUPPORT_DEFAULT
+	select PCIEXP_ASPM
+	select PCIEXP_COMMON_CLOCK
+	select PCIEXP_CLK_PM
+	select PCIEXP_L1_SUB_STATE
+	select RELOCATABLE_MODULES
+	select TSC_CONSTANT_RATE
+	select TSC_MONOTONIC_TIMER
+	select TSC_SYNC_MFENCE
+	select UDELAY_TSC
+
+config BOOTBLOCK_CPU_INIT
+	string
+	default "soc/intel/skylake/bootblock/cpu.c"
+
+config BOOTBLOCK_NORTHBRIDGE_INIT
+	string
+	default "soc/intel/skylake/bootblock/systemagent.c"
+
+config BOOTBLOCK_RESETS
+	string
+	default "soc/intel/common/reset.c"
+
+config BOOTBLOCK_SOUTHBRIDGE_INIT
+	string
+	default "soc/intel/skylake/bootblock/pch.c"
+
+config CBFS_SIZE
+	hex "Size of CBFS filesystem in ROM"
+	default 0x100000
+	help
+	  The firmware image has to store more than just coreboot, including:
+	   - a firmware descriptor
+	   - Intel Management Engine firmware
+	   - MRC cache information
+	  This option allows to limit the size of the CBFS portion in the
+	  firmware image.
+
+config DCACHE_RAM_BASE
+	hex "Base address of cache-as-RAM"
+	default 0xff7c0000
+
+config DCACHE_RAM_SIZE
+	hex "Length in bytes of cache-as-RAM"
+	default 0x10000
+	help
+	  The size of the cache-as-ram region required during bootblock
+	  and/or romstage.
+
+config EXTRA_MICROCODE_INCLUDE_PATH
+	string "Include path for extra microcode patches."
+	help
+	  The path to any extra microcode patches from other sources.
+
+config IED_REGION_SIZE
+	hex
+	default 0x400000
+
+config MICROCODE_INCLUDE_PATH
+	string
+	default "src/soc/intel/skylake/microcode"
+
+config MMCONF_BASE_ADDRESS
+	hex "MMIO Base Address"
+	default 0xe0000000
+
+config SERIAL_CPU_INIT
+	bool
+	default n
+
+config TTYS0_BASE
+	hex
+	default 0xd6000000
+	depends on INTEL_PCH_UART_CONSOLE
+
+endif

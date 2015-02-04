@@ -2,3 +2,4 @@ source src/soc/intel/baytrail/Kconfig
 source src/soc/intel/braswell/Kconfig
 source src/soc/intel/broadwell/Kconfig
 source src/soc/intel/common/Kconfig
+source src/soc/intel/skylake/Kconfig
