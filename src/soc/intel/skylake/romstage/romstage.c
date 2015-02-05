@@ -20,6 +20,7 @@
 
 #include <console/console.h>
 #include <ramstage_cache.h>
+#include <romstage_handoff.h>
 #include <soc/me.h>
 #include <soc/pei_wrapper.h>
 #include <soc/romstage.h>
@@ -52,10 +53,11 @@ void soc_pre_ram_init(struct romstage_params *params)
 	skylake_fill_pei_data(params->pei_data);
 }
 
-void soc_after_ram_init(struct romstage_params *params)
+/* SOC initialization after temporary RAM is disabled */
+void soc_after_temp_ram_exit(void)
 {
 	post_code(0x35);
-	die("Hang in soc_after_ram_init!\n");
+	die("Hang in soc_after_temp_ram_exit!\n");
 }
 
 void ramstage_cache_invalid(struct ramstage_cache *cache)

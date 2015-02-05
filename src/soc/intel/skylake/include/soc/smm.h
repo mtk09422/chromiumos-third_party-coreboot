@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <cpu/x86/msr.h>
+#include <soc/intel/common/romstage.h>
 
 struct ied_header {
 	char signature[10];
@@ -50,14 +51,6 @@ struct smm_relocation_params {
 };
 
 #if IS_ENABLED(CONFIG_HAVE_SMI_HANDLER)
-static inline int smm_region_size(void)
-{
-	/* Make it 8MiB by default. */
-	if (CONFIG_SMM_TSEG_SIZE == 0)
-		return 8 << 20;
-	return CONFIG_SMM_TSEG_SIZE;
-}
-
 int smm_initialize(void);
 void smm_relocate(void);
 
@@ -73,11 +66,6 @@ void southbridge_clear_smi_status(void);
 void southbridge_smm_clear_state(void);
 void southbridge_smm_enable_smi(void);
 #else	/* CONFIG_HAVE_SMI_HANDLER */
-static inline int smm_region_size(void)
-{
-	return 0;
-}
-
 static inline int smm_initialize(void)
 {
 	return 0;
