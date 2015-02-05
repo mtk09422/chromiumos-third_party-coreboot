@@ -20,14 +20,14 @@
 bootblock-y += bootblock.c
 bootblock-y += cbmem.c
 bootblock-y += i2c.c
-bootblock-y += monotonic_timer.c
+bootblock-y += timer.c
 bootblock-$(CONFIG_SPI_FLASH) += spi.c
 ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
 endif
 
 verstage-y += i2c.c
-verstage-y += monotonic_timer.c
+verstage-y += timer.c
 verstage-$(CONFIG_SPI_FLASH) += spi.c
 ifeq($(CONFIG_EARLY_CONSOLE),y)
 verstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
@@ -35,7 +35,7 @@ endif
 
 romstage-y += cbmem.c
 romstage-y += i2c.c
-romstage-y += monotonic_timer.c
+romstage-y += timer.c
 romstage-y += romstage.c
 romstage-y += sdram.c
 romstage-$(CONFIG_SPI_FLASH) += spi.c
@@ -45,7 +45,7 @@ endif
 
 ramstage-y += cbmem.c
 ramstage-y += i2c.c
-ramstage-y += monotonic_timer.c
+ramstage-y += timer.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
 
