@@ -27,7 +27,7 @@ void *cb_header_ptr;
 static void cb_parse_dma(void *ptr)
 {
 	struct cb_range *dma = (struct cb_range *)ptr;
-	init_dma_memory(phys_to_virt(dma->range_start), dma->range_size);
+	init_dma_memory(bus_to_virt(dma->range_start), dma->range_size);
 }
 
 /* Architecture specific */
