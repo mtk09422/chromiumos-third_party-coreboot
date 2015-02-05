@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "../thermal.h"
+
 // Thermal Zone
 
 Scope (\_TZ)
@@ -61,6 +63,14 @@ Scope (\_TZ)
 			Return (\PPKG ())
 		}
 
+		// Start fan at state 4 = lowest temp state
+		Method (_INI)
+		{
+			Store (4, \FLVL)
+			Store (FAN4_PWM, \_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+			Notify (\_TZ.THRM, 0x81)
+		}
+
 		Method (TCHK, 0, Serialized)
 		{
 			// Get CPU Temperature from PECI via SuperIO TMPIN3
@@ -68,12 +78,12 @@ Scope (\_TZ)
 
 			// Check for "no reading available
 			If (LEqual (Local0, 0x80)) {
-				Return (CTOK (0))
+				Return (CTOK (FAN0_THRESHOLD_ON))
 			}
 
 			// Check for invalid readings
 			If (LOr (LEqual (Local0, 255), LEqual (Local0, 0))) {
-				Return (CTOK (0))
+				Return (CTOK (FAN0_THRESHOLD_ON))
 			}
 
 			// PECI raw value is an offset from Tj_max
@@ -81,7 +91,7 @@ Scope (\_TZ)
 
 			// Handle values greater than Tj_max
 			If (LGreaterEqual (Local1, \TMAX)) {
-				Return (CTOK (0))
+				Return (CTOK (\TMAX))
 			}
 
 			// Subtract from Tj_max to get temperature
@@ -112,6 +122,222 @@ Scope (\_TZ)
 			}
 
 			Return (Local0)
+		}
+
+		Method (_AC0) {
+			If (LLessEqual (\FLVL, 0)) {
+				Return (CTOK (FAN0_THRESHOLD_OFF))
+			} Else {
+				Return (CTOK (FAN0_THRESHOLD_ON))
+			}
+		}
+
+		Method (_AC1) {
+			If (LLessEqual (\FLVL, 1)) {
+				Return (CTOK (FAN1_THRESHOLD_OFF))
+			} Else {
+				Return (CTOK (FAN1_THRESHOLD_ON))
+			}
+		}
+
+		Method (_AC2) {
+			If (LLessEqual (\FLVL, 2)) {
+				Return (CTOK (FAN2_THRESHOLD_OFF))
+			} Else {
+				Return (CTOK (FAN2_THRESHOLD_ON))
+			}
+		}
+
+		Method (_AC3) {
+			If (LLessEqual (\FLVL, 3)) {
+				Return (CTOK (FAN3_THRESHOLD_OFF))
+			} Else {
+				Return (CTOK (FAN3_THRESHOLD_ON))
+			}
+		}
+
+		Method (_AC4) {
+			If (LLessEqual (\FLVL, 4)) {
+				Return (CTOK (FAN4_THRESHOLD_OFF))
+			} Else {
+				Return (CTOK (FAN4_THRESHOLD_ON))
+			}
+		}
+
+		Name (_AL0, Package () { FAN0 })
+		Name (_AL1, Package () { FAN1 })
+		Name (_AL2, Package () { FAN2 })
+		Name (_AL3, Package () { FAN3 })
+		Name (_AL4, Package () { FAN4 })
+
+		PowerResource (FNP0, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 0)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				If (LNot (_STA ())) {
+					Store (0, \FLVL)
+					Store (FAN0_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+			Method (_OFF) {
+				If (_STA ()) {
+					Store (1, \FLVL)
+					Store (FAN1_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+		}
+
+		PowerResource (FNP1, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 1)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				If (LNot (_STA ())) {
+					Store (1, \FLVL)
+					Store (FAN1_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+			Method (_OFF) {
+				If (_STA ()) {
+					Store (2, \FLVL)
+					Store (FAN2_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+		}
+
+		PowerResource (FNP2, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 2)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				If (LNot (_STA ())) {
+					Store (2, \FLVL)
+					Store (FAN2_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+			Method (_OFF) {
+				If (_STA ()) {
+					Store (3, \FLVL)
+					Store (FAN3_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+		}
+
+		PowerResource (FNP3, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 3)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				If (LNot (_STA ())) {
+					Store (3, \FLVL)
+					Store (FAN3_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+			Method (_OFF) {
+				If (_STA ()) {
+					Store (4, \FLVL)
+					Store (FAN4_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+		}
+
+		PowerResource (FNP4, 0, 0)
+		{
+			Method (_STA) {
+				If (LLessEqual (\FLVL, 4)) {
+					Return (One)
+				} Else {
+					Return (Zero)
+				}
+			}
+			Method (_ON)  {
+				If (LNot (_STA ())) {
+					Store (4, \FLVL)
+					Store (FAN4_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+			Method (_OFF) {
+				If (_STA ()) {
+					Store (4, \FLVL)
+					Store (FAN4_PWM,
+						\_SB.PCI0.LPCB.SIO.ENVC.F2PS)
+					Notify (\_TZ.THRM, 0x81)
+				}
+			}
+		}
+
+		Device (FAN0)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 0)
+			Name (_PR0, Package () { FNP0 })
+		}
+
+		Device (FAN1)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 1)
+			Name (_PR0, Package () { FNP1 })
+		}
+
+		Device (FAN2)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 2)
+			Name (_PR0, Package () { FNP2 })
+		}
+
+		Device (FAN3)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 3)
+			Name (_PR0, Package () { FNP3 })
+		}
+
+		Device (FAN4)
+		{
+			Name (_HID, EISAID ("PNP0C0B"))
+			Name (_UID, 4)
+			Name (_PR0, Package () { FNP4 })
 		}
 	}
 }
