@@ -38,6 +38,8 @@ void main(void)
 	console_init();
 #endif
 
+	bootblock_mmu_init();
+
 	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
 	if (entry != CBFS_LOAD_ERROR)
 		stage_exit(entry);
