@@ -29,6 +29,8 @@
 #include <soc/pei_data.h>
 #include <soc/pei_wrapper.h>
 #include <soc/ramstage.h>
+#include <romstage_handoff.h>
+#include <reset.h>
 
 static inline int is_s3_resume(void)
 {
@@ -169,6 +171,7 @@ void broadwell_run_reference_code(void)
 	int ret, dummy;
 	struct pei_data pei_data;
 	pei_wrapper_entry_t entry;
+	struct romstage_handoff *handoff = cbmem_find(CBMEM_ID_ROMSTAGE_INFO);
 
 	memset(&pei_data, 0, sizeof(pei_data));
 	mainboard_fill_pei_data(&pei_data);
@@ -188,5 +191,14 @@ void broadwell_run_reference_code(void)
 	if (ret != 0) {
 		printk(BIOS_ERR, "Reference code returned %d\n", ret);
 		return;
+	}
+
+	/*
+	 * If VbInit asserts VBERROR_TPM_REBOOT_REQUIRED the reboot is
+	 * delayed until after the reference code has been executed.
+	 */
+	if (handoff->reboot_required) {
+		printk(BIOS_INFO, "Hard reset requested by romstage\n");
+		hard_reset();
 	}
 }

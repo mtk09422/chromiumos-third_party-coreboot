@@ -22,6 +22,8 @@
 #include <arch/io.h>
 #include <reset.h>
 #include <soc/reset.h>
+#include <romstage_handoff.h>
+#include <cbmem.h>
 
 /*
  * Soft reset (INIT# to cpu) - write 0x1 to I/O 0x92
@@ -39,7 +41,16 @@ void soft_reset(void)
 
 void hard_reset(void)
 {
+#ifdef __PRE_RAM__
+	/*
+	 * Cold reset will not work until reference code has been
+	 * executed, so request a reboot after that step.
+	 */
+	struct romstage_handoff *handoff = cbmem_find(CBMEM_ID_ROMSTAGE_INFO);
+	handoff->reboot_required = 1;
+#else
         outb(0x06, 0xcf9);
+#endif
 }
 
 void reset_system(void)
