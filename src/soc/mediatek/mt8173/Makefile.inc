@@ -68,4 +68,10 @@ rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
 rmodules_$(ARCH-ROMSTAGE-y)-c-ccopts += -mstrict-align
 VBOOT_STUB_DEPS += $(obj)/soc/mediatek/mt8173/monotonic_timer.rmodules_$(ARCH-ROMSTAGE-y).o
 
+# Generate the actual coreboot bootblock code
+$(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.elf
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(OBJCOPY_bootblock) -O binary $< $@.tmp
+	./util/mtkheader/gen-bl-img.py mt8173 $@.tmp $@
+
 INCLUDES += -Isrc/soc/mediatek/mt8173/include
