@@ -1,6 +1,10 @@
 #include <cpu/x86/lapic/boot_cpu.c>
 #include <arch/cbfs.h>
 
+#ifdef CONFIG_BOOTBLOCK_RESETS
+#include CONFIG_BOOTBLOCK_RESETS
+#endif
+
 #ifdef CONFIG_BOOTBLOCK_CPU_INIT
 #include CONFIG_BOOTBLOCK_CPU_INIT
 #endif
