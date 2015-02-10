@@ -399,6 +399,30 @@ void print_hob_type_structure(u16 hob_type, void *hob_list_ptr)
 	printk(BIOS_DEBUG, "=== End of FSP HOB Data Structure ===\n\n");
 }
 
+/*
+ * Locate the HOB containing the location of the fsp reserved mem area
+ *
+ * hob_list_ptr pointer to the start of the hob list
+ *
+ * Returns a pointer to the start of the FSP reserved memory or NULL if not
+ * found
+ */
+void *fsp_find_reserved_mem(void *hob_list_ptr)
+{
+	EFI_GUID fsp_reserved_guid = FSP_RESERVED_MEMORY_RESOURCE_HOB_GUID;
+	EFI_HOB_RESOURCE_DESCRIPTOR *fsp_reserved_mem =
+		(EFI_HOB_RESOURCE_DESCRIPTOR *) get_next_guid_hob(
+		&fsp_reserved_guid, hob_list_ptr);
+
+	if (fsp_reserved_mem == NULL) {
+		printk(BIOS_ERR,
+			"FSP_RESERVED_MEMORY_RESOURCE_HOB not found!\n");
+		return NULL;
+	}
+
+	return  (void *)((uintptr_t)fsp_reserved_mem->PhysicalStart);
+}
+
 void fsp_check_reserved_mem_size(void *hob_list_ptr, void *end_of_region)
 {
 	EFI_HOB_GENERIC_HEADER *current_hob;
