@@ -29,6 +29,7 @@ bootblock-y += clock.c
 bootblock-y += spi.c
 bootblock-y += gpio.c
 bootblock-y += i2c.c
+bootblock-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
 bootblock-y += rk808.c
 
 verstage-y += spi.c
@@ -38,6 +39,7 @@ verstage-y += gpio.c
 verstage-y += clock.c
 verstage-y += crypto.c
 verstage-y += i2c.c
+verstage-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
 
 romstage-y += cbmem.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
@@ -45,6 +47,7 @@ romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-y += timer.c
 romstage-y += i2c.c
+romstage-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
 romstage-y += clock.c
 romstage-y += gpio.c
 romstage-y += spi.c
@@ -57,6 +60,7 @@ ramstage-y += soc.c
 ramstage-y += cbmem.c
 ramstage-y += timer.c
 ramstage-y += i2c.c
+ramstage-$(CONFIG_SOFTWARE_I2C) += software_i2c.c
 ramstage-y += clock.c
 ramstage-y += spi.c
 ramstage-y += sdram.c
