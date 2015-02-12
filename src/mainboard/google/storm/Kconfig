@@ -31,6 +31,7 @@ config BOARD_SPECIFIC_OPTIONS
 	select SOC_QC_IPQ806X
 	select SPI_FLASH
 	select SPI_FLASH_SPANSION
+	select SPI_FLASH_STMICRO
 
 config BOARD_VARIANT_AP148
 	bool "pick this to build an image for ap148"
