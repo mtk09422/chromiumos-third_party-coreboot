@@ -18,28 +18,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootstate.h>
-#include <console/console.h>
-#include <fsp_util.h>
-#include <soc/ramstage.h>
-#include <soc/intel/common/ramstage.h>
+/* Included in each PCIe Root Port device */
 
-void skylake_init_pre_device(void *chip_info)
+OperationRegion (RPCS, PCI_Config, 0x00, 0x380)
+Field (RPCS, AnyAcc, NoLock, Preserve)
 {
-	/* Perform silicon specific init. */
-	intel_silicon_init();
+	Offset (0x4c),	// Link Capabilities
+	, 24,
+	RPPN, 8,	// Root Port Number
 }
-
-static void issue_ready_to_boot_event(void *unused)
-{
-	/*
-	 * Notify FSP for EnumInitPhaseReadyToBoot.
-	 */
-	printk(BIOS_DEBUG, "fsp_notify(EnumInitPhaseReadyToBoot)\n");
-	fsp_notify(EnumInitPhaseReadyToBoot);
-}
-
-BOOT_STATE_INIT_ENTRIES(finalize_bscb) = {
-	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
-		issue_ready_to_boot_event, NULL)
-};

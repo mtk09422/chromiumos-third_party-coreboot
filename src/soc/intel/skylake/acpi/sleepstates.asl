@@ -1,6 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
+ * Copyright (C) 2007-2009 coresystems GmbH
  * Copyright (C) 2014 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
  *
@@ -18,28 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootstate.h>
-#include <console/console.h>
-#include <fsp_util.h>
-#include <soc/ramstage.h>
-#include <soc/intel/common/ramstage.h>
-
-void skylake_init_pre_device(void *chip_info)
-{
-	/* Perform silicon specific init. */
-	intel_silicon_init();
-}
-
-static void issue_ready_to_boot_event(void *unused)
-{
-	/*
-	 * Notify FSP for EnumInitPhaseReadyToBoot.
-	 */
-	printk(BIOS_DEBUG, "fsp_notify(EnumInitPhaseReadyToBoot)\n");
-	fsp_notify(EnumInitPhaseReadyToBoot);
-}
-
-BOOT_STATE_INIT_ENTRIES(finalize_bscb) = {
-	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
-		issue_ready_to_boot_event, NULL)
-};
+Name (\_S0, Package () { 0x0, 0x0, 0x0, 0x0 })
+Name (\_S1, Package () { 0x1, 0x1, 0x0, 0x0 })
+Name (\_S2, Package () { 0x1, 0x1, 0x0, 0x0 })
+Name (\_S5, Package () { 0x7, 0x7, 0x0, 0x0 })
