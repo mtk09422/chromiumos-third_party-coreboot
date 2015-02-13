@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <fmap.h>
 #include <types.h>
 #include <string.h>
 #include <arch/io.h>
@@ -24,7 +25,6 @@
 #include <device/device.h>
 #include <device/pci.h>
 #include <southbridge/intel/bd82x6x/pch.h>
-#include <vendorcode/google/chromeos/fmap.h>
 #include "onboard.h"
 
 static unsigned int search(char *p, u8 *a, unsigned int lengthp,
@@ -116,8 +116,8 @@ static void program_mac_address(u16 io_base)
 	void *search_address = NULL;
 	int search_length = find_fmap_entry("RO_VPD", &search_address);
 
-	if (search_length == -1)
-		printk(BIOS_ERR, "LAN: find_fmap_entry returned -1.\n");
+	if (search_length < 0)
+		printk(BIOS_ERR, "LAN: Unable to find RO_VPD in FMAP\n");
 	else
 		get_mac_address(&high_dword, &low_dword, search_address,
 				search_length);

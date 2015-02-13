@@ -7,11 +7,11 @@
 #include <console/console.h>
 
 #include <cbfs.h>
+#include <fmap.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "cros_vpd.h"
-#include "fmap.h"
 #include "lib_vpd.h"
 #include "vpd_tables.h"
 

@@ -83,6 +83,28 @@ config LOCALVERSION
 	  the coreboot version number, so that you can easily distinguish
 	  boot logs of different boards from each other.
 
+# TODO: If this option is enabled, generate an FMAP region and add it to the
+#       image, rather than just assuming that one exists.
+config USE_FMAP
+	bool "Use flash map"
+	help
+	  Assume that the flash chip contains a map of its regions, and look up
+	  component offsets therein. If you enable this option but do not
+	  manually add a flashmap to your image at the specified offset, it will
+	  break at runtime at or after the first attempt to read the FMAP. In
+	  particular, the flashmap is expected to contain an RW_ELOG entry (if
+	  ELOG_DEBUG is also enabled).
+
+config FLASHMAP_OFFSET
+	hex "Flash map offset"
+	depends on USE_FMAP
+	default 0x00670000 if NORTHBRIDGE_INTEL_SANDYBRIDGE
+	default 0x00610000 if NORTHBRIDGE_INTEL_IVYBRIDGE
+	default CBFS_SIZE if !ARCH_X86
+	default 0
+	help
+	  Offset of flash map in firmware image
+
 config CBFS_PREFIX
 	string "CBFS prefix to use"
 	default "fallback"

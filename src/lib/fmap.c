@@ -22,7 +22,7 @@
 #include <string.h>
 #include <console/console.h>
 #include <cbfs.h>
-#include "fmap.h"
+#include <fmap.h>
 
 static int is_fmap_signature_valid(const struct fmap *fmap)
 {
@@ -135,19 +135,17 @@ int find_fmap_entry(const char name[], void **pointer)
 	if (!area)
 		return -1;
 
-	/* Right now cros_bundle_firmware does not write a valid
+	/* FIXME: Right now cros_bundle_firmware does not write a valid
 	 * base address into the FMAP. Hence, if base is 0, assume
 	 * 4GB-8MB as base address.
 	 */
 	if (fmap->base) {
 		base = (void *)(unsigned long)fmap->base;
 		printk(BIOS_DEBUG, "FMAP: %s base at %p\n", name, base);
-	} else {
-#if CONFIG_ARCH_X86
+	} else if (IS_ENABLED(CONFIG_ARCH_X86)) {
 		base = (void *)(0 - CONFIG_ROM_SIZE);
 		printk(BIOS_WARNING, "FMAP: No valid base address, using"
 				" 0x%p\n", base);
-#endif
 	}
 
 	*pointer = (void*) ((uintptr_t)base + area->offset);

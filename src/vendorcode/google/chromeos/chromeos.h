@@ -23,7 +23,6 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "fmap.h"
 #include "vboot_common.h"
 #include "vboot2/misc.h"
 

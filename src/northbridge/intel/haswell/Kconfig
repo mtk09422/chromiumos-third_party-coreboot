@@ -47,16 +47,17 @@ config CACHE_MRC_SIZE_KB
 # FIXME: build from rom size
 config MRC_CACHE_BASE
 	hex
+	depends on !USE_FMAP
 	default 0xff800000
 
 config MRC_CACHE_LOCATION
 	hex
-	depends on !CHROMEOS
+	depends on !USE_FMAP
 	default 0x370000
 
 config MRC_CACHE_SIZE
 	hex
-	depends on !CHROMEOS
+	depends on !USE_FMAP
 	default 0x10000
 
 config DCACHE_RAM_BASE

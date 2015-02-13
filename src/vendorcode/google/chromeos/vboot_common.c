@@ -23,6 +23,7 @@
 #include <cbfs.h>
 #include <cbmem.h>
 #include <console/console.h>
+#include <fmap.h>
 #include "chromeos.h"
 #include "vboot_common.h"
 #include "vboot_handoff.h"

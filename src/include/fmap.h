@@ -43,7 +43,6 @@
 #define FMAP_VER_MINOR		1	/* this header's FMAP minor version */
 #define FMAP_STRLEN		32	/* maximum length for strings, */
 					/* including null-terminator */
-
 enum fmap_flags {
 	FMAP_AREA_STATIC	= 1 << 0,
 	FMAP_AREA_COMPRESSED	= 1 << 1,
@@ -75,5 +74,8 @@ struct fmap {
 const struct fmap *fmap_find(void);
 const struct fmap_area *find_fmap_area(const struct fmap *fmap,
 							const char name[]);
+
+/* Returns -1 if the named entry wasn't found */
 int find_fmap_entry(const char name[], void **pointer);
+
 #endif	/* FLASHMAP_LIB_FMAP_H__*/

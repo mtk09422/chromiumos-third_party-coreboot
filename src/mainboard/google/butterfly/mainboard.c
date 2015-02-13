@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <fmap.h>
 #include <types.h>
 #include <string.h>
 #include <device/device.h>
@@ -39,7 +40,6 @@
 #include <smbios.h>
 #include <device/pci.h>
 #include <ec/quanta/ene_kb3940q/ec.h>
-#include <vendorcode/google/chromeos/fmap.h>
 
 static unsigned int search(char *p, char *a, unsigned int lengthp,
 			   unsigned int lengtha)

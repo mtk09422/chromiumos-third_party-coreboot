@@ -22,6 +22,7 @@
 #include <bootstate.h>
 #include <console/console.h>
 #include <cbfs.h>
+#include <fmap.h>
 #include <ip_checksum.h>
 #include <device/device.h>
 #include <cbmem.h>
@@ -29,9 +30,6 @@
 #include "haswell.h"
 #include <spi-generic.h>
 #include <spi_flash.h>
-#if CONFIG_CHROMEOS
-#include <vendorcode/google/chromeos/fmap.h>
-#endif
 
 /* convert a pointer to flash area into the offset inside the flash */
 static inline u32 to_flash_offset(void *p) {
@@ -58,22 +56,28 @@ static int is_mrc_cache(struct mrc_data_container *mrc_cache)
 	return (!!mrc_cache) && (mrc_cache->mrc_signature == MRC_DATA_SIGNATURE);
 }
 
-/* Right now, the offsets for the MRC cache area are hard-coded in the
- * northbridge Kconfig if CONFIG_CHROMEOS is not set. In order to make
- * this more flexible, there are two of options:
+/* FIXME: Right now, the offsets for the MRC cache area are hard-coded in the
+ * northbridge Kconfig if CONFIG_USE_FMAP is not set. In order to make this more
+ * flexible, there are three options:
  *  - Have each mainboard Kconfig supply a hard-coded offset
  *  - Use CBFS
+ *  - Use FMAP by default, providing a set of default layouts for the common
+ *    architecture/flash size combinations
  */
 static u32 get_mrc_cache_region(struct mrc_data_container **mrc_region_ptr)
 {
 	u32 region_size;
-#if CONFIG_CHROMEOS
-	region_size =  find_fmap_entry("RW_MRC_CACHE", (void **)mrc_region_ptr);
-#else
-	region_size = CONFIG_MRC_CACHE_SIZE;
-	*mrc_region_ptr = (struct mrc_data_container *)
-		(CONFIG_MRC_CACHE_BASE + CONFIG_MRC_CACHE_LOCATION);
-#endif
+
+	if (IS_ENABLED(CONFIG_USE_FMAP)) {
+		*mrc_region_ptr = NULL;
+		region_size = find_fmap_entry("RW_MRC_CACHE",
+						(void **)mrc_region_ptr);
+	} else {
+		region_size = CONFIG_MRC_CACHE_SIZE;
+		*mrc_region_ptr =
+			(struct mrc_data_container *)CONFIG_MRC_CACHE_BASE +
+						CONFIG_MRC_CACHE_LOCATION;
+	}
 
 	return region_size;
 }

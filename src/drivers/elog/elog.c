@@ -26,6 +26,7 @@
 #include <pc80/mc146818rtc.h>
 #endif
 #include <bcd.h>
+#include <fmap.h>
 #include <rtc.h>
 #include <smbios.h>
 #include <spi-generic.h>
@@ -35,9 +36,7 @@
 #include <elog.h>
 #include "elog_internal.h"
 
-#if CONFIG_CHROMEOS
-#include <vendorcode/google/chromeos/fmap.h>
-#elif CONFIG_ELOG_FLASH_BASE == 0
+#if !CONFIG_USE_FMAP && CONFIG_ELOG_FLASH_BASE == 0
 #error "CONFIG_ELOG_FLASH_BASE is invalid"
 #endif
 
@@ -517,7 +516,7 @@ static void elog_find_flash(void)
 {
 	elog_debug("elog_find_flash()\n");
 
-#if CONFIG_CHROMEOS
+#if CONFIG_USE_FMAP
 	/* Find the ELOG base and size in FMAP */
 	u8 *flash_base_ptr;
 	int fmap_size = find_fmap_entry("RW_ELOG", (void **)&flash_base_ptr);
