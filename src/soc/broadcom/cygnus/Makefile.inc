@@ -26,7 +26,6 @@ ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
 endif
 
-verstage-y += verstage.c
 verstage-y += i2c.c
 verstage-y += timer.c
 verstage-$(CONFIG_SPI_FLASH) += spi.c
@@ -43,6 +42,12 @@ romstage-$(CONFIG_SPI_FLASH) += spi.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
 endif
+romstage-y += ddr_init.c
+romstage-y += ddr_init_table.c
+romstage-y += shmoo_and28.c
+romstage-y += phy_reg_access.c
+romstage-y += ydc_ddr_bist.c
+romstage-y += timer.c
 
 ramstage-y += cbmem.c
 ramstage-y += i2c.c
