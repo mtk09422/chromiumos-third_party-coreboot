@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <bootstate.h>
+#include <console/console.h>
+#include <fsp_util.h>
 #include <soc/ramstage.h>
 #include <soc/intel/common/ramstage.h>
 
@@ -26,3 +29,21 @@ void skylake_init_pre_device(void *chip_info)
 	/* Perform silicon specific init. */
 	intel_silicon_init();
 }
+
+static void issue_ready_to_boot_event(void *unused)
+{
+	/*
+	 * Notify FSP for EnumInitPhaseReadyToBoot.
+	 */
+	printk(BIOS_DEBUG, "fsp_notify(EnumInitPhaseReadyToBoot)\n");
+	fsp_notify(EnumInitPhaseReadyToBoot);
+
+	printk(BIOS_ERR, "FSP Notify 2 successful!\n");
+	post_code(0x35);
+	die("Hung in issue_ready_to_boot!\n");
+}
+
+BOOT_STATE_INIT_ENTRIES(finalize_bscb) = {
+	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
+		issue_ready_to_boot_event, NULL)
+};

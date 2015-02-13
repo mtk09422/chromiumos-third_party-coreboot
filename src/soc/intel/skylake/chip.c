@@ -46,10 +46,6 @@ static void chip_final(device_t dev)
 	printk(BIOS_DEBUG,
 		"Calling FspNotify(EnumInitPhaseAfterPciEnumeration)\n");
 	fsp_notify(EnumInitPhaseAfterPciEnumeration);
-
-	printk(BIOS_ERR, "FSP Notify 1 successful!\n");
-	post_code(0x35);
-	die("Hung in chip_final!\n");
 }
 
 static struct device_operations cpu_bus_ops = {
