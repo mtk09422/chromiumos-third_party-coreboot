@@ -36,7 +36,7 @@ static void mt8173_memrange_init(struct memranges *map)
 	const unsigned long cachedmem = MA_MEM | MA_NS | MA_RW;
 	const unsigned long secure_mem = MA_MEM | MA_S | MA_RW;
 	uint64_t dram_start = ((uintptr_t)_dram);
-	uint64_t dram_size = CONFIG_DRAM_SIZE_MB * MiB;
+	uint64_t dram_size = (uint64_t)CONFIG_DRAM_SIZE_MB * MiB;
 	uint64_t ttb_size = TTB_SIZE * MiB;
 	uint64_t tz_start;
 	size_t tz_size;
@@ -57,7 +57,7 @@ static void mt8173_memrange_init(struct memranges *map)
 	mmu_init(map, (void *)tz_start, ttb_size);
 }
 
-void __attribute__((weak)) mainboard_add_memory_ranges(struct memranges *map)
+void mainboard_add_memory_ranges(struct memranges *map)
 {
 	/* Don't add any ranges by default. */
 }

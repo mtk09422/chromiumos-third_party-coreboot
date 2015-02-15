@@ -108,7 +108,7 @@ static void memory_in_range(uintptr_t *base_mib, uintptr_t *end_mib,
 
 void trustzone_region_init(void)
 {
-	uintptr_t end = 4096;
+	uintptr_t end = 3072;
 
 	if (((uintptr_t)_dram / MiB) >= 0x1000) {
 		tz_base_mib += 0x1000;

@@ -20,9 +20,11 @@
 #include <cbmem.h>
 #include <stddef.h>
 #include <symbols.h>
+#include <console/console.h>
 
 void *cbmem_top(void)
 {
-	return (void *)((uintptr_t) _dram +
-			(CONFIG_DRAM_SIZE_MB << 20));
+	return (void *)((uintptr_t)_dram +
+			((uint64_t)CONFIG_DRAM_SIZE_MB << 20) -
+			((uint64_t)CONFIG_TRUSTZONE_CARVEOUT_SIZE_MB << 20));
 }
