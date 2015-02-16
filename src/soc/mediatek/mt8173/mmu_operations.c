@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/io.h>
+#include <arch/cache.h>
 #include <arch/mmu.h>
 #include <memrange.h>
 #include <symbols.h>
@@ -63,6 +65,9 @@ void __attribute__((weak)) mainboard_add_memory_ranges(struct memranges *map)
 void mt8173_mmu_init(void)
 {
 	struct memranges *map = &mt8173_mmap_ranges;
+
+	/* Return L2C from SRAM */
+	write32((uint32_t *)MTK_MCUCFG_BASE, 0x300);
 
 	mt8173_memrange_init(map);
 	mainboard_add_memory_ranges(map);
