@@ -42,6 +42,7 @@
 #include <soc/rtc.h>
 #include <soc/wdt.h>
 #include <soc/da9212.h>
+#include <soc/cpu.h>
 
 void main(void)
 {
@@ -78,6 +79,8 @@ void main(void)
 
 	/* should be called after memory init */
 	cbmem_initialize_empty();
+
+	set_secondary_cpu_boot_arm64();
 
 #if IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)
 	entry = vboot2_load_ramstage();

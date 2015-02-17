@@ -30,7 +30,7 @@ endif
 
 ################################################################################
 
-romstage-y += cpu_lib.S
+romstage-y += cpu_lib.S cpu.c
 romstage-y += emmc_cbfs.c
 romstage-y += pll_pre.c pll.c
 romstage-y += timer.c monotonic_timer.c
@@ -51,7 +51,7 @@ ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
 ramstage-y += spi.c
 ramstage-y += emmc_cbfs.c
-ramstage-y += soc.c
+ramstage-y += soc.c cpu.c mtcmos.c
 ramstage-y += timer.c monotonic_timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += pmic_wrap_init.c pmic.c
@@ -67,6 +67,8 @@ ramstage-$(CONFIG_ARCH_USE_SECURE_MONITOR) += secmon.c
 
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += psci.c
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu.c mtcmos.c
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += timer.c monotonic_timer.c
 
 rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
 # TODO: remove this when vbootstub 64-bit align problem has been fixed.

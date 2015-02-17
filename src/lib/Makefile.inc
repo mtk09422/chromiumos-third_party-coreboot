@@ -116,6 +116,8 @@ ramstage-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 ramstage-$(CONFIG_GENERIC_UDELAY) += timer.c
 ramstage-y += b64_decode.c
 
+secmon-$(CONFIG_GENERIC_UDELAY) += timer.c
+
 # The CBMEM implementations are chosen based on CONFIG_DYNAMIC_CBMEM.
 ifeq ($(CONFIG_DYNAMIC_CBMEM),y)
 ramstage-y += dynamic_cbmem.c
