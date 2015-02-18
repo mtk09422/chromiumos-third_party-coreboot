@@ -20,29 +20,31 @@
 #ifndef __ASSERT_H__
 #define __ASSERT_H__
 
+#include <arch/hlt.h>
 #include <console/console.h>
 
-#if defined(__PRE_RAM__) && !CONFIG_CACHE_AS_RAM
+#if defined(__PRE_RAM__) && !IS_ENABLED(CONFIG_CACHE_AS_RAM) \
+			 && IS_ENABLED(CONFIG_ARCH_X86)
 
 /* ROMCC versions */
 #define ASSERT(x) {						\
 	if(!(x)) {						\
-		print_emerg("ASSERTION FAILED: file '");	\
+		print_emerg("ASSERTION ERROR: file '");		\
 		print_emerg(__FILE__);				\
 		print_emerg("', line 0x");			\
 		print_debug_hex32(__LINE__);			\
 		print_emerg("\n");				\
-		/* die(""); */					\
+		if (IS_ENABLED(CONFIG_FATAL_ASSERTS)) hlt();	\
 	}							\
 }
 
 #define BUG() {							\
-	print_emerg("BUG ENCOUNTERED: SYSTEM HALTED at file '");\
+	print_emerg("ERROR: BUG ENCOUNTERED at file '");	\
 	print_emerg(__FILE__);					\
 	print_emerg("', line 0x");				\
 	print_debug_hex32(__LINE__);				\
 	print_emerg("\n");					\
-	/* die(""); */						\
+	if (IS_ENABLED(CONFIG_FATAL_ASSERTS)) hlt();		\
 }
 
 #else
@@ -50,15 +52,15 @@
 /* GCC and CAR versions */
 #define ASSERT(x) {						\
 	if (!(x)) {						\
-		printk(BIOS_EMERG, "ASSERTION FAILED: file '%s', "	\
-			" line %d\n", __FILE__, __LINE__);	\
-		/* die(""); */					\
+		printk(BIOS_EMERG, "ASSERTION ERROR: file '%s'"	\
+			", line %d\n", __FILE__, __LINE__);	\
+		if (IS_ENABLED(CONFIG_FATAL_ASSERTS)) hlt();	\
 	}							\
 }
 #define BUG() {							\
-	printk(BIOS_EMERG, "BUG ENCOUNTERED: SYSTEM HALTED at file '%s', "	\
-		" line %d\n", __FILE__, __LINE__);		\
-	/* die(""); */						\
+	printk(BIOS_EMERG, "ERROR: BUG ENCOUNTERED at file '%s'"\
+		", line %d\n", __FILE__, __LINE__);		\
+	if (IS_ENABLED(CONFIG_FATAL_ASSERTS)) hlt();		\
 }
 
 #endif /* defined(__PRE_RAM__) && !CONFIG_CACHE_AS_RAM */
