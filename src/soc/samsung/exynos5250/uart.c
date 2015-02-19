@@ -71,7 +71,7 @@ static void serial_setbrg_dev(void)
 	uclk = clock_get_periph_rate(PERIPH_ID_UART3);
 	val = uclk / baudrate;
 
-	writel(val / 16 - 1, &uart->ubrdiv);
+	write32(&uart->ubrdiv, val / 16 - 1);
 
 	/*
 	 * FIXME(dhendrix): the original uart.h had a "br_rest" value which
@@ -98,12 +98,12 @@ static void exynos5_init_dev(void)
 	exynos_pinmux_uart3();
 
 	/* enable FIFOs */
-	writel(0x1, &uart->ufcon);
-	writel(0, &uart->umcon);
+	write32(&uart->ufcon, 0x1);
+	write32(&uart->umcon, 0);
 	/* 8N1 */
-	writel(0x3, &uart->ulcon);
+	write32(&uart->ulcon, 0x3);
 	/* No interrupts, no DMA, pure polling */
-	writel(0x245, &uart->ucon);
+	write32(&uart->ucon, 0x245);
 
 	serial_setbrg_dev();
 }
@@ -125,7 +125,7 @@ static int exynos5_uart_err_check(int op)
 	else
 		mask = 0xf;
 
-	return readl(&uart->uerstat) & mask;
+	return read32(&uart->uerstat) & mask;
 }
 
 /*
@@ -138,13 +138,13 @@ static unsigned char exynos5_uart_rx_byte(void)
 	struct s5p_uart *uart = (struct s5p_uart *)base_port;
 
 	/* wait for character to arrive */
-	while (!(readl(&uart->ufstat) & (RX_FIFO_COUNT_MASK |
+	while (!(read32(&uart->ufstat) & (RX_FIFO_COUNT_MASK |
 					 RX_FIFO_FULL_MASK))) {
 		if (exynos5_uart_err_check(0))
 			return 0;
 	}
 
-	return readb(&uart->urxh) & 0xff;
+	return read8(&uart->urxh) & 0xff;
 }
 
 /*
@@ -155,19 +155,19 @@ static void exynos5_uart_tx_byte(unsigned char data)
 	struct s5p_uart *uart = (struct s5p_uart *)base_port;
 
 	/* wait for room in the tx FIFO */
-	while ((readl(&uart->ufstat) & TX_FIFO_FULL_MASK)) {
+	while ((read32(&uart->ufstat) & TX_FIFO_FULL_MASK)) {
 		if (exynos5_uart_err_check(1))
 			return;
 	}
 
-	writeb(data, &uart->utxh);
+	write8(&uart->utxh, data);
 }
 
 static void exynos5_uart_tx_flush(void)
 {
 	struct s5p_uart *uart = (struct s5p_uart *)base_port;
 
-	while (readl(&uart->ufstat) & 0x1ff0000);
+	while (read32(&uart->ufstat) & 0x1ff0000);
 }
 
 #if !defined(__PRE_RAM__)
