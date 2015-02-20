@@ -22,6 +22,10 @@ endif # CACHE_MRC_SETTINGS
 
 endif # HAVE_MRC
 
+config COMMON_RAM_INIT
+	bool
+	default n
+
 config COMMON_RESET
 	bool
 	default n
