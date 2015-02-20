@@ -70,8 +70,8 @@ static void tegra210_uart_init(void)
 	// Hide the divisor latches.
 	write8(&uart_ptr->lcr, line_config);
 	// Enable FIFOs, and clear receive and transmit.
-	write8(&uart_ptr->fcr,
-	       UART8250_FCR_FIFO_EN | UART8250_FCR_CLEAR_RCVR | UART8250_FCR_CLEAR_XMIT);
+	write8(&uart_ptr->fcr, UART8250_FCR_FIFO_EN |
+	       UART8250_FCR_CLEAR_RCVR | UART8250_FCR_CLEAR_XMIT);
 }
 
 static void tegra210_uart_tx_byte(unsigned char data)

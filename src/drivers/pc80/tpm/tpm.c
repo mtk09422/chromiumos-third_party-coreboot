@@ -54,10 +54,6 @@
 
 #define min(a,b) MIN(a,b)
 #define max(a,b) MAX(a,b)
-#define readb(_a) (*(volatile unsigned char *) (_a))
-#define writeb(_v, _a) (*(volatile unsigned char *) (_a) = (_v))
-#define readl(_a) (*(volatile unsigned long *) (_a))
-#define writel(_v, _a) (*(volatile unsigned long *) (_a) = (_v))
 /* coreboot wrapper for TPM driver (end) */
 
 #ifndef CONFIG_TPM_TIS_BASE_ADDRESS
