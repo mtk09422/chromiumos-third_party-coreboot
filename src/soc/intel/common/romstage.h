@@ -1,0 +1,95 @@
+/*
+ * This file is part of the coreboot project.
+ *
+ * Copyright (C) 2014 Google Inc.
+ * Copyright (C) 2015 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+#ifndef _COMMON_ROMSTAGE_H_
+#define _COMMON_ROMSTAGE_H_
+
+#include <stdint.h>
+#include <arch/cpu.h>
+#include <fsp_util.h>
+#include <soc/pei_data.h>
+#include <soc/pm.h>		/* chip_power_state */
+
+struct romstage_params {
+	unsigned long bist;
+	struct chipset_power_state *power_state;
+	struct pei_data *pei_data;
+};
+
+/*
+ * FSP Boot Flow:
+ *   1.  src/cpu/x86/16bit/reset.inc
+ *   2.  src/cpu/x86/16bit/entry.inc
+ *   3.  other modules
+ *   4.  src/drivers/intel/fsp/fsp_1_1.inc
+ *   5.  src/drivers/intel/fsp/fsp_util.c/find_fsp
+ *   6.  FSP binary/TempRamInit
+ *   7.  src/drivers/intel/fsp/fsp_1_1.inc - return
+ *   8.  src/soc/intel/common/romstage.c/romstage_main
+ *   9   src/soc/.../romstage/.../soc_pre_console_init
+ *  10   src/console/console.c/console_init
+ *  11   src/soc/.../romstage/.../soc_romstage_init
+ *  12.  src/mainboard/.../romstage.c/mainboard_romstage_entry
+ *  13.  src/soc/intel/skylake/romstage/romstage.c/romstage_common
+ *  14   src/soc/.../romstage/.../soc_pre_raminit
+ *  15.  FSP binary/MemoryInit
+ *  16.  src/soc/intel/common/romstage.c/romstage_common - return
+ *  17.  src/mainboard/.../romstage.c/mainboard_romstage_entry - return
+ *  18.  src/soc/intel/common/romstage.c/romstage_main - return
+ *  19.  src/soc/intel/skylake/stack.c/setup_stack_and_mttrs
+ *  20.  src/drivers/intel/fsp/fsp_1_1.inc - return, cleanup
+ *       after call to romstage_main
+ *  21.  FSP binary/TempRamExit
+ *  22.  src/soc/intel/common/romstage.c/romstage_after_car
+ *  23.  FSP binary/SiliconInit
+ *  24.  src/soc/intel/common/romstage.c/romstage_after_car - return
+ *  25.  src/soc/intel/.../chip.c/skylake_final
+ *  26.  src/drivers/intel/fsp/fsp_util.c/fsp_notify
+ *  27.  FSP binary/FspNotify
+ *  28.  src/soc/intel/.../ramstage.c/fsp_final
+ *  29.  src/drivers/intel/fsp/fsp_util.c/fsp_notify
+ *  30.  FSP binary/FspNotify
+ */
+
+void board_fsp_memory_init_params(
+	struct romstage_params *params,
+	FSP_INFO_HEADER *fsp_header,
+	FSP_MEMORY_INIT_PARAMS * fsp_memory_init_params);
+void mainboard_check_ec_image(struct romstage_params *params);
+void mainboard_pre_console_init(struct romstage_params *params);
+void mainboard_romstage_entry(struct romstage_params *params);
+void mainboard_save_dimm_info(struct romstage_params *params);
+void raminit(struct romstage_params *params);
+void report_memory_config(void);
+void report_platform_info(void);
+asmlinkage void romstage_after_car(void);
+void romstage_common(struct romstage_params *params);
+asmlinkage void *romstage_main(unsigned int bist, uint32_t tsc_lo,
+			       uint32_t tsc_high);
+void *setup_stack_and_mtrrs(void);
+void set_max_freq(void);
+void soc_after_ram_init(struct romstage_params *params);
+void soc_after_silicon_init(void);
+void soc_after_temp_ram_exit(void);
+void soc_pre_console_init(struct romstage_params *params);
+void soc_pre_ram_init(struct romstage_params *params);
+void soc_romstage_init(struct romstage_params *params);
+
+#endif /* _COMMON_ROMSTAGE_H_ */

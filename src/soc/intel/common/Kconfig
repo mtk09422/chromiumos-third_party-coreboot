@@ -25,3 +25,7 @@ endif # HAVE_MRC
 config COMMON_RESET
 	bool
 	default n
+
+config COMMON_ROMSTAGE
+	bool
+	default n
