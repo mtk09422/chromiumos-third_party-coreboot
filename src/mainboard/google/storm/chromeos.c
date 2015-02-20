@@ -30,6 +30,7 @@ struct gpio_desc {
 	gpio_t gpio_num;
 	const char *gpio_name;
 	uint32_t fake_value;
+	int last_reported;
 };
 
 /* Actual GPIO switch names */
@@ -37,7 +38,7 @@ struct gpio_desc {
 #define RECOVERY_GPIO_NAME	"recovery"
 #define WRITE_PROTECT_GPIO_NAME	"write protect"
 
-static const struct gpio_desc descriptors[] = {
+static struct gpio_desc descriptors[] = {
 	{ 15, DEVELOPER_GPIO_NAME },
 	{ 16, RECOVERY_GPIO_NAME },
 	{ 17, WRITE_PROTECT_GPIO_NAME },
@@ -45,7 +46,7 @@ static const struct gpio_desc descriptors[] = {
 	{ FAKE_GPIO_NUM, "lid", 0 }	/* Lid always open. */
 };
 
-static void fill_lb_gpio(struct lb_gpio *pgpio, const struct gpio_desc *pdesc)
+static void fill_lb_gpio(struct lb_gpio *pgpio, struct gpio_desc *pdesc)
 {
 	gpio_t gpio_num = pdesc->gpio_num;
 
@@ -61,8 +62,11 @@ static void fill_lb_gpio(struct lb_gpio *pgpio, const struct gpio_desc *pdesc)
 	pgpio->polarity = ACTIVE_LOW;
 	strncpy((char *)pgpio->name, pdesc->gpio_name, sizeof(pgpio->name));
 
-	printk(BIOS_INFO, "%s: %s: port %d value %d\n",
-	       __func__, pgpio->name, pgpio->port, pgpio->value);
+	if (pdesc->last_reported != (pgpio->value + 1)) {
+		pdesc->last_reported = (pgpio->value + 1);
+		printk(BIOS_INFO, "%s: %s: port %d value %d\n",
+		       __func__, pgpio->name, pgpio->port, pgpio->value);
+	}
 }
 
 void fill_lb_gpios(struct lb_gpios *gpios)
