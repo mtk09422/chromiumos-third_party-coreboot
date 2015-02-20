@@ -22,6 +22,7 @@
 #include <delay.h>
 #include <gpio.h>
 #include <string.h>
+#include <timer.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #define FAKE_GPIO_NUM		-1
@@ -100,9 +101,35 @@ int get_developer_mode_switch(void)
 	return get_switch_value(DEVELOPER_GPIO_NAME);
 }
 
+/*
+ * Holding recovery button pressed continuously for 5 seconds at reset time
+ * is required to trigger recovery mode.
+ */
+#define RECOVERY_MODE_DELAY_MS (5 * 1000)
 int get_recovery_mode_switch(void)
 {
-	return get_switch_value(RECOVERY_GPIO_NAME);
+	struct stopwatch sw;
+	static int sampled_value = -1;
+
+	if (sampled_value == -1)
+		sampled_value = get_switch_value(RECOVERY_GPIO_NAME);
+
+	if (!sampled_value)
+		return 0;
+
+	printk(BIOS_INFO, "recovery button pressed\n");
+	stopwatch_init_msecs_expire(&sw, RECOVERY_MODE_DELAY_MS);
+
+	do {
+		sampled_value = get_switch_value(RECOVERY_GPIO_NAME);
+		if (!sampled_value)
+			break;
+	} while (!stopwatch_expired(&sw));
+
+	if (sampled_value)
+		printk(BIOS_INFO, "recovery mode requested\n");
+
+	return sampled_value;
 }
 
 int get_write_protect_state(void)
