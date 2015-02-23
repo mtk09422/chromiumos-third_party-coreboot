@@ -28,7 +28,7 @@
 #include <arch/cpu.h>
 #include <cpu/x86/name.h>
 #include <cbfs_core.h>
-#include <arch/byteorder.h>
+#include <endian.h>
 #include <elog.h>
 #include <memory_info.h>
 #include <spd.h>

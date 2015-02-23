@@ -20,11 +20,11 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <arch/byteorder.h>
 #include <boot/coreboot_tables.h>
 #include <cbmem.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <endian.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #define CACHELINE_SIZE 64

@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#include <arch/byteorder.h>
 #include <arch/stages.h>
 #include <console/console.h>
 #include <cpu/cpu.h>
+#include <endian.h>
 #include <fallback.h>
 #include <boot/coreboot_tables.h>
 #include <stdint.h>

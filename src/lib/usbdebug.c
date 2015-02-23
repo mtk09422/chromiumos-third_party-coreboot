@@ -21,7 +21,6 @@
 #include <stddef.h>
 #include <console/console.h>
 #include <arch/io.h>
-#include <arch/byteorder.h>
 
 #include <usb_ch9.h>
 #include <ehci.h>

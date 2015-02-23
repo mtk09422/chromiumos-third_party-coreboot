@@ -20,12 +20,13 @@
  *  12-Dec-1999	RMK	More cleanups
  *  18-Jun-2000 RMK	Removed virt_to_* and friends definitions
  */
-#ifndef __ASM_ARM64_ARCH_IO_H
-#define __ASM_ARM64_ARCH_IO_H
+#ifndef __ARCH_IO_H
+#define __ARCH_IO_H
 
 #include <arch/barrier.h>
-#include <stdint.h>
 #include <arch/lib_helpers.h>
+#include <endian.h>
+#include <stdint.h>
 
 static inline uint8_t read8(const void *addr)
 {
@@ -66,4 +67,4 @@ static inline void write32(void *addr, uint32_t val)
 	dmb();
 }
 
-#endif	/* __ASM_ARM64_ARCH_IO_H */
+#endif	/* __ARCH_IO_H */
