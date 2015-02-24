@@ -94,6 +94,10 @@ detect_special_flags() {
 	testcc "$CC"   "$CFLAGS -Wno-unused-but-set-variable " &&
 		CFLAGS="$CFLAGS -Wno-unused-but-set-variable "
 
+	# Use bfd linker instead of gold if available:
+	testcc "$CC"   "$CFLAGS -fuse-ld=bfd" &&
+		CFLAGS="$CFLAGS -fuse-ld=bfd" && LINKER_SUFFIX='.bfd'
+
 	testcc "$CC"   "$CFLAGS -Wa,--divide" &&
 		CFLAGS="$CFLAGS -Wa,--divide"
 	testcc "$CC"   "$CFLAGS -fno-stack-protector"&&
@@ -103,9 +107,6 @@ detect_special_flags() {
 
 	case "$architecture" in
 	x86 )
-		# Use bfd linker instead of gold if available:
-		testcc "$CC"   "$CFLAGS -fuse-ld=bfd" &&
-			CFLAGS="$CFLAGS -fuse-ld=bfd" && LINKER_SUFFIX_i386='.bfd'
 		# Always build for i686 -- no sse/mmx instructions since SMM
 		# modules are compiled using these flags. Note that this
 		# doesn't prevent a project using xcompile to explicitly
@@ -127,7 +128,7 @@ report_arch_toolchain() {
 # elf${TWIDTH}-${TBFDARCH} toolchain (${GCCPREFIX}gcc)
 CC_${TARCH}:=${GCCPREFIX}gcc ${CFLAGS}
 AS_${TARCH}:=${GCCPREFIX}as ${ASFLAGS}
-LD_${TARCH}:=${GCCPREFIX}ld$(eval echo \${LINKER_SUFFIX_${TARCH}}) ${LDFLAGS}
+LD_${TARCH}:=${GCCPREFIX}ld${LINKER_SUFFIX} ${LDFLAGS}
 NM_${TARCH}:=${GCCPREFIX}nm
 OBJCOPY_${TARCH}:=${GCCPREFIX}objcopy
 OBJDUMP_${TARCH}:=${GCCPREFIX}objdump
