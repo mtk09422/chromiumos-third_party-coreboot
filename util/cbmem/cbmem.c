@@ -413,7 +413,21 @@ static const struct timestamp_id_to_name {
 	{ TS_RW_VB_SELECT_AND_LOAD_KERNEL,	"RW vboot select&load kernel" },
 	{ TS_VB_SELECT_AND_LOAD_KERNEL,		"vboot select&load kernel" },
 	{ TS_CROSSYSTEM_DATA,	"crossystem data" },
-	{ TS_START_KERNEL,	"start kernel" }
+	{ TS_START_KERNEL,	"start kernel" },
+
+	/* FSP related timestamps */
+	{ TS_FSP_MEMORY_INIT_START, "calling FspMemoryInit" },
+	{ TS_FSP_MEMORY_INIT_END, "FspMemoryInit time" },
+	{ TS_FSP_TEMP_RAM_EXIT_START, "calling FspTempRamExit" },
+	{ TS_FSP_TEMP_RAM_EXIT_END, "FspTempRamExit time" },
+	{ TS_FSP_FIND_START, "calling FindFsp" },
+	{ TS_FSP_FIND_END, "FindFsp time" },
+	{ TS_FSP_SILICON_INIT_START, "calling FspSiliconInit" },
+	{ TS_FSP_SILICON_INIT_END, "FspSiliconInit time" },
+	{ TS_FSP_BEFORE_ENUMERATE, "calling FspNotify(AfterPciEnumeration)" },
+	{ TS_FSP_AFTER_ENUMERATE, "FspNotify(AfterPciEnumeration) time" },
+	{ TS_FSP_BEFORE_FINALIZE, "calling FspNotify(ReadyToBoot)" },
+	{ TS_FSP_AFTER_FINALIZE, " FspNotify(ReadyToBoot) time" }
 };
 
 void timestamp_print_entry(uint32_t id, uint64_t stamp, uint64_t prev_stamp)
