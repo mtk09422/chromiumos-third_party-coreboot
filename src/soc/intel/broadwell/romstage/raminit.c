@@ -30,9 +30,10 @@
 /*
  * Find PEI executable in coreboot filesystem and execute it.
  */
-void raminit(struct romstage_params *params, struct pei_data *pei_data)
+void raminit(struct romstage_params *params)
 {
 	pei_wrapper_entry_t entry;
+	struct pei_data *pei_data;
 	int ret;
 
 	/* Determine if mrc.bin is in the cbfs. */
@@ -45,6 +46,7 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 
 	printk(BIOS_DEBUG, "Starting Memory Reference Code\n");
 
+	pei_data = params->pei_data;
 	ret = entry(pei_data);
 	if (ret < 0)
 		die("pei_data version mismatch\n");

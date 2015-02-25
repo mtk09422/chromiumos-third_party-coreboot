@@ -27,7 +27,7 @@
 #include <string.h>
 #include <timestamp.h>
 
-void raminit(struct romstage_params *params, struct pei_data *pei_data)
+void raminit(struct romstage_params *params)
 {
 	FSP_INFO_HEADER *fsp_header;
 	FSP_MEMORY_INIT fsp_memory_init;
@@ -36,6 +36,7 @@ void raminit(struct romstage_params *params, struct pei_data *pei_data)
 	void *hob_list_ptr;
 	const EFI_GUID mrc_guid = FSP_NON_VOLATILE_STORAGE_HOB_GUID;
 	u32 *mrc_hob;
+	struct pei_data *pei_data = params->pei_data;
 	EFI_STATUS status;
 	VPD_DATA_REGION *vpd_ptr;
 	UPD_DATA_REGION *upd_ptr;

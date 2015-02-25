@@ -49,7 +49,7 @@ static unsigned long choose_top_of_stack(void)
 
 /* setup_stack_and_mttrs() determines the stack to use after
  * cache-as-ram is torn down as well as the MTRR settings to use. */
-void *setup_stack_and_mttrs(void)
+void *setup_stack_and_mtrrs(void)
 {
 	unsigned long top_of_stack;
 	int num_mtrrs;
