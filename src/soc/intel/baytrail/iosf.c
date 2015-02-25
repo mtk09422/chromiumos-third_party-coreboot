@@ -86,14 +86,17 @@ uint32_t iosf_dunit_ch0_read(int reg)
 
 uint32_t iosf_dunit_ch1_read(int reg)
 {
-	uint32_t cr = IOSF_OPCODE(IOSF_OP_READ_SYSMEMC) |
-	              IOSF_PORT(IOSF_PORT_DUNIT_CH1);
-	return iosf_read_port(cr, reg);
+	return iosf_read_port(IOSF_READ(DUNIT_CH1), reg);
 }
 
 void iosf_dunit_write(int reg, uint32_t val)
 {
 	iosf_write_port(IOSF_WRITE(SYSMEMC), reg, val);
+}
+
+void iosf_dunit_ch1_write(int reg, uint32_t val)
+{
+	iosf_write_port(IOSF_WRITE(DUNIT_CH1), reg, val);
 }
 
 uint32_t iosf_punit_read(int reg)

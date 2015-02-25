@@ -63,6 +63,7 @@ uint32_t iosf_bunit_read(int reg);
 void iosf_bunit_write(int reg, uint32_t val);
 uint32_t iosf_dunit_read(int reg);
 void iosf_dunit_write(int reg, uint32_t val);
+void iosf_dunit_ch1_write(int reg, uint32_t val);
 /* Some registers are per channel while the gloals live in dunit 0 */
 uint32_t iosf_dunit_ch0_read(int reg);
 uint32_t iosf_dunit_ch1_read(int reg);
@@ -104,7 +105,7 @@ void iosf_ssus_write(int reg, uint32_t val);
 /* IOSF ports. */
 #define IOSF_PORT_AUNIT		0x00 /* IO Arbiter unit */
 #define IOSF_PORT_SYSMEMC	0x01 /* System Memory Controller */
-#define IOSF_PORT_DUNIT_CH0	0x07 /* DUNIT Channel 0 */
+#define IOSF_PORT_DUNIT_CH0	0x01 /* DUNIT Channel 0 */
 #define IOSF_PORT_CPU_BUS	0x02 /* CPU Bus Interface Controller */
 #define IOSF_PORT_BUNIT		0x03 /* System Memroy Arbiter/Bunit */
 #define IOSF_PORT_PMC		0x04 /* Power Management Controller */
@@ -126,7 +127,7 @@ void iosf_ssus_write(int reg, uint32_t val);
 #define IOSF_PORT_LPSS		0xa0 /* LPSS - Low Power Subsystem */
 #define IOSF_PORT_0xa2		0xa2
 #define IOSF_PORT_SATAPHY	0xa3 /* SATA PHY */
-#define IOSF_PORT_PCIEPHY	0xa3 /* PCIE PHY */
+#define IOSF_PORT_PCIEPHY	0xa6 /* PCIE PHY */
 #define IOSF_PORT_SSUS		0xa8 /* SUS */
 #define IOSF_PORT_CCU		0xa9 /* Clock control unit. */
 
@@ -135,6 +136,8 @@ void iosf_ssus_write(int reg, uint32_t val);
 #define IOSF_OP_WRITE_AUNIT	(IOSF_OP_READ_AUNIT | 1)
 #define IOSF_OP_READ_SYSMEMC	0x10
 #define IOSF_OP_WRITE_SYSMEMC	(IOSF_OP_READ_SYSMEMC | 1)
+#define IOSF_OP_READ_DUNIT_CH1	0x10
+#define IOSF_OP_WRITE_DUNIT_CH1	(IOSF_OP_READ_DUNIT_CH1 | 1)
 #define IOSF_OP_READ_CPU_BUS	0x10
 #define IOSF_OP_WRITE_CPU_BUS	(IOSF_OP_READ_CPU_BUS | 1)
 #define IOSF_OP_READ_BUNIT	0x10

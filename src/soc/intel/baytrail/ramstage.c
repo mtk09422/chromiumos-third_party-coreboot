@@ -188,10 +188,20 @@ static void s3_resume_prepare(void)
 static void baytrail_enable_2x_refresh_rate(void)
 {
 	u32 reg;
+	uint32_t ch1;
 	reg = iosf_dunit_read(0x8);
 	reg = reg & ~0x7000;
 	reg = reg | 0x2000;
 	iosf_dunit_write(0x8, reg);
+
+	ch1 = iosf_dunit_ch1_read(DRP);
+	if (ch1 & DRP_RANK_MASK)
+	{
+		reg = iosf_dunit_ch1_read(0x8);
+		reg = reg & ~0x7000;
+		reg = reg | 0x2000;
+		iosf_dunit_ch1_write(0x8, reg);
+	}
 }
 
 void baytrail_init_pre_device(struct soc_intel_baytrail_config *config)
