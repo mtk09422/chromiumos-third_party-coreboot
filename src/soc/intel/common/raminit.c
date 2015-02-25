@@ -41,6 +41,11 @@ void raminit(struct romstage_params *params)
 	VPD_DATA_REGION *vpd_ptr;
 	UPD_DATA_REGION *upd_ptr;
 	UPD_DATA_REGION upd_data_buffer;
+#if IS_ENABLED(CONFIG_DISPLAY_HOBS)
+	int missing_hob;
+	const EFI_GUID fsp_reserved_guid =
+		FSP_RESERVED_MEMORY_RESOURCE_HOB_GUID;
+#endif
 
 	/*
 	 * Find and copy the UPD region to the stack so the platform can modify
@@ -130,6 +135,19 @@ void raminit(struct romstage_params *params)
 	if (hob_list_ptr == NULL)
 		die("ERROR - HOB pointer is NULL!\n");
 	print_hob_type_structure(0, hob_list_ptr);
+
+	/* Verify that FSP is generating the required HOBs */
+	missing_hob = 0;
+	if (NULL == get_next_guid_hob(&fsp_reserved_guid, hob_list_ptr)) {
+		printk(BIOS_ERR, "7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB missing!\n");
+		missing_hob = 1;
+	}
+	if (NULL == get_next_guid_hob(&mrc_guid, hob_list_ptr)) {
+		printk(BIOS_ERR, "7.3: FSP_NON_VOLATILE_STORAGE_HOB missing!\n");
+		missing_hob = 1;
+	}
+	if (missing_hob)
+		die("ERROR - One or more of the required FSP HOBs are missing!\n");
 #endif
 
 	/* Locate the memory configuration data to speed up the next reboot */
