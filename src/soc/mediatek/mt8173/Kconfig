@@ -17,6 +17,7 @@ config SOC_MEDIATEK_MT8173
 	select HAVE_INIT_TIMER
 	select ARCH_USE_SECURE_MONITOR
 	select HAS_PRECBMEM_TIMESTAMP_REGION
+	select MEDIATEK_DISPLAY_INIT
 	select DEBUG_CBFS
 #	select DEBUG_SOC_DRIVER
 
@@ -27,6 +28,10 @@ config TRUSTZONE_CARVEOUT_SIZE_MB
         default 0x4
         help
           Size of Trust Zone area in MiB to reserve in memory map.
+
+config MEDIATEK_DISPLAY_INIT
+	bool "initial mediatek display port"
+	default n
 
 config DEBUG_SOC_DRIVER
 	bool "The top level switch for soc driver debug message"

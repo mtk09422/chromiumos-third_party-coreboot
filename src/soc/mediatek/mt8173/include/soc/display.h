@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2014 Google Inc.
+ * Copyright 2015 MediaTek Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/cache.h>
-#include <boot/coreboot_tables.h>
-#include <device/device.h>
-#include <soc/display.h>
+#ifndef __SOC_MEDIATEK_MT8173_DISPLAY_H__
+#define __SOC_MEDIATEK_MT8173_DISPLAY_H__
 
-static void mainboard_init(device_t dev)
-{
-}
 
-static void mainboard_enable(device_t dev)
-{
-	dev->ops->init = &mainboard_init;
-}
+void mt8173_display_init(device_t dev);
 
-struct chip_operations mainboard_ops = {
-	.name = "oak",
-	.enable_dev = mainboard_enable,
-};
+void mainboard_power_on_backlight(void);
 
-void mainboard_power_on_backlight(void)
-{
-
-}
-
+#endif

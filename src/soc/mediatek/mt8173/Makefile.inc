@@ -54,10 +54,15 @@ ramstage-y += emmc_cbfs.c
 ramstage-y += soc.c
 ramstage-y += timer.c monotonic_timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
-ramstage-y += pmic_wrap_init.c
+ramstage-y += pmic_wrap_init.c pmic.c
 ramstage-y += ramstage.c mmu_operations.c clock.c
 ramstage-y += gic.c
 ramstage-y += addressmap.c
+ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += gpio.c gpio_init.c
+ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += display.c
+ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += ddp.c
+ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += dsi.c
+ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += i2c.c it6151.c
 ramstage-$(CONFIG_ARCH_USE_SECURE_MONITOR) += secmon.c
 
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
