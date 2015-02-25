@@ -73,7 +73,7 @@ static inline void debug_dead_loop(void)
 //
 // Define the known GUIDs
 //
-#define FSP_CACHE_AS_RAM_DATA_HOB_GUID				\
+#define FSP_BOOTLOADER_TEMP_MEMORY_HOB_GUID			\
 {								\
 	0xbbcff46c, 0xc8d3, 0x4113,				\
 	{0x89, 0x85, 0xb9, 0xd4, 0xf3, 0xb3, 0xf6, 0x4e}	\

@@ -301,12 +301,16 @@ static void print_hob_resource_attributes(void *hob_ptr)
 
 static const char *get_hob_type_string(void *hob_ptr)
 {
-	EFI_HOB_GENERIC_HEADER *hob_header_ptr =
-		(EFI_HOB_GENERIC_HEADER *)hob_ptr;
-	u16 hob_type = hob_header_ptr->HobType;
+	EFI_PEI_HOB_POINTERS hob;
 	const char *hob_type_string = NULL;
+	const EFI_GUID fsp_reserved_guid =
+		FSP_RESERVED_MEMORY_RESOURCE_HOB_GUID;
+	const EFI_GUID mrc_guid = FSP_NON_VOLATILE_STORAGE_HOB_GUID;
+	const EFI_GUID bootldr_tmp_mem_guid =
+		FSP_BOOTLOADER_TEMP_MEMORY_HOB_GUID;
 
-	switch (hob_type) {
+	hob.Header = (EFI_HOB_GENERIC_HEADER *)hob_ptr;
+	switch (hob.Header->HobType) {
 	case EFI_HOB_TYPE_HANDOFF:
 		hob_type_string = "EFI_HOB_TYPE_HANDOFF";
 		break;
@@ -318,6 +322,12 @@ static const char *get_hob_type_string(void *hob_ptr)
 		break;
 	case EFI_HOB_TYPE_GUID_EXTENSION:
 		hob_type_string = "EFI_HOB_TYPE_GUID_EXTENSION";
+		if (compare_guid(&bootldr_tmp_mem_guid, &hob.Guid->Name))
+			hob_type_string = "FSP_BOOTLOADER_TEMP_MEMORY_HOB";
+		else if (compare_guid(&fsp_reserved_guid, &hob.Guid->Name))
+			hob_type_string = "FSP_RESERVED_MEMORY_RESOURCE_HOB";
+		else if (compare_guid(&mrc_guid, &hob.Guid->Name))
+			hob_type_string = "FSP_NON_VOLATILE_STORAGE_HOB";
 		break;
 	case EFI_HOB_TYPE_MEMORY_POOL:
 		hob_type_string = "EFI_HOB_TYPE_MEMORY_POOL";
