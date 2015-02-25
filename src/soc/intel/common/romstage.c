@@ -231,6 +231,7 @@ asmlinkage void romstage_after_car(void)
 	die("ERROR - Failed to load ramstage!");
 }
 
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 __attribute__((weak)) void board_fsp_memory_init_params(
 	struct romstage_params *params,
 	FSP_INFO_HEADER *fsp_header,
@@ -238,6 +239,7 @@ __attribute__((weak)) void board_fsp_memory_init_params(
 {
 	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 }
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 
 /* Initialize the power state */
 __attribute__((weak)) struct chipset_power_state *fill_power_state(void)
@@ -280,6 +282,13 @@ __attribute__((weak)) void mainboard_romstage_entry(
 	romstage_common(params);
 }
 
+/* Used by MRC images to save DIMM information */
+__attribute__((weak)) void mainboard_save_dimm_info(
+	struct romstage_params *params)
+{
+	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
+}
+
 /* Get the memory configuration data */
 __attribute__((weak)) int mrc_cache_get_current(
 	const struct mrc_saved_data **cache)
@@ -301,13 +310,6 @@ __attribute__((weak)) void raminit(struct romstage_params *params)
 	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 	post_code(0x34);
 	die("ERROR - No RAM initialization specified!\n");
-}
-
-/* Used by MRC images to save DIMM information */
-__attribute__((weak)) void mainboard_save_dimm_info(
-	struct romstage_params *params)
-{
-	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 }
 
 /* Display the memory configuration */

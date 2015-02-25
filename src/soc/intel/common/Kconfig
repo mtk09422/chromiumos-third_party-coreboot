@@ -23,8 +23,9 @@ endif # CACHE_MRC_SETTINGS
 endif # HAVE_MRC
 
 config COMMON_RAM_INIT
-	bool
+	bool "FSP: Use the common raminit.c module"
 	default n
+	depends on PLATFORM_USES_FSP
 
 config COMMON_RESET
 	bool

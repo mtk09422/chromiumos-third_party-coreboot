@@ -23,7 +23,9 @@
 
 #include <stdint.h>
 #include <arch/cpu.h>
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 #include <fsp_util.h>
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 #include <soc/pei_data.h>
 #include <soc/pm.h>		/* chip_power_state */
 
@@ -68,10 +70,12 @@ struct romstage_params {
  *  30.  FSP binary/FspNotify
  */
 
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 void board_fsp_memory_init_params(
 	struct romstage_params *params,
 	FSP_INFO_HEADER *fsp_header,
 	FSP_MEMORY_INIT_PARAMS * fsp_memory_init_params);
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 void mainboard_check_ec_image(struct romstage_params *params);
 void mainboard_pre_console_init(struct romstage_params *params);
 void mainboard_romstage_entry(struct romstage_params *params);
