@@ -144,6 +144,27 @@ ENTRY(__rmodule_entry)
 ENDPROC(__rmodule_entry)
 
 /*
+ * Enable the SMPEN bit in CPUECTLR_EL1.
+ */
+.macro setup_smp
+	mrs	x0, midr_el1
+	lsr	x0, x0, #4	/* MIDR_PN_SHIFT */
+	and	x0, x0, #0xfff	/* MIDR_PN_MASK */
+	cmp	x0, #0xd08	/* MIDR_PN_MAIA */
+	b.eq	1f
+	cmp	x0, #0xd07	/* MIDR_PN_A57 */
+	b.eq	1f
+	cmp	x0, #0xd03	/* MIDR_PN_A53 */
+	b.ne	2f
+	1:
+	mrs	x0, s3_1_c15_c2_1	/* CPUECTLR_EL1 */
+	orr	x0, x0, #(1 << 6)	/* CPUECTLR_SMP_BIT */
+	msr	s3_1_c15_c2_1, x0	/* CPUECTLR_EL1 */
+	isb
+	2:
+.endm
+
+/*
  * Setup SCTLR so that:
  * Little endian mode is setup, XN is not enforced, MMU and caches are disabled.
  * Alignment and stack alignment checks are disabled.
@@ -158,12 +179,10 @@ ENDPROC(__rmodule_entry)
 .endm
 
 /*
- * This macro assumes x2 has base address and returns value read in x0
- * x1 is used as temporary register.
+ * This macro assumes x2 has base address and returns value read in x0.
  */
 .macro get_element_addr index
-	add x1, x2, #(\index * PER_ELEMENT_SIZE_BYTES)
-	ldr x0, [x1]
+	ldr x0, [x2, #(\index * PER_ELEMENT_SIZE_BYTES)]
 .endm
 
 /*
@@ -217,6 +236,7 @@ CPU_RESET_ENTRY(arm64_cpu_startup)
 	split_bsp_path
 	bl arm64_cpu_early_setup
 	setup_sctlr
+	setup_smp
 	b	arm64_c_environment
 ENDPROC(arm64_cpu_startup)
 
@@ -224,6 +244,7 @@ CPU_RESET_ENTRY(arm64_cpu_startup_resume)
 	split_bsp_path
 	bl arm64_cpu_early_setup
 	setup_sctlr
+	setup_smp
 	startup_restore
 	b	arm64_c_environment
 ENDPROC(arm64_cpu_startup_resume)
