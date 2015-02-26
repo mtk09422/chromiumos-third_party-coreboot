@@ -228,9 +228,13 @@ build-dirs:
 #######################################################################
 # Build the tools
 CBFSTOOL:=$(obj)/cbfstool
+FMAPTOOL:=$(obj)/fmaptool
 RMODTOOL:=$(obj)/rmodtool
 
 $(CBFSTOOL): $(objutil)/cbfstool/cbfstool
+	cp $< $@
+
+$(FMAPTOOL): $(objutil)/cbfstool/fmaptool
 	cp $< $@
 
 $(RMODTOOL): $(objutil)/cbfstool/rmodtool
@@ -410,7 +414,7 @@ prebuild-files = \
 	$(if $(call extract_nth,4,$(file)),-b $(call extract_nth,4,$(file))) &&)
 prebuilt-files = $(foreach file,$(cbfs-files), $(call extract_nth,1,$(file)))
 
-$(obj)/coreboot.pre1: $(objcbfs)/bootblock.bin $$(prebuilt-files) $(CBFSTOOL) $$(cpu_ucode_cbfs_file)
+$(obj)/coreboot.pre1: $(objcbfs)/bootblock.bin $$(prebuilt-files) $(FMAPTOOL) $(CBFSTOOL) $$(cpu_ucode_cbfs_file)
 	$(CBFSTOOL) $@.tmp create \
 	-B $(objcbfs)/bootblock.bin -a 64 \
 	$(CBFSTOOL_PRE1_OPTS)

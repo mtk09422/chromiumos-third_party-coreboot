@@ -58,6 +58,7 @@ tarballs/
 util/*/.dependencies
 util/*/.test
 util/cbfstool/cbfstool
+util/cbfstool/fmaptool
 util/cbfstool/rmodtool
 util/cbmem/.dependencies
 util/cbmem/cbmem
