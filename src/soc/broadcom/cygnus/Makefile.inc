@@ -58,6 +58,7 @@ ramstage-y += soc.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_SPI_FLASH) += spi.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += ns16550.c
+ramstage-y += usb.c
 
 INCLUDES += -Isrc/soc/broadcom/cygnus/include/
 
