@@ -106,6 +106,20 @@ static void memory_in_range(uintptr_t *base_mib, uintptr_t *end_mib,
 	*end_mib = end;
 }
 
+void memory_in_range_below_4gb(uintptr_t *base_mib, uintptr_t *end_mib)
+{
+	*base_mib = 0;
+	*end_mib = 4096;
+	memory_in_range(base_mib, end_mib, 0);
+}
+
+void memory_in_range_above_4gb(uintptr_t *base_mib, uintptr_t *end_mib)
+{
+	*base_mib = 4096;
+	*end_mib = ~0UL;
+	memory_in_range(base_mib, end_mib, 0);
+}
+
 void trustzone_region_init(void)
 {
 	uintptr_t end = 3072;
