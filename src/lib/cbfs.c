@@ -186,8 +186,8 @@ void *cbfs_load_stage_by_offset(struct cbfs_media *media, ssize_t offset)
 		return CBFS_LOAD_ERROR;
 	}
 
-	LOG("loading stage @ 0x%llx (%d bytes), entry @ 0x%llx\n",
-	    stage.load, stage.memlen, stage.entry);
+	LOG("loading stage from %#zx @ 0x%llx (%d bytes), entry @ 0x%llx\n",
+	    offset, stage.load, stage.memlen, stage.entry);
 
 	/* Stages rely the below clearing so that the bss is initialized. */
 	memset((void *)(uintptr_t)stage.load, 0, stage.memlen);

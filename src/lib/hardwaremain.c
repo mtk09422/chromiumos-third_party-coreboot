@@ -493,7 +493,7 @@ void main(void)
 
 	post_code(POST_CONSOLE_READY);
 
-	printk(BIOS_NOTICE, "coreboot-%s%s %s booting...\n",
+	printk(BIOS_NOTICE, "\ncoreboot-%s%s %s booting...\n",
 		      coreboot_version, coreboot_extra_version, coreboot_build);
 
 	post_code(POST_CONSOLE_BOOT_MSG);
