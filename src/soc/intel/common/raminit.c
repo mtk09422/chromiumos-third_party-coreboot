@@ -22,6 +22,7 @@
 #include <fsp_util.h>
 #include <lib.h> /* hexdump */
 #include <reset.h>
+#include <soc/intel/common/memmap.h>
 #include <soc/pei_data.h>
 #include <soc/romstage.h>
 #include <string.h>
@@ -116,6 +117,16 @@ void raminit(struct romstage_params *params)
 
 	/* Display the memory configuration */
 	report_memory_config();
+
+	/* Display SMM area */
+#if IS_ENABLED(CONFIG_HAVE_SMI_HANDLER)
+	char *smm_base;
+	size_t smm_size;
+
+	smm_region((void **)&smm_base, &smm_size);
+	printk(BIOS_DEBUG, "0x%08x: smm_size\n", smm_size);
+	printk(BIOS_DEBUG, "0x%p: smm_base\n", smm_base);
+#endif
 
 	/* Migrate CAR data */
 	if (pei_ptr->boot_mode != SLEEP_STATE_S3) {

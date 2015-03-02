@@ -29,6 +29,10 @@ endif # CACHE_MRC_SETTINGS
 
 endif # HAVE_MRC
 
+config COMMON_STACK
+	bool
+	default n
+
 config COMMON_RAM_INIT
 	bool "FSP: Use the common raminit.c module"
 	default n
@@ -41,3 +45,7 @@ config COMMON_RESET
 config COMMON_ROMSTAGE
 	bool
 	default n
+
+config ROMSTAGE_RAM_STACK_SIZE
+	hex "Size of the romstage RAM stack in bytes"
+	default 0x5000
