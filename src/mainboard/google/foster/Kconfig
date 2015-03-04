@@ -33,6 +33,7 @@ config BOARD_SPECIFIC_OPTIONS # dummy
 	select MAINBOARD_HAS_BOOTBLOCK_INIT
 	select VIRTUAL_DEV_SWITCH
 	select ARCH_SPINTABLE
+	select BOOTROM_SDRAM_INIT # use BootRom to config sdram
 
 config MAINBOARD_DIR
         string
