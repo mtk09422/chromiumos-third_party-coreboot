@@ -25,6 +25,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <delay.h>
+#include <soc/gpio.h>
 #include <soc/sdram.h>
 #include <stdlib.h>
 #include <symbols.h>
@@ -49,6 +50,7 @@ void main(void)
 			 sdram_size_mb(), DCACHE_WRITEBACK);
 	mmu_config_range((uintptr_t)_dma_coherent/MiB,
 			 _dma_coherent_size/MiB, DCACHE_OFF);
+	gpio_init();
 
 	cbmem_initialize_empty();
 
