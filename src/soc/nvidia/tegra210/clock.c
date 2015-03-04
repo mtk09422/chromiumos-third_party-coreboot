@@ -33,52 +33,18 @@ static struct flow_ctlr *flow = (void *)TEGRA_FLOW_BASE;
 static struct tegra_pmc_regs *pmc = (void *)TEGRA_PMC_BASE;
 static struct sysctr_regs *sysctr = (void *)TEGRA_SYSCTR0_BASE;
 
-struct pll_dividers {
-	u32	n : 10;
-	u32	m : 8;
-	u32	p : 4;
-	u32	cpcon : 4;
-	u32	lfcon : 4;
-	u32	: 2;
-};
-
-/* Some PLLs have more restrictive divider bit lengths or are missing some
- * fields. Make sure to use the right struct in the osc_table definition to get
- * compile-time checking, but keep the bits aligned with struct pll_dividers so
- * they can be used interchangeably at run time. Add new formats as required. */
-struct pllcx_dividers {
-	u32	n : 8;
-	u32	: 2;
-	u32	m : 8;
-	u32	p : 4;
-	u32	: 10;
-};
-struct pllpad_dividers {
-	u32	n : 10;
-	u32	m : 5;
-	u32	: 3;
-	u32	p : 3;
-	u32	: 1;
-	u32	cpcon : 4;
-	u32	: 6;
-};
-struct pllu_dividers {
-	u32	n : 10;
-	u32	m : 5;
-	u32	: 3;
-	u32	p : 1;
-	u32	: 3;
-	u32	cpcon : 4;
-	u32	lfcon : 4;
-	u32	: 2;
-};
-
-union __attribute__((transparent_union)) pll_fields {
-	u32 raw;
-	struct pll_dividers div;
-	struct pllcx_dividers cx;
-	struct pllpad_dividers pad;
-	struct pllu_dividers u;
+struct pll_fields {
+	u64	n:8;		/* the feedback divider bits width */
+	u64	n_shift:5;	/* n bits location */
+	u64	m:8;		/* the input divider bits width */
+	u64	m_shift:5;	/* m bits location */
+	u64	p:5;		/* the post divider bits witch */
+	u64	p_shift:5;	/* p bits location */
+	u64	kcp:2;		/* charge pump gain control */
+	u64	kvco:1;	/* vco gain */
+	u64	kcp_shift:5;	/* kcp bits starting bit in misc reg */
+	u64	kvco_shift:5;	/* kvco bit in misc reg */
+	u64	rsvd:15;
 };
 
 /* This table defines the frequency dividers for every PLL to turn the external
@@ -96,64 +62,90 @@ union __attribute__((transparent_union)) pll_fields {
  * (values taken from Linux' drivers/clk/tegra/clk-tegra124.c). */
 struct {
 	int khz;
-	struct pllcx_dividers	pllx;	/* target:  CONFIG_PLLX_KHZ */
-	struct pllcx_dividers	pllc;	/* target:  600 MHz */
+	struct pll_fields	pllx;	/* target:  CONFIG_PLLX_KHZ */
+	struct pll_fields	pllc;	/* target:  600 MHz */
 	/* PLLM is set up dynamically by clock_sdram(). */
 	/* PLLP is hardwired to 408 MHz in HW (unless we set BASE_OVRD). */
-	struct pllu_dividers	pllu;	/* target;  960 MHz */
-	struct pllcx_dividers	plldp;	/* target;  270 MHz */
+	struct pll_fields	pllu;	/* target;  960 MHz */
+	struct pll_fields	plldp;	/* target;  270 MHz */
 	/* PLLDP treats p differently (OUT = VCO / (p + 1) for p < 6). */
 } static const osc_table[16] = {
 	[OSC_FREQ_12]{
 		.khz = 12000,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 12000, .m =  1, .p = 0},
-		.pllc = {.n =  50, .m =  1, .p = 0},
-		.pllu = {.n = 960, .m = 12, .p = 0, .cpcon = 12, .lfcon = 2},
-		.plldp = {.n = 90, .m =  1, .p = 3},
+		.pllx = {.n = TEGRA_PLLX_KHZ / 12000, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  50, .n_shift = 10, .m =  1, .m_shift = 0,
+			 .p = 0, .p_shift = 20},
+		.pllu = {.n = 240, .n_shift = 8, .m = 3, .m_shift = 0,
+			 .p = 0, .p_shift = 16},
+		.plldp = {.n = 90, .n_shift = 8, .m =  1, .m_shift = 0,
+			 .p = 3, .p_shift = 19},
 	},
 	[OSC_FREQ_13]{
 		.khz = 13000,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 13000, .m =  1, .p = 0},
-		.pllc = {.n =  46, .m =  1, .p = 0},		 /* 598.0 MHz */
-		.pllu = {.n = 960, .m = 13, .p = 0, .cpcon = 12, .lfcon = 2},
-		.plldp = {.n = 83, .m =  1, .p = 3},		 /* 269.8 MHz */
+		.pllx = {.n = TEGRA_PLLX_KHZ / 13000, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  46, .n_shift = 10, .m =  1, .m_shift = 0,
+			 .p = 0, .p_shift = 20},		 /* 598.0 MHz */
+		.pllu = {.n = 148, .n_shift = 8, .m = 2, .m_shift = 0,
+			 .p = 0, .p_shift = 16},		 /* 962.0 MHz */
+		.plldp = {.n = 83, .n_shift = 8, .m =  1, .m_shift = 0,
+			  .p = 3, .p_shift = 19},		 /* 269.8 MHz */
 	},
 	[OSC_FREQ_16P8]{
 		.khz = 16800,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 16800, .m =  1, .p = 0},
-		.pllc = {.n =  71, .m =  1, .p = 1},		 /* 596.4 MHz */
-		.pllu = {.n = 400, .m =  7, .p = 0, .cpcon = 5, .lfcon = 2},
-		.plldp = {.n = 64, .m =  1, .p = 3},		 /* 268.8 MHz */
+		.pllx = {.n = TEGRA_PLLX_KHZ / 16800, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  71, .n_shift = 10, .m =  1, .m_shift = 0,
+			 .p = 1, .p_shift = 20},		 /* 596.4 MHz */
+		.pllu = {.n = 229, .n_shift = 8, .m =  4, .m_shift = 0,
+			 .p = 0, .p_shift = 16},		 /* 961.8 MHz */
+		.plldp = {.n = 64, .n_shift = 8, .m =  1, .m_shift = 0,
+			  .p = 3, .p_shift = 19},		 /* 268.8 MHz */
 	},
 	[OSC_FREQ_19P2]{
 		.khz = 19200,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 19200, .m =  1, .p = 0},
-		.pllc = {.n =  62, .m =  1, .p = 1},		 /* 595.2 MHz */
-		.pllu = {.n = 200, .m =  4, .p = 0, .cpcon = 3, .lfcon = 2},
-		.plldp = {.n = 56, .m =  1, .p = 3},		 /* 268.8 MHz */
+		.pllx = {.n = TEGRA_PLLX_KHZ / 19200, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  62, .n_shift = 10, .m =  1, .m_shift = 0,
+			 .p = 1, .p_shift = 20},		 /* 595.2 MHz */
+		.pllu = {.n = 200, .n_shift = 8, .m =  4, .m_shift = 0,
+			 .p = 0, .p_shift = 16},
+		.plldp = {.n = 56, .n_shift = 8, .m =  1, .m_shift = 0,
+			  .p = 3, .p_shift = 19},		 /* 268.8 MHz */
 	},
 	[OSC_FREQ_26]{
 		.khz = 26000,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 26000, .m =  1, .p = 0},
-		.pllc = {.n =  23, .m =  1, .p = 0},		 /* 598.0 MHz */
-		.pllu = {.n = 960, .m = 26, .p = 0, .cpcon = 12, .lfcon = 2},
-		.plldp = {.n = 83, .m =  2, .p = 3},		 /* 269.8 MHz */
+		.pllx = {.n = TEGRA_PLLX_KHZ / 26000, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  23, .n_shift = 10, .m =  1, .m_shift = 0,
+			 .p = 0, .p_shift = 20},		 /* 598.0 MHz */
+		.pllu = {.n = 148, .n_shift = 8, .m = 4, .m_shift = 0,
+			 .p = 0, .p_shift = 16},		 /* 962.0 MHz */
+		.plldp = {.n = 83, .n_shift = 8, .m =  2, .m_shift = 0,
+			 .p = 3, .p_shift = 19},		 /* 269.8 MHz */
 	},
-	/* These oscillators get predivided as PLL inputs... n/m/p divisors for
-	 * 38.4 should always match 19.2, and 48 should always match 12. */
 	[OSC_FREQ_38P4]{
 		.khz = 38400,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 19200, .m =  1, .p = 0},
-		.pllc = {.n =  62, .m =  1, .p = 1},		 /* 595.2 MHz */
-		.pllu = {.n = 200, .m =  4, .p = 0, .cpcon = 3, .lfcon = 2},
-		.plldp = {.n = 56, .m =  1, .p = 3},		 /* 268.8 MHz */
+		.pllx = {.n = TEGRA_PLLX_KHZ / 38400, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  62, .n_shift = 10, .m =  2, .m_shift = 0,
+			 .p = 1, .p_shift = 20},		/* 595.2 MHz */
+		.pllu = {.n = 200, .n_shift = 8, .m = 8, .m_shift = 0,
+			 .p = 0, .p_shift = 16},
+		.plldp = {.n = 56, .n_shift = 8, .m =  2, .m_shift = 0,
+			 .p = 3, .p_shift = 19},		/* 268.8 MHz */
 	},
 	[OSC_FREQ_48]{
 		.khz = 48000,
-		.pllx = {.n = TEGRA_PLLX_KHZ / 12000, .m =  1, .p = 0},
-		.pllc = {.n =  50, .m =  1, .p = 0},
-		.pllu = {.n = 960, .m = 12, .p = 0, .cpcon = 12, .lfcon = 2},
-		.plldp = {.n = 90, .m =  1, .p = 3},
+		.pllx = {.n = TEGRA_PLLX_KHZ / 48000, .n_shift = 8, .m =  1,
+			 .m_shift = 0, .p = 0, .p_shift = 20},
+		.pllc = {.n =  50, .n_shift = 10, .m =  1, .m_shift = 0,
+			 .p = 0, .p_shift = 20},
+		.pllu = {.n = 240, .n_shift = 8, .m = 12, .m_shift = 0,
+			 .p = 0, .p_shift = 16},
+		.plldp = {.n = 90, .n_shift = 8, .m =  1, .m_shift = 0,
+			 .p = 3, .p_shift = 19},
 	},
 };
 
@@ -212,27 +204,28 @@ void sor_clock_start(void)
 	setbits_le32(CLK_RST_REG(clk_src_sor), SOR0_CLK_SEL0);
 }
 
-static void init_pll(u32 *base, u32 *misc, const union pll_fields pll, u32 lock)
+static void init_pll(u32 *base, u32 *misc, struct pll_fields pll, u32 lock)
 {
-	u32 dividers =  pll.div.n << PLL_BASE_DIVN_SHIFT |
-			pll.div.m << PLL_BASE_DIVM_SHIFT |
-			pll.div.p << PLL_BASE_DIVP_SHIFT;
-	u32 misc_con = pll.div.cpcon << PLL_MISC_CPCON_SHIFT |
-		       pll.div.lfcon << PLL_MISC_LFCON_SHIFT;
+	u32 dividers =  pll.n << pll.n_shift |
+			pll.m << pll.m_shift |
+			pll.p << pll.p_shift;
 
 	/* Write dividers but BYPASS the PLL while we're messing with it. */
 	write32(base, dividers | PLL_BASE_BYPASS);
+
 	/*
-	 * Set Lock bit, CPCON and LFCON fields (default to 0 if it doesn't
-	 * exist for this PLL)
+	 * Set Lock bit if needed
 	 */
-	write32(misc, lock | misc_con);
+	if (lock)
+		write32(misc, lock);
 
 	/* Enable PLL and take it back out of BYPASS */
 	write32(base, dividers | PLL_BASE_ENABLE);
 
 	/* Wait for lock ready */
-	while (!(read32(base) & PLL_BASE_LOCK));
+	if (lock)
+		while (!(read32(base) & PLL_BASE_LOCK))
+			;
 }
 
 static void init_utmip_pll(void)
@@ -315,7 +308,7 @@ u32 clock_configure_plld(u32 frequency)
 	 * Note values undershoot or overshoot target output frequency may not
 	 * work if the values are not in "safe" range by panel specification.
 	 */
-	struct pllpad_dividers plld = { 0 };
+	struct pll_fields plld = { 0 };
 	u32 ref = clock_get_pll_input_khz() * 1000, m, n, p = 0;
 	u32 cf, vco, rounded_rate = frequency;
 	u32 diff, best_diff;
@@ -360,15 +353,6 @@ u32 clock_configure_plld(u32 frequency)
 		plld.n = n;
 	}
 
-	if (plld.n < 50)
-		plld.cpcon = 2;
-	else if (plld.n < 300)
-		plld.cpcon = 3;
-	else if (plld.n < 600)
-		plld.cpcon = 8;
-	else
-		plld.cpcon = 12;
-
 	if (best_diff) {
 		printk(BIOS_WARNING, "%s: Failed to match output frequency %u, "
 		       "best difference is %u.\n", __func__, frequency,
@@ -376,11 +360,14 @@ u32 clock_configure_plld(u32 frequency)
 		rounded_rate = (ref / plld.m * plld.n) >> plld.p;
 	}
 
-	printk(BIOS_DEBUG, "%s: PLLD=%u ref=%u, m/n/p/cpcon=%u/%u/%u/%u\n",
-	       __func__, rounded_rate, ref, plld.m, plld.n, plld.p, plld.cpcon);
+	printk(BIOS_DEBUG, "%s: PLLD=%u ref=%u, m/n/p=%u/%u/%u\n",
+	       __func__, rounded_rate, ref, plld.m, plld.n, plld.p);
 
+	plld.n_shift = PLLD_N_SHIFT;
+	plld.m_shift = PLLD_M_SHIFT;
+	plld.p_shift = PLLD_P_SHIFT;
 	init_pll(CLK_RST_REG(plld_base), CLK_RST_REG(plld_misc), plld,
-		 (PLLUD_MISC_LOCK_ENABLE | PLLD_MISC_CLK_ENABLE));
+		 (PLLD_MISC_LOCK_ENABLE | PLLD_MISC_CLK_ENABLE));
 
 	if (rounded_rate != frequency)
 		printk(BIOS_DEBUG, "PLLD rate: %u vs %u\n", rounded_rate,
@@ -389,17 +376,18 @@ u32 clock_configure_plld(u32 frequency)
 	return rounded_rate;
 }
 
-/* Initialize the UART and put it on CLK_M so we can use it during clock_init().
- * Will later move it to PLLP in clock_config(). The divisor must be very small
- * to accomodate 12KHz OSCs, so we override the 16.0 UART divider with the 15.1
- * CLK_SOURCE divider to get more precision. (This might still not be enough for
- * some OSCs... if you use 13KHz, be prepared to have a bad time.) The 1900 has
- * been determined through trial and error (must lead to div 13 at 24MHz). */
+/*
+ * Initialize the UART and use PLLP as clock source. PLLP is hardwired to 408
+ * MHz in HW (unless we set BASE_OVRD). We override the 16.0 UART divider with
+ * the 15.1 CLK_SOURCE divider to get more precision. The 1843(KHZ) is
+ * calculated thru BAUD_RATE*16/1000, ie, 115200*16/1000.
+ */
 void clock_early_uart(void)
 {
 	write32(CLK_RST_REG(clk_src_uarta),
-		CLK_SRC_DEV_ID(UARTA, CLK_M) << CLK_SOURCE_SHIFT |
-		CLK_UART_DIV_OVERRIDE | CLK_DIVIDER(TEGRA_CLK_M_KHZ, 1900));
+		CLK_SRC_DEV_ID(UARTA, PLLP) << CLK_SOURCE_SHIFT |
+		CLK_UART_DIV_OVERRIDE |
+		CLK_DIVIDER(TEGRA_PLLP_KHZ, 1843));
 
 	clock_enable_clear_reset_l(CLK_L_UARTA);
 }
@@ -532,13 +520,25 @@ void clock_halt_avp(void)
 void clock_init(void)
 {
 	u32 osc = clock_get_osc_bits();
+	u32 reg;
 
-	/* Set PLLC dynramp_step A to 0x2b and B to 0xb (from U-Boot -- why? */
-	write32(CLK_RST_REG(pllc_misc2), 0x2b << 17 | 0xb << 9);
+	/* Clear PLLC reset */
+	reg = read32(CLK_RST_REG(pllc_misc));
+	reg &= ~PLLC_MISC_RESET;
+	write32(CLK_RST_REG(pllc_misc), reg);
+
+	/* Clear PLLC IDDQ */
+	reg = read32(CLK_RST_REG(pllc_misc_1));
+	reg &= ~PLLC_MISC_1_IDDQ;
+	write32(CLK_RST_REG(pllc_misc_1), reg);
 
 	/* Max out the AVP clock before everything else (need PLLC for that). */
 	init_pll(CLK_RST_REG(pllc_base), CLK_RST_REG(pllc_misc),
-		osc_table[osc].pllc, PLLC_MISC_LOCK_ENABLE);
+		osc_table[osc].pllc, 0);
+
+	/* wait for pllc_lock (not the normal bit 27) */
+	while (!(read32(CLK_RST_REG(pllc_base)) & PLLC_BASE_LOCK))
+		;
 
 	/* Typical ratios are 1:2:2 or 1:2:3 sclk:hclk:pclk (See: APB DMA
 	 * features section in the TRM). */
@@ -577,7 +577,7 @@ void clock_init(void)
 
 	/* init pllu */
 	init_pll(CLK_RST_REG(pllu_base), CLK_RST_REG(pllu_misc),
-		osc_table[osc].pllu, PLLUD_MISC_LOCK_ENABLE);
+		osc_table[osc].pllu, PLLU_MISC_LOCK_ENABLE);
 
 	init_utmip_pll();
 	graphics_pll();

@@ -46,8 +46,8 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 _rsv2[8];			/*                      0x060-07C */
 	u32 pllc_base;			/* _PLLC_BASE,              0x080 */
 	u32 pllc_out;			/* _PLLC_OUT,               0x084 */
-	u32 pllc_misc2;			/* _PLLC_MISC2,             0x088 */
-	u32 pllc_misc;			/* _PLLC_MISC,              0x08c */
+	u32 pllc_misc;			/* _PLLC_MISC,              0x088 */
+	u32 pllc_misc_1;		/* _PLLC_MISC_1,            0x08c */
 	u32 pllm_base;			/* _PLLM_BASE,              0x090 */
 	u32 pllm_out;			/* _PLLM_OUT,               0x094 */
 	u32 pllm_misc1;			/* _PLLM_MISC1,             0x098 */
@@ -369,6 +369,7 @@ enum {
 #define PLL_BASE_REF_DIS		(1U << 29)
 #define PLL_BASE_OVRRIDE		(1U << 28)
 #define PLL_BASE_LOCK			(1U << 27)
+#define PLLC_BASE_LOCK			(1U << 26)
 
 #define PLL_BASE_DIVP_SHIFT		20
 #define PLL_BASE_DIVP_MASK		(7U << PLL_BASE_DIVP_SHIFT)
@@ -384,6 +385,13 @@ enum {
 #define PLLM_BASE_DIVP_MASK		(0x1U << PLL_BASE_DIVP_SHIFT)
 #define PLLCMX_BASE_DIVN_MASK		(0xffU << PLL_BASE_DIVN_SHIFT)
 #define PLLCMX_BASE_DIVM_MASK		(0xffU << PLL_BASE_DIVM_SHIFT)
+
+/* Added based on T210 TRM */
+#define PLLC_MISC_RESET			(1U << 30)
+#define PLLC_MISC_1_IDDQ		(1U << 27)
+#define PLLD_N_SHIFT			11
+#define PLLD_M_SHIFT			0
+#define PLLD_P_SHIFT			20
 
 /* PLLM specific registers */
 #define PLLM_MISC1_SETUP_SHIFT			0
@@ -411,24 +419,13 @@ enum {
 #define PLL_OUT3_SHIFT			0
 #define PLL_OUT4_SHIFT			16
 
-/* CLK_RST_CONTROLLER_PLL*_MISC_0 */
-#define PLL_MISC_DCCON			(1 << 20)
-
-#define PLL_MISC_CPCON_SHIFT		8
-#define PLL_MISC_CPCON_MASK		(0xfU << PLL_MISC_CPCON_SHIFT)
-
-#define PLL_MISC_LFCON_SHIFT		4
-#define PLL_MISC_LFCON_MASK		(0xfU << PLL_MISC_LFCON_SHIFT)
-
-/* This bit is different all over the place. Oh joy... */
+/* This bit is different all over the place. */
 #define PLLDPD2_MISC_LOCK_ENABLE	(1 << 30)
-#define PLLC_MISC_LOCK_ENABLE		(1 << 24)
-#define PLLUD_MISC_LOCK_ENABLE		(1 << 22)
-#define PLLD_MISC_CLK_ENABLE		(1 << 30)
+#define PLLU_MISC_LOCK_ENABLE		(1 << 29)
+#define PLLD_MISC_LOCK_ENABLE		(1 << 18)
+#define PLLD_MISC_CLK_ENABLE		(1 << 21)
 #define PLLPAXS_MISC_LOCK_ENABLE	(1 << 18)
 #define PLLE_MISC_LOCK_ENABLE		(1 << 9)
-
-#define PLLU_MISC_VCO_FREQ		(1 << 20)
 
 /* PLLX_BASE_0 0xe0 */
 #define PLLX_BASE_PLLX_ENABLE		(1 << 30)
