@@ -35,19 +35,14 @@
 void main(void)
 {
 	void *entry;
-	uint64_t start_romstage_time;
-	uint64_t before_dram_time;
-	uint64_t after_dram_time;
-	uint64_t base_time = timestamp_get();
-	start_romstage_time = timestamp_get();
+
+	timestamp_add_now(TS_START_ROMSTAGE);
 
 	console_init();
 
-	before_dram_time = timestamp_get();
-
+	timestamp_add_now(TS_BEFORE_INITRAM);
 	sdram_init();
-
-	after_dram_time = timestamp_get();
+	timestamp_add_now(TS_AFTER_INITRAM);
 
 	/* Now that DRAM is up, add mappings for it and DMA coherency buffer. */
 	mmu_config_range((uintptr_t)_dram/MiB,
@@ -57,18 +52,13 @@ void main(void)
 
 	cbmem_initialize_empty();
 
-	timestamp_init(base_time);
-	timestamp_add(TS_START_ROMSTAGE, start_romstage_time);
-	timestamp_add(TS_BEFORE_INITRAM, before_dram_time);
-	timestamp_add(TS_AFTER_INITRAM, after_dram_time);
-
 	entry = vboot2_load_ramstage();
 
 	if (entry == NULL) {
-		timestamp_add(TS_START_COPYRAM, timestamp_get());
+		timestamp_add_now(TS_START_COPYRAM);
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 					CONFIG_CBFS_PREFIX "/ramstage");
-		timestamp_add(TS_END_COPYRAM, timestamp_get());
+		timestamp_add_now(TS_END_COPYRAM);
 		if (entry == (void *)-1)
 			die("failed to load ramstage\n");
 	}
