@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -581,6 +582,11 @@ static void usage(char *name)
 	     " update-fit -n MICROCODE_BLOB_NAME -x EMTPY_FIT_ENTRIES\n  "
 			"Updates the FIT table with microcode entries\n"
 	     "\n"
+	     "OFFSETs:\n"
+	     "  Numbers accompanying -b, -H, and -o switches may be provided\n"
+	     "  in two possible formats: if their value is greater than\n"
+	     "  0x80000000, they are interpreted as a top-aligned x86 memory\n"
+	     "  address; otherwise, they are treated as an offset into flash.\n"
 	     "ARCHes:\n"
 	     "  arm64, arm, mips, x86\n"
 	     "TYPEs:\n", name, name

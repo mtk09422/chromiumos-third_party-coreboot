@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <libgen.h>
 #include "common.h"
 #include "cbfs.h"
@@ -33,7 +34,7 @@ int verbose = 0;
 int is_big_endian(void)
 {
 	static const uint32_t inttest = 0x12345678;
-	uint8_t inttest_lsb = *(uint8_t *)&inttest;
+	const uint8_t inttest_lsb = *(const uint8_t *)&inttest;
 	if (inttest_lsb == 0x12) {
 		return 1;
 	}

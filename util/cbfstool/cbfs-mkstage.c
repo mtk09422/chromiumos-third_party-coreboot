@@ -243,7 +243,7 @@ int parse_elf_to_stage(const struct buffer *input, struct buffer *output,
 	 */
 	if (compress(buffer, data_end - data_start,
 		     (output->data + sizeof(struct cbfs_stage)),
-		     &outlen) < 0 || outlen > data_end - data_start) {
+		     &outlen) < 0 || (unsigned)outlen > data_end - data_start) {
 		WARN("Compression failed or would make the data bigger "
 		     "- disabled.\n");
 		memcpy(output->data + sizeof(struct cbfs_stage),
