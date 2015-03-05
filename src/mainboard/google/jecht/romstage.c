@@ -50,7 +50,7 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 	romstage_common(rp);
 }
 
-void mainboard_pre_console_init(void)
+void mainboard_pre_console_init(struct romstage_params *params)
 {
 	/* Early SuperIO setup */
 	it8772f_kill_watchdog();
