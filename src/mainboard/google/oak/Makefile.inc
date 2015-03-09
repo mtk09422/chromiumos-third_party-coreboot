@@ -20,7 +20,7 @@
 bootblock-y += memlayout.ld
 bootblock-c-ccopts += -mstrict-align
 
-romstage-y += romstage.c
+romstage-y += romstage.c custom_emi.c
 romstage-y += memlayout.ld
 romstage-c-ccopts += -mstrict-align
 

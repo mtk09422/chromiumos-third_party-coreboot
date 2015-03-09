@@ -40,6 +40,7 @@
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic.h>
 #include <soc/rtc.h>
+#include <soc/memory.h>
 #include <soc/wdt.h>
 #include <soc/da9212.h>
 #include <soc/cpu.h>
@@ -74,6 +75,9 @@ void main(void)
 
 	/* init uart baudrate when pll on */
 	console_init();
+
+	/* init memory */
+	mt_mem_init();
 
 	trustzone_region_init();
 

@@ -42,7 +42,9 @@ romstage-y += spi.c
 romstage-y += gpio.c gpio_init.c
 romstage-y += pmic_wrap_init.c i2c.c pmic.c da9212.c
 romstage-y += 	wdt.c \
-		rtc.c
+		emi.c dramc_pi_basic_api.c dramc_pi_calibration_api.c \
+		stdlib.c \
+		rtc.c memory.c
 romstage-y += addressmap.c
 
 ################################################################################

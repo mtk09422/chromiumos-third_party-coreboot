@@ -19,6 +19,8 @@
 
 #ifndef SOC_MEDIATEK_MT8173_PLL_H
 #include <soc/addressmap.h>
+#include <soc/dramc_pi_api.h>
+#include "custom_emi.h"
 #define SOC_MEDIATEK_MT8173_PLL_H
 
 enum {
@@ -275,6 +277,7 @@ enum {
 int spm_mtcmos_ctrl_disp(int state);
 void mt_pll_post_init(void);
 void mt_pll_init(void);
+void mt_mempll_cali(DRAMC_CTX_T *p);
 void mt_arm_pll_sel(void);
 
 #define DRV_WriteReg32(addr, val)	write32( (void *)(uintptr_t)(addr), (val))
