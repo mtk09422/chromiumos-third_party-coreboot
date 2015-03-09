@@ -36,6 +36,7 @@ romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 romstage-y += spi.c
+romstage-y += 	wdt.c
 romstage-y += addressmap.c
 
 ################################################################################

@@ -31,10 +31,14 @@
 
 #include <soc/addressmap.h>
 #include <soc/mt8173.h>
+#include <soc/wdt.h>
 
 void main(void)
 {
 	void *entry = NULL;
+
+	/* init watch dog, will disable AP watch dog */
+	mtk_wdt_init();
 
 	/* init uart baudrate when pll on */
 	console_init();
