@@ -20,6 +20,7 @@
 #include <arch/io.h>
 #include <soc/mt8173.h>
 #include <delay.h>
+#include <soc/pll.h>
 #include <console/console.h>
 
 extern void bootblock_soc_init(void);
@@ -30,5 +31,6 @@ void bootblock_mainboard_init(void)
 {
 	init_timer();
 
+	mt_pll_init();
 	bootblock_soc_init();
 }

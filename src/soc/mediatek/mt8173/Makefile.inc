@@ -20,6 +20,7 @@
 bootblock-y += bootblock.c
 bootblock-y += cpu_lib.S
 bootblock-y += emmc_cbfs.c
+bootblock-y += pll_pre.c
 bootblock-y += spi.c
 bootblock-y += i2c.c
 bootblock-y += timer.c monotonic_timer.c
@@ -31,6 +32,7 @@ endif
 
 romstage-y += cpu_lib.S
 romstage-y += emmc_cbfs.c
+romstage-y += pll_pre.c pll.c
 romstage-y += timer.c monotonic_timer.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c

@@ -33,6 +33,7 @@
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/addressmap.h>
+#include <soc/pll.h>
 #include <soc/i2c.h>
 #include <soc/mt8173.h>
 #include <soc/i2c.h>
@@ -42,6 +43,12 @@ void main(void)
 {
 	void *entry = NULL;
 	timestamp_add_now(TS_START_ROMSTAGE);
+
+	mt_pll_post_init();
+
+	/* post init pll */
+	mt_pll_post_init();
+	mt_arm_pll_sel();
 
 	/* Setup TPM */
 	mtk_i2c_init(0x11009000, 2, 0, 0x20, 0);
