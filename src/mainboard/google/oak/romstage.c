@@ -30,12 +30,17 @@
 #include <delay.h>
 
 #include <soc/addressmap.h>
+#include <soc/i2c.h>
 #include <soc/mt8173.h>
+#include <soc/i2c.h>
 #include <soc/wdt.h>
 
 void main(void)
 {
 	void *entry = NULL;
+
+	/* Setup TPM */
+	mtk_i2c_init(0x11009000, 2, 0, 0x20, 0);
 
 	/* init watch dog, will disable AP watch dog */
 	mtk_wdt_init();
