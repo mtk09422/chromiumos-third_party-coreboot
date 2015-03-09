@@ -55,4 +55,14 @@ enum {
 	MTK_GICC_BASE =		0x10222000
 };
 
+enum {
+	CARVEOUT_TZ,
+	CARVEOUT_NUM
+};
+
+/* Provided the careout id, obtain the base and size in 1MiB units. */
+void carveout_range(int id, uintptr_t *base_mib, size_t *size_mib);
+
+void trustzone_region_init(void);
+
 #endif /* __SOC_MEDIATEK_MT8173_INCLUDE_SOC_ADDRESS_MAP_H___ */

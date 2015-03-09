@@ -23,6 +23,8 @@
 #include <symbols.h>
 #include <gic.h>
 
+#include <soc/clock.h>
+
 static void soc_read_resources(device_t dev)
 {
 	ram_resource(dev, 0, (uintptr_t)_dram / KiB,
@@ -47,6 +49,9 @@ static struct cpu_control_ops cntrl_ops = {
 static void soc_init(device_t dev)
 {
 	printk(BIOS_INFO, "CPU: Mediatek MT8173\n");
+
+	/* Initialize MT8173 CPU timer */
+	clock_init_mt8173_timer();
 
 	arch_initialize_cpus(dev, &cntrl_ops);
 }

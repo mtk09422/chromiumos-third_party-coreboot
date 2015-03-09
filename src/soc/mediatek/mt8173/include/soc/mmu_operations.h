@@ -20,6 +20,9 @@
 #ifndef __SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
 #define __SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
 
+/* Default TTB size in MiB*/
+#define TTB_SIZE 2
+
 /*
  * Add any board-specific memory ranges to the address map when executing
  * on aarchv8 core.

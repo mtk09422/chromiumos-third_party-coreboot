@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2014 Google Inc.
+ * Copyright 2015 MediaTek Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <memlayout.h>
-#include <arch/header.ld>
+#ifndef SOC_MEDIATEK_MT8173_CLOCK_H
+#define SOC_MEDIATEK_MT8173_CLOCK_H
 
-#define SRAM_L2C_START(addr) SYMBOL(sram_l2c, addr)
-#define SRAM_L2C_END(addr) SYMBOL(esram_l2c, addr)
+void clock_init_mt8173_timer(void);
 
-SECTIONS
-{
-	SRAM_L2C_START(0x000C0000)
-	TIMESTAMP(0x000C0C00, 1K)
-	BOOTBLOCK(0x000C1000, 58K)
-	ROMSTAGE(0x000D1000, 150K)
-	SRAM_L2C_END(0x00100000)
-
-	SRAM_START(0x00100000)
-	PRERAM_CBMEM_CONSOLE(0x00104020, 8K - 32)
-	STACK(0x00106000, 16K)
-	PRERAM_CBFS_CACHE(0x0010A000, 32K)
-	SRAM_END(0x00130000)
-
-	DRAM_START(0x40000000)
-	POSTRAM_CBFS_CACHE(0x40100000, 1M)
-	RAMSTAGE(0x40200000, 256K)
-}
+#endif /* SOC_MEDIATEK_MT8173_CLOCK_H */

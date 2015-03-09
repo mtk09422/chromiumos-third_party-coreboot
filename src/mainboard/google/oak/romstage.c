@@ -29,6 +29,7 @@
 #include <symbols.h>
 #include <delay.h>
 
+#include <soc/addressmap.h>
 #include <soc/mt8173.h>
 
 void main(void)
@@ -37,6 +38,8 @@ void main(void)
 
 	/* init uart baudrate when pll on */
 	console_init();
+
+	trustzone_region_init();
 
 	/* should be called after memory init */
 	cbmem_initialize_empty();

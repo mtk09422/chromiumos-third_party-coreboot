@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2014 Google Inc.
+ * Copyright 2015 MediaTek Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <memlayout.h>
-#include <arch/header.ld>
+#include <stdint.h>
+#include <arch/io.h>
+#include <arch/clock.h>
+#include <soc/addressmap.h>
+#include <soc/clock.h>
 
-#define SRAM_L2C_START(addr) SYMBOL(sram_l2c, addr)
-#define SRAM_L2C_END(addr) SYMBOL(esram_l2c, addr)
+enum {
+	MTK_XGPT = MTK_MCUCFG_BASE + 0x670, // XGPT control register
+	MTK_XGPT_IDX = MTK_MCUCFG_BASE + 0x674 // XGPT control index register
+};
 
-SECTIONS
+void clock_init_mt8173_timer(void)
 {
-	SRAM_L2C_START(0x000C0000)
-	TIMESTAMP(0x000C0C00, 1K)
-	BOOTBLOCK(0x000C1000, 58K)
-	ROMSTAGE(0x000D1000, 150K)
-	SRAM_L2C_END(0x00100000)
+	const uint32_t freq = 13 * MHz;
 
-	SRAM_START(0x00100000)
-	PRERAM_CBMEM_CONSOLE(0x00104020, 8K - 32)
-	STACK(0x00106000, 16K)
-	PRERAM_CBFS_CACHE(0x0010A000, 32K)
-	SRAM_END(0x00130000)
-
-	DRAM_START(0x40000000)
-	POSTRAM_CBFS_CACHE(0x40100000, 1M)
-	RAMSTAGE(0x40200000, 256K)
+	/* align the clock of coprocessor to 13MHz */
+	write32((uint32_t *)MTK_XGPT_IDX, 0);
+	write32((uint32_t *)MTK_XGPT, (0x1 | (0x2 << 8)));
+	set_cntfrq(freq);
 }

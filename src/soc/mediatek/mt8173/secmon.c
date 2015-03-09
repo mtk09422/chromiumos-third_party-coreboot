@@ -17,27 +17,34 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <memlayout.h>
-#include <arch/header.ld>
+#include <arch/secmon.h>
+#include <console/console.h>
+#include <soc/addressmap.h>
+#include <soc/mmu_operations.h>
 
-#define SRAM_L2C_START(addr) SYMBOL(sram_l2c, addr)
-#define SRAM_L2C_END(addr) SYMBOL(esram_l2c, addr)
-
-SECTIONS
+static void soc_get_secure_mem(uint64_t *base, size_t *size)
 {
-	SRAM_L2C_START(0x000C0000)
-	TIMESTAMP(0x000C0C00, 1K)
-	BOOTBLOCK(0x000C1000, 58K)
-	ROMSTAGE(0x000D1000, 150K)
-	SRAM_L2C_END(0x00100000)
+	uintptr_t tz_base_mib;
+	size_t tz_size_mib;
 
-	SRAM_START(0x00100000)
-	PRERAM_CBMEM_CONSOLE(0x00104020, 8K - 32)
-	STACK(0x00106000, 16K)
-	PRERAM_CBFS_CACHE(0x0010A000, 32K)
-	SRAM_END(0x00130000)
+	carveout_range(CARVEOUT_TZ, &tz_base_mib, &tz_size_mib);
 
-	DRAM_START(0x40000000)
-	POSTRAM_CBFS_CACHE(0x40100000, 1M)
-	RAMSTAGE(0x40200000, 256K)
+	tz_base_mib *= MiB;
+	tz_size_mib *= MiB;
+
+	*base = tz_base_mib;
+	*size = tz_size_mib;
+}
+
+void soc_get_secmon_base_size(uint64_t *base, size_t *size)
+{
+	uintptr_t tz_base;
+	size_t ttb_size, tz_size;
+
+	soc_get_secure_mem(&tz_base, &tz_size);
+
+	ttb_size = TTB_SIZE * MiB;
+
+	*base = tz_base + ttb_size;
+	*size = tz_size - ttb_size;
 }

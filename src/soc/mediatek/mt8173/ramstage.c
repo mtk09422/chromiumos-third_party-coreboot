@@ -18,9 +18,11 @@
  */
 
 #include <arch/stages.h>
+#include <soc/addressmap.h>
 #include <soc/mmu_operations.h>
 
 void arm64_soc_init(void)
 {
+	trustzone_region_init();
 	mt8173_mmu_init();
 }

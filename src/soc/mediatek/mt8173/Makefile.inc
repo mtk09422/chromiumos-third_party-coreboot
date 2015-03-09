@@ -36,6 +36,7 @@ romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 romstage-y += spi.c
+romstage-y += addressmap.c
 
 ################################################################################
 
@@ -46,8 +47,13 @@ ramstage-y += emmc_cbfs.c
 ramstage-y += soc.c
 ramstage-y += timer.c monotonic_timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
-ramstage-y += ramstage.c mmu_operations.c
+ramstage-y += ramstage.c mmu_operations.c clock.c
 ramstage-y += gic.c
+ramstage-y += addressmap.c
+ramstage-$(CONFIG_ARCH_USE_SECURE_MONITOR) += secmon.c
+
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += psci.c
 
 rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
 # TODO: remove this when vbootstub 64-bit align problem has been fixed.
