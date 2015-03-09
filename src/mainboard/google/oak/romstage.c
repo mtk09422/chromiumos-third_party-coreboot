@@ -39,6 +39,7 @@
 #include <soc/mt8173.h>
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic.h>
+#include <soc/rtc.h>
 #include <soc/wdt.h>
 #include <soc/da9212.h>
 
@@ -65,6 +66,10 @@ void main(void)
 
 	/* init watch dog, will disable AP watch dog */
 	mtk_wdt_init();
+
+	rtc_boot_check();
+
+	rtc_bbpu_power_on();
 
 	/* init uart baudrate when pll on */
 	console_init();
