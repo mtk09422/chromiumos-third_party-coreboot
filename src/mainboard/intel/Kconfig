@@ -23,6 +23,8 @@ config BOARD_INTEL_MTARVON
 	bool "3100 devkit (Mt. Arvon)"
 config BOARD_INTEL_PEARLVALLEY
 	bool "Pearl Valley CRB"
+config BOARD_INTEL_SKLRVP
+	bool "Skylake RVP"
 config BOARD_INTEL_STRAGO
 	bool "Braswell CRB"
 config BOARD_INTEL_TRUXTON
@@ -44,6 +46,7 @@ source "src/mainboard/intel/glados/Kconfig"
 source "src/mainboard/intel/jarrell/Kconfig"
 source "src/mainboard/intel/mtarvon/Kconfig"
 source "src/mainboard/intel/pearlvalley/Kconfig"
+source "src/mainboard/intel/sklrvp/Kconfig"
 source "src/mainboard/intel/strago/Kconfig"
 source "src/mainboard/intel/truxton/Kconfig"
 source "src/mainboard/intel/wtm2/Kconfig"

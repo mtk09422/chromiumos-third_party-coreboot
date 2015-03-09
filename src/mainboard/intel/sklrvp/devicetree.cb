@@ -1,0 +1,101 @@
+chip soc/intel/skylake
+
+	# Enable eDP Hotplug with 6ms pulse
+	register "gpu_dp_d_hotplug" = "0x06"
+
+	# Enable DDI1 Hotplug with 6ms pulse
+	register "gpu_dp_b_hotplug" = "0x06"
+
+	# Enable DDI2 Hotplug with 6ms pulse
+	register "gpu_dp_c_hotplug" = "0x06"
+
+	# Set backlight PWM values for eDP
+	register "gpu_cpu_backlight" = "0x00000200"
+	register "gpu_pch_backlight" = "0x04000000"
+
+	# Enable Panel and configure power delays
+	register "gpu_panel_port_select" = "1"			# eDP
+	register "gpu_panel_power_cycle_delay" = "6"		# 500ms
+	register "gpu_panel_power_up_delay" = "2000"		# 200ms
+	register "gpu_panel_power_down_delay" = "500"		# 50ms
+	register "gpu_panel_power_backlight_on_delay" = "2000"	# 200ms
+	register "gpu_panel_power_backlight_off_delay" = "2000"	# 200ms
+
+	register "pirqa_routing" = "0x8b"
+	register "pirqb_routing" = "0x8a"
+	register "pirqc_routing" = "0x8b"
+	register "pirqd_routing" = "0x8b"
+	register "pirqe_routing" = "0x80"
+	register "pirqf_routing" = "0x80"
+	register "pirqg_routing" = "0x80"
+	register "pirqh_routing" = "0x80"
+
+	# EC range is 0x800-0x9ff
+	register "gen1_dec" = "0x00fc0801"
+	register "gen2_dec" = "0x00fc0901"
+
+	# EC_SMI is GPIO34
+	register "alt_gp_smi_en" = "0x0004"
+	register "gpe0_en_1" = "0x00000000"
+	# EC_SCI is GPIO36
+	register "gpe0_en_2" = "0x00000010"
+	register "gpe0_en_3" = "0x00000000"
+	register "gpe0_en_4" = "0x00000000"
+
+	register "sio_acpi_mode" = "1"
+
+	# Force enable ASPM for PCIe Port 3
+	register "pcie_port_force_aspm" = "0x04"
+	register "pcie_port_coalesce" = "1"
+
+	# Disable PCIe CLKOUT 1-5 and CLKOUT_XDP
+	register "icc_clock_disable" = "0x013b0000"
+
+	# Enable S0ix
+	register "s0ix_enable" = "0"
+
+	device cpu_cluster 0 on
+		device lapic 0 on end
+	end
+	device domain 0 on
+		device pci 00.0 on  end # host bridge
+		device pci 02.0 on  end # display controller SKL integrated graphics
+		device pci 05.0 on  end # multimedia controller
+		device pci 08.0 on  end # generic system graphics
+		device pci 13.0 on  end # Integrated Sensor Hub
+		device pci 14.0 on  end # USB3 XHCI
+		device pci 14.1 on  end # USB3 OTG
+		device pci 14.2 on  end # signal processing controller/Thermal subsystem
+		device pci 14.3 on  end # Multimedia controller/Camera IO host controller
+		device pci 15.0 on  end # Signal processing unit/I2C0
+		device pci 15.1 on  end # Signal processing unit/I2C1
+		device pci 15.2 off  end # I2C2
+		device pci 15.3 off end # I2C3
+		device pci 15.4 off end # GSPI1
+		device pci 15.5 off end # UART0
+		device pci 15.6 off end # UART1
+		device pci 16.0 on  end # Management Engine Interface 1
+		device pci 16.1 off end # Management Engine Interface 2
+		device pci 16.2 off end # IDE Redirection
+		device pci 16.3 off end # Keyboard and Text (KT) Redirection
+		device pci 16.4 on end # Management Engine Interface 3
+		device pci 17.0 on  end # Mass storage controller/SATA/AHCI
+		device pci 1b.0 off end # High Definition Audio
+		device pci 1c.0 off end # PCIe Port #1
+		device pci 1c.1 off end # PCIe Port #2
+		device pci 1c.2 off  end # PCIe Port #3
+		device pci 1c.3 off end # PCIe Port #4
+		device pci 1c.4 off end # PCIe Port #5
+		device pci 1c.5 off end # PCIe Port #6
+		device pci 1d.0 off end # USB2 EHCI
+		device pci 1e.0 on end # Signal processing Controller/PCI Bridge
+		device pci 1e.4 on end # generic system pheripheral
+		device pci 1e.5 on end # UART 0
+		device pci 1f.0 on
+		end # LPC bridge
+		device pci 1f.2 on  end # PMC
+		device pci 1f.3 on end # HDA
+		device pci 1f.4 off end # SMBUS
+		device pci 1f.6 off  end # GBE
+	end
+end
