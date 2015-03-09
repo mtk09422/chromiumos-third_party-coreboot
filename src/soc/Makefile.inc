@@ -9,3 +9,4 @@ subdirs-y += nvidia
 subdirs-y += qualcomm
 subdirs-y += samsung
 subdirs-y += rockchip
+subdirs-y += mediatek
