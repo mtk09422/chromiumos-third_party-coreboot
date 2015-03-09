@@ -69,7 +69,15 @@ int get_developer_mode_switch(void)
 
 int get_recovery_mode_switch(void)
 {
+#if CONFIG_EC_GOOGLE_CHROMEEC
+	uint32_t ec_events;
+
+	ec_events = google_chromeec_get_events_b();
+	return !!(ec_events &
+		  EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY));
+#else
 	return 0;
+#endif
 }
 
 int get_write_protect_state(void)
