@@ -36,7 +36,8 @@
 #include <soc/pll.h>
 #include <soc/i2c.h>
 #include <soc/mt8173.h>
-#include <soc/i2c.h>
+#include <soc/pmic_wrap_init.h>
+#include <soc/pmic.h>
 #include <soc/wdt.h>
 
 void main(void)
@@ -45,6 +46,10 @@ void main(void)
 	timestamp_add_now(TS_START_ROMSTAGE);
 
 	mt_pll_post_init();
+	pwrap_init_preloader();
+
+	/* init pmic */
+	pmic_init();
 
 	/* post init pll */
 	mt_pll_post_init();
