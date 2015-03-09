@@ -28,6 +28,8 @@
 #include <console/console.h>
 #include <symbols.h>
 #include <delay.h>
+#include <romstage_handoff.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/addressmap.h>
 #include <soc/i2c.h>
@@ -53,8 +55,15 @@ void main(void)
 	/* should be called after memory init */
 	cbmem_initialize_empty();
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-		CONFIG_CBFS_PREFIX "/ramstage");
+#if IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)
+	entry = vboot2_load_ramstage();
+#else
+	entry = vboot_verify_firmware_get_entry(NULL);
+#endif
+
+	if (entry == NULL)
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
+			CONFIG_CBFS_PREFIX "/ramstage");
 
 	stage_exit(entry);
 }
