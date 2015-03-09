@@ -27,6 +27,7 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <symbols.h>
+#include <timestamp.h>
 #include <delay.h>
 #include <romstage_handoff.h>
 #include <vendorcode/google/chromeos/chromeos.h>
@@ -40,6 +41,7 @@
 void main(void)
 {
 	void *entry = NULL;
+	timestamp_add_now(TS_START_ROMSTAGE);
 
 	/* Setup TPM */
 	mtk_i2c_init(0x11009000, 2, 0, 0x20, 0);
@@ -61,9 +63,13 @@ void main(void)
 	entry = vboot_verify_firmware_get_entry(NULL);
 #endif
 
+	timestamp_add_now(TS_START_COPYRAM);
+
 	if (entry == NULL)
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 			CONFIG_CBFS_PREFIX "/ramstage");
+
+	timestamp_add_now(TS_END_COPYRAM);
 
 	stage_exit(entry);
 }
