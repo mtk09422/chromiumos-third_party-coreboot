@@ -40,6 +40,7 @@
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic.h>
 #include <soc/wdt.h>
+#include <soc/da9212.h>
 
 void main(void)
 {
@@ -51,6 +52,7 @@ void main(void)
 	pwrap_init_preloader();
 	mt_gpio_set_default_ext();
 
+	ext_buck_en(1);
 	/* init pmic */
 	pmic_init();
 

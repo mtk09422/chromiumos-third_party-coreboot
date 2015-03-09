@@ -19,8 +19,11 @@
 
 #include <soc/mt8173.h>
 #include <soc/i2c.h>
+#include <soc/gpio.h>
 #include <soc/da9212.h>
+#include <mainboard/cust_gpio_boot.h>
 #include <mainboard/cust_i2c.h>
+#include <mainboard/cust_gpio_usage.h>
 #include <console/console.h>
 
 enum {
@@ -129,6 +132,25 @@ int get_da9212_i2c_ch_num(void)
 	return I2C_EXT_BUCK_CHANNEL;
 }
 
+void ext_buck_en(int val)
+{
+	if (GPIO_EXT_BUCK_IC_EN_PIN != 0) {
+		mt_set_gpio_mode(GPIO_EXT_BUCK_IC_EN_PIN, 0); /* 0:GPIO mode */
+		mt_set_gpio_dir(GPIO_EXT_BUCK_IC_EN_PIN, 1); /* dir = output */
+		mt_set_gpio_out(GPIO_EXT_BUCK_IC_EN_PIN, val);
+	}
+	if (GPIO_EXT_BUCK_EN_A_PIN != 0) {
+		mt_set_gpio_mode(GPIO_EXT_BUCK_EN_A_PIN, 0); /* 0:GPIO mode */
+		mt_set_gpio_dir(GPIO_EXT_BUCK_EN_A_PIN, 1); /* dir = output */
+		mt_set_gpio_out(GPIO_EXT_BUCK_EN_A_PIN, val);
+	}
+	if (GPIO_EXT_BUCK_EN_B_PIN != 0) {
+		mt_set_gpio_mode(GPIO_EXT_BUCK_EN_B_PIN, 0); /* 0:GPIO mode */
+		mt_set_gpio_dir(GPIO_EXT_BUCK_EN_B_PIN, 1); /* dir = output */
+		mt_set_gpio_out(GPIO_EXT_BUCK_EN_B_PIN, val);
+	}
+}
+
 void da9212_hw_init(void)
 {
 	unsigned char reg_val = 0;
@@ -153,6 +175,22 @@ void da9212_hw_init(void)
 	      0x7, 0xF, DA9212_GPIO3_PIN_SHIFT);
 	ret = da9212_config_interface(DA9212_REG_GPIO_4,
 	      0x04, 0xFF, DA9212_GPIO4_PIN_SHIFT);
+	/* BUCKA_GPI = GPIO0 */
+	if (GPIO_EXT_BUCK_EN_A_PIN != 0)
+		ret = da9212_config_interface(DA9212_REG_BUCKA_CONT,
+		      0x01, 0x03, DA9212_BUCK_GPI_SHIFT);
+	else
+		ret = da9212_config_interface(DA9212_REG_BUCKA_CONT,
+		      0x00, 0x03, DA9212_BUCK_GPI_SHIFT);
+
+	/* BUCKB_GPI = GPIO1 */
+	if (GPIO_EXT_BUCK_EN_B_PIN != 0)
+		ret = da9212_config_interface(DA9212_REG_BUCKB_CONT,
+		      0x02, 0x03, DA9212_BUCK_GPI_SHIFT);
+	else
+		ret = da9212_config_interface(DA9212_REG_BUCKB_CONT,
+		      0x00, 0x03, DA9212_BUCK_GPI_SHIFT);
+
 	ret = da9212_config_interface(DA9212_REG_BUCKA_CONT,
 	      0x00, 0x01, DA9212_VBUCK_SEL_SHIFT); /* VBUCKA_A */
 	ret = da9212_config_interface(DA9212_REG_BUCKB_CONT,
