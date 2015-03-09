@@ -24,6 +24,7 @@
 #include <console/console.h>
 #include <device/i2c.h>
 #include <soc/mt8173.h>
+#include <soc/gpio.h>
 
 /* ==============================================================================
    I2C Configuration

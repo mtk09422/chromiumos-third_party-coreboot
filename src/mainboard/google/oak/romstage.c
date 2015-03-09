@@ -34,6 +34,7 @@
 
 #include <soc/addressmap.h>
 #include <soc/pll.h>
+#include <soc/gpio.h>
 #include <soc/i2c.h>
 #include <soc/mt8173.h>
 #include <soc/pmic_wrap_init.h>
@@ -45,8 +46,10 @@ void main(void)
 	void *entry = NULL;
 	timestamp_add_now(TS_START_ROMSTAGE);
 
+	mt_gpio_init();
 	mt_pll_post_init();
 	pwrap_init_preloader();
+	mt_gpio_set_default_ext();
 
 	/* init pmic */
 	pmic_init();
