@@ -28,10 +28,14 @@ ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
+bootblock-y += blkdev.c mmc_common_inter.c mmc_core.c \
+		msdc.c msdc_utils.c cust_msdc.c
+
 ################################################################################
 
 romstage-y += cpu_lib.S cpu.c
-romstage-y += emmc_cbfs.c
+romstage-y += emmc_cbfs.c \
+   blkdev.c mmc_common_inter.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 romstage-y += pll_pre.c pll.c
 romstage-y += timer.c monotonic_timer.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
@@ -52,7 +56,7 @@ romstage-y += addressmap.c
 ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
 ramstage-y += spi.c
-ramstage-y += emmc_cbfs.c
+ramstage-y += emmc_cbfs.c blkdev.c mmc_common_inter.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 ramstage-y += soc.c cpu.c mtcmos.c
 ramstage-y += timer.c monotonic_timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
