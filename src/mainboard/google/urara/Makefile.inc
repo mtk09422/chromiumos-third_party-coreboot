@@ -19,6 +19,7 @@
 # MA 02110-1301 USA
 #
 
+bootblock-y += boardid.c
 ramstage-y += boardid.c
 ramstage-y += chromeos.c
 ramstage-y += mainboard.c

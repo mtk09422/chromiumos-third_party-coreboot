@@ -32,6 +32,8 @@ void main(void)
 	void *entry;
 
 	bootblock_cpu_init();
+
+	/* Mainboard basic init */
 	bootblock_mainboard_init();
 
 #if CONFIG_BOOTBLOCK_CONSOLE
@@ -40,9 +42,15 @@ void main(void)
 
 	bootblock_mmu_init();
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
-	if (entry != CBFS_LOAD_ERROR)
-		stage_exit(entry);
-
+	/* Initialize additional hardware considering board specific
+	 * information
+	 */
+	if (init_extra_hardware()) {
+		printk(BIOS_ERR, "bootblock_simple: failed to init HW.\n");
+	} else {
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+		if (entry != CBFS_LOAD_ERROR)
+			stage_exit(entry);
+	}
 	hlt();
 }
