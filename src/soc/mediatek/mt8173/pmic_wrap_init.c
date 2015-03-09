@@ -20,6 +20,7 @@
 #include <console/console.h>
 #include <timer.h>
 #include <soc/pmic_wrap_init.h>
+#include <soc/pll.h>
 #include <types.h>
 
 /* internal API */
@@ -921,6 +922,9 @@ s32 pwrap_init(void)
 	PWRAPLOG("PMIC_WRAP_STAUPD_GRPEN =0x%x,it should be equal to 0xc\n", WRAP_RD32(PMIC_WRAP_STAUPD_GRPEN));
 	/* clear reset bit */
 	WRAP_CLR_BIT(1 << 7, INFRA_GLOBALCON_RST0);
+
+	/* Set SPI_CK_freq = 26MHz */
+	WRAP_WR32(CLK_CFG_5_CLR, CLK_SPI_CK_26M);
 
 	/* Enable DCM */
 	WRAP_WR32(PMIC_WRAP_DCM_EN, 3);

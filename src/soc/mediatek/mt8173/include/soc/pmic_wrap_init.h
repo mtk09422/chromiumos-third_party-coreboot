@@ -22,6 +22,7 @@
 
 #include <arch/io.h>
 #include <soc/addressmap.h>
+#include <soc/pll.h>
 
 #define PMIC_WRAP_DEBUG
 
@@ -49,6 +50,12 @@ enum {
 	INFRA_SYS_CFG_BASE	= 0x10001000,
 	INFRACFG_BASE		= 0x10001000,
 	INFRA_GLOBALCON_RST0	= INFRACFG_BASE + 0x030
+};
+
+/* SPI Clock define */
+enum {
+	CLK_SPI_CK_26M = 0x7,
+	CLK_CFG_5_CLR  = CKSYS_BASE + 0x098
 };
 
 /* watchdog define */
