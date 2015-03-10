@@ -26,6 +26,9 @@
 #include <string.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
+/* SPI Write protect is GPIO 16 */
+#define CROS_WP_GPIO	16
+
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
 
