@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <bootstate.h>
 #include <console/console.h>
 #include "fsp_util.h"
 #include <timestamp.h>
@@ -171,5 +172,25 @@ void fsp_notify(u32 phase)
 		printk(BIOS_ERR, "FSP API NotifyPhase failed for phase 0x%x with status: 0x%x\n",
 			phase, status);
 }
+
+static void fsp_notify_boot_state_callback(void *arg)
+{
+	u32 phase = (u32)arg;
+
+	printk(BIOS_SPEW, "Calling FspNotify(0x%08x)\n", phase);
+	fsp_notify(phase);
+}
+
+BOOT_STATE_INIT_ENTRIES(fsp_bscbs) = {
+	BOOT_STATE_INIT_ENTRY(BS_DEV_RESOURCES, BS_ON_EXIT,
+		fsp_notify_boot_state_callback,
+		(void *)EnumInitPhaseAfterPciEnumeration),
+	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
+		fsp_notify_boot_state_callback,
+		(void *)EnumInitPhaseReadyToBoot),
+	BOOT_STATE_INIT_ENTRY(BS_OS_RESUME, BS_ON_EXIT,
+		fsp_notify_boot_state_callback,
+		(void *)EnumInitPhaseReadyToBoot)
+};
 
 #endif	/* #ifndef __PRE_RAM__ */
