@@ -71,6 +71,7 @@ void fill_lb_gpios(struct lb_gpios *gpios)
 }
 #endif
 
+/* The dev-switch is virtual */
 int get_developer_mode_switch(void)
 {
 	return 0;
