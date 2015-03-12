@@ -28,7 +28,6 @@
 #include <soc/pmc.h>
 #include <soc/sysctr.h>
 
-static struct clst_clk_ctlr *clst_clk = (void *)TEGRA_CLUSTER_CLOCK_BASE;
 static struct flow_ctlr *flow = (void *)TEGRA_FLOW_BASE;
 static struct tegra_pmc_regs *pmc = (void *)TEGRA_PMC_BASE;
 static struct sysctr_regs *sysctr = (void *)TEGRA_SYSCTR0_BASE;
@@ -469,45 +468,6 @@ void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 ph45, u32 ph90,
 	udelay(IO_STABILIZATION_DELAY);
 }
 
-void clock_cpu0_config(void)
-{
-	u32 reg;
-	u32 osc = clock_get_osc_bits();
-	u32 timeout = 0;
-
-	/* disable IDDQ */
-	reg = read32(&clst_clk->pllx_misc3);
-	reg &= ~PLLX_IDDQ;
-	write32(&clst_clk->pllx_misc3, reg);
-
-	/* init pllx */
-	init_pll(&clst_clk->pllx_base, &clst_clk->pllx_misc,
-		osc_table[osc].pllx, PLLPAXS_MISC_LOCK_ENABLE);
-
-	/*
-	 * Change CPU clock source to PLLX_OUT0_LJ
-	 * when above pllx programming has taken effect.
-	 */
-	do {
-		if (read32(&clst_clk->misc_ctrl) & CLK_SWITCH_MATCH) {
-			write32(&clst_clk->cclk_brst_pol,
-				(CC_CCLK_BRST_POL_PLLX_OUT0_LJ << 28));
-			break;
-		}
-
-		/* wait and try again */
-		if (timeout >= CLK_SWITCH_TIMEOUT_US) {
-			printk(BIOS_ERR, "%s: PLLX programming timeout. "
-				"Switching cpu clock has falied.\n",
-				__func__);
-			break;
-		}
-		udelay(10);
-		timeout += 10;
-
-	} while (1);
-}
-
 void clock_halt_avp(void)
 {
 	for (;;) {
@@ -563,6 +523,9 @@ void clock_init(void)
 	clrsetbits_le32(&pmc->osc_edpd_over, PMC_OSC_EDPD_OVER_XOFS_MASK,
 			OSC_DRIVE_STRENGTH << PMC_OSC_EDPD_OVER_XOFS_SHIFT);
 
+	/* Disable IDDQ for PLLX before we set it up (from U-Boot -- why?) */
+	clrbits_le32(CLK_RST_REG(pllx_misc3), PLLX_IDDQ_MASK);
+
 	/* Set up PLLP_OUT(1|2|3|4) divisor to generate (9.6|48|102|204)MHz */
 	write32(CLK_RST_REG(pllp_outa),
 		(CLK_DIVIDER(TEGRA_PLLP_KHZ, 9600) << PLL_OUT_RATIO_SHIFT |
@@ -574,6 +537,11 @@ void clock_init(void)
 		PLL_OUT_OVR | PLL_OUT_CLKEN | PLL_OUT_RSTN) << PLL_OUT3_SHIFT |
 		(CLK_DIVIDER(TEGRA_PLLP_KHZ, 204000) << PLL_OUT_RATIO_SHIFT |
 		PLL_OUT_OVR | PLL_OUT_CLKEN | PLL_OUT_RSTN) << PLL_OUT4_SHIFT);
+
+	/* init pllx */
+	init_pll(CLK_RST_REG(pllx_base), CLK_RST_REG(pllx_misc),
+		osc_table[osc].pllx, PLLPAXS_MISC_LOCK_ENABLE);
+	write32(CLK_RST_REG(cclk_brst_pol), CCLK_BURST_POLICY_VAL);
 
 	/* init pllu */
 	init_pll(CLK_RST_REG(pllu_base), CLK_RST_REG(pllu_misc),

@@ -37,7 +37,6 @@ verstage-y += ../tegra/pinmux.c
 verstage-y += clock.c
 verstage-y += i2c.c
 
-romstage-y += 32bit_reset.S
 romstage-y += romstage_asm.S
 romstage-y += addressmap.c
 romstage-y += cbfs.c
@@ -64,7 +63,6 @@ ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
-ramstage-y += 32bit_reset.S
 ramstage-y += addressmap.c
 ramstage-y += cbfs.c
 ramstage-y += cbmem.c
@@ -101,7 +99,6 @@ ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += ../tegra/usb.c
 ramstage-$(CONFIG_ARCH_USE_SECURE_MONITOR) += secmon.c
 
-secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += 32bit_reset.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += flow_ctrl.c

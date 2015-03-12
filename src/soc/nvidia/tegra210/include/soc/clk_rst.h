@@ -329,6 +329,9 @@ check_member(clk_rst_ctlr, clk_src_qspi, 0x6C4);
 #define SWR_CSITE_RST			(1 << 9)
 #define CLK_ENB_CSITE			(1 << 9)
 
+/* _CCLK_BURST_POLICY 0x20 */
+#define CCLK_BURST_POLICY_VAL		0x20008888
+
 /* CRC_SUPER_CCLK_DIVIDER_0 0x24 */
 #define SUPER_CDIV_ENB_ENABLE		(1 << 31)
 

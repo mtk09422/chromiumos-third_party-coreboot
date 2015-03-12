@@ -22,10 +22,7 @@
 #include <soc/addressmap.h>
 #include <soc/clk_rst.h>
 #include <soc/cpu.h>
-#include <soc/pmc.h>
-
-#define EVP_CPU_RESET_VECTOR (void *)(uintptr_t)(TEGRA_EVP_BASE + 0x100)
-#define PMC_REGS (void *)(uintptr_t)(TEGRA_PMC_BASE)
+#include <soc/secure_boot.h>
 
 static void enable_core_clocks(int cpu)
 {
@@ -45,32 +42,26 @@ static void enable_core_clocks(int cpu)
 		write32(CLK_RST_REG(rst_cpug_cmplx_clr), cpu1_clocks);
 }
 
-static void set_armv8_32bit_reset_vector(uintptr_t entry)
-{
-	void * const evp_cpu_reset_vector = EVP_CPU_RESET_VECTOR;
-	write32(evp_cpu_reset_vector, entry);
-}
-
-static void set_armv8_64bit_reset_vector(uintptr_t entry)
-{
-	struct tegra_pmc_regs * const pmc = PMC_REGS;
-
-	/* Currently assume 32-bit addresses only. */
-	write32(&pmc->secure_scratch34, entry);
-	write32(&pmc->secure_scratch35, 0);
-}
-
 void cpu_prepare_startup(void *entry_64)
 {
-	/* Warm reset vector is pulled from the PMC scratch registers. */
-	set_armv8_64bit_reset_vector((uintptr_t)entry_64);
+	struct tegra_secure_boot *sb =
+		(struct tegra_secure_boot *)TEGRA_SB_BASE;
 
 	/*
-	 * The Denver cores start in 32-bit mode. Therefore a trampoline
-	 * is needed to get into 64-bit mode. Point the cold reset vector
-	 * to the traompoline location.
+	 * T210 TRM, section 12.4.4.2: "SB_AA64_RESET_LOW_0[0:0] is used to
+	 * decide between CPU boot up in AARCH32 (=0) or AARCH64 (=1) mode.
+	 * This bit .. is sampled only during 'cold reset of CPU'. Before the
+	 * CPU is powered up, the CPU reset vector is loaded in
+	 * EVP_CPU_REST_VECTOR_0 for 32-bit boot mode .... However, the CPU
+	 * decides to boot in 32-/64-bit mode based on
+	 * SB_AA64_RESET_LOW_0[0:0]. If this bit is set (=1), the CPU boots in
+	 * 64-bit mode using SB_AA64_RESET_* as the reset address. If this bit
+	 * is clear (=0), CPU boots in 32-bit mode using EVP_CPU_RESET_VECTOR."
 	 */
-	set_armv8_32bit_reset_vector((uintptr_t)reset_entry_32bit);
+
+	write32(&sb->sb_aa64_reset_low, (uintptr_t)entry_64);
+	setbits_le32(&sb->sb_aa64_reset_low, 1);
+	write32(&sb->sb_aa64_reset_high, 0);
 }
 
 void start_cpu_silent(int cpu, void *entry_64)
@@ -81,8 +72,6 @@ void start_cpu_silent(int cpu, void *entry_64)
 
 void start_cpu(int cpu, void *entry_64)
 {
-	printk(BIOS_DEBUG, "Starting CPU%d @ %p trampolining to %p.\n",
-		cpu, reset_entry_32bit, entry_64);
-
+	printk(BIOS_DEBUG, "Starting CPU%d @ %p.\n", cpu, entry_64);
 	start_cpu_silent(cpu, entry_64);
 }

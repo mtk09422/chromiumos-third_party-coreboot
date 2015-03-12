@@ -27,6 +27,4 @@ void arm64_soc_init(void)
 	trustzone_region_init();
 
 	tegra210_mmu_init();
-
-	clock_cpu0_config();
 }
