@@ -137,18 +137,11 @@ static void request_ram_repair(void)
 
 	stopwatch_init(&sw);
 
-	/* Perform cluster 0 ram repair */
+	/* Perform ram repair */
 	reg = read32(&flow->ram_repair);
 	reg |= req;
 	write32(&flow->ram_repair, reg);
 	while ((read32(&flow->ram_repair) & sts) != sts)
-		;
-
-	/* Perform cluster 1 ram repair */
-	reg = read32(&flow->ram_repair_cluster1);
-	reg |= req;
-	write32(&flow->ram_repair_cluster1, reg);
-	while ((read32(&flow->ram_repair_cluster1) & sts) != sts)
 		;
 
 	printk(BIOS_DEBUG, "RAM repair complete in %ld usecs.\n",

@@ -40,9 +40,10 @@ struct flow_ctlr {
 	u32 flow_dbg_cnt1;	/* offset 0x4c */
 	u32 flow_dbg_qual;	/* offset 0x50 */
 	u32 flow_ctlr_spare;	/* offset 0x54 */
-	u32 ram_repair_cluster1;/* offset 0x58 */
+	u32 reserved;		/* offset 0x58 */
+	u32 fc_seq_intercept;	/* offset 0x5c */
 };
-check_member(flow_ctlr, ram_repair_cluster1, 0x58);
+check_member(flow_ctlr, fc_seq_intercept, 0x5c);
 
 enum {
 	FLOW_MODE_SHIFT = 29,
