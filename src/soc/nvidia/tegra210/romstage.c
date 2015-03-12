@@ -111,9 +111,6 @@ void romstage(void)
 	ccplex_cpu_prepare();
 	printk(BIOS_INFO, "T210 romstage: cpu prepare done\n");
 
-	ccplex_load_mts();
-	printk(BIOS_INFO, "T210 romstage: MTS loading done\n");
-
 	romstage_mainboard_init();
 
 	entry = load_ramstage();
