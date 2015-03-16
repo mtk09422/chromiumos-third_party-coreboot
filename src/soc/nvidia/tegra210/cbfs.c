@@ -17,6 +17,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*
+ * cbfs_spi.c has its own init_default_cbfs_media() function when
+ * CONFIG_COMMON_CBFS_SPI_WRAPPER is defined.
+ */
+
+#if !IS_ENABLED(CONFIG_COMMON_CBFS_SPI_WRAPPER)
+
 #include <cbfs.h>  /* This driver serves as a CBFS media source. */
 #include <soc/spi.h>
 #include <symbols.h>
@@ -26,3 +33,5 @@ int init_default_cbfs_media(struct cbfs_media *media)
 	return initialize_tegra_spi_cbfs_media(media,
 		_cbfs_cache, _cbfs_cache_size);
 }
+
+#endif
