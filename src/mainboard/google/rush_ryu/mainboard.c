@@ -37,6 +37,7 @@
 #include <vendorcode/google/chromeos/vboot_handoff.h>
 #include <vendorcode/google/chromeos/vboot2/misc.h>
 #include <vendorcode/google/chromeos/chromeos.h>
+#include <vendorcode/google/chromeos/cros_vpd.h>
 #include <boardid.h>
 #include <delay.h>
 #include "gpio.h"
@@ -294,3 +295,8 @@ struct chip_operations mainboard_ops = {
 	.name   = "rush_ryu",
 	.enable_dev = mainboard_enable,
 };
+
+void lb_board(struct lb_header *header)
+{
+	lb_table_add_serialno_from_vpd(header);
+}
