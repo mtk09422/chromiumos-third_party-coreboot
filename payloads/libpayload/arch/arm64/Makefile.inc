@@ -27,7 +27,7 @@
 ## SUCH DAMAGE.
 ##
 
-CFLAGS += -march=armv8-a
+CFLAGS += -march=armv8-a -mgeneral-regs-only
 arm64_asm_flags =
 
 subdirs-y += lib/
