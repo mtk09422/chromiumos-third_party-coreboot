@@ -84,6 +84,9 @@ void main(void)
 	/* should be called after memory init */
 	cbmem_initialize_empty();
 
+	/* Init pll which relate to Vcore */
+	mt_vcore_pll_adjust();
+
 	set_secondary_cpu_boot_arm64();
 
 #if IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)
