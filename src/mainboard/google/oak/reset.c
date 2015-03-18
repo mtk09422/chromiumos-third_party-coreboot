@@ -17,30 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <memlayout.h>
-#include <vendorcode/google/chromeos/memlayout.h>
+#include <reset.h>
 
-#include <arch/header.ld>
-
-#define SRAM_L2C_START(addr) SYMBOL(sram_l2c, addr)
-#define SRAM_L2C_END(addr) SYMBOL(esram_l2c, addr)
-
-SECTIONS
+void hard_reset(void)
 {
-	SRAM_L2C_START(0x000C0000)
-	TIMESTAMP(0x000C0C00, 1K)
-	BOOTBLOCK(0x000C1000, 118K)
-	PRERAM_CBFS_CACHE(0x000DF000, 64K)
-	STACK(0x000EF000, 16K)
-	SRAM_L2C_END(0x00100000)
-
-	SRAM_START(0x00100000)
-	PRERAM_CBMEM_CONSOLE(0x00104020, 8K - 32)
-	VBOOT2_WORK(0x00106000, 16K)
-	ROMSTAGE(0x0010A000, 138K)
-	SRAM_END(0x00130000)
-
-	DRAM_START(0x40000000)
-	POSTRAM_CBFS_CACHE(0x40100000, 1M)
-	RAMSTAGE(0x40200000, 256K)
+	while (1)
+		;
 }

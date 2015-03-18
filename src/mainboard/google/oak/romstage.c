@@ -32,39 +32,25 @@
 #include <romstage_handoff.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
-#include <soc/addressmap.h>
-#include <soc/pll.h>
-#include <soc/gpio.h>
-#include <soc/i2c.h>
-#include <soc/mt8173.h>
-#include <soc/pmic_wrap_init.h>
-#include <soc/pmic.h>
-#include <soc/rtc.h>
-#include <soc/memory.h>
-#include <soc/wdt.h>
-#include <soc/da9212.h>
 #include <soc/cpu.h>
+#include <soc/da9212.h>
+#include <soc/gpio.h>
+#include <soc/memory.h>
+#include <soc/mt8173.h>
+#include <soc/pll.h>
+#include <soc/rtc.h>
+#include <soc/wdt.h>
 
 void main(void)
 {
 	void *entry = NULL;
 	timestamp_add_now(TS_START_ROMSTAGE);
-
-	mt_gpio_init();
 	mt_pll_post_init();
-	pwrap_init_preloader();
 	mt_gpio_set_default_ext();
-
-	ext_buck_en(1);
-	/* init pmic */
-	pmic_init();
 
 	/* post init pll */
 	mt_pll_post_init();
 	mt_arm_pll_sel();
-
-	/* Setup TPM */
-	mtk_i2c_init(0x11009000, 2, 0, 0x20, 0);
 
 	/* init watch dog, will disable AP watch dog */
 	mtk_wdt_init();

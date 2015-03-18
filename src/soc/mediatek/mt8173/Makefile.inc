@@ -31,6 +31,15 @@ endif
 bootblock-y += blkdev.c mmc_common_inter.c mmc_core.c \
 		msdc.c msdc_utils.c cust_msdc.c
 
+bootblock-y += gpio.c gpio_init.c
+
+################################################################################
+
+verstage-y += i2c.c
+verstage-y += monotonic_timer.c
+verstage-$(CONFIG_SPI_FLASH) += spi.c
+verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
+
 ################################################################################
 
 romstage-y += cpu_lib.S cpu.c
@@ -80,6 +89,16 @@ rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
 # TODO: remove this when vbootstub 64-bit align problem has been fixed.
 rmodules_$(ARCH-ROMSTAGE-y)-c-ccopts += -mstrict-align
 VBOOT_STUB_DEPS += $(obj)/soc/mediatek/mt8173/monotonic_timer.rmodules_$(ARCH-ROMSTAGE-y).o
+
+################################################################################
+
+# bootblock and verstage are built in one piece.
+postprocessors += $$(eval bootblock-objs += $$(call src-to-obj,bootblock,$$(verstage-srcs)))
+postprocessors += $$(eval bootblock-objs += $$(VB2_LIB))
+postprocessors += $$(eval bootblock-srcs += $$(verstage-srcs))
+postprocessors += $$(eval bootblock-srcs:=$$(sort $$(bootblock-srcs)))
+# we need to avoid building verstage.elf
+postprocessors += $$(eval cbfs-files:=$$(filter-out $$(VERSTAGE_ELF)|%, $$(cbfs-files)))
 
 # Generate the actual coreboot bootblock code
 $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.elf

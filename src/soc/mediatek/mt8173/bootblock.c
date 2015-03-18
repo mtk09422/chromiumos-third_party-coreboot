@@ -26,9 +26,15 @@
 #include <cbfs.h>
 #include <console/console.h>
 #include <timestamp.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/addressmap.h>
+#include <soc/gpio.h>
+#include <soc/i2c.h>
 #include <soc/mt8173.h>
+#include <soc/pmic_wrap_init.h>
+#include <soc/pmic.h>
+#include <soc/da9212.h>
 
 void main(void)
 {
@@ -47,7 +53,27 @@ void main(void)
 
 	bootblock_mainboard_init();
 
-	entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE)) {
+
+		mt_gpio_init();
+		pwrap_init_preloader();
+
+		/* init pmic i2c interface and pmic */
+		ext_buck_en(1);
+		/* i2c_hw_init(); */
+		pmic_init();
+
+		/* Setup TPM */
+		mtk_i2c_init(0x11009000, 2, 0, 0x20, 0);
+
+		exception_init();
+
+		entry = vboot2_verify_firmware();
+	}
+
+	else if (IS_ENABLED(CONFIG_VBOOT_VERIFY_FIRMWARE)) {
+		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA, stage_name);
+	}
 
 	if (entry)
 		stage_exit(entry);
