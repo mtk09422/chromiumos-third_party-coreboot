@@ -80,8 +80,8 @@ void program_base_addresses(void)
 
 void spi_init(void)
 {
-	const unsigned long scs = SPI_BASE_ADDRESS + SCS;
-	const unsigned long bcr = SPI_BASE_ADDRESS + BCR;
+	void *scs = (void *)(SPI_BASE_ADDRESS + SCS);
+	void *bcr = (void *)(SPI_BASE_ADDRESS + BCR);
 	uint32_t reg;
 
 	/* Disable generating SMI when setting WPD bit. */
@@ -123,9 +123,9 @@ struct chipset_power_state *fill_power_state(void)
 	ps->gpe0_sts = inl(ACPI_BASE_ADDRESS + GPE0_STS);
 	ps->gpe0_en = inl(ACPI_BASE_ADDRESS + GPE0_EN);
 	ps->tco_sts = inl(ACPI_BASE_ADDRESS + TCO_STS);
-	ps->prsts = read32(PMC_BASE_ADDRESS + PRSTS);
-	ps->gen_pmcon1 = read32(PMC_BASE_ADDRESS + GEN_PMCON1);
-	ps->gen_pmcon2 = read32(PMC_BASE_ADDRESS + GEN_PMCON2);
+	ps->prsts = read32((void *)(PMC_BASE_ADDRESS + PRSTS));
+	ps->gen_pmcon1 = read32((void *)(PMC_BASE_ADDRESS + GEN_PMCON1));
+	ps->gen_pmcon2 = read32((void *)(PMC_BASE_ADDRESS + GEN_PMCON2));
 
 	ps->prev_sleep_state = chipset_prev_sleep_state(ps);
 
