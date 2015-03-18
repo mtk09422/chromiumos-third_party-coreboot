@@ -169,6 +169,11 @@ static struct tegra_spi_channel tegra_spi_channels[] = {
 		.regs = (struct tegra_spi_regs *)TEGRA_SPI6_BASE,
 		.req_sel = APBDMA_SLAVE_SL2B6,
 	},
+	{
+		.slave = { .bus = 7, },
+		.regs = (struct tegra_spi_regs *)TEGRA_QSPI_BASE,
+		.req_sel = APBDMA_SLAVE_QSPI,
+	},
 };
 
 enum spi_direction {
@@ -380,11 +385,14 @@ static int tegra_spi_pio_prepare(struct tegra_spi_channel *spi,
 	while (read32(&spi->regs->fifo_status) & flush_mask)
 		;
 
-	setbits_le32(&spi->regs->command1, enable_mask);
-
-	/* BLOCK_SIZE in SPI_DMA_BLK register applies to both DMA and
-	 * PIO transfers */
+	/*
+	 * BLOCK_SIZE in SPI_DMA_BLK register applies to both DMA and
+	 * PIO transfers. And, it should be programmed before RX_EN or
+	 * TX_EN is set.
+	 */
 	write32(&spi->regs->dma_blk, todo - 1);
+
+	setbits_le32(&spi->regs->command1, enable_mask);
 
 	if (dir == SPI_SEND) {
 		unsigned int to_fifo = bytes;
@@ -401,7 +409,21 @@ static int tegra_spi_pio_prepare(struct tegra_spi_channel *spi,
 static void tegra_spi_pio_start(struct tegra_spi_channel *spi)
 {
 	setbits_le32(&spi->regs->trans_status, SPI_STATUS_RDY);
+	/*
+	 * Need to stabilize other reg bit before GO bit set.
+	 *
+	 * From IAS:
+	 * For successful operation at various freq combinations, min of 4-5
+	 * spi_clk cycle delay might be required before enabling PIO or DMA bit.
+	 * This is needed to overcome the MCP between core and pad_macro.
+	 * The worst case delay calculation can be done considering slowest
+	 * qspi_clk as 1 MHz. based on that 1 us delay should be enough before
+	 * enabling pio or dma.
+	 */
+	udelay(2);
 	setbits_le32(&spi->regs->command1, SPI_CMD1_GO);
+	/* Need to wait a few cycles before command1 register is read */
+	udelay(1);
 	/* Make sure the write to command1 completes. */
 	read32(&spi->regs->command1);
 }

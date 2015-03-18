@@ -304,8 +304,10 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 clk_src_soc_therm;		/* _CLK_SOURCE_SOC_THERM    0x644 */
 	u32 _rsv33[5];			/*                      0x648-658 */
 	u32 clk_src_i2c6;		/* _CLK_SOURCE_I2C6,        0x65c */
+	u32 _rsv34[25];		/*                      0x680-6c0 */
+	u32 clk_src_qspi;		/* _CLK_SOURCE_QSPI         0x6C4 */
 };
-check_member(clk_rst_ctlr, clk_src_i2c6, 0x65C);
+check_member(clk_rst_ctlr, clk_src_qspi, 0x6C4);
 
 #define CLK_RST_REG(field_)					\
 	(&(((struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE)->field_))

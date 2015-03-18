@@ -90,6 +90,7 @@ static const struct funit_cfg_data funit_data[] =  {
 	FUNIT_DATA(SDMMC4, sdmmc4, L),
 	FUNIT_DATA_USB(USBD, L),
 	FUNIT_DATA_USB(USB2, H),
+	FUNIT_DATA(QSPI, qspi, Y),
 };
 _Static_assert(ARRAY_SIZE(funit_data) == FUNIT_INDEX_MAX,
 		"funit_cfg_data array not filled out!");

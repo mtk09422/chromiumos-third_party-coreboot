@@ -36,6 +36,7 @@ enum {
 	FUNIT_INDEX(SDMMC4),
 	FUNIT_INDEX(USBD),
 	FUNIT_INDEX(USB2),
+	FUNIT_INDEX(QSPI),
 	FUNIT_INDEX_MAX,
 };
 
@@ -54,6 +55,8 @@ enum {
 
 	SPI1_BUS = 1,
 	SPI4_BUS = 4,
+
+	QSPI_BUS = 0,
 };
 
 struct funit_cfg {
