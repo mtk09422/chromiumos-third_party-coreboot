@@ -82,19 +82,14 @@ static const struct clk_dev_control clk_data_arr[] = {
 	}
 
 static const struct funit_cfg_data funit_data[] =  {
-	FUNIT_DATA(SBC1, sbc1, H),
-	FUNIT_DATA(SBC4, sbc4, U),
 	FUNIT_DATA(I2C1, i2c1, L),
 	FUNIT_DATA(I2C2, i2c2, H),
 	FUNIT_DATA(I2C3, i2c3, U),
 	FUNIT_DATA(I2C5, i2c5, H),
-	FUNIT_DATA(I2C6, i2c6, X),
-	FUNIT_DATA(SDMMC3, sdmmc3, U),
+	FUNIT_DATA(SDMMC1, sdmmc1, L),
 	FUNIT_DATA(SDMMC4, sdmmc4, L),
 	FUNIT_DATA_USB(USBD, L),
 	FUNIT_DATA_USB(USB2, H),
-	FUNIT_DATA_USB(USB3, H),
-	FUNIT_DATA(I2S1, i2s1, L),
 };
 _Static_assert(ARRAY_SIZE(funit_data) == FUNIT_INDEX_MAX,
 		"funit_cfg_data array not filled out!");
@@ -145,7 +140,7 @@ static void configure_clock(const struct funit_cfg * const entry,
 
 static inline int is_usb(uint32_t idx)
 {
-	return (idx == FUNIT_USBD || idx == FUNIT_USB2 || idx == FUNIT_USB3);
+	return (idx == FUNIT_USBD || idx == FUNIT_USB2);
 }
 
 void soc_configure_funits(const struct funit_cfg * const entries, size_t num)
