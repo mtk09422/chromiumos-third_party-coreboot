@@ -77,7 +77,7 @@ void main(void)
 	/* Enable AVP cache, timer, APB dma, and mselect blocks.  */
 	clock_enable_clear_reset(CLK_L_CACHE2 | CLK_L_TMR,
 				 CLK_H_APBDMA,
-				 0, CLK_V_MSELECT, 0, 0);
+				 0, CLK_V_MSELECT, 0, 0, 0);
 
 	/* Find ODMDATA in IRAM and save it to scratch reg */
 	save_odmdata();

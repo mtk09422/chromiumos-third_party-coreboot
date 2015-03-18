@@ -174,6 +174,8 @@ enum {
 	CLK_X_CAM_MCLK2 = 0x1 << 5,
 	CLK_X_CAM_MCLK = 0x1 << 4,
 	CLK_X_SPARE = 0x1 << 0,
+
+	CLK_Y_QSPI = 0x1 << 19,
 };
 
 enum {
@@ -312,70 +314,76 @@ static inline void _clock_set_div(u32 *reg, const char *name, u32 div,
 #define TEGRA_PLLD_KHZ   (925000)
 #define TEGRA_PLLU_KHZ   (960000)
 
-#define clock_enable(l, h, u, v, w, x)					\
+#define clock_enable(l, h, u, v, w, x, y)				\
 	do {								\
-		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x};	\
+		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x, y};	\
 		clock_enable_regs(bits);				\
 	} while (0)
 
-#define clock_disable(l, h, u, v, w, x)					\
+#define clock_disable(l, h, u, v, w, x, y)				\
 	do {								\
-		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x};	\
+		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x, y};	\
 		clock_disable_regs(bits);				\
 	} while (0)
 
-#define clock_set_reset(l, h, u, v, w, x)				\
+#define clock_set_reset(l, h, u, v, w, x, y)				\
 	do {								\
-		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x};	\
+		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x, y};	\
 		clock_set_reset_regs(bits);				\
 	} while (0)
 
-#define clock_clr_reset(l, h, u, v, w, x)				\
+#define clock_clr_reset(l, h, u, v, w, x, y)				\
 	do {								\
-		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x};	\
+		u32 bits[DEV_CONFIG_BLOCKS] = {l, h, u, v, w, x, y};	\
 		clock_clr_reset_regs(bits);				\
 	} while (0)
 
-#define clock_enable_l(l)               clock_enable(l, 0, 0, 0, 0, 0)
-#define clock_enable_h(h)               clock_enable(0, h, 0, 0, 0, 0)
-#define clock_enable_u(u)               clock_enable(0, 0, u, 0, 0, 0)
-#define clock_enable_v(v)               clock_enable(0, 0, 0, v, 0, 0)
-#define clock_enable_w(w)               clock_enable(0, 0, 0, 0, w, 0)
-#define clock_enable_x(x)               clock_enable(0, 0, 0, 0, 0, x)
+#define clock_enable_l(l)               clock_enable(l, 0, 0, 0, 0, 0, 0)
+#define clock_enable_h(h)               clock_enable(0, h, 0, 0, 0, 0, 0)
+#define clock_enable_u(u)               clock_enable(0, 0, u, 0, 0, 0, 0)
+#define clock_enable_v(v)               clock_enable(0, 0, 0, v, 0, 0, 0)
+#define clock_enable_w(w)               clock_enable(0, 0, 0, 0, w, 0, 0)
+#define clock_enable_x(x)               clock_enable(0, 0, 0, 0, 0, x, 0)
+#define clock_enable_y(y)               clock_enable(0, 0, 0, 0, 0, 0, y)
 
-#define clock_disable_l(l)              clock_disable(l, 0, 0, 0, 0, 0)
-#define clock_disable_h(h)              clock_disable(0, h, 0, 0, 0, 0)
-#define clock_disable_u(u)              clock_disable(0, 0, u, 0, 0, 0)
-#define clock_disable_v(v)              clock_disable(0, 0, 0, v, 0, 0)
-#define clock_disable_w(w)              clock_disable(0, 0, 0, 0, w, 0)
-#define clock_disable_x(x)              clock_disable(0, 0, 0, 0, 0, x)
+#define clock_disable_l(l)              clock_disable(l, 0, 0, 0, 0, 0, 0)
+#define clock_disable_h(h)              clock_disable(0, h, 0, 0, 0, 0, 0)
+#define clock_disable_u(u)              clock_disable(0, 0, u, 0, 0, 0, 0)
+#define clock_disable_v(v)              clock_disable(0, 0, 0, v, 0, 0, 0)
+#define clock_disable_w(w)              clock_disable(0, 0, 0, 0, w, 0, 0)
+#define clock_disable_x(x)              clock_disable(0, 0, 0, 0, 0, x, 0)
+#define clock_disable_y(y)              clock_disable(0, 0, 0, 0, 0, 0, y)
 
-#define clock_set_reset_l(l)            clock_set_reset(l, 0, 0, 0, 0, 0)
-#define clock_set_reset_h(h)            clock_set_reset(0, h, 0, 0, 0, 0)
-#define clock_set_reset_u(u)            clock_set_reset(0, 0, u, 0, 0, 0)
-#define clock_set_reset_v(v)            clock_set_reset(0, 0, 0, v, 0, 0)
-#define clock_set_reset_w(w)            clock_set_reset(0, 0, 0, 0, w, 0)
-#define clock_set_reset_x(x)            clock_set_reset(0, 0, 0, 0, 0, x)
+#define clock_set_reset_l(l)            clock_set_reset(l, 0, 0, 0, 0, 0, 0)
+#define clock_set_reset_h(h)            clock_set_reset(0, h, 0, 0, 0, 0, 0)
+#define clock_set_reset_u(u)            clock_set_reset(0, 0, u, 0, 0, 0, 0)
+#define clock_set_reset_v(v)            clock_set_reset(0, 0, 0, v, 0, 0, 0)
+#define clock_set_reset_w(w)            clock_set_reset(0, 0, 0, 0, w, 0, 0)
+#define clock_set_reset_x(x)            clock_set_reset(0, 0, 0, 0, 0, x, 0)
+#define clock_set_reset_y(x)            clock_set_reset(0, 0, 0, 0, 0, y, 0)
 
-#define clock_clr_reset_l(l)            clock_clr_reset(l, 0, 0, 0, 0, 0)
-#define clock_clr_reset_h(h)            clock_clr_reset(0, h, 0, 0, 0, 0)
-#define clock_clr_reset_u(u)            clock_clr_reset(0, 0, u, 0, 0, 0)
-#define clock_clr_reset_v(v)            clock_clr_reset(0, 0, 0, v, 0, 0)
-#define clock_clr_reset_w(w)            clock_clr_reset(0, 0, 0, 0, w, 0)
-#define clock_clr_reset_x(x)            clock_clr_reset(0, 0, 0, 0, 0, x)
+#define clock_clr_reset_l(l)            clock_clr_reset(l, 0, 0, 0, 0, 0, 0)
+#define clock_clr_reset_h(h)            clock_clr_reset(0, h, 0, 0, 0, 0, 0)
+#define clock_clr_reset_u(u)            clock_clr_reset(0, 0, u, 0, 0, 0, 0)
+#define clock_clr_reset_v(v)            clock_clr_reset(0, 0, 0, v, 0, 0, 0)
+#define clock_clr_reset_w(w)            clock_clr_reset(0, 0, 0, 0, w, 0, 0)
+#define clock_clr_reset_x(x)            clock_clr_reset(0, 0, 0, 0, 0, x, 0)
+#define clock_clr_reset_y(y)            clock_clr_reset(0, 0, 0, 0, 0, 0, y)
 
 #define clock_enable_clear_reset_l(l)			\
-	clock_enable_clear_reset(l, 0, 0, 0, 0, 0)
+	clock_enable_clear_reset(l, 0, 0, 0, 0, 0, 0)
 #define clock_enable_clear_reset_h(h)			\
-	clock_enable_clear_reset(0, h, 0, 0, 0, 0)
+	clock_enable_clear_reset(0, h, 0, 0, 0, 0, 0)
 #define clock_enable_clear_reset_u(u)			\
-	clock_enable_clear_reset(0, 0, u, 0, 0, 0)
+	clock_enable_clear_reset(0, 0, u, 0, 0, 0, 0)
 #define clock_enable_clear_reset_v(v)			\
-	clock_enable_clear_reset(0, 0, 0, v, 0, 0)
+	clock_enable_clear_reset(0, 0, 0, v, 0, 0, 0)
 #define clock_enable_clear_reset_w(w)			\
-	clock_enable_clear_reset(0, 0, 0, 0, w, 0)
+	clock_enable_clear_reset(0, 0, 0, 0, w, 0, 0)
 #define clock_enable_clear_reset_x(x)			\
-	clock_enable_clear_reset(0, 0, 0, 0, 0, x)
+	clock_enable_clear_reset(0, 0, 0, 0, 0, x, 0)
+#define clock_enable_clear_reset_y(y)			\
+	clock_enable_clear_reset(0, 0, 0, 0, 0, 0, y)
 
 int clock_get_osc_khz(void);
 int clock_get_pll_input_khz(void);
@@ -395,7 +403,7 @@ void clock_enable_regs(u32 bits[DEV_CONFIG_BLOCKS]);
 void clock_disable_regs(u32 bits[DEV_CONFIG_BLOCKS]);
 void clock_set_reset_regs(u32 bits[DEV_CONFIG_BLOCKS]);
 void clock_clr_reset_regs(u32 bits[DEV_CONFIG_BLOCKS]);
-void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x);
+void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x, u32 y);
 void clock_grp_enable_clear_reset(u32 val, u32* clk_enb_set_reg, u32* rst_dev_clr_reg);
 void clock_reset_l(u32 l);
 void clock_reset_h(u32 h);
@@ -403,6 +411,7 @@ void clock_reset_u(u32 u);
 void clock_reset_v(u32 v);
 void clock_reset_w(u32 w);
 void clock_reset_x(u32 x);
+void clock_reset_y(u32 y);
 void clock_init(void);
 void clock_init_arm_generic_timer(void);
 void sor_clock_stop(void);

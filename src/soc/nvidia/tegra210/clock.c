@@ -476,7 +476,7 @@ void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 ph45, u32 ph90,
 	setbits_le32(CLK_RST_REG(pllm_out), PLLM_OUT1_RSTN_RESET_DISABLE);
 
 	/* Enable and start MEM(MC) and EMC. */
-	clock_enable_clear_reset(0, CLK_H_MEM | CLK_H_EMC, 0, 0, 0, 0);
+	clock_enable_clear_reset(0, CLK_H_MEM | CLK_H_EMC, 0, 0, 0, 0, 0);
 	write32(CLK_RST_REG(clk_src_emc), emc_source);
 	udelay(IO_STABILIZATION_DELAY);
 }
@@ -598,6 +598,7 @@ static u32 * const clk_enb_set_arr[DEV_CONFIG_BLOCKS] = {
 	CLK_RST_REG(clk_enb_v_set),
 	CLK_RST_REG(clk_enb_w_set),
 	CLK_RST_REG(clk_enb_x_set),
+	CLK_RST_REG(clk_enb_y_set),
 };
 
 static u32 * const clk_enb_clr_arr[DEV_CONFIG_BLOCKS] = {
@@ -607,6 +608,7 @@ static u32 * const clk_enb_clr_arr[DEV_CONFIG_BLOCKS] = {
 	CLK_RST_REG(clk_enb_v_clr),
 	CLK_RST_REG(clk_enb_w_clr),
 	CLK_RST_REG(clk_enb_x_clr),
+	CLK_RST_REG(clk_enb_y_clr),
 };
 
 static u32 * const rst_dev_set_arr[DEV_CONFIG_BLOCKS] = {
@@ -616,6 +618,7 @@ static u32 * const rst_dev_set_arr[DEV_CONFIG_BLOCKS] = {
 	CLK_RST_REG(rst_dev_v_set),
 	CLK_RST_REG(rst_dev_w_set),
 	CLK_RST_REG(rst_dev_x_set),
+	CLK_RST_REG(rst_dev_y_set),
 };
 
 static u32 * const rst_dev_clr_arr[DEV_CONFIG_BLOCKS] = {
@@ -625,6 +628,7 @@ static u32 * const rst_dev_clr_arr[DEV_CONFIG_BLOCKS] = {
 	CLK_RST_REG(rst_dev_v_clr),
 	CLK_RST_REG(rst_dev_w_clr),
 	CLK_RST_REG(rst_dev_x_clr),
+	CLK_RST_REG(rst_dev_y_clr),
 };
 
 static void clock_write_regs(u32 * const regs[DEV_CONFIG_BLOCKS],
@@ -657,14 +661,14 @@ void clock_clr_reset_regs(u32 bits[DEV_CONFIG_BLOCKS])
 	clock_write_regs(rst_dev_clr_arr, bits);
 }
 
-void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x)
+void clock_enable_clear_reset(u32 l, u32 h, u32 u, u32 v, u32 w, u32 x, u32 y)
 {
-	clock_enable(l, h, u, v, w, x);
+	clock_enable(l, h, u, v, w, x, y);
 
 	/* Give clocks time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
 
-	clock_clr_reset(l, h, u, v, w, x);
+	clock_clr_reset(l, h, u, v, w, x, y);
 }
 
 static void clock_reset_dev(u32 *setaddr, u32 *clraddr, u32 bit)
@@ -710,6 +714,12 @@ void clock_reset_x(u32 bit)
 			bit);
 }
 
+void clock_reset_y(u32 bit)
+{
+	clock_reset_dev(CLK_RST_REG(rst_dev_y_set), CLK_RST_REG(rst_dev_y_clr),
+			bit);
+}
+
 /* Enable/unreset all audio toys under AHUB */
 void clock_enable_audio(void)
 {
@@ -725,5 +735,6 @@ void clock_enable_audio(void)
 				 CLK_V_DAM0 | CLK_V_DAM1 | CLK_V_DAM2 | CLK_V_EXTPERIPH1,
 				 CLK_W_AMX0 | CLK_W_ADX0,
 				 CLK_X_ADX1 | CLK_X_AFC0 | CLK_X_AFC1 | CLK_X_AFC2 |
-				 CLK_X_AFC3 | CLK_X_AFC4 | CLK_X_AFC5 | CLK_X_AMX1);
+				 CLK_X_AFC3 | CLK_X_AFC4 | CLK_X_AFC5 |
+				 CLK_X_AMX1, 0);
 }

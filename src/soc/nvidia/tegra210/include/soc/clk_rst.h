@@ -136,7 +136,13 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 rst_dev_x;			/* _RST_DEVICES_X_0,        0x28c */
 	u32 rst_dev_x_set;		/* _RST_DEV_X_SET_0,        0x290 */
 	u32 rst_dev_x_clr;		/* _RST_DEV_X_CLR_0,        0x294 */
-	u32 _rsv19[23];			/*                      0x298-2f0 */
+	u32 clk_out_enb_y;		/* _CLK_OUT_ENB_Y_0,        0x298 */
+	u32 clk_enb_y_set;		/* _CLK_ENB_Y_SET_0,        0x29C */
+	u32 clk_enb_y_clr;		/* _CLK_ENB_Y_CLR_0,        0x2A0 */
+	u32 rst_dev_y;			/* _RST_DEVICES_Y_0,        0x2A4 */
+	u32 rst_dev_y_set;		/* _RST_DEV_Y_SET_0,        0x2A8 */
+	u32 rst_dev_y_clr;		/* _RST_DEV_Y_CLR_0,        0x2AC */
+	u32 _rsv19[17];		/*                      0x2B0-2f0 */
 	u32 dfll_base;			/* _DFLL_BASE_0,            0x2f4 */
 	u32 _rsv20[2];			/*                      0x2f8-2fc */
 	u32 rst_dev_l_set;		/* _RST_DEV_L_SET           0x300 */
@@ -304,8 +310,8 @@ check_member(clk_rst_ctlr, clk_src_i2c6, 0x65C);
 #define CLK_RST_REG(field_)					\
 	(&(((struct clk_rst_ctlr *)TEGRA_CLK_RST_BASE)->field_))
 
-/* L, H, U, V, W, X */
-#define DEV_CONFIG_BLOCKS               6
+/* L, H, U, V, W, X, Y */
+#define DEV_CONFIG_BLOCKS               7
 
 #define TEGRA_DEV_L			0
 #define TEGRA_DEV_H			1

@@ -51,7 +51,7 @@ static void remove_clamps(int id)
 
 static void enable_sor_periph_clocks(void)
 {
-	clock_enable(CLK_L_HOST1X, 0, 0, 0, 0, CLK_X_DPAUX);
+	clock_enable(CLK_L_HOST1X, 0, 0, 0, 0, CLK_X_DPAUX, 0);
 
 	/* Give clocks time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
@@ -59,7 +59,7 @@ static void enable_sor_periph_clocks(void)
 
 static void disable_sor_periph_clocks(void)
 {
-	clock_disable(CLK_L_HOST1X, 0, 0, 0, 0, CLK_X_DPAUX);
+	clock_disable(CLK_L_HOST1X, 0, 0, 0, 0, CLK_X_DPAUX, 0);
 
 	/* Give clocks time to stabilize. */
 	udelay(IO_STABILIZATION_DELAY);
@@ -67,7 +67,7 @@ static void disable_sor_periph_clocks(void)
 
 static void unreset_sor_periphs(void)
 {
-	clock_clr_reset(CLK_L_HOST1X, 0, 0, 0, 0, CLK_X_DPAUX);
+	clock_clr_reset(CLK_L_HOST1X, 0, 0, 0, 0, CLK_X_DPAUX, 0);
 }
 
 void soc_configure_i2c6pad(void)

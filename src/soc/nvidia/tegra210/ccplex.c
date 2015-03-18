@@ -113,7 +113,7 @@ int ccplex_load_mts(void)
 static void enable_cpu_clocks(void)
 {
 	clock_enable(CLK_ENB_CPU, 0, 0, SET_CLK_ENB_CPUG_ENABLE |
-		     SET_CLK_ENB_CPULP_ENABLE, 0, 0);
+		     SET_CLK_ENB_CPULP_ENABLE, 0, 0, 0);
 }
 
 static void enable_cpu_power_partitions(void)

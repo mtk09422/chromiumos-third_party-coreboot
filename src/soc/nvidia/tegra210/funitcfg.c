@@ -45,6 +45,7 @@ enum {
 	CLK_V_SET = 3,
 	CLK_W_SET = 4,
 	CLK_X_SET = 5,
+	CLK_Y_SET = 6,
 };
 
 #define CLK_SET_REGS(x)					\
@@ -60,6 +61,7 @@ static const struct clk_dev_control clk_data_arr[] = {
 	[CLK_V_SET] = CLK_SET_REGS(v),
 	[CLK_W_SET] = CLK_SET_REGS(w),
 	[CLK_X_SET] = CLK_SET_REGS(x),
+	[CLK_Y_SET] = CLK_SET_REGS(y),
 };
 
 #define FUNIT_DATA(funit_, loname_, clk_set_)				\
