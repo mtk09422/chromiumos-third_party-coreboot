@@ -32,50 +32,34 @@
 
 #include "pmic.h"
 
-static const struct pad_config uart_console_pads[] = {
-	/* UARTA: tx and rx. */
-	PAD_CFG_SFIO(KB_ROW9, PINMUX_PULL_NONE, UA3),
-	PAD_CFG_SFIO(KB_ROW10, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, UA3),
-	/*
-	 * Disable UART2 pads as they are default connected to UARTA controller.
-	 */
-	PAD_CFG_UNUSED(UART2_RXD),
-	PAD_CFG_UNUSED(UART2_TXD),
-	PAD_CFG_UNUSED(UART2_RTS_N),
-	PAD_CFG_UNUSED(UART2_CTS_N),
-};
-
-static const struct pad_config padcfgs[] = {
-	/* Board ID bits 3:0 */
-	PAD_CFG_GPIO_INPUT(GPIO_X4_AUD, PINMUX_PULL_NONE),
-	PAD_CFG_GPIO_INPUT(GPIO_X1_AUD, PINMUX_PULL_NONE),
-	PAD_CFG_GPIO_INPUT(KB_ROW17, PINMUX_PULL_NONE),
-	PAD_CFG_GPIO_INPUT(KB_COL3, PINMUX_PULL_NONE),
-
-	/* Power Button */
-	PAD_CFG_GPIO_INPUT(KB_COL0, PINMUX_PULL_NONE),
-
-	/* Lid Open Switch */
-	PAD_CFG_GPIO_INPUT(KB_ROW4, PINMUX_PULL_UP),
-};
-
-static const struct pad_config i2cpad[] = {
-	/* PMIC i2C bus */
+static const struct pad_config pmic_pads[] = {
 	PAD_CFG_SFIO(PWR_I2C_SCL, PINMUX_INPUT_ENABLE, I2CPMU),
 	PAD_CFG_SFIO(PWR_I2C_SDA, PINMUX_INPUT_ENABLE, I2CPMU),
 };
 
-static const struct pad_config spipad[] = {
-	/* SPI fLash: mosi, miso, clk, cs0  */
-	PAD_CFG_SFIO(GPIO_PG6, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, SPI4),
-	PAD_CFG_SFIO(GPIO_PG7, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, SPI4),
-	PAD_CFG_SFIO(GPIO_PG5, PINMUX_INPUT_ENABLE, SPI4),
-	PAD_CFG_SFIO(GPIO_PI3, PINMUX_INPUT_ENABLE, SPI4),
+static const struct pad_config spiflash_pads[] = {
+	/* QSPI fLash: mosi, miso, clk, cs0, hold, wp  */
+	PAD_CFG_SFIO(QSPI_IO0, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, QSPI),
+	PAD_CFG_SFIO(QSPI_IO1, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, QSPI),
+	PAD_CFG_SFIO(QSPI_SCK, PINMUX_INPUT_ENABLE, QSPI),
+	PAD_CFG_SFIO(QSPI_CS_N, PINMUX_INPUT_ENABLE, QSPI),
+	PAD_CFG_SFIO(QSPI_IO2, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, QSPI),
+	PAD_CFG_SFIO(QSPI_IO3, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, QSPI),
 };
 
-static const struct funit_cfg funitcfgs[] = {
-	FUNIT_CFG(I2C5, PLLP, 400, i2cpad, ARRAY_SIZE(i2cpad)),
-	FUNIT_CFG(SBC4, PLLP, 33333, spipad, ARRAY_SIZE(spipad)),
+static const struct funit_cfg funits[] = {
+	/* PMIC on I2C5 (PWR_I2C* pads) at 400kHz. */
+	FUNIT_CFG(I2C5, PLLP, 400, pmic_pads, ARRAY_SIZE(pmic_pads)),
+	/* SPI flash at 24MHz on QSPI controller. */
+	FUNIT_CFG(QSPI, PLLP, 24000, spiflash_pads, ARRAY_SIZE(spiflash_pads)),
+};
+
+static const struct pad_config uart_console_pads[] = {
+	/* UARTA: tx, rx, rts, cts */
+	PAD_CFG_SFIO(UART1_TX, PINMUX_PULL_NONE, UARTA),
+	PAD_CFG_SFIO(UART1_RX, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, UARTA),
+	PAD_CFG_SFIO(UART1_RTS, PINMUX_PULL_UP, UARTA),
+	PAD_CFG_SFIO(UART1_CTS, PINMUX_PULL_UP, UARTA),
 };
 
 void bootblock_mainboard_early_init(void)
@@ -93,12 +77,8 @@ void bootblock_mainboard_init(void)
 {
 	set_clock_sources();
 
-	/* Set up the pads required to load romstage. */
-	soc_configure_pads(padcfgs, ARRAY_SIZE(padcfgs));
-	soc_configure_funits(funitcfgs, ARRAY_SIZE(funitcfgs));
+	soc_configure_funits(funits, ARRAY_SIZE(funits));
 
-	i2c_init(4);
-	pmic_init(4);
-
-	tegra_spi_init(4);
+	i2c_init(I2CPWR_BUS);
+	pmic_init(I2CPWR_BUS);
 }
