@@ -31,6 +31,7 @@
  * Reference: ARM Architecture Reference Manual, ARMv7-A and ARMv7-R edition
  */
 
+#include <arch_ops.h>
 #include <stdint.h>
 
 #include <arch/cache.h>
@@ -154,4 +155,13 @@ void cache_sync_instructions(void)
 	iciallu();		/* includes BPIALLU (architecturally) */
 	dsb();
 	isb();
+}
+
+/*
+ * For each segment of a program loaded this function is called
+ * to invalidate caches for the addresses of the loaded segment
+ */
+void arch_program_segment_loaded(uintptr_t start, size_t size)
+{
+	cache_sync_instructions();
 }

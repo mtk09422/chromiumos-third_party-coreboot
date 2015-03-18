@@ -32,6 +32,7 @@
  */
 
 #include <stdint.h>
+#include <arch_ops.h>
 
 #include <arch/cache.h>
 #include <arch/lib_helpers.h>
@@ -145,4 +146,15 @@ void cache_sync_instructions(void)
 {
 	flush_dcache_all();	/* includes trailing DSB (in assembly) */
 	icache_invalidate_all(); /* includdes leading DSB and trailing ISB. */
+}
+
+
+/*
+ * For each segment of a program loaded this function is called
+ * to invalidate caches for the addresses of the loaded segment
+ */
+void arch_program_segment_loaded(uintptr_t start, size_t size)
+{
+	dcache_clean_invalidate_by_mva((void *)start, size);
+	icache_invalidate_all();
 }
