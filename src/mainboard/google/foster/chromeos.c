@@ -48,11 +48,27 @@ void fill_lb_gpios(struct lb_gpios *gpios)
 		GPIO_MAX_NAME_LENGTH);
 	count++;
 
+	/* TODO: Power: active low / high depending on board id */
+	gpios->gpios[count].port = GPIO(X5);
+	gpios->gpios[count].polarity = ACTIVE_LOW;
+	gpios->gpios[count].value = -1;
+	strncpy((char *)gpios->gpios[count].name, "power",
+		GPIO_MAX_NAME_LENGTH);
+	count++;
+
 	/* Developer: virtual GPIO active high */
 	gpios->gpios[count].port = -1;
 	gpios->gpios[count].polarity = ACTIVE_HIGH;
 	gpios->gpios[count].value = get_developer_mode_switch();
 	strncpy((char *)gpios->gpios[count].name, "developer",
+		GPIO_MAX_NAME_LENGTH);
+	count++;
+
+	/* TODO: Reset: active low (output) */
+	gpios->gpios[count].port = GPIO(I5);
+	gpios->gpios[count].polarity = ACTIVE_LOW;
+	gpios->gpios[count].value = -1;
+	strncpy((char *)gpios->gpios[count].name, "reset",
 		GPIO_MAX_NAME_LENGTH);
 	count++;
 
