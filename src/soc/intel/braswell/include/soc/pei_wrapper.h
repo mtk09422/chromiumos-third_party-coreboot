@@ -1,8 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2013 Google Inc.
- * Copyright (C) 2015 Intel Corp.
+ * Copyright (C) 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,33 +17,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/hlt.h>
-#include <arch/io.h>
-#include <fsp_util.h>
-#include <reset.h>
-#include <soc/pmc.h>
+#ifndef _BROADWELL_PEI_WRAPPER_H_
+#define _BROADWELL_PEI_WRAPPER_H_
 
-void hard_reset(void)
-{
-	/* S0->S5->S0 trip. */
-	outb(RST_CPU | SYS_RST | FULL_RST, RST_CNT);
-	while (1)
-		hlt();
-}
+#include <soc/pei_data.h>
 
-void soft_reset(void)
-{
-	/* PMC_PLTRST# asserted. */
-	outb(RST_CPU | SYS_RST, RST_CNT);
-	while (1)
-		hlt();
-}
+typedef int ABI_X86(*pei_wrapper_entry_t)(struct pei_data *pei_data);
 
-void cpu_reset(void)
-{
-	/* Sends INIT# to CPU */
-	outb(RST_CPU, RST_CNT);
-	while (1)
-		hlt();
-}
+void broadwell_fill_pei_data(struct pei_data *pei_data);
+void mainboard_fill_pei_data(struct pei_data *pei_data);
 
+#endif

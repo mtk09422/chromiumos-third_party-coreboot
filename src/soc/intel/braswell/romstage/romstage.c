@@ -35,7 +35,6 @@
 #include <soc/iosf.h>
 #include <soc/lpc.h>
 #include <soc/pci_devs.h>
-#include <soc/pmc.h>
 #include <soc/romstage.h>
 #include <soc/smm.h>
 #include <soc/spi.h>
@@ -155,91 +154,33 @@ int chipset_prev_sleep_state(struct chipset_power_state *ps)
 	return prev_sleep_state;
 }
 
-inline void chromeos_init(int prev_sleep_state)
-{
-#if IS_ENABLED(CONFIG_CHROMEOS)
-	/* Normalize the sleep state to what init_chromeos() wants for S3: 2. */
-	init_chromeos(0);
-#endif
-}
-
 void ramstage_cache_invalid(struct ramstage_cache *cache)
 {
 }
 
-/*
- * The cache-as-ram assembly file calls romstage_main() after setting up
- * cache-as-ram.  romstage_main() will then call the mainboards's
- * mainboard_romstage_entry() function. That function then calls
- * romstage_common() below. The reason for the back and forth is to provide
- * common entry point from cache-as-ram while still allowing for code sharing.
- * Because we can't use global variables the stack is used for allocations --
- * thus the need to call back and forth.
- */
-
-
-/* Entry from cache-as-ram.inc. */
-asmlinkage void *romstage_main(unsigned int bist,
-			      uint32_t tsc_low, uint32_t tsc_high)
+/* SOC initialization before the console is enabled */
+void soc_pre_console_init(struct romstage_params *params)
 {
-	void *stack_data;
-	struct romstage_params rp = {
-		.bist = bist,
-		.power_state = NULL,
-		.pei_data = NULL,
-	};
-
-	post_code(0x30);
-
-	/* Save timestamp information */
-	timestamp_early_init((((uint64_t)tsc_high) << 32) | (uint64_t)tsc_low);
-	timestamp_add_now(TS_START_ROMSTAGE);
-
 	/* Early chipset initialization */
 	program_base_addresses();
 	tco_disable();
-	config_com1_and_enable();
-	console_init();
+}
 
-	/* Display parameters */
-	printk(BIOS_SPEW, "bist: 0x%08x\n", bist);
-	printk(BIOS_SPEW, "tsc_low: 0x%08x\n", tsc_low);
-	printk(BIOS_SPEW, "tsc_hi: 0x%08x\n", tsc_high);
-	printk(BIOS_SPEW, "CONFIG_MMCONF_BASE_ADDRESS: 0x%08x\n",
-		 CONFIG_MMCONF_BASE_ADDRESS);
-	printk(BIOS_INFO, "Using: %s\n",
-		IS_ENABLED(CONFIG_PLATFORM_USES_FSP) ? "FSP" :
-		(IS_ENABLED(CONFIG_HAVE_MRC) ? "MRC" :
-		"No Memory Support"));
-
-	/* Display FSP banner */
-	printk(BIOS_DEBUG, "FSP TempRamInit successful\n");
-	print_fsp_info(find_fsp());
-
+/* SOC initialization after console is enabled */
+void soc_romstage_init(struct romstage_params *params)
+{
 	/* Continue chipset initialization */
 	spi_init();
-	set_max_freq();
 	gfx_init();
 
 #if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
 	/* Ensure the EC is in the right mode for recovery */
 	google_chromeec_early_init();
 #endif
-
-	/* Get power management information. */
-	rp.power_state = fill_power_state();
-
-	/* Call into mainboard. */
-	mainboard_romstage_entry(&rp);
-
-	stack_data = setup_stack_and_mtrrs();
-
-	printk(BIOS_DEBUG, "Calling FspTempRamExit\n");
-	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_START);
-	return stack_data;
 }
 
-void disable_rom_shadow(void)
+/* SOC initialization after RAM is enabled */
+void soc_after_ram_init(struct romstage_params *params)
 {
 	u32 value;
 
@@ -250,88 +191,10 @@ void disable_rom_shadow(void)
 	iosf_bunit_write(BUNIT_BMISC, value);
 }
 
-void romstage_common(struct romstage_params *rp)
+/* SOC initialization after FSP silicon init */
+__attribute__((weak)) void soc_after_silicon_init(void)
 {
-	struct romstage_handoff *handoff;
-
-	timestamp_add_now(TS_BEFORE_INITRAM);
-
-	/* Fill in any extra pei_data fields */
-	rp->pei_data->boot_mode = rp->power_state->prev_sleep_state;
-
-#if IS_ENABLED(CONFIG_ELOG_BOOT_COUNT)
-	boot_count_increment();
-#endif
-
-	/* Check recovery and MRC cache */
-	rp->pei_data->saved_data_size = 0;
-	rp->pei_data->saved_data = NULL;
-	if (!rp->pei_data->disable_saved_data) {
-		if (recovery_mode_enabled()) {
-			/* Recovery mode does not use MRC cache */
-			printk(BIOS_DEBUG,
-			       "Recovery mode: not using MRC cache.\n");
-		} else {
-			printk(BIOS_DEBUG, "No MRC cache found.\n");
-#if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
-			if (rp->pei_data->boot_mode == SLEEP_STATE_S0) {
-				/* Ensure EC is running RO firmware. */
-				google_chromeec_check_ec_image(EC_IMAGE_RO);
-			}
-#endif
-		}
-	}
-
-	/* Perform RAM initialization */
-	raminit(rp, rp->pei_data);
-	timestamp_add_now(TS_AFTER_INITRAM);
-
-	/* Make sure that E0000 and F0000 are RAM */
-	disable_rom_shadow();
-
-	/* Create romstage handoff information */
-	handoff = romstage_handoff_find_or_add();
-	if (handoff != NULL) {
-		handoff->s3_resume =
-			(rp->pei_data->boot_mode == SLEEP_STATE_S3);
-	} else {
-		printk(BIOS_DEBUG, "Romstage handoff structure not added!\n");
-		if (rp->pei_data->boot_mode == SLEEP_STATE_S3)
-			hard_reset();
-	}
-
-	/* Do chrome OS initialization */
-	chromeos_init(rp->pei_data->boot_mode);
-	printk(BIOS_DEBUG, "Calling FspTempRamExit\n");
-	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_START);
-}
-
-asmlinkage void romstage_after_car(void)
-{
-	FSP_INFO_HEADER *fsp_info_header;
-	FSP_SILICON_INIT fsp_silicon_init;
-	EFI_STATUS status;
-
-	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_END);
-	printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
-
-	/* Find the FSP image */
-	timestamp_add_now(TS_FSP_FIND_START);
-	fsp_info_header = find_fsp();
-	timestamp_add_now(TS_FSP_FIND_END);
-
-	/* Perform silicon initialization after RAM is configured */
-	printk(BIOS_DEBUG, "Calling FspSiliconInit\n");
-	fsp_silicon_init = (FSP_SILICON_INIT)(fsp_info_header->ImageBase
-		+ fsp_info_header->FspSiliconInitEntryOffset);
-	timestamp_add_now(TS_FSP_SILICON_INIT_START);
-	status = fsp_silicon_init(NULL);
-	timestamp_add_now(TS_FSP_SILICON_INIT_END);
-	printk(BIOS_DEBUG, "FspSiliconInit returned 0x%08x\n", status);
-
-	timestamp_add_now(TS_END_ROMSTAGE);
-
-	printk(BIOS_ERR, "Hanging in romstage_after_car!\n");
+	printk(BIOS_ERR, "Hanging in soc_after_silicon_init!\n");
 	post_code(0x35);
 	while (1)
 		;

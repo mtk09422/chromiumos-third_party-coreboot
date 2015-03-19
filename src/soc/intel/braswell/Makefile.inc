@@ -4,16 +4,15 @@ subdirs-y += romstage
 subdirs-y += ../common
 subdirs-y += ../../../cpu/x86/tsc
 
-ramstage-y += memmap.c
-romstage-y += memmap.c
-ramstage-y += tsc_freq.c
-romstage-y += tsc_freq.c
-ramstage-y += iosf.c
 romstage-y += iosf.c
+romstage-y += memmap.c
+romstage-y += tsc_freq.c
+
+ramstage-y += iosf.c
+ramstage-y += memmap.c
 ramstage-y += ramstage.c
-romstage-y += reset.c
-ramstage-y += reset.c
 romstage-y += stage_cache.c
+ramstage-y += tsc_freq.c
 
 INCLUDES += -Isrc/soc/intel/braswell/
 INCLUDES += -Isrc/soc/intel/braswell/include
