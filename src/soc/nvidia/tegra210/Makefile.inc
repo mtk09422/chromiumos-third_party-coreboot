@@ -1,7 +1,5 @@
 CBOOTIMAGE = cbootimage
-#TODO: Fix this when cbootimage supports T210!!
-#CBOOTIMAGE_OPTS = --soc tegra210
-CBOOTIMAGE_OPTS = --soc tegra132
+CBOOTIMAGE_OPTS = --soc tegra210
 
 bootblock-y += bootblock.c
 bootblock-y += bootblock_asm.S
