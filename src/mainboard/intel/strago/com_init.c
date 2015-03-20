@@ -54,7 +54,7 @@ static uint16_t family_number(uint8_t community, uint8_t pad)
 	return (i << 8) + pad - base;
 }
 
-void config_com1_and_enable(void)
+void mainboard_pre_console_init(struct romstage_params *params)
 {
 	uint32_t reg;
 	uint16_t fpad;

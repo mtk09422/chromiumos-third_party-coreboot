@@ -59,7 +59,7 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 	struct cbfs_file *spd_file;
 	void *spd_content;
 	int dual_channel = 0;
-	struct pei_data ps;
+	struct pei_data *ps = rp->pei_data;
 
 	/* Find the SPD data in CBFS. */
 	spd_file = cbfs_get_file(CBFS_DEFAULT_MEDIA, "spd.bin");
@@ -79,9 +79,6 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 		printk(BIOS_DEBUG, "\n");
 	}
 
-	/* Initialize the pei data structure */
-	memset(&ps, 0, sizeof(ps));
-
 	/*
 	 * Set SPD and memory configuration:
 	 * Memory type: 0=DimmInstalled,
@@ -89,17 +86,16 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 	 *              2=DimmDisabled
 	 */
 	if (spd_content != NULL) {
-		ps.spd_data_ch0 = spd_content;
-		ps.spd_ch0_config = 1;
-		ps.spd_ch1_config = 2;
+		ps->spd_data_ch0 = spd_content;
+		ps->spd_ch0_config = 1;
+		ps->spd_ch1_config = 2;
 	}
 
 	/* Set device state/enable information */
-	ps.sdcard_mode = PCH_ACPI_MODE;
-	ps.emmc_mode = PCH_ACPI_MODE;
-	ps.enable_azalia = 1;
+	ps->sdcard_mode = PCH_ACPI_MODE;
+	ps->emmc_mode = PCH_ACPI_MODE;
+	ps->enable_azalia = 1;
 
 	/* Call back into chipset code with platform values updated. */
-	rp->pei_data = &ps;
 	romstage_common(rp);
 }
