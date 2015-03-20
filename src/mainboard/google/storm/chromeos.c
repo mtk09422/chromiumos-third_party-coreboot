@@ -102,7 +102,7 @@ static int get_switch_value(const char *switch_name)
 
 int get_developer_mode_switch(void)
 {
-	return get_switch_value(DEVELOPER_GPIO_NAME);
+	return 0;
 }
 
 /*
