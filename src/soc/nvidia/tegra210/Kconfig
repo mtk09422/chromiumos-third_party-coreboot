@@ -98,6 +98,12 @@ config BOOTROM_SDRAM_INIT
 	help
 	  Use during Foster LPDDR4 bringup.
 
+config TRUSTZONE_CARVEOUT_SIZE_MB
+	hex "Size of Trust Zone region"
+	default 0x4
+	help
+	  Size of Trust Zone area in MiB to reserve in memory map.
+
 # Default to 700MHz. This value is based on nv bootloader setting.
 config PLLX_KHZ
         int
