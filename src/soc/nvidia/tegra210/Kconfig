@@ -92,6 +92,12 @@ config CONSOLE_SERIAL_TEGRA210_UART_ADDRESS
 	help
 	  Map the UART names to the respective MMIO addres.
 
+config BOOTROM_SDRAM_INIT
+	bool "SoC BootROM does SDRAM init with full BCT"
+	default n
+	help
+	  Use during Foster LPDDR4 bringup.
+
 # Default to 700MHz. This value is based on nv bootloader setting.
 config PLLX_KHZ
         int
