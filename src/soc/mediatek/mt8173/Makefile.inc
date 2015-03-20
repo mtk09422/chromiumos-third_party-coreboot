@@ -32,6 +32,7 @@ bootblock-y += blkdev.c mmc_common_inter.c mmc_core.c \
 		msdc.c msdc_utils.c cust_msdc.c
 
 bootblock-y += gpio.c gpio_init.c
+bootblock-y += mmu_operations.c
 
 ################################################################################
 
@@ -84,11 +85,6 @@ secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += psci.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu.c mtcmos.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += timer.c monotonic_timer.c
-
-rmodules_$(ARCH-ROMSTAGE-y)-y += monotonic_timer.c
-# TODO: remove this when vbootstub 64-bit align problem has been fixed.
-rmodules_$(ARCH-ROMSTAGE-y)-c-ccopts += -mstrict-align
-VBOOT_STUB_DEPS += $(obj)/soc/mediatek/mt8173/monotonic_timer.rmodules_$(ARCH-ROMSTAGE-y).o
 
 ################################################################################
 

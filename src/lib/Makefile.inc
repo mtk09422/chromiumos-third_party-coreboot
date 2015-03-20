@@ -25,6 +25,7 @@ bootblock-y += memchr.c
 bootblock-y += memcmp.c
 bootblock-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 bootblock-$(CONFIG_GENERIC_UDELAY) += timer.c
+bootblock-y += memrange.c malloc.c
 
 ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL8250) += uart8250.c

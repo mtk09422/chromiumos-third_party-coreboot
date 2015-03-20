@@ -15,12 +15,10 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
-#if !defined(__PRE_RAM__)
 void *memalign(size_t boundary, size_t size);
 void *malloc(size_t size);
 /* We never free memory */
 static inline void free(void *ptr) {}
-#endif
 
 /* not sure romcc will know how to handle this. */
 #ifndef __ROMCC__

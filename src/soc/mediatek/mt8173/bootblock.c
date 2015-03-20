@@ -25,6 +25,7 @@
 #include <bootblock_common.h>
 #include <cbfs.h>
 #include <console/console.h>
+#include <symbols.h>
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
@@ -32,6 +33,7 @@
 #include <soc/gpio.h>
 #include <soc/i2c.h>
 #include <soc/mt8173.h>
+#include <soc/mmu_operations.h>
 #include <soc/pmic_wrap_init.h>
 #include <soc/pmic.h>
 #include <soc/da9212.h>
@@ -68,7 +70,12 @@ void main(void)
 
 		exception_init();
 
+		mt8173_vboot2_mmu_init();
+
 		entry = vboot2_verify_firmware();
+		/* TODO: it should be removed after flush_dcache_all works */
+		dcache_clean_invalidate_by_mva((void *)_sram_l2c,
+					       _sram_l2c_size + _sram_size);
 	}
 
 	else if (IS_ENABLED(CONFIG_VBOOT_VERIFY_FIRMWARE)) {

@@ -51,6 +51,10 @@ config DRAM_SIZE_MB
 	int
 	default 2048
 
+config BOOTBLOCK_HEAP_SIZE
+	int
+	default 2048
+
 config EC_GOOGLE_CHROMEEC_SPI_BUS
 	hex
 	default 0

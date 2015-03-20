@@ -46,4 +46,8 @@ extern unsigned char _sram_l2c[];
 extern unsigned char _esram_l2c[];
 #define _sram_l2c_size (_esram_l2c - _sram_l2c)
 
+extern unsigned char _sram_ttb[];
+extern unsigned char _esram_ttb[];
+#define _sram_ttb_size	(_esram_ttb - _sram_ttb)
+
 #endif /* SOC_MEDIATEK_MT8173_MT8173_H */

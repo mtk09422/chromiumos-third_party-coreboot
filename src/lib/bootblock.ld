@@ -35,6 +35,12 @@
 	*(.bss.*);
 	*(.sbss);
 	*(.sbss.*);
+	_heap = .;
+	/* Reserve CONFIG_HEAP_SIZE bytes for the heap */
+	. += CONFIG_BOOTBLOCK_HEAP_SIZE ;
+	. = ALIGN(4);
+	_eheap = .;
+
 	_ebootblock = .;
 	_eprogram = .;
 } : to_load = 0xff

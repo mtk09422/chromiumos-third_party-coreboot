@@ -24,7 +24,6 @@ bootblock-c-ccopts += -mstrict-align
 verstage-y += chromeos.c
 verstage-y += reset.c
 verstage-y += memlayout.ld
-verstage-c-ccopts +=  -mstrict-align
 
 romstage-y += romstage.c custom_emi.c
 romstage-y += reset.c

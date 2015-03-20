@@ -384,6 +384,10 @@ config HEAP_SIZE
 	hex "Heap size in bytes"
 	default 0x4000
 
+config BOOTBLOCK_HEAP_SIZE
+	int
+	default 0
+
 # Size of per-cpu stacks in ramstage. Set to 0 for non-SMP architectures.
 config STACK_SIZE
 	hex
