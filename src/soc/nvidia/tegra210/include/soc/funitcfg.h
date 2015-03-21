@@ -52,11 +52,10 @@ enum {
 	I2C5_BUS = 4,
 	I2CPWR_BUS = I2C5_BUS,
 	I2C6_BUS = 5,
+	QSPI_BUS = 7,
 
 	SPI1_BUS = 1,
 	SPI4_BUS = 4,
-
-	QSPI_BUS = 0,
 };
 
 struct funit_cfg {
