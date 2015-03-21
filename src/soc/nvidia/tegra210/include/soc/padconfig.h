@@ -24,7 +24,7 @@
 #include <soc/pinmux.h>
 
 struct pad_config {
-	uint8_t pinmux_flags;	/* PU/PU, OD, INPUT, SFIO, etc */
+	uint16_t pinmux_flags;	/* PU/PU, OD, INPUT, SFIO, etc */
 	uint8_t gpio_index;		/* bank, port, index */
 	uint16_t pinmux_index:9;
 	uint16_t unused:1;
