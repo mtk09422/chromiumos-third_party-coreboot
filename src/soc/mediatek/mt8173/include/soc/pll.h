@@ -253,7 +253,9 @@ enum {
 
 enum {
 	DIS_PWR_STA_MASK   = 0x1 << 3,
+	AUD_PWR_STA_MASK   = 0x1 << 24,
 };
+
 
 enum {
 	PWR_RST_B          = 0x1 << 0,
@@ -266,6 +268,7 @@ enum {
 enum {
 	SRAM_PDN           = 0xf << 8,
 	DIS_SRAM_ACK       = 0x1 << 12,
+	AUD_SRAM_ACK       = 0xf << 12,
 };
 
 enum {
@@ -289,6 +292,7 @@ enum {
 };
 
 int spm_mtcmos_ctrl_disp(int state);
+int spm_mtcmos_ctrl_audio(int state);
 void mt_pll_post_init(void);
 void mt_pll_init(void);
 void mt_mempll_cali(DRAMC_CTX_T *p);

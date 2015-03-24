@@ -255,6 +255,7 @@ void mt_pll_init(void)
 
 	/*for MTCMOS*/
 	spm_mtcmos_ctrl_disp(STA_POWER_ON);
+	spm_mtcmos_ctrl_audio(STA_POWER_ON);
 }
 
 int spm_mtcmos_ctrl_disp(int state)
@@ -301,3 +302,36 @@ int spm_mtcmos_ctrl_disp(int state)
 
 	return err;
 }
+
+int spm_mtcmos_ctrl_audio(int state)
+{
+	int err = 0;
+
+	spm_write(SPM_POWERON_CONFIG_SET, (SPM_PROJECT_CODE << 16) | (1U << 0));
+	if (state == STA_POWER_DOWN) {
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) | SRAM_PDN);
+		while ((spm_read(SPM_AUDIO_PWR_CON) & AUD_SRAM_ACK) != AUD_SRAM_ACK)
+			;
+
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) | PWR_ISO);
+		spm_write(SPM_AUDIO_PWR_CON, (spm_read(SPM_AUDIO_PWR_CON) & ~PWR_RST_B) | PWR_CLK_DIS);
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) & ~(PWR_ON | PWR_ON_S));
+		while ((spm_read(SPM_PWR_STATUS) & AUD_PWR_STA_MASK) ||
+		       (spm_read(SPM_PWR_STATUS_2ND) & AUD_PWR_STA_MASK))
+			;
+	} else {    /* STA_POWER_ON */
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) | PWR_ON);
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) | PWR_ON_S);
+		while (!(spm_read(SPM_PWR_STATUS) & AUD_PWR_STA_MASK) ||
+		       !(spm_read(SPM_PWR_STATUS_2ND) & AUD_PWR_STA_MASK))
+			;
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) & ~PWR_CLK_DIS);
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) & ~PWR_ISO);
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) | PWR_RST_B);
+		spm_write(SPM_AUDIO_PWR_CON, spm_read(SPM_AUDIO_PWR_CON) & ~SRAM_PDN);
+		while ((spm_read(SPM_AUDIO_PWR_CON) & AUD_SRAM_ACK))
+			;
+	}
+	return err;
+}
+
