@@ -210,6 +210,14 @@ config BOARD_GOOGLE_SLIPPY
 	  Slippy is a Chrome OS mainboard.
 	  Slippy is based on the Intel Haswell platform.
 
+config BOARD_GOOGLE_SMAUG
+	bool "Smaug"
+	help
+	  Google Smaug mainboard.
+	  Enable this config to select the Google Smaug mainboard.
+	  Smaug is a Chrome OS mainboard.
+	  Smaug is based on the Nvidia Tegra 210 platform.
+
 config BOARD_GOOGLE_STORM
 	bool "Storm"
 	help
@@ -313,6 +321,7 @@ source "src/mainboard/google/rush/Kconfig"
 source "src/mainboard/google/rush_ryu/Kconfig"
 source "src/mainboard/google/samus/Kconfig"
 source "src/mainboard/google/slippy/Kconfig"
+source "src/mainboard/google/smaug/Kconfig"
 source "src/mainboard/google/storm/Kconfig"
 source "src/mainboard/google/stout/Kconfig"
 source "src/mainboard/google/urara/Kconfig"
