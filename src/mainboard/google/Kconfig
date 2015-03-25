@@ -66,6 +66,14 @@ config BOARD_GOOGLE_COSMOS
 	  Cosmos is a Chrome OS mainboard.
 	  Cosmos is based on the Marvell BG4CD platform.
 
+config BOARD_GOOGLE_CYAN
+	bool "Cyan"
+	help
+	  Google Cyan mainboard.
+	  Enable this config to select the Google Cyan mainboard.
+	  Cyan is a Chrome OS mainboard.
+	  Cyan is based on the Intel Braswell platform.
+
 config BOARD_GOOGLE_DAISY
 	bool "Daisy"
 	help
@@ -303,6 +311,7 @@ source "src/mainboard/google/beltino/Kconfig"
 source "src/mainboard/google/bolt/Kconfig"
 source "src/mainboard/google/butterfly/Kconfig"
 source "src/mainboard/google/cosmos/Kconfig"
+source "src/mainboard/google/cyan/Kconfig"
 source "src/mainboard/google/daisy/Kconfig"
 source "src/mainboard/google/falco/Kconfig"
 source "src/mainboard/google/foster/Kconfig"
