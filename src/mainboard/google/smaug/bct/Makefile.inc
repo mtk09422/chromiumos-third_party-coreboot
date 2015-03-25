@@ -2,6 +2,7 @@
 ## This file is part of the coreboot project.
 ##
 ## Copyright 2015 Google Inc.
+## Copyright (c) 2015, NVIDIA CORPORATION.  All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,34 +18,13 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
-# Add a handler for BCT config files
-$(call add-special-class,bct-cfg)
-bct-cfg-handler= $(eval $(obj)/generated/bct.cfg: $(1)$(2))
+bct-cfg-$(CONFIG_SMAUG_BCT_CFG_EMMC) += emmc.cfg
+bct-cfg-$(CONFIG_SMAUG_BCT_CFG_SPI) += spi.cfg
+bct-cfg-y += odmdata.cfg
+bct-cfg-y += jtag.cfg
+#NOTE: When full LPDDR4 SDRAM config is done in romstage, remove this
+bct-cfg-$(CONFIG_BOOTROM_SDRAM_INIT) += sdram-samsung-3GB-204.cfg
 
-$(obj)/generated/bct.cfg:
-	@printf "    CAT        $(subst $(obj)/,,$(@))\n"
-	cat $^ > $@
-
-subdirs-y += bct
-
-bootblock-y += bootblock.c
-bootblock-y += pmic.c
-bootblock-y += reset.c
-
-verstage-y += chromeos.c
-verstage-y += reset.c
-
-romstage-y += chromeos.c
-romstage-y += pmic.c
-romstage-y += reset.c
-romstage-y += romstage.c
-
-ramstage-y += boardid.c
-ramstage-y += mainboard.c
-ramstage-y += reset.c
-ramstage-y += pmic.c
-
-bootblock-y += memlayout.ld
-romstage-y += memlayout.ld
-ramstage-y += memlayout.ld
-verstage-y += memlayout.ld
+# Note when SDRAM config (sdram-*.cfg) files are changed, we have to regenerate
+# the include files (sdram-*.inc) by running "./cfg2inc.sh sdram-*.cfg".
+# TODO(hungte) Change cfg2inc.sh to NVIDIA's official tool in cbootimage.
