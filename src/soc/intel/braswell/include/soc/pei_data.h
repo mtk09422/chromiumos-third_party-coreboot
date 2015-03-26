@@ -30,7 +30,6 @@
 #define PEI_DATA_H
 
 #include <types.h>
-#include <memory_info.h>
 
 #define PEI_VERSION 22
 
@@ -42,6 +41,9 @@ struct pei_data {
 	/* Chip settings */
 	void *spd_data_ch0;
 	void *spd_data_ch1;
+#if IS_ENABLED(CONFIG_GOP_SUPPORT)
+	void *vbt_data;
+#endif
 	uint8_t spd_ch0_config;
 	uint8_t spd_ch1_config;
 	uint8_t sdcard_mode;
