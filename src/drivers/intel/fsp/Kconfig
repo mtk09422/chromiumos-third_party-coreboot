@@ -216,4 +216,13 @@ config DISPLAY_FSP_ENTRY_POINTS
 	bool "Display FSP entry points"
 	default n
 
+config GOP_SUPPORT
+	bool "Enables GOP support"
+	default y
+
+config VBT_FILE
+	string "GOP Video BIOS table binary path"
+	depends on GOP_SUPPORT
+	default "3rdparty/mainboard/$(MAINBOARDDIR)/vbt.bin"
+
 endif #PLATFORM_USES_FSP

@@ -31,6 +31,14 @@ ifeq ($(CONFIG_USE_GENERIC_FSP_CAR_INC),y)
 cpu_incs += $(src)/drivers/intel/fsp/cache_as_ram.inc
 endif
 
+
+# Add the GOP Video BIOS Table to the cbfs image
+cbfs-files-$(CONFIG_GOP_SUPPORT) += vbt.bin
+vbt.bin-file := $(call strip_quotes,$(CONFIG_VBT_FILE))
+vbt.bin-type := optionrom
+
+
+# Add the FSP binary to the cbfs image
 ifeq ($(CONFIG_HAVE_FSP_BIN),y)
 cbfs-files-y += fsp.bin
 fsp.bin-file := $(call strip_quotes,$(CONFIG_FSP_FILE))
@@ -38,6 +46,8 @@ fsp.bin-position := $(CONFIG_FSP_LOC)
 fsp.bin-type := 0xab
 endif
 
+
+# Create and add the MRC cache to the cbfs image
 ifeq ($(CONFIG_ENABLE_MRC_CACHE_FILE),y)
 $(obj)/mrc.cache:
 	dd if=/dev/zero count=1 \
