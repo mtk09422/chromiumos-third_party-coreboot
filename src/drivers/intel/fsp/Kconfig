@@ -216,6 +216,13 @@ config DISPLAY_FSP_ENTRY_POINTS
 	bool "Display FSP entry points"
 	default n
 
+config DISPLAY_UPD_DATA
+	bool "Display UPD data"
+	default n
+	help
+	  Display the user specified product data prior to memory
+	  initialization.
+
 config GOP_SUPPORT
 	bool "Enables GOP support"
 	default y
