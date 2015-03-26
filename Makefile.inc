@@ -513,3 +513,10 @@ $(obj)/coreboot.pre: $(objcbfs)/$(ROMSTAGE_ELF) $(obj)/coreboot.pre1 $(CBFSTOOL)
 		-n $(CONFIG_CBFS_PREFIX)/romstage -c none \
 		$(CBFSTOOL_PRE_OPTS)
 	mv $@.tmp $@
+
+cbfs-files-$(CONFIG_BOARD_ID_MANUAL) += board_id
+board_id-file := $(obj)/board_id
+board_id-type := raw
+
+$(obj)/board_id:
+	echo -n "$CONFIG_BOARD_ID_STRING" > $@
