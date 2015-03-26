@@ -25,10 +25,8 @@ ifeq ($(CONFIG_RVP_SUPPORT),y)
 # will be passed to FSP.
 SPD_SOURCES =
 else
-# Currently only one memory configuration is used for strago, yet verification using BSW RVP
-# will require using an SPD hex file to match the memory SODIMM used on BSW RVP.
-# 2GiB total - 2 x 1GiB Hynix  H5TC2G63FFR-PBA 1600MHz
-SPD_SOURCES = hynix_2GiB_dimm_H5TC4G63AFR-PBA
+# This spd data can be used only on EVT 1.7
+SPD_SOURCES = samsung_2GiB_dimm_K4B4G1646Q-HYK0
 endif
 
 SPD_DEPS := $(foreach f, $(SPD_SOURCES), src/mainboard/$(MAINBOARDDIR)/spd/$(f).spd.hex)
