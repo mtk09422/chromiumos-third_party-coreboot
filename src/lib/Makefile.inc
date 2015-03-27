@@ -108,6 +108,7 @@ ramstage-$(CONFIG_COOP_MULTITASKING) += thread.c
 ramstage-$(CONFIG_TIMER_QUEUE) += timer_queue.c
 ramstage-$(CONFIG_GENERIC_GPIO_LIB) += gpio.c
 ramstage-$(CONFIG_GENERIC_UDELAY) += timer.c
+ramstage-y += b64_decode.c
 
 # The CBMEM implementations are chosen based on CONFIG_DYNAMIC_CBMEM.
 ifeq ($(CONFIG_DYNAMIC_CBMEM),y)
