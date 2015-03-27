@@ -31,12 +31,18 @@
 #include "gpio.h"
 #include "pmic.h"
 
+static const struct pad_config padcfgs[] = {
+	PAD_CFG_GPIO_INPUT(USB_VBUS_EN1, PINMUX_PULL_NONE | PINMUX_PARKED |
+			   PINMUX_INPUT_ENABLE | PINMUX_LPDR | PINMUX_IO_HV),
+};
+
 static const struct funit_cfg funits[] = {
 	FUNIT_CFG_USB(USBD),
 };
 
 static void mainboard_init(device_t dev)
 {
+	soc_configure_pads(padcfgs, ARRAY_SIZE(padcfgs));
 	soc_configure_funits(funits, ARRAY_SIZE(funits));
 }
 
