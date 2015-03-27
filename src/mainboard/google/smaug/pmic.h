@@ -69,6 +69,9 @@
 #define MAX77620_CID4_REG		0x5C
 #define MAX77620_CID5_REG		0x5D
 
+#define MAX77621_VOUT_REG		0x00
+#define MAX77621_VOUT_DVC_REG		0x01
+
 void pmic_init(unsigned bus);
 
 #endif /* __MAINBOARD_GOOGLE_FOSTER_PMIC_H__ */
