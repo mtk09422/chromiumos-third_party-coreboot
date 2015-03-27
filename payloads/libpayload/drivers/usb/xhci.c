@@ -486,6 +486,39 @@ xhci_enqueue_trb(transfer_ring_t *const tr)
 			tr->pcs ^= 1;
 	}
 }
+#ifdef CONFIG_LP_USB_XHCI_MTK_QUIRK
+/*
+ * MTK's xHCI controller defines a number of packets that remain to be
+ * transferred for a TD after processing all Max packets in all previous
+ * TRBs,that means don't include the current TRB's.
+ */
+static int xhci_mtk_tds_quirk(const int datalen, int td_running_total,
+			      size_t trb_buffer_length, const size_t maxp)
+{
+	int remainder, td_packet_count, packet_transferred;
+
+	/* 0 for the last TRB */
+	if (td_running_total + trb_buffer_length == datalen)
+		return 0;
+
+	packet_transferred = td_running_total / maxp;
+	td_packet_count = (datalen + maxp - 1) / maxp;
+	remainder = td_packet_count - packet_transferred;
+
+	return (remainder > TRB_MAX_TD_SIZE) ? TRB_MAX_TD_SIZE : remainder;
+}
+
+static void xhci_mtk_tds_set(trb_t *trb, const int ep, const size_t maxp,
+			     const int dalen, int txed_len, int next_tx_len)
+{
+	size_t tds;
+
+	tds = (ep == 1) ? 0 : xhci_mtk_tds_quirk(dalen, txed_len, next_tx_len,
+						 maxp);
+
+	TRB_SET(TDS, trb, tds);
+}
+#endif
 
 static void
 xhci_enqueue_td(transfer_ring_t *const tr, const int ep, const size_t mps,
@@ -515,7 +548,11 @@ xhci_enqueue_td(transfer_ring_t *const tr, const int ep, const size_t mps,
 		xhci_clear_trb(trb, tr->pcs);
 		trb->ptr_low = virt_to_phys(cur_start);
 		TRB_SET(TL, trb, cur_length);
+#ifdef CONFIG_LP_USB_XHCI_MTK_QUIRK
+		xhci_mtk_tds_set(trb, ep, mps, dalen, cur_start - (u8 *)data, cur_length);
+#else
 		TRB_SET(TDS, trb,((packets > TRB_MAX_TD_SIZE) ? TRB_MAX_TD_SIZE : packets));
+#endif
 		TRB_SET(CH, trb, 1);
 
 		/* Check for first, data stage TRB */

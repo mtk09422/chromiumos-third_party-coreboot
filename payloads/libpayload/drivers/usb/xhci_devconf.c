@@ -313,7 +313,21 @@ xhci_finish_ep_config(const endpoint_t *const ep, inputctx_t *const ic)
 	}
 	EC_SET(AVRTRB,	epctx, avrtrb);
 	EC_SET(MXESIT,  epctx, EC_GET(MPS, epctx) * EC_GET(MBS, epctx));
-
+#ifdef CONFIG_LP_USB_XHCI_MTK_QUIRK
+	/*
+	 * To minimize the scheduling effort for synchronous endpoints in xHC,
+	 * the MTK architecture defines some extra SW scheduling parameters
+	 * for HW. According to these parameters provided by SW, the xHC can
+	 * easily decide whether a synchronous endpoint should be scheduled
+	 * in a specific uFrame. The extra SW scheduling parameters are put
+	 * into reserved DWs in Slot and Endpoint Context. But in core-boot
+	 * isochronous transfer can be ignored, so only tow fields are set to
+	 * a default value 1 to support bulk and interrupt transfers,
+	 * and others are set to zero.
+	 */
+	EC_SET(BPKTS, epctx, 1);
+	EC_SET(BBM, epctx, 1);
+#endif
 	return 0;
 }
 

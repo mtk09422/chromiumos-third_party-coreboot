@@ -119,6 +119,23 @@ xhci_rh_reset_port(usbdev_t *const dev, const int port)
 	return 0;
 }
 
+#ifdef CONFIG_LP_USB_XHCI_MTK_QUIRK
+/*
+ * Before send commands to a port, the Port Power in PORTSC register should be
+ * enabled on MTK's xHCI controller.
+ */
+static int xhci_rh_enable_port(usbdev_t *const dev, int port)
+{
+	xhci_t *const xhci = XHCI_INST(dev->controller);
+	volatile u32 *const portsc = &xhci->opreg->prs[port - 1].portsc;
+
+	/* enable port power. */
+	*portsc = (*portsc & PORTSC_RW_MASK) | PORTSC_PP;
+	usb_debug("xhci_rh: port-%d status:%x\n", port, *portsc);
+	return 0;
+}
+#endif
+
 static const generic_hub_ops_t xhci_rh_ops = {
 	.hub_status_changed	= xhci_rh_hub_status_changed,
 	.port_status_changed	= xhci_rh_port_status_changed,
@@ -126,7 +143,11 @@ static const generic_hub_ops_t xhci_rh_ops = {
 	.port_in_reset		= xhci_rh_port_in_reset,
 	.port_enabled		= xhci_rh_port_enabled,
 	.port_speed		= xhci_rh_port_speed,
+#ifdef CONFIG_LP_USB_XHCI_MTK_QUIRK
+	.enable_port		= xhci_rh_enable_port,
+#else
 	.enable_port		= NULL,
+#endif
 	.disable_port		= NULL,
 	.start_port_reset	= NULL,
 	.reset_port		= xhci_rh_reset_port,

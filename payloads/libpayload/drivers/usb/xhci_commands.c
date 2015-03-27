@@ -41,6 +41,8 @@ xhci_next_command_trb(xhci_t *const xhci)
 void
 xhci_post_command(xhci_t *const xhci)
 {
+	u32 tmp;
+
 	xhci_debug("Command %d (@%p)\n",
 		   TRB_GET(TT, xhci->cr.cur), xhci->cr.cur);
 
@@ -49,6 +51,8 @@ xhci_post_command(xhci_t *const xhci)
 
 	/* Ring the doorbell */
 	xhci->dbreg[0] = 0;
+	/* flush posted write */
+	tmp = xhci->dbreg[0];
 
 	while (TRB_GET(TT, xhci->cr.cur) == TRB_LINK) {
 		xhci_debug("Handling LINK pointer (@%p)\n", xhci->cr.cur);
