@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/io.h>
 #include <arch/mmu.h>
 #include <boot/coreboot_tables.h>
 #include <device/device.h>
@@ -59,8 +60,8 @@ static const struct pad_config sdmmc4_pad[] = {
 static const struct pad_config padcfgs[] = {
 	/* We pull the USB VBUS signals up but keep them as inputs since the
 	 * voltage source likes to drive them low on overcurrent conditions */
-	PAD_CFG_GPIO_INPUT(USB_VBUS_EN0, PINMUX_PULL_UP),
-	PAD_CFG_GPIO_INPUT(USB_VBUS_EN1, PINMUX_PULL_UP),
+	PAD_CFG_GPIO_INPUT(USB_VBUS_EN1, PINMUX_PULL_NONE | PINMUX_PARKED |
+			   PINMUX_INPUT_ENABLE | PINMUX_LPDR | PINMUX_IO_HV),
 
 	/* Add backlight vdd/enable/pwm/dp hpd pad cfgs here */
 };
@@ -75,22 +76,14 @@ static const struct funit_cfg funitcfgs[] = {
 	FUNIT_CFG(SDMMC1, PLLP, 48000, sdmmc1_pad, ARRAY_SIZE(sdmmc1_pad)),
 	FUNIT_CFG(SDMMC4, PLLP, 48000, sdmmc4_pad, ARRAY_SIZE(sdmmc4_pad)),
 	FUNIT_CFG(I2C1, PLLP, 100, i2c1_pad, ARRAY_SIZE(i2c1_pad)),
+	FUNIT_CFG_USB(USBD),
 };
-
-static void setup_usb(void)
-{
-	clock_enable_clear_reset(CLK_L_USBD, CLK_H_USB3, 0, 0, 0, 0, 0);
-
-	usb_setup_utmip((void *)TEGRA_USBD_BASE);
-	usb_setup_utmip((void *)TEGRA_USB3_BASE);
-}
 
 static void mainboard_init(device_t dev)
 {
 	soc_configure_pads(padcfgs, ARRAY_SIZE(padcfgs));
 	soc_configure_funits(funitcfgs, ARRAY_SIZE(funitcfgs));
 
-	setup_usb();
 	i2c_init(I2C1_BUS);
 }
 
