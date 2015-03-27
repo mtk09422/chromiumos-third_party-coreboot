@@ -100,8 +100,10 @@ void acpi_init_gnvs(global_nvs_t *gnvs)
 #if CONFIG_EC_GOOGLE_CHROMEEC
 	gnvs->chromeos.vbt2 = google_ec_running_ro() ?
 		ACTIVE_ECFW_RO : ACTIVE_ECFW_RW;
-#endif
-#endif
+#else
+	gnvs->chromeos.vbt2 = ACTIVE_ECFW_RO;
+#endif /* CONFIG_EC_GOOGLE_CHROMEEC */
+#endif /* CONFIG_CHROMEOS */
 }
 
 static int acpi_sci_irq(void)
