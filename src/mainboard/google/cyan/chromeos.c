@@ -29,6 +29,9 @@
 #include <string.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
+/* The WP status pin lives on GPIO_SSUS_6 which is pad 36 in the SUS well. */
+#define WP_STATUS_PAD	36
+
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
 
@@ -38,8 +41,16 @@
 
 static int get_lid_switch(void)
 {
+#if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
+	u8 ec_switches;
+
+	mec_io_bytes(0, EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES, 1,
+		     &ec_switches, NULL);
+	return !!(ec_switches & EC_SWITCH_LID_OPEN);
+#else
 	/* Default to force open. */
 	return 1;
+#endif
 }
 
 static void fill_lb_gpio(struct lb_gpio *gpio, int port, int polarity,
@@ -80,10 +91,52 @@ int get_developer_mode_switch(void)
 
 int get_recovery_mode_switch(void)
 {
+#if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
+	u8 ec_switches;
+	u32 ec_events;
+
+	mec_io_bytes(0, EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES, 1,
+		     &ec_switches, NULL);
+
+	/* If a switch is set, we don't need to look at events. */
+	if (ec_switches & (EC_SWITCH_DEDICATED_RECOVERY))
+		return 1;
+
+	/* Else check if the EC has posted the keyboard recovery event. */
+	ec_events = google_chromeec_get_events_b();
+
+	return !!(ec_events &
+		  EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY));
+#else
 	return 0;
+#endif
+}
+
+int clear_recovery_mode_switch(void)
+{
+#if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
+	const uint32_t kb_rec_mask =
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
+	/* Unconditionally clear the EC recovery request. */
+	return google_chromeec_clear_events_b(kb_rec_mask);
+#else
+	return 0;
+#endif
 }
 
 int get_write_protect_state(void)
 {
-	return 0;
+	/*
+	 * The vboot loader queries this function in romstage. The GPIOs have
+	 * not been set up yet as that configuration is done in ramstage. The
+	 * hardware defaults to an input but there is a 20K pulldown. Externally
+	 * there is a 10K pullup. Disable the internal pull in romstage so that
+	 * there isn't any ambiguity in the reading.
+	 */
+#if defined(__PRE_RAM__)
+	ssus_disable_internal_pull(WP_STATUS_PAD);
+#endif
+
+	/* WP is enabled when the pin is reading high. */
+	return ssus_get_gpio(WP_STATUS_PAD);
 }

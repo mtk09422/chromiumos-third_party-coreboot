@@ -318,7 +318,3 @@ __attribute__((weak)) struct soc_gpio_config *mainboard_get_gpios(void)
 	printk(BIOS_DEBUG, "Default/empty GPIO config\n");
 	return NULL;
 }
-int get_gpio(int community_base, int pad0_offset)
-{
-	return (read32((void *)(community_base + pad0_offset))) & 1;
-}

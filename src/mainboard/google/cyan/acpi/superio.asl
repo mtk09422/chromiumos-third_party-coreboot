@@ -1,7 +1,6 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2007-2009 coresystems GmbH
  * Copyright (C) 2011 Google Inc.
  * Copyright (C) 2015 Intel Corp.
  *
@@ -19,9 +18,17 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <bootstate.h>
-#include <device/device.h>
-#include <soc/gpio.h>
+/* mainboard configuration */
+#include <mainboard/google/cyan/ec.h>
+#include <mainboard/google/cyan/onboard.h>
 
-struct chip_operations mainboard_ops = {
-};
+#define SIO_EC_MEMMAP_ENABLE     /* EC Memory Map Resources */
+#define SIO_EC_HOST_ENABLE       /* EC Host Interface Resources */
+#define SIO_EC_ENABLE_PS2K       /* Enable PS/2 Keyboard */
+
+/* Override default IRQ settings */
+#define SIO_EC_PS2K_IRQ Interrupt(ResourceConsumer, Edge, ActiveLow){\
+                                                     BOARD_I8042_IRQ}
+
+/* ACPI code for EC SuperIO functions */
+#include <ec/google/chromeec/acpi/superio.asl>

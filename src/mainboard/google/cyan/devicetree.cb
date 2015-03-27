@@ -1,5 +1,16 @@
 chip soc/intel/braswell
 
+	# LPE audio codec settings
+	register "lpe_codec_clk_freq" = "25" # 25MHz clock
+	register "lpe_codec_clk_num" = "0"   # PMC_PLT_CLK[0]
+
+	# Enable devices in ACPI mode
+	register "lpe_acpi_mode" = "1"
+	register "lpss_acpi_mode" = "1"
+
+	# Disable SLP_X stretching after SUS power well fail.
+	register "disable_slp_x_stretch_sus_fail" = "1"
+
 	device cpu_cluster 0 on
 		device lapic 0 on end
 	end
@@ -39,14 +50,17 @@ chip soc/intel/braswell
 		device pci 1e.6 on end	# 8086 2290 -   SPI 2
 		device pci 1e.7 on end	# 8086 22ac -   SPI 3
 		device pci 1f.0 on	# 8086 229c - LPC bridge
-			chip ec/google/chromeec
-				# We only have one init function that
-				# we need to call to initialize the
-				# keyboard part of the EC.
-				device pnp ff.1 on # dummy address
+			chip drivers/pc80/tpm
+				# Rising edge interrupt
+				register "irq_polarity" = "2"
+				device pnp 0c31.0 on
+					irq 0x70 = 10
 				end
 			end
-		end # LPC Bridge
+			chip ec/google/chromeec
+				device pnp 0c09.0 on end
+			end
+		end # LPC bridge
 		device pci 1f.3 off end	# 8086 0F12 - SMBus 0
 	end
 end

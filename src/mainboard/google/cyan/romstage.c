@@ -20,6 +20,7 @@
 
 #include <cbfs.h>
 #include <console/console.h>
+#include <fsp_util.h>
 #include <lib.h>
 #include <soc/gpio.h>
 #include <soc/pci_devs.h>
@@ -79,7 +80,8 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 	void *spd_content;
 #if IS_ENABLED(CONFIG_GOP_SUPPORT)
 	void *vbt_content;
-	struct cbfs_file *vbt_file;
+	//struct cbfs_file *vbt_file;
+	uint32_t vbt_len;
 #endif
 	int dual_channel = 0;
 	struct pei_data *ps = rp->pei_data;
@@ -120,13 +122,10 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 	}
 
 #if IS_ENABLED(CONFIG_GOP_SUPPORT)
-	/* Getting VBT data */
-	vbt_file = cbfs_get_file(CBFS_DEFAULT_MEDIA, "vbt.bin");
-	if (!vbt_file)
-		die("VBT data not found.");
-	printk(BIOS_DEBUG, "Vbt table found!\n");
-	vbt_content = CBFS_SUBHEADER(vbt_file);
-	ps->vbt_data = vbt_content;
+	/* Get VBT data */
+	vbt_content = (void *)fsp_get_vbt(&vbt_len);
+	if (vbt_content != NULL)
+		ps->vbt_data = vbt_content;
 #endif
 
 	/* Set device state/enable information */

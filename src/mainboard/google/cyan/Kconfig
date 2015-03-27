@@ -2,10 +2,24 @@ if BOARD_GOOGLE_CYAN
 
 config BOARD_SPECIFIC_OPTIONS
 	def_bool y
+	select ALWAYS_LOAD_OPROM
 	select BOARD_ROMSIZE_KB_8192
 	select CHROMEOS
+	select CHROMEOS_VBNV_CMOS
+	select EC_GOOGLE_CHROMEEC
+	select EC_GOOGLE_CHROMEEC_MEC
+	select EC_GOOGLE_CHROMEEC_ACPI_MEMMAP
 	select ENABLE_BUILTIN_COM1
+	select HAVE_ACPI_TABLES
+	select HAVE_OPTION_TABLE
 	select SOC_INTEL_BRASWELL
+	select VIRTUAL_DEV_SWITCH
+
+config DISPLAY_SPD_DATA
+	bool "Display Memory Serial Presence Detect Data"
+	default n
+	help
+	  When enabled displays the memory configuration data.
 
 config DISPLAY_SPD_DATA
 	bool "Display Memory Serial Presence Detect Data"
@@ -24,6 +38,18 @@ config MAINBOARD_DIR
 config MAINBOARD_PART_NUMBER
 	string
 	default "Cyan"
+
+config SPD_CBFS_ADDRESS
+	hex "Location of SPD in CBFS"
+	default 0xfffff500
+
+config VBOOT_RAMSTAGE_INDEX
+	hex
+	default 0x2
+
+config VBOOT_REFCODE_INDEX
+	hex
+	default 0x3
 
 if !CONFIG_GOP_SUPPORT
 config VGA_BIOS_FILE
