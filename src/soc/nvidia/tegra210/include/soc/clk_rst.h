@@ -390,7 +390,7 @@ enum {
 #define PLLCMX_BASE_DIVM_MASK		(0xffU << PLL_BASE_DIVM_SHIFT)
 
 /* Added based on T210 TRM */
-#define PLLC_MISC_RESET			(1U << 30)
+#define PLLC_MISC_RESET		(1U << 30)
 #define PLLC_MISC_1_IDDQ		(1U << 27)
 #define PLLD_N_SHIFT			11
 #define PLLD_M_SHIFT			0
@@ -404,6 +404,24 @@ enum {
 #define PLLM_MISC2_KCP_SHIFT			1
 #define PLLM_MISC2_KVCO_SHIFT			0
 #define PLLM_OUT1_RSTN_RESET_DISABLE		(1 << 0)
+
+/* PLLU specific registers */
+#define PLLU_MISC_IDDQ			(1U << 31)
+
+/* UTMIP PLL specific registers */
+#define UTMIP_CFG0_PLL_MDIV_SHIFT			(8)
+#define UTMIP_CFG0_PLL_NDIV_SHIFT			(16)
+#define UTMIP_CFG1_XTAL_FREQ_COUNT_SHIFT		(0)
+#define UTMIP_CFG1_FORCE_PLL_ACTIVE_POWERDOWN_DISABLE	(0 << 12)
+#define UTMIP_CFG1_FORCE_PLL_ENABLE_POWERDOWN_DISABLE	(0 << 14)
+#define UTMIP_CFG1_FORCE_PLLU_POWERDOWN_DISABLE	(0 << 16)
+#define UTMIP_CFG1_PLLU_ENABLE_DLY_COUNT_SHIFT		(27)
+#define UTMIP_CFG2_FORCE_PD_SAMP_A_POWERDOWN_DISABLE	(0 << 0)
+#define UTMIP_CFG2_FORCE_PD_SAMP_B_POWERDOWN_DISABLE	(0 << 2)
+#define UTMIP_CFG2_FORCE_PD_SAMP_C_POWERDOWN_DISABLE	(0 << 4)
+#define UTMIP_CFG2_PLLU_STABLE_COUNT_SHIFT		(6)
+#define UTMIP_CFG2_PLL_ACTIVE_DLY_COUNT_SHIFT		(18)
+#define UTMIP_CFG2_PHY_XTAL_CLOCKEN		(1U << 30)
 
 /* Generic, indiscriminate divisor mask. May catch some innocent bystander bits
  * on the side that we don't particularly care about. */
