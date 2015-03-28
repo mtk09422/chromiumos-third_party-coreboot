@@ -18,6 +18,7 @@
  */
 
 #include <arch/io.h>
+#include <assert.h>
 #include <console/console.h>
 #include <soc/addressmap.h>
 #include <soc/clk_rst.h>
@@ -26,20 +27,21 @@
 
 static void enable_core_clocks(int cpu)
 {
-	const uint32_t cpu0_clocks = CRC_RST_CPUG_CLR_CPU0 |
-					CRC_RST_CPUG_CLR_DBG0 |
-					CRC_RST_CPUG_CLR_CORE0 |
-					CRC_RST_CPUG_CLR_CX0;
-	const uint32_t cpu1_clocks = CRC_RST_CPUG_CLR_CPU1 |
-					CRC_RST_CPUG_CLR_DBG1 |
-					CRC_RST_CPUG_CLR_CORE1 |
-					CRC_RST_CPUG_CLR_CX1;
+	const uint32_t cpu_clocks[CONFIG_MAX_CPUS] = {
+		[0] = CRC_RST_CPUG_CLR_CPU0 | CRC_RST_CPUG_CLR_DBG0 |
+		CRC_RST_CPUG_CLR_CORE0 | CRC_RST_CPUG_CLR_CX0,
+		[1] = CRC_RST_CPUG_CLR_CPU1 | CRC_RST_CPUG_CLR_DBG1 |
+		CRC_RST_CPUG_CLR_CORE1 | CRC_RST_CPUG_CLR_CX1,
+		[2] = CRC_RST_CPUG_CLR_CPU2 | CRC_RST_CPUG_CLR_DBG2 |
+		CRC_RST_CPUG_CLR_CORE2 | CRC_RST_CPUG_CLR_CX2,
+		[3] = CRC_RST_CPUG_CLR_CPU3 | CRC_RST_CPUG_CLR_DBG3 |
+		CRC_RST_CPUG_CLR_CORE3 | CRC_RST_CPUG_CLR_CX3,
+	};
+
+	assert (cpu < CONFIG_MAX_CPUS);
 
 	/* Clear reset of CPU components. */
-	if (cpu == 0)
-		write32(CLK_RST_REG(rst_cpug_cmplx_clr), cpu0_clocks);
-	else
-		write32(CLK_RST_REG(rst_cpug_cmplx_clr), cpu1_clocks);
+	write32(CLK_RST_REG(rst_cpug_cmplx_clr), cpu_clocks[cpu]);
 }
 
 void cpu_prepare_startup(void *entry_64)

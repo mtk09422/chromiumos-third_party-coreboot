@@ -67,9 +67,9 @@ static size_t cntrl_total_cpus(void)
 
 static int cntrl_start_cpu(unsigned int id, void (*entry)(void))
 {
-	if (id != 1)
+	if (id >= CONFIG_MAX_CPUS)
 		return -1;
-	start_cpu(1, entry);
+	start_cpu(id, entry);
 	return 0;
 }
 
@@ -135,8 +135,6 @@ static void tegra210_init(void *chip_info)
 
 	printk(BIOS_INFO, "chip %x rev %02x.%x\n",
 		rev.chip_id, rev.major, rev.minor);
-
-	printk(BIOS_INFO, "MTS build %u\n", raw_read_aidr_el1());
 }
 
 struct chip_operations soc_nvidia_tegra210_ops = {
@@ -150,7 +148,7 @@ static void tegra210_cpu_init(device_t cpu)
 }
 
 static const struct cpu_device_id ids[] = {
-	{ 0x4e0f0000 },
+	{ 0x411fd071 },
 	{ CPU_ID_END },
 };
 

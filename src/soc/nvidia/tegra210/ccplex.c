@@ -43,11 +43,13 @@ static void enable_cpu_clocks(void)
 
 static void enable_cpu_power_partitions(void)
 {
-	/* Bring up fast cluster, non-CPU, CPU0, and CPU1 partitions. */
+	/* Bring up fast cluster, non-CPU, CPU0, CPU1, CPU2 and CPU3 parts. */
 	power_ungate_partition(POWER_PARTID_CRAIL);
 	power_ungate_partition(POWER_PARTID_C0NC);
 	power_ungate_partition(POWER_PARTID_CE0);
 	power_ungate_partition(POWER_PARTID_CE1);
+	power_ungate_partition(POWER_PARTID_CE2);
+	power_ungate_partition(POWER_PARTID_CE3);
 }
 
 static void request_ram_repair(void)

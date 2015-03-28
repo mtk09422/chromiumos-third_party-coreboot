@@ -49,7 +49,7 @@ config BOOTBLOCK_CPU_INIT
 
 config MAX_CPUS
 	int
-	default 2
+	default 4
 
 choice CONSOLE_SERIAL_TEGRA210_UART_CHOICES
 	prompt "Serial Console UART"

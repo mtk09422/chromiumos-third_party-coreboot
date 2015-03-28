@@ -48,8 +48,13 @@ static size_t children_at_level(int parent_level, uint64_t mpidr)
 	if (mpidr != 0)
 		return 0;
 
-	/* T132 just has 2 cores. 0. Level 1 has 2 children at level 0. */
-	/* TODO(twarren): Fix this comment for T210 */
+	/*
+	 * T210 has 2 clusters. Each cluster has 4 cores. Currently we are
+	 * concentrating only on one of the clusters i.e. A57 cluster. For A53
+	 * bringup, correct the cluster details for A53 cluster as well.
+	 * Since, A57 cluster has 4 cores, level 1 has 4 children at level 0.
+	 * TODO(furquan): Update for A53.
+	 */
 	switch (parent_level) {
 	case PSCI_AFFINITY_ROOT:
 		return 1;
@@ -58,7 +63,7 @@ static size_t children_at_level(int parent_level, uint64_t mpidr)
 	case PSCI_AFFINITY_LEVEL_2:
 		return 1;
 	case PSCI_AFFINITY_LEVEL_1:
-		return 2;
+		return 4;
 	case PSCI_AFFINITY_LEVEL_0:
 		return 0;
 	default:
