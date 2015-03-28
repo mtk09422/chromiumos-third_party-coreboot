@@ -27,7 +27,7 @@
 # Take care of subdirectories
 ################################################################################
 
-subdirs-y += armv8/
+subdirs-y += armv8/ cpu/
 
 ################################################################################
 # ARM specific options
@@ -49,6 +49,7 @@ bootblock-$(CONFIG_BOOTBLOCK_CONSOLE) += early_console.c
 bootblock-y += id.S
 bootblock-y += c_entry.c
 bootblock-y += stage_entry.S
+bootblock-y += cpu-stubs.c
 bootblock-y += stages.c
 bootblock-y += eabi_compat.c
 bootblock-y += transition.c transition_asm.S
@@ -95,6 +96,7 @@ ifeq ($(CONFIG_ARCH_ROMSTAGE_ARM64),y)
 
 romstage-y += c_entry.c
 romstage-y += stage_entry.S
+romstage-y += cpu-stubs.c
 romstage-y += stages.c
 romstage-y += div0.c
 romstage-$(CONFIG_EARLY_CONSOLE) += early_console.c
@@ -139,6 +141,7 @@ ramstage-y += ../../lib/memset.c
 ramstage-y += ../../lib/memcpy.c
 ramstage-y += ../../lib/memmove.c
 ramstage-y += stage_entry.S
+ramstage-y += cpu-stubs.c
 ramstage-$(CONFIG_ARCH_SPINTABLE) += spintable.c spintable_asm.S
 ramstage-y += transition.c transition_asm.S
 
@@ -148,6 +151,7 @@ rmodules_arm64-y += ../../lib/memmove.c
 rmodules_arm64-y += eabi_compat.c
 
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += stage_entry.S
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu-stubs.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += startup.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += ../../lib/malloc.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += ../../lib/memset.c
