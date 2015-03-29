@@ -24,9 +24,18 @@
 #include <device/device.h>
 #include <boot/coreboot_tables.h>
 
+#include <vendorcode/google/chromeos/chromeos.h>
+
+static void mainboard_init(device_t dev)
+{
+	/* Copy WIFI calibration data into CBMEM. */
+	cbmem_add_vpd_calibration_data();
+}
+
 static void mainboard_enable(device_t dev)
 {
 	printk(BIOS_INFO, "Enable Pistachio device...\n");
+	dev->ops->init = &mainboard_init;
 }
 
 struct chip_operations mainboard_ops = {
@@ -42,4 +51,7 @@ void lb_board(struct lb_header *header)
 	dma->size = sizeof(*dma);
 	dma->range_start = (uintptr_t)_dma_coherent;
 	dma->range_size = _dma_coherent_size;
+
+	/* Retrieve the switch interface MAC addressses. */
+	lb_table_add_macs_from_vpd(header);
 }
