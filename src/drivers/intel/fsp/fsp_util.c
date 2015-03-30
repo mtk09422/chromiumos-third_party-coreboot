@@ -188,7 +188,7 @@ BOOT_STATE_INIT_ENTRIES(fsp_bscbs) = {
 	BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_LOAD, BS_ON_EXIT,
 		fsp_notify_boot_state_callback,
 		(void *)EnumInitPhaseReadyToBoot),
-	BOOT_STATE_INIT_ENTRY(BS_OS_RESUME, BS_ON_EXIT,
+	BOOT_STATE_INIT_ENTRY(BS_OS_RESUME, BS_ON_ENTRY,
 		fsp_notify_boot_state_callback,
 		(void *)EnumInitPhaseReadyToBoot)
 };
