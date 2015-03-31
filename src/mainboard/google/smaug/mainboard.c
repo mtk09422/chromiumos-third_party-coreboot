@@ -38,6 +38,7 @@ static const struct pad_config padcfgs[] = {
 
 static const struct funit_cfg funits[] = {
 	FUNIT_CFG_USB(USBD),
+	FUNIT_CFG(SDMMC4, PLLP, 48000, NULL, 0),
 };
 
 static void mainboard_init(device_t dev)
