@@ -26,6 +26,7 @@
 #include <soc/nvs.h>
 #include <soc/pm.h>
 #include <soc/ramstage.h>
+#include <soc/xhci.h>
 #include <soc/intel/broadwell/chip.h>
 
 /* Save bit index for PM1_STS and GPE_STS for ACPI _SWS */
@@ -107,5 +108,9 @@ static void s3_resume_prepare(void)
 void broadwell_init_pre_device(void *chip_info)
 {
 	s3_resume_prepare();
+
+	/* Disable compliance mode entry before refcode USB init */
+	early_xhci_disable_compliance_mode();
+
 	broadwell_run_reference_code();
 }

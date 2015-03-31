@@ -23,6 +23,8 @@
 #include <device/pci.h>
 #include <device/pci_ids.h>
 #include <arch/io.h>
+#include <soc/iomap.h>
+#include <soc/pci_devs.h>
 #include <soc/ramstage.h>
 #include <soc/xhci.h>
 #include <soc/cpu.h>
@@ -201,11 +203,12 @@ void usb_xhci_sleep_prepare(device_t dev, u8 slp_typ)
 }
 #else /* !__SMM__ */
 
-static void xhci_init(struct device *dev)
+void early_xhci_disable_compliance_mode(void)
 {
-	struct resource *res = find_resource(dev, PCI_BASE_ADDRESS_0);
+	struct device *dev = PCH_DEV_XHCI;
 	u16 reg16;
-	u32 reg32;
+	u32 reg32, pci_cmd;
+	u8 *xhci_base;
 
 	/* Ensure controller is in D0 state */
 	reg16 = pci_read_config16(dev, XHCI_PWR_CTL_STS);
@@ -213,10 +216,28 @@ static void xhci_init(struct device *dev)
 	reg16 |= XHCI_PWR_CTL_SET_D0;
 	pci_write_config16(dev, XHCI_PWR_CTL_STS, reg16);
 
+	/* Assign temporary BAR0 to run before resource assignment */
+	xhci_base = (u8 *)(pci_read_config32(dev, PCI_BASE_ADDRESS_0) & ~0xf);
+	if (!xhci_base) {
+		xhci_base = (u8 *)EARLY_XHCI_BAR;
+		pci_write_config32(dev, PCI_BASE_ADDRESS_0, EARLY_XHCI_BAR);
+	}
+
+	/* Enable MMIO */
+	pci_cmd = pci_read_config32(dev, PCI_COMMAND);
+	pci_write_config32(dev, PCI_COMMAND,
+			   pci_cmd | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY);
+
 	/* Disable Compliance Mode Entry */
-	reg32 = read32(res2mmio(res, 0x80ec, 0));
+	reg32 = read32(xhci_base + 0x80ec);
 	reg32 |= (1 << 0);
-	write32(res2mmio(res, 0x80ec, 0), reg32);
+	write32(xhci_base + 0x80ec, reg32);
+
+	/* Cleanup */
+	pci_write_config32(dev, PCI_COMMAND, pci_cmd);
+
+	if ((u32)xhci_base == EARLY_XHCI_BAR)
+		pci_write_config32(dev, PCI_BASE_ADDRESS_0, 0);
 }
 
 static struct device_operations usb_xhci_ops = {
@@ -224,7 +245,6 @@ static struct device_operations usb_xhci_ops = {
 	.set_resources		= &pci_dev_set_resources,
 	.enable_resources	= &pci_dev_enable_resources,
 	.ops_pci		= &broadwell_pci_ops,
-	.init			= &xhci_init,
 };
 
 static const unsigned short pci_device_ids[] = {

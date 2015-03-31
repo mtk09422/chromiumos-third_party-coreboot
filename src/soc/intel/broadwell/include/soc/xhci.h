@@ -58,4 +58,6 @@
 void usb_xhci_sleep_prepare(device_t dev, u8 slp_typ);
 #endif
 
+void early_xhci_disable_compliance_mode(void);
+
 #endif
