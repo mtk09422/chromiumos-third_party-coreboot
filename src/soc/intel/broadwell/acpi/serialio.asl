@@ -215,13 +215,6 @@ Device (I2C0)
 		Interrupt (ResourceConsumer, Level, ActiveLow, Shared, , , ) {7}
 	})
 
-	// DMA channels are only used if Serial IO DMA controller is enabled
-	Name (DBUF, ResourceTemplate ()
-	{
-		FixedDMA (0x18, 4, Width32Bit, DMA1) // Tx
-		FixedDMA (0x19, 5, Width32Bit, DMA2) // Rx
-	})
-
 	Method (_CRS, 0, NotSerialized)
 	{
 		// Update BAR0 address and length if set in NVS
@@ -231,13 +224,7 @@ Device (I2C0)
 			Store (\S1B0, B0AD)
 			Store (SIO_BAR_LEN, B0LN)
 		}
-
-		// Check if Serial IO DMA Controller is enabled
-		If (LNotEqual (\_SB.PCI0.SDMA._STA, Zero)) {
-			Return (ConcatenateResTemplate (RBUF, DBUF))
-		} Else {
-			Return (RBUF)
-		}
+		Return (RBUF)
 	}
 
 	Method (_STA, 0, NotSerialized)
@@ -286,13 +273,6 @@ Device (I2C1)
 		Interrupt (ResourceConsumer, Level, ActiveLow, Shared, , , ) {7}
 	})
 
-	// DMA channels are only used if Serial IO DMA controller is enabled
-	Name (DBUF, ResourceTemplate ()
-	{
-		FixedDMA (0x1A, 6, Width32Bit, DMA1) // Tx
-		FixedDMA (0x1B, 7, Width32Bit, DMA2) // Rx
-	})
-
 	Method (_CRS, 0, NotSerialized)
 	{
 		// Update BAR0 address and length if set in NVS
@@ -302,13 +282,7 @@ Device (I2C1)
 			Store (\S2B0, B0AD)
 			Store (SIO_BAR_LEN, B0LN)
 		}
-
-		// Check if Serial IO DMA Controller is enabled
-		If (LNotEqual (\_SB.PCI0.SDMA._STA, Zero)) {
-			Return (ConcatenateResTemplate (RBUF, DBUF))
-		} Else {
-			Return (RBUF)
-		}
+		Return (RBUF)
 	}
 
 	Method (_STA, 0, NotSerialized)
@@ -354,6 +328,13 @@ Device (SPI0)
 		Interrupt (ResourceConsumer, Level, ActiveLow, Shared, , , ) {7}
 	})
 
+	// DMA channels are only used if Serial IO DMA controller is enabled
+	Name (DBUF, ResourceTemplate ()
+	{
+		FixedDMA (2, 2, Width32Bit) // Tx
+		FixedDMA (3, 3, Width32Bit) // Rx
+	})
+
 	Method (_CRS, 0, NotSerialized)
 	{
 		// Update BAR0 address and length if set in NVS
@@ -364,7 +345,12 @@ Device (SPI0)
 			Store (SIO_BAR_LEN, B0LN)
 		}
 
-		Return (RBUF)
+		// Check if Serial IO DMA Controller is enabled
+		If (LNotEqual (\_SB.PCI0.SDMA._STA, Zero)) {
+			Return (ConcatenateResTemplate (RBUF, DBUF))
+		} Else {
+			Return (RBUF)
+		}
 	}
 
 	Method (_STA, 0, NotSerialized)
@@ -413,8 +399,8 @@ Device (SPI1)
 	// DMA channels are only used if Serial IO DMA controller is enabled
 	Name (DBUF, ResourceTemplate ()
 	{
-		FixedDMA (0x10, 0, Width32Bit, DMA1) // Tx
-		FixedDMA (0x11, 1, Width32Bit, DMA2) // Rx
+		FixedDMA (0, 0, Width32Bit) // Tx
+		FixedDMA (1, 1, Width32Bit) // Rx
 	})
 
 	Method (_CRS, 0, NotSerialized)
@@ -481,8 +467,8 @@ Device (UAR0)
 	// DMA channels are only used if Serial IO DMA controller is enabled
 	Name (DBUF, ResourceTemplate ()
 	{
-		FixedDMA (0x16, 2, Width32Bit, DMA1) // Tx
-		FixedDMA (0x17, 3, Width32Bit, DMA2) // Rx
+		FixedDMA (4, 4, Width32Bit) // Tx
+		FixedDMA (5, 5, Width32Bit) // Rx
 	})
 
 	Method (_CRS, 0, NotSerialized)
@@ -546,6 +532,13 @@ Device (UAR1)
 		Interrupt (ResourceConsumer, Level, ActiveLow, Shared, , , ) {13}
 	})
 
+	// DMA channels are only used if Serial IO DMA controller is enabled
+	Name (DBUF, ResourceTemplate ()
+	{
+		FixedDMA (6, 6, Width32Bit) // Tx
+		FixedDMA (7, 7, Width32Bit) // Rx
+	})
+
 	Method (_CRS, 0, NotSerialized)
 	{
 		// Update BAR0 address and length if set in NVS
@@ -556,7 +549,12 @@ Device (UAR1)
 			Store (SIO_BAR_LEN, B0LN)
 		}
 
-		Return (RBUF)
+		// Check if Serial IO DMA Controller is enabled
+		If (LNotEqual (\_SB.PCI0.SDMA._STA, Zero)) {
+			Return (ConcatenateResTemplate (RBUF, DBUF))
+		} Else {
+			Return (RBUF)
+		}
 	}
 
 	Method (_STA, 0, NotSerialized)
