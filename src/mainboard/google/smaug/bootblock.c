@@ -56,8 +56,8 @@ static const struct pad_config tpm_pads[] = {
 
 /********************* EC *************************************/
 static const struct pad_config ec_i2c_pads[] = {
-	PAD_CFG_SFIO(GEN2_I2C_SCL, PINMUX_OPEN_DRAIN|PINMUX_INPUT_ENABLE, I2C2),
-	PAD_CFG_SFIO(GEN2_I2C_SDA, PINMUX_OPEN_DRAIN|PINMUX_INPUT_ENABLE, I2C2),
+	PAD_CFG_SFIO(GEN2_I2C_SCL, PINMUX_INPUT_ENABLE, I2C2),
+	PAD_CFG_SFIO(GEN2_I2C_SDA, PINMUX_INPUT_ENABLE, I2C2),
 };
 
 /********************* Funits *********************************/
