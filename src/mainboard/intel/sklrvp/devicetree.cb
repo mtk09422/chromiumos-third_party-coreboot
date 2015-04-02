@@ -42,7 +42,7 @@ chip soc/intel/skylake
 	register "gpe0_en_3" = "0x00000000"
 	register "gpe0_en_4" = "0x00000000"
 
-	register "sio_acpi_mode" = "1"
+	register "sio_acpi_mode" = "0"
 
 	# Force enable ASPM for PCIe Port 3
 	register "pcie_port_force_aspm" = "0x04"
@@ -58,44 +58,46 @@ chip soc/intel/skylake
 		device lapic 0 on end
 	end
 	device domain 0 on
-		device pci 00.0 on  end # host bridge
-		device pci 02.0 on  end # display controller SKL integrated graphics
-		device pci 05.0 on  end # multimedia controller
-		device pci 08.0 on  end # generic system graphics
-		device pci 13.0 on  end # Integrated Sensor Hub
-		device pci 14.0 on  end # USB3 XHCI
-		device pci 14.1 on  end # USB3 OTG
-		device pci 14.2 on  end # signal processing controller/Thermal subsystem
-		device pci 14.3 on  end # Multimedia controller/Camera IO host controller
-		device pci 15.0 on  end # Signal processing unit/I2C0
-		device pci 15.1 on  end # Signal processing unit/I2C1
-		device pci 15.2 off  end # I2C2
-		device pci 15.3 off end # I2C3
-		device pci 15.4 off end # GSPI1
-		device pci 15.5 off end # UART0
-		device pci 15.6 off end # UART1
+					# Refered from SKL EDS Vol 1 : Page No: 31-32
+		device pci 00.0 on  end # Host Bridge
+		device pci 02.0 on  end # Integrated Graphics Device
+		device pci 14.0 on  end # USB 3.0 xHCI Controller
+		device pci 14.1 on  end # USB Device Controller (OTG)
+		device pci 14.2 on  end # Thermal Subsystem
+		device pci 15.0 on  end # I2C Controller #0
+		device pci 15.1 on  end # I2C Controller #1
+		device pci 15.2 on  end # I2C Controller #2
+		device pci 15.3 on  end # I2C Controller #3
 		device pci 16.0 on  end # Management Engine Interface 1
 		device pci 16.1 off end # Management Engine Interface 2
-		device pci 16.2 off end # IDE Redirection
-		device pci 16.3 off end # Keyboard and Text (KT) Redirection
-		device pci 16.4 on end # Management Engine Interface 3
-		device pci 17.0 on  end # Mass storage controller/SATA/AHCI
-		device pci 1b.0 off end # High Definition Audio
-		device pci 1c.0 off end # PCIe Port #1
-		device pci 1c.1 off end # PCIe Port #2
-		device pci 1c.2 off  end # PCIe Port #3
-		device pci 1c.3 off end # PCIe Port #4
-		device pci 1c.4 off end # PCIe Port #5
-		device pci 1c.5 off end # PCIe Port #6
-		device pci 1d.0 off end # USB2 EHCI
-		device pci 1e.0 on end # Signal processing Controller/PCI Bridge
-		device pci 1e.4 on end # generic system pheripheral
-		device pci 1e.5 on end # UART 0
-		device pci 1f.0 on
-		end # LPC bridge
-		device pci 1f.2 on  end # PMC
-		device pci 1f.3 on end # HDA
-		device pci 1f.4 off end # SMBUS
-		device pci 1f.6 off  end # GBE
+		device pci 16.2 off end # Management Engine IDE Redirection (IDE-R)
+		device pci 16.3 off end # Management Engine Keyboard and Text (KT) Redirection
+		device pci 16.4 off end # Management Engine Intel MEI #3
+		device pci 17.0 on  end # SATA Controller
+		device pci 19.0 on  end # UART Controller #2
+		device pci 19.1 on  end # I2C Controller #5
+		device pci 19.2 on  end # I2C Controller #4
+		device pci 1c.0 off end # PCI Express Port 1
+		device pci 1c.1 off end # PCI Express Port 2
+		device pci 1c.2 off end # PCI Express Port 3
+		device pci 1c.3 off end # PCI Express Port 4
+		device pci 1c.4 off end # PCI Express Port 5
+		device pci 1c.5 off end # PCI Express Port 6
+		device pci 1c.6 off end # PCI Express Port 7
+		device pci 1c.7 off end # PCI Express Port 8
+		device pci 1d.0 on  end # PCI Express Port 9
+		device pci 1d.1 off end # PCI Express Port 10
+		device pci 1d.2 off end # PCI Express Port 11
+		device pci 1d.3 off end # PCI Express Port 12
+		device pci 1e.0 on  end # UART #0
+		device pci 1e.1 on  end # UART #1
+		device pci 1e.2 on  end # SPI #0
+		device pci 1e.4 on  end # eMMC
+		device pci 1e.6 on  end # SDCard
+		device pci 1f.0 on  end # LPC Interface (eSPI Enable Strap = 0) eSPI Interface (eSPI Enable Strap = 1)
+		device pci 1f.3 on  end # Intel High Definition Audio (Intel HD Audio) (Audio, Voice, Speech)
+		device pci 1f.4 off end # SMBus Controller
+		device pci 1f.5 on  end # SPI
+		device pci 1f.6 off end # GbE Controller
 	end
 end
