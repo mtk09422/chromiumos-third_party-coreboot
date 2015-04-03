@@ -308,6 +308,8 @@ static const char *get_hob_type_string(void *hob_ptr)
 	const EFI_GUID mrc_guid = FSP_NON_VOLATILE_STORAGE_HOB_GUID;
 	const EFI_GUID bootldr_tmp_mem_guid =
 		FSP_BOOTLOADER_TEMP_MEMORY_HOB_GUID;
+	const EFI_GUID bootldr_tolum_guid = FSP_BOOTLOADER_TOLUM_HOB_GUID;
+	const EFI_GUID graphics_info_guid = EFI_PEI_GRAPHICS_INFO_HOB_GUID;
 
 	hob.Header = (EFI_HOB_GENERIC_HEADER *)hob_ptr;
 	switch (hob.Header->HobType) {
@@ -328,6 +330,10 @@ static const char *get_hob_type_string(void *hob_ptr)
 			hob_type_string = "FSP_RESERVED_MEMORY_RESOURCE_HOB";
 		else if (compare_guid(&mrc_guid, &hob.Guid->Name))
 			hob_type_string = "FSP_NON_VOLATILE_STORAGE_HOB";
+		else if (compare_guid(&bootldr_tolum_guid, &hob.Guid->Name))
+			hob_type_string = "FSP_BOOTLOADER_TOLUM_HOB_GUID";
+		else if (compare_guid(&graphics_info_guid, &hob.Guid->Name))
+			hob_type_string = "EFI_PEI_GRAPHICS_INFO_HOB_GUID";
 		break;
 	case EFI_HOB_TYPE_MEMORY_POOL:
 		hob_type_string = "EFI_HOB_TYPE_MEMORY_POOL";

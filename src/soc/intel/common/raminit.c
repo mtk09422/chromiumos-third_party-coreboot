@@ -45,6 +45,8 @@ void raminit(struct romstage_params *params)
 	int missing_hob;
 	const EFI_GUID fsp_reserved_guid =
 		FSP_RESERVED_MEMORY_RESOURCE_HOB_GUID;
+	const EFI_GUID bootldr_tolum_guid = FSP_BOOTLOADER_TOLUM_HOB_GUID;
+	const EFI_GUID graphics_info_guid = EFI_PEI_GRAPHICS_INFO_HOB_GUID;
 #endif
 
 	/*
@@ -144,6 +146,14 @@ void raminit(struct romstage_params *params)
 	}
 	if (NULL == get_next_guid_hob(&mrc_guid, hob_list_ptr)) {
 		printk(BIOS_ERR, "7.3: FSP_NON_VOLATILE_STORAGE_HOB missing!\n");
+		missing_hob = 1;
+	}
+	if (NULL == get_next_guid_hob(&bootldr_tolum_guid, hob_list_ptr)) {
+		printk(BIOS_ERR, "7.4: FSP_BOOTLOADER_TOLUM_HOB missing!\n");
+		missing_hob = 1;
+	}
+	if (NULL == get_next_guid_hob(&graphics_info_guid, hob_list_ptr)) {
+		printk(BIOS_ERR, "7.5: EFI_PEI_GRAPHICS_INFO_HOB missing!\n");
 		missing_hob = 1;
 	}
 	if (missing_hob)
