@@ -47,11 +47,19 @@ static const struct pad_config spiflash_pads[] = {
 	PAD_CFG_SFIO(QSPI_IO3, PINMUX_INPUT_ENABLE | PINMUX_PULL_UP, QSPI),
 };
 
+/********************* TPM ************************************/
+static const struct pad_config tpm_pads[] = {
+	PAD_CFG_SFIO(GEN3_I2C_SCL, PINMUX_INPUT_ENABLE, I2C3),
+	PAD_CFG_SFIO(GEN3_I2C_SDA, PINMUX_INPUT_ENABLE, I2C3),
+};
+
 static const struct funit_cfg funits[] = {
 	/* PMIC on I2C5 (PWR_I2C* pads) at 400kHz. */
 	FUNIT_CFG(I2C5, PLLP, 400, pmic_pads, ARRAY_SIZE(pmic_pads)),
 	/* SPI flash at 24MHz on QSPI controller. */
 	FUNIT_CFG(QSPI, PLLP, 24000, spiflash_pads, ARRAY_SIZE(spiflash_pads)),
+	/* Foster has no TPM yet. This is for futurn TPM on I2C3  @ 400kHz. */
+	FUNIT_CFG(I2C3, PLLP, 400, tpm_pads, ARRAY_SIZE(tpm_pads)),
 };
 
 static const struct pad_config uart_console_pads[] = {
@@ -81,4 +89,7 @@ void bootblock_mainboard_init(void)
 
 	i2c_init(I2CPWR_BUS);
 	pmic_init(I2CPWR_BUS);
+
+	/* Foster has no TPM yet. This is for future TPM. */
+	i2c_init(I2C3_BUS);
 }
