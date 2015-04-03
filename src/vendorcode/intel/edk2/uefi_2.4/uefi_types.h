@@ -42,6 +42,7 @@ are permitted provided that the following conditions are met:
 #include <MdePkg/Include/Pi/PiFirmwareVolume.h>
 #include <MdePkg/Include/Uefi/UefiMultiPhase.h>
 #include <MdePkg/Include/Pi/PiHob.h>
+#include <MdePkg/Include/Protocol/GraphicsOutput.h>
 #include <MdePkg/Include/Library/HobLib.h>
 
 ///
@@ -73,10 +74,22 @@ static inline void debug_dead_loop(void)
 //
 // Define the known GUIDs
 //
+#define EFI_PEI_GRAPHICS_INFO_HOB_GUID				\
+{								\
+	0x39f62cce, 0x6825, 0x4669,				\
+	{ 0xbb, 0x56, 0x54, 0x1a, 0xba, 0x75, 0x3a, 0x07 }	\
+}
+
 #define FSP_BOOTLOADER_TEMP_MEMORY_HOB_GUID			\
 {								\
 	0xbbcff46c, 0xc8d3, 0x4113,				\
 	{0x89, 0x85, 0xb9, 0xd4, 0xf3, 0xb3, 0xf6, 0x4e}	\
+}
+
+#define FSP_BOOTLOADER_TOLUM_HOB_GUID				\
+{								\
+	0x73ff4f56, 0xaa8e, 0x4451,				\
+	{ 0xb3, 0x16, 0x36, 0x35, 0x36, 0x67, 0xad, 0x44 }	\
 }
 
 #define FSP_INFO_HEADER_GUID					\
