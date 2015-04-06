@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2003-2004 Eric Biederman
  * Copyright (C) 2005-2010 coresystems GmbH
+ * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -46,6 +47,9 @@
 #include <cpu/x86/mtrr.h>
 #endif
 #include <uart.h>
+#if IS_ENABLED(CONFIG_GOP_SUPPORT)
+#include <fsp_util.h>
+#endif
 
 static struct lb_header *lb_table_init(unsigned long addr)
 {
@@ -173,6 +177,9 @@ static void lb_console(struct lb_header *header)
 
 static void lb_framebuffer(struct lb_header *header)
 {
+#if IS_ENABLED(CONFIG_GOP_SUPPORT)
+	fsp_gop_framebuffer(header);
+#else
 #if CONFIG_FRAMEBUFFER_KEEP_VESA_MODE || CONFIG_MAINBOARD_DO_NATIVE_VGA_INIT
 	void fill_lb_framebuffer(struct lb_framebuffer *framebuffer);
 	int vbe_mode_info_valid(void);
@@ -187,6 +194,7 @@ static void lb_framebuffer(struct lb_header *header)
 	framebuffer->tag = LB_TAG_FRAMEBUFFER;
 	framebuffer->size = sizeof(*framebuffer);
 #endif
+#endif /* CONFIG_GOP_SUPPORT */
 }
 
 #if CONFIG_CHROMEOS
