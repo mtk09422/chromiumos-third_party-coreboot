@@ -21,7 +21,9 @@ ramstage-y += cpu.c
 ramstage-$(CONFIG_ELOG) += elog.c
 ramstage-y += emmc.c
 ramstage-y += gpio.c
+ifeq ($(CONFIG_GOP_SUPPORT),n)
 ramstage-y += gfx.c
+endif
 ramstage-y += hda.c
 ramstage-y += iosf.c
 ramstage-y += lpe.c

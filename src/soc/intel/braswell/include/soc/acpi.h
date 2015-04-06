@@ -25,7 +25,7 @@
 #include <soc/nvs.h>
 
 #if CONFIG_GOP_SUPPORT
-#include "gma.h"
+#include <soc/intel/common/gma.h>
 int init_igd_opregion(igd_opregion_t *igd_opregion);
 #endif
 
