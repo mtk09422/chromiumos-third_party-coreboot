@@ -39,10 +39,12 @@
 #define COMMUNITY_GPSOUTHEAST_BASE	\
 (IO_BASE_ADDRESS + COMMUNITY_OFFSET_GPSOUTHEAST)
 
-#define GP_EAST		0
+#define GPIO_COMMUNITY_COUNT		4
+#define GPIO_FAMILIES_MAX_PER_COMM	7
+#define GP_SOUTHWEST	0
 #define GP_NORTH	1
-#define GP_SOUTHEAST	2
-#define GP_SOUTHWEST	3
+#define GP_EAST		2
+#define GP_SOUTHEAST	3
 
 #define COMMUNITY_BASE(community)		\
 (IO_BASE_ADDRESS + community * 0x8000)
@@ -161,7 +163,10 @@
 #define PAD_PULL_UP_1K		(12 << 20)
 
 /* config0[19:16] - PAD Mode GPIOPM */
-#define PAD_MODE_SELECTION(MODE_SEL)   (MODE_SEL<<16)
+#define PAD_MODE_SELECTION(MODE_SEL)	(MODE_SEL<<16)
+
+#define SET_PAD_MODE_SELECTION(pad_config, mode)	\
+	((pad_config & 0xfff0ffff) | PAD_MODE_SELECTION(mode))
 
 /* config0[15] -   GPIO Enable GPIOEn */
 #define PAD_GPIO_DISABLE	(0 << 15)
@@ -542,5 +547,7 @@ static inline void ssus_disable_internal_pull(int pad)
 }
 
 int get_gpio(int community_base, int pad0_offset);
+uint16_t gpio_family_number(uint8_t community, uint8_t pad);
+uint32_t *gpio_pad_config_reg(uint8_t community, uint8_t pad);
 
 #endif /* _BRASWELL_GPIO_H_ */
