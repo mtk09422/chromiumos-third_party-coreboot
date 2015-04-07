@@ -17,10 +17,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/clock.h>
+#include <arch/cpu.h>
 #include <arch/stages.h>
 #include <soc/addressmap.h>
 #include <soc/clock.h>
 #include <soc/mmu_operations.h>
+
+void arm64_arch_timer_init(void)
+{
+	uint32_t freq = clock_get_osc_khz() * 1000;
+	// Set the cntfrq register.
+	set_cntfrq(freq);
+}
 
 void arm64_soc_init(void)
 {

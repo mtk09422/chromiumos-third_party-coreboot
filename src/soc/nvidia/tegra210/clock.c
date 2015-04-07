@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/clock.h>
 #include <arch/io.h>
 #include <assert.h>
 #include <console/console.h>
@@ -237,8 +236,6 @@ int clock_get_pll_input_khz(void)
 void clock_init_arm_generic_timer(void)
 {
 	uint32_t freq = clock_get_osc_khz() * 1000;
-	// Set the cntfrq register.
-	set_cntfrq(freq);
 
 	// Record the system timer frequency.
 	write32(&sysctr->cntfid0, freq);
