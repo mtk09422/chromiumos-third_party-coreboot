@@ -18,12 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _SKYLAKE_IOBP_H_
-#define _SKYLAKE_IOBP_H_
+#ifndef _SKYLAKE_ACPI_H_
+#define _SKYLAKE_ACPI_H_
 
-u32 pch_iobp_read(u32 address);
-void pch_iobp_write(u32 address, u32 data);
-void pch_iobp_update(u32 address, u32 andvalue, u32 orvalue);
-void pch_iobp_exec(u32 addr, u16 op_dcode, u8 route_id, u32 *data, u8 *resp);
+#include <arch/acpi.h>
+#include <soc/nvs.h>
+
+void acpi_fill_in_fadt(acpi_fadt_t *fadt);
+unsigned long acpi_madt_irq_overrides(unsigned long current);
+void acpi_init_gnvs(global_nvs_t *gnvs);
 
 #endif

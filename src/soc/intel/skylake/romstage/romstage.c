@@ -18,19 +18,26 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stddef.h>
+#include <stdint.h>
+#include <arch/cpu.h>
+#include <arch/io.h>
+#include <arch/cbfs.h>
+#include <arch/stages.h>
+#include <arch/early_variables.h>
 #include <console/console.h>
+#include <cbmem.h>
+#include <cpu/x86/mtrr.h>
+#include <elog.h>
 #include <ramstage_cache.h>
+#include <reset.h>
 #include <romstage_handoff.h>
-#include <soc/me.h>
 #include <soc/pei_wrapper.h>
+#include <soc/pm.h>
 #include <soc/romstage.h>
+#include <soc/spi.h>
 #include <timestamp.h>
-
-#include <rmodule.h>
-int rmodule_stage_load_from_cbfs(struct rmod_stage_load *rsl)
-{
-	return 0;
-}
+#include <vendorcode/google/chromeos/chromeos.h>
 
 /* SOC initialization before the console is enabled */
 void soc_pre_console_init(struct romstage_params *params)
@@ -42,17 +49,25 @@ void soc_pre_console_init(struct romstage_params *params)
 /* SOC initialization before RAM is enabled */
 void soc_pre_ram_init(struct romstage_params *params)
 {
-	/* Print ME state before MRC */
-	intel_me_status();
-
-	/* Save ME HSIO version */
-	intel_me_hsio_version(&params->power_state->hsio_version,
-			      &params->power_state->hsio_checksum);
-
 	/* Prepare to initialize memory */
 	skylake_fill_pei_data(params->pei_data);
 }
 
 void ramstage_cache_invalid(struct ramstage_cache *cache)
 {
+#if IS_ENABLED(CONFIG_RESET_ON_INVALID_RAMSTAGE_CACHE)
+	/* Perform hard reset on invalid ramstage cache. */
+	hard_reset();
+#endif
 }
+
+#if IS_ENABLED(CONFIG_CHROMEOS)
+int vboot_get_sw_write_protect(void)
+{
+	u8 status;
+
+	/* Return unprotected status if status read fails. */
+	return early_spi_read_wpsr(&status) ? 0 : !!(status & 0x80);
+}
+#endif
+

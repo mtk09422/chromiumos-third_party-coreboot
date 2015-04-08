@@ -1,6 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
+ * Copyright (C) 2007-2009 coresystems GmbH
  * Copyright (C) 2014 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
  *
@@ -18,11 +19,36 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <console/console.h>
+#include <cpu/cpu.h>
+#include <cpu/x86/msr.h>
+#include <soc/cpu.h>
+#include <soc/msr.h>
 #include <soc/ramstage.h>
-#include <soc/intel/common/ramstage.h>
+#include <soc/systemagent.h>
 
-void skylake_init_pre_device(void *chip_info)
+u32 cpu_family_model(void)
 {
-	/* Perform silicon specific init. */
-	intel_silicon_init();
+	return cpuid_eax(1) & 0x0fff0ff0;
+}
+
+u32 cpu_stepping(void)
+{
+	return cpuid_eax(1) & 0xf;
+}
+
+/* Dynamically determine if the part is ULT. */
+int cpu_is_ult(void)
+{
+	static int ult = -1;
+
+	if (ult < 0) {
+		u32 fm = cpu_family_model();
+		if (fm == SKYLAKE_FAMILY_ULT)
+			ult = 1;
+		else
+			ult = 0;
+	}
+
+	return ult;
 }

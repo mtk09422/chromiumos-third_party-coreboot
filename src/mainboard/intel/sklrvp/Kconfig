@@ -8,6 +8,10 @@ config BOARD_SPECIFIC_OPTIONS # dummy
 	select CHROMEOS_VBNV_CMOS
 	select SOC_INTEL_SKYLAKE
 
+config BOOT_MEDIA_SPI_BUS
+	hex
+	default 0
+
 config MAINBOARD_DIR
 	string
 	default "intel/sklrvp"

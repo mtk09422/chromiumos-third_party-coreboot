@@ -10,6 +10,8 @@ config CPU_SPECIFIC_OPTIONS
 	select ARCH_BOOTBLOCK_X86_32
 	select ARCH_ROMSTAGE_X86_32
 	select ARCH_RAMSTAGE_X86_32
+	select ALWAYS_LOAD_OPROM
+	select BACKUP_DEFAULT_SMM_REGION
 	select CACHE_RELOCATED_RAMSTAGE_OUTSIDE_CBMEM
 	select CACHE_ROM
 	select CAR_MIGRATION
@@ -18,20 +20,27 @@ config CPU_SPECIFIC_OPTIONS
 	select COMMON_ROMSTAGE
 	select COMMON_STACK
 	select COLLECT_TIMESTAMPS
+	select CPU_INTEL_FIRMWARE_INTERFACE_TABLE
 	select CPU_MICROCODE_IN_CBFS
 	select DYNAMIC_CBMEM
 	select HAS_PRECBMEM_TIMESTAMP_REGION
 	select HAVE_HARD_RESET
 	select HAVE_MONOTONIC_TIMER
+	select HAVE_SMI_HANDLER
+	select IOAPIC
 	select MMCONF_SUPPORT
 	select MMCONF_SUPPORT_DEFAULT
+	select PARALLEL_MP
 	select PCIEXP_ASPM
 	select PCIEXP_COMMON_CLOCK
 	select PCIEXP_CLK_PM
-	select PCIEXP_L1_SUB_STATE
+	select REG_SCRIPT
 	select RELOCATABLE_MODULES
+	select SMM_MODULES
+	select SMM_TSEG
+	select SMP
+	select SSE2
 	select TSC_CONSTANT_RATE
-	select TSC_MONOTONIC_TIMER
 	select TSC_SYNC_MFENCE
 	select UDELAY_TSC
 
@@ -134,6 +143,18 @@ config IFD_PLATFORM_SECTION
 	string
 	default ""
 
+config INTEL_PCH_UART_CONSOLE
+	bool "Use Serial IO UART for console"
+	default n
+	select HAVE_UART_MEMORY_MAPPED
+	select CONSOLE_SERIAL8250MEM
+	depends on !CONFIG_DRIVERS_OXFORD_OXPCIE
+
+config INTEL_PCH_UART_CONSOLE_NUMBER
+	hex "Serial IO UART number to use for console"
+	default "0x0"
+	depends on INTEL_PCH_UART_CONSOLE
+
 config ME_BIN_PATH
 	string "Path to management engine firmware"
 	depends on HAVE_ME_BIN
@@ -147,13 +168,47 @@ config MMCONF_BASE_ADDRESS
 	hex "MMIO Base Address"
 	default 0xe0000000
 
+config MONOTONIC_TIMER_MSR
+	def_bool y
+	select HAVE_MONOTONIC_TIMER
+	help
+	  Provide a monotonic timer using the 24MHz MSR counter.
+
+config PRE_GRAPHICS_DELAY
+	int "Graphics initialization delay in ms"
+	default 0
+	help
+	  On some systems, coreboot boots so fast that connected monitors
+	  (mostly TVs) won't be able to wake up fast enough to talk to the
+	  VBIOS. On those systems we need to wait for a bit before executing
+	  the VBIOS.
+
 config SERIAL_CPU_INIT
 	bool
 	default n
+
+config SERIRQ_CONTINUOUS_MODE
+	bool
+	default y
+	help
+	  If you set this option to y, the serial IRQ machine will be
+	  operated in continuous mode.
+
+config SMM_RESERVED_SIZE
+	hex
+	default 0x100000
+
+config SMM_TSEG_SIZE
+	hex
+	default 0x800000
 
 config TTYS0_BASE
 	hex
 	default 0xd6000000
 	depends on INTEL_PCH_UART_CONSOLE
+
+config VGA_BIOS_ID
+	string
+	default "8086,0406"
 
 endif

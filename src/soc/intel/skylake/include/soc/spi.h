@@ -26,20 +26,22 @@
  * should support most common flash chips.
  */
 
-#define SPIBAR_OFFSET		0x3800
+#define SPIBAR_OFFSET		0x0
 #define SPIBAR8(x)		RCBA8(x + SPIBAR_OFFSET)
 #define SPIBAR16(x)		RCBA16(x + SPIBAR_OFFSET)
 #define SPIBAR32(x)		RCBA32(x + SPIBAR_OFFSET)
 
 /* Reigsters within the SPIBAR */
-#define SPIBAR_SSFC		0x91
-#define SPIBAR_FDOC		0xb0
-#define SPIBAR_FDOD		0xb4
+#define SPIBAR_SSFC		0xA1
+#define SPIBAR_FDOC		0xb4
+#define SPIBAR_FDOD		0xb8
 
-#define SPIBAR_PREOP		0x94
-#define SPIBAR_OPTYPE		0x96
-#define SPIBAR_OPMENU_LOWER	0x98
-#define SPIBAR_OPMENU_UPPER	0x9c
+
+#define SPIBAR_PREOP		0xA4
+#define SPIBAR_OPTYPE		0xA6
+#define SPIBAR_OPMENU_LOWER	0xA8
+#define SPIBAR_OPMENU_UPPER	0xAc
+
 
 #define SPI_OPMENU_0 0x01 /* WRSR: Write Status Register */
 #define SPI_OPTYPE_0 0x01 /* Write, no address */
@@ -91,10 +93,10 @@
 #define  SPIBAR_HSFC_GO             (1 << 0) /* GO: start SPI transaction */
 #define SPIBAR_FADDR                0x08   /* SPI flash address */
 #define SPIBAR_FDATA(n)             (0x10 + (4 * n)) /* SPI flash data */
-#define SPIBAR_SSFS                 0x90
+#define SPIBAR_SSFS                 0xA0
 #define  SPIBAR_SSFS_ERROR          (1 << 3)
 #define  SPIBAR_SSFS_DONE           (1 << 2)
-#define SPIBAR_SSFC                 0x91
+#define SPIBAR_SSFC                 0xA1
 #define  SPIBAR_SSFC_DATA           (1 << 14)
 #define  SPIBAR_SSFC_GO             (1 << 1)
 

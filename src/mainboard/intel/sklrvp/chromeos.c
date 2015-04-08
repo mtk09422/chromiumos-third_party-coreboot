@@ -26,9 +26,6 @@
 #include <string.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
-/* SPI Write protect is GPIO 16 */
-#define CROS_WP_GPIO	16
-
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
 
@@ -46,10 +43,12 @@ static void fill_lb_gpio(struct lb_gpio *gpio, int num,
 	memset(gpio, 0, sizeof(*gpio));
 	gpio->port = num;
 	gpio->polarity = polarity;
+
+	/*TODO: Update right values when GPIO API is ready */
 	if (force >= 0)
 		gpio->value = force;
 	else if (num >= 0)
-		gpio->value = get_gpio(num);
+		gpio->value = 0;
 	strncpy((char *)gpio->name, name, GPIO_MAX_NAME_LENGTH);
 }
 
@@ -61,7 +60,6 @@ void fill_lb_gpios(struct lb_gpios *gpios)
 	gpios->count = GPIO_COUNT;
 
 	gpio = gpios->gpios;
-	fill_lb_gpio(gpio++, CROS_WP_GPIO, ACTIVE_HIGH, "write protect", 0);
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "recovery",
 		     get_recovery_mode_switch());
 	fill_lb_gpio(gpio++, -1, ACTIVE_HIGH, "developer",

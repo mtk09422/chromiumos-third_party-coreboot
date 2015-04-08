@@ -18,11 +18,28 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <soc/ramstage.h>
-#include <soc/intel/common/ramstage.h>
+#ifndef _SKYLAKE_DEVICE_NVS_H_
+#define _SKYLAKE_DEVICE_NVS_H_
 
-void skylake_init_pre_device(void *chip_info)
-{
-	/* Perform silicon specific init. */
-	intel_silicon_init();
-}
+#include <stdint.h>
+
+/* Offset in Global NVS where this structure lives */
+#define DEVICE_NVS_OFFSET	0x1000
+
+#define SIO_NVS_DMA		0
+#define SIO_NVS_I2C0		1
+#define SIO_NVS_I2C1		2
+#define SIO_NVS_SPI0		3
+#define SIO_NVS_SPI1		4
+#define SIO_NVS_UART0		5
+#define SIO_NVS_UART1		6
+#define SIO_NVS_SDIO		7
+#define SIO_NVS_ADSP		8
+
+typedef struct {
+	u8	enable[9];
+	u32	bar0[9];
+	u32	bar1[9];
+} __attribute__((packed)) device_nvs_t;
+
+#endif
