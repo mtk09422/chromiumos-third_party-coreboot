@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
+#include <assert.h>
 #include <arch/cpu.h>
 #include <arch/io.h>
 #include <arch/psci.h>
@@ -25,6 +26,7 @@
 #include <soc/cpu.h>
 #include <soc/flow_ctrl.h>
 #include <soc/power.h>
+#include <stdlib.h>
 
 #include <console/console.h>
 
@@ -83,11 +85,22 @@ static inline void tegra210_enter_sleep(unsigned long pmstate)
 	: "r" (pmstate));
 }
 
+#define POWER_PARTID_CE(n)	[n] = POWER_PARTID_CE##n
+
 static void prepare_cpu_on(int cpu)
 {
 	uint32_t partid;
 
-	partid = cpu ? POWER_PARTID_CE1 : POWER_PARTID_CE0;
+	const uint32_t partid_arr[] = {
+		POWER_PARTID_CE(0),
+		POWER_PARTID_CE(1),
+		POWER_PARTID_CE(2),
+		POWER_PARTID_CE(3),
+	};
+
+	assert(cpu < ARRAY_SIZE(partid_arr));
+
+	partid = partid_arr[cpu];
 
 	power_ungate_partition(partid);
 	flowctrl_write_cpu_halt(cpu, 0);
