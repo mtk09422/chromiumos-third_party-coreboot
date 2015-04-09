@@ -279,3 +279,24 @@ Scope (\_SB.PCI0.I2C1)
                 }
         }
 }
+
+Scope (\_SB.PCI0.RP01)
+{
+	Device (WLAN)
+	{
+		Name (_ADR, 0x00000000)
+
+		/* GPIO10 is WLAN_WAKE_L_Q */
+		Name (GPIO, 10)
+
+		Name (_PRW, Package() { GPIO, 3 })
+
+		Method (_DSW, 3, NotSerialized)
+		{
+			If (LEqual (Arg0, 1)) {
+				// Enable GPIO as wake source
+				\_SB.PCI0.LPCB.GPIO.GWAK (^GPIO)
+			}
+		}
+	}
+}
