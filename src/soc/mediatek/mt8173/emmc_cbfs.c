@@ -18,7 +18,7 @@
  */
 
 #include <assert.h>
-#include <cbfs.h>		/* This driver serves as a CBFS media source. */
+#include <cbfs.h>               /* This driver serves as a CBFS media source. */
 #include <string.h>
 #include <symbols.h>
 
@@ -27,10 +27,10 @@
 #include <soc/blkdev.h>
 #include <soc/mmc_common_inter.h>
 
-#if defined(CONFIG_DEBUG_CBFS_EMMC) && CONFIG_DEBUG_CBFS_EMMC
-#define DEBUG_EMMC(x...)	printk(BIOS_DEBUG, "MTK_EMMC_CBFS: " x)
+#if IS_ENABLED(CONFIG_DEBUG_CBFS_EMMC)
+#define DEBUG_EMMC(x ...)        printk(BIOS_DEBUG, "MTK_EMMC_CBFS: " x)
 #else
-#define DEBUG_EMMC(x...)
+#define DEBUG_EMMC(x ...)
 #endif
 
 struct mtk_emmc_media {
@@ -142,6 +142,7 @@ static void *mtk_emmc_cbfs_map(struct cbfs_media *media, size_t offset,
 {
 	struct mtk_emmc_media *emmc = (struct mtk_emmc_media *)media->context;
 	void *map;
+
 	DEBUG_EMMC("%s at offset: 0x%zx, count: 0x%zx\n", __func__, offset,
 		   count);
 	map = cbfs_simple_buffer_map(&emmc->buffer, media, offset, count);
@@ -151,6 +152,7 @@ static void *mtk_emmc_cbfs_map(struct cbfs_media *media, size_t offset,
 static void *mtk_emmc_cbfs_unmap(struct cbfs_media *media, const void *address)
 {
 	struct mtk_emmc_media *emmc = (struct mtk_emmc_media *)media->context;
+
 	DEBUG_EMMC("%s at address: %p\n", __func__, address);
 	return cbfs_simple_buffer_unmap(&emmc->buffer, address);
 }
@@ -161,9 +163,10 @@ uintptr_t _dram_ = (uintptr_t)_dram;
 #endif
 #endif
 
-int init_default_cbfs_media(struct cbfs_media *media)
+int init_mt8173_emmc_cbfs_media(struct cbfs_media *media)
 {
 	static struct mtk_emmc_media context;
+
 	DEBUG_EMMC("Initializing CBFS media on eMMC %s\n", __func__);
 
 	context.buffer.allocated = context.buffer.last_allocate = 0;

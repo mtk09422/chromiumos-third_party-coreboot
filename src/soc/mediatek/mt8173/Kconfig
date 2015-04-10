@@ -42,6 +42,14 @@ config HAVE_USB_HUB_HX3
 	help
 	  Initial & config the Cypress USB Hub HX3 via I2C bus
 
+config MTK_SPI_CBFS
+	bool "Use SPI for CBFS"
+	default n
+
+config MTK_EMMC_CBFS
+	bool "Use eMMC for CBFS"
+	default n
+
 config DEBUG_SOC_DRIVER
 	bool "The top level switch for soc driver debug message"
 	default n
@@ -83,6 +91,12 @@ config DEBUG_MMC
 	default n
 	help
 	  This option enables eMMC related debug message.
+
+config DEBUG_NOR
+	bool "Output verbose NOR related debug message"
+	default n
+	help
+	  This option enables NOR related debug message.
 
 config DEBUG_MSDC
 	bool "Output verbose MSDC related debug message"

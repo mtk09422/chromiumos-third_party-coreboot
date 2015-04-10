@@ -17,15 +17,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef SOC_MEDIATEK_MT8173_MMC_COMMON_INTER_H
-#define SOC_MEDIATEK_MT8173_MMC_COMMON_INTER_H
+#include <cbfs.h>
+#include <soc/mmc_common_inter.h>
+#include <soc/nor_if.h>
 
-#include <stdint.h>
-#include <cbfs.h>               /* This driver serves as a CBFS media source. */
+int init_default_cbfs_media(struct cbfs_media *media)
+{
+	#if IS_ENABLED(CONFIG_MTK_SPI_CBFS)
+	/*for mt8173E2 support spi nor flash  */
+	return init_mt8173_nor_cbfs_media(media);
+	#else
+	/*default cbfs media :emmc */
+	return init_mt8173_emmc_cbfs_media(media);
+	#endif
+}
 
-int init_mt8173_emmc_cbfs_media(struct cbfs_media *media);
-
-u32 mmc_init_device(void);
-u32 mmc_get_device_id(u8 * id, u32 len, u32 * fw_len);
-
-#endif /* SOC_MEDIATEK_MT8173_MMC_COMMON_INTER_H */

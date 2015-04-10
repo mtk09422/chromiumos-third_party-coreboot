@@ -21,13 +21,20 @@
 #define SOC_MEDIATEK_MT8173_MT8173_H
 
 #define MTK_EMMC_SUPPORT           1
+#define MTK_NOR_SUPPORT            2
 #define BOOTDEV_SDMMC              (1)
-#define CFG_BOOT_DEV                (BOOTDEV_SDMMC)
+#define BOOTDEV_NOR                (2)
+
+#if IS_ENABLED(CONFIG_MTK_SPI_CBFS)
+# define CFG_BOOT_DEV (BOOTDEV_NOR)
+#else
+# define CFG_BOOT_DEV (BOOTDEV_SDMMC)
+#endif
 
 #define CFG_META_BAUDRATE           (115200)
 
 #define CFG_HW_WATCHDOG                 (1)
-#define MT8173			(1)
+#define MT8173                  (1)
 #define CFG_FPGA_PLATFORM 0
 
 extern unsigned char _sram_l2c[];
@@ -36,7 +43,7 @@ extern unsigned char _esram_l2c[];
 
 extern unsigned char _sram_ttb[];
 extern unsigned char _esram_ttb[];
-#define _sram_ttb_size	(_esram_ttb - _sram_ttb)
+#define _sram_ttb_size  (_esram_ttb - _sram_ttb)
 
 extern unsigned char _dma[];
 extern unsigned char _edma[];
