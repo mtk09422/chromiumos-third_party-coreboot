@@ -156,6 +156,7 @@ enum {
 	CLK_X_ETR = 0x1 << 3,
 	CLK_X_SPARE = 0x1 << 0,
 
+	CLK_Y_APE = 0x1 << 6,
 	CLK_Y_QSPI = 0x1 << 19,
 };
 

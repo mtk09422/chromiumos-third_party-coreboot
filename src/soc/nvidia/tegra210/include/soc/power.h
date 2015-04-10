@@ -26,5 +26,6 @@ void power_ungate_partition(uint32_t id);
 
 uint8_t pmc_rst_status(void);
 void pmc_print_rst_status(void);
+void remove_clamps(int id);
 
 #endif	/* __SOC_NVIDIA_TEGRA210_POWER_H__ */

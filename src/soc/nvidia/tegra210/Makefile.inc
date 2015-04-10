@@ -82,6 +82,7 @@ ramstage-y += soc.c
 ramstage-y += spi.c
 ramstage-y += i2c.c
 ramstage-y += i2c6.c
+ramstage-y += ape.c
 ramstage-y += power.c
 ramstage-y += dma.c
 ramstage-y += gic.c

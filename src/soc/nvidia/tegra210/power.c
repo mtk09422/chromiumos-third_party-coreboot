@@ -76,3 +76,21 @@ void pmc_print_rst_status(void)
 	printk(BIOS_INFO, "PMC Reset Status: %s\n",
 	       pmc_rst_status_str[rst_status]);
 }
+
+static int partition_clamp_on(int id)
+{
+	return read32(&pmc->clamp_status) & (1 << id);
+}
+
+void remove_clamps(int id)
+{
+	if (!partition_clamp_on(id))
+		return;
+
+	/* Remove clamp */
+	write32(&pmc->remove_clamping_cmd, (1 << id));
+
+	/* Wait for clamp off */
+	while (partition_clamp_on(id))
+		;
+}

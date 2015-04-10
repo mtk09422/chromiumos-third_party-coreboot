@@ -88,4 +88,7 @@ void soc_configure_pads(const struct pad_config * const entries, size_t num);
 /* I2C6 requires special init as its pad lives int the SOR/DPAUX block */
 void soc_configure_i2c6pad(void);
 void soc_configure_host1x(void);
+/* APE (Audio Processing Engine) requires special init */
+void soc_configure_ape(void);
+
 #endif /* __SOC_NVIDIA_TEGRA210_PAD_CFG_H */
