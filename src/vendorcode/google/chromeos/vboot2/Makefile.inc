@@ -45,6 +45,8 @@ VBOOT_CFLAGS += $(verstage-c-ccopts)
 VBOOT_CFLAGS += -include $(top)/src/include/kconfig.h -Wno-missing-prototypes
 VBOOT_CFLAGS += -DVBOOT_DEBUG
 
+# Just in case vboot includes some generated files in the future, add them as
+# a dependency here.
 $(VB2_LIB): | $$(generic-deps)
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
@@ -54,6 +56,8 @@ $(VB2_LIB): | $$(generic-deps)
 		BUILD=$(top)/$(dir $(VB2_LIB)) \
 		V=$(V) \
 		fwlib20
+
+.PHONY: $(VB2_LIB)
 
 VERSTAGE_ELF = $(objcbfs)/verstage.elf
 cbfs-files-y += $(call strip_quotes,$(CONFIG_CBFS_PREFIX))/verstage

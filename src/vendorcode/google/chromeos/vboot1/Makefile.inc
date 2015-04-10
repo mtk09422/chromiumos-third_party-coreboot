@@ -72,3 +72,5 @@ $(VB_LIB):
 		BUILD=$(top)/$(dir $(VB_LIB)) \
 		V=$(V) \
 		fwlib
+
+.PHONY: $(VB_LIB)
