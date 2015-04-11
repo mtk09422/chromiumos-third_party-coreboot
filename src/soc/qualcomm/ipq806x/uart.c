@@ -41,6 +41,8 @@
 #include <stdint.h>
 #include <uart.h>
 
+#define SERIAL_CONSOLE_REQUIRED (IS_ENABLED(CONFIG_CONSOLE_SERIAL_UART) || \
+				 IS_ENABLED(CONFIG_CONSOLE_CBMEM_DUMP))
 #define FIFO_DATA_SIZE	4
 
 typedef struct {
@@ -107,7 +109,7 @@ static unsigned int msm_boot_uart_dm_init_rx_transfer(void *uart_dm_base)
 	return MSM_BOOT_UART_DM_E_SUCCESS;
 }
 
-#if IS_ENABLED(CONFIG_CONSOLE_SERIAL_UART)
+#if SERIAL_CONSOLE_REQUIRED
 static unsigned int msm_boot_uart_dm_init(void  *uart_dm_base);
 
 /* Received data is valid or not */
@@ -216,7 +218,7 @@ void uart_tx_byte(unsigned char data)
 	/* And now write the character(s) */
 	write32(MSM_BOOT_UART_DM_TF(base, 0), tx_data);
 }
-#endif /* CONFIG_SERIAL_UART enabled ^^^^^^^^ */
+#endif /* SERIAL_CONSOLE_REQUIRED */
 
 /*
  * msm_boot_uart_dm_reset - resets UART controller
@@ -336,7 +338,7 @@ void ipq806x_uart_init(void)
 	msm_boot_uart_dm_init(dm_base);
 }
 
-#if IS_ENABLED(CONFIG_CONSOLE_SERIAL_UART)
+#if SERIAL_CONSOLE_REQUIRED
 /*
  * This wrapper is needed to avoid the mess with uart_init() declarations
  * across coreboot.
@@ -403,4 +405,4 @@ uint8_t uart_rx_byte(void)
 	return byte;
 }
 
-#endif  /* CONFIG_SERIAL_UART enabled ^^^^^^^^ */
+#endif  /* SERIAL_CONSOLE_REQUIRED ^^^^^^^^ */
