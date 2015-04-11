@@ -27,5 +27,5 @@ void cbmemc_tx_byte(unsigned char data);
 static inline void cbmemc_init(void) {}
 static inline void cbmemc_reinit(void) {}
 #endif
-
+void cbmem_dump_console(void);
 #endif

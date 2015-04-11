@@ -246,6 +246,16 @@ config CONSOLE_CBMEM
 	  Enable this to save the console output in a CBMEM buffer. This would
 	  allow to see coreboot console output from Linux space.
 
+config CONSOLE_CBMEM_DUMP_TO_UART
+	depends on CONSOLE_CBMEM
+	depends on !CONSOLE_SERIAL_UART
+	bool "Dump CBMEM console on resets"
+	default n
+	help
+	  Enable this to have CBMEM console buffer contents dumped on the
+	  serial output in case serial console is disabled and the device
+	  resets itself while trying to boot the payload
+
 config CONSOLE_FIXED_PRERAM_CBMEM_BUFFER
 	default n if ARCH_X86
 	default y if !ARCH_X86

@@ -17,11 +17,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#include <console/console.h>
-#include <cbmem.h>
 #include <arch/early_variables.h>
-#include <symbols.h>
+#include <cbmem.h>
+#include <console/console.h>
 #include <string.h>
+#include <symbols.h>
+#include <uart.h>
 
 /*
  * Structure describing console buffer. It is overlaid on a flat memory area,
@@ -232,6 +233,24 @@ void cbmemc_reinit(void)
 
 	current_console_set(cbm_cons_p);
 }
+
+#if IS_ENABLED(CONFIG_CONSOLE_CBMEM_DUMP_TO_UART)
+
+void cbmem_dump_console(void)
+{
+	struct cbmem_console *cbm_cons_p;
+	int cursor;
+
+	cbm_cons_p = current_console();
+	if (!cbm_cons_p)
+		return;
+
+	uart_init();
+	for (cursor = 0; cursor < cbm_cons_p->buffer_cursor; cursor++)
+		uart_tx_byte(cbm_cons_p->buffer_body[cursor]);
+}
+
+#endif
 
 /* Call cbmemc_reinit() at cbmem_initialize() time. */
 ROMSTAGE_CBMEM_INIT_HOOK(cbmemc_reinit)

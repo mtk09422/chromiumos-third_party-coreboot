@@ -32,13 +32,11 @@
 #include <uart8250.h>
 #endif
 
-#if CONFIG_CONSOLE_SERIAL_UART
 unsigned char uart_rx_byte(void);
 void uart_tx_byte(unsigned char data);
 void uart_tx_flush(void);
 void uart_init(void);
 int uart_can_rx_byte(void);
-#endif
 
 uint32_t uartmem_getbaseaddr(void);
 uint32_t uartmem_getregwidth(void);
