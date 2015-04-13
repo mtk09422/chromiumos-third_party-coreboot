@@ -2,6 +2,7 @@
 # This file is part of the coreboot project.
 #
 # Copyright (C) 2014 Sage Electronic Engineering, LLC.
+# Copyright (C) 2015 Intel Corp.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,13 +18,16 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-ramstage-y += fsp_util.c
+romstage-$(CONFIG_ENABLE_MRC_CACHE) += fastboot_cache.c
+romstage-$(CONFIG_GOP_SUPPORT) += fsp_gop.c
+romstage-y += fsp_hob.c
 romstage-y += fsp_util.c
 romstage-$(CONFIG_USING_FSP_1_0) += fsp_util_1_0.c
+
 ramstage-$(CONFIG_ENABLE_MRC_CACHE) += fastboot_cache.c
-romstage-$(CONFIG_ENABLE_MRC_CACHE) += fastboot_cache.c
-romstage-y += fsp_hob.c
+ramstage-$(CONFIG_GOP_SUPPORT) += fsp_gop.c
 ramstage-y += fsp_hob.c
+ramstage-y += fsp_util.c
 
 CPPFLAGS_common += -Isrc/drivers/intel/fsp
 

@@ -212,6 +212,10 @@ config DISPLAY_HOBS
 	bool "Display hand-off-blocks (HOBs)"
 	default n
 
+config DISPLAY_VBT
+	bool "Display Video BIOS Table (VBT)"
+	default n
+
 config DISPLAY_FSP_ENTRY_POINTS
 	bool "Display FSP entry points"
 	default n
