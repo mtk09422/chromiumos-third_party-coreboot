@@ -39,6 +39,7 @@
 #include <soc/pci_devs.h>
 #include <soc/pm.h>
 #include <soc/ramstage.h>
+#include <soc/intel/common/ramstage.h>
 #include <stdlib.h>
 
 #define SHOW_PATTRS 1
@@ -197,6 +198,9 @@ void braswell_init_pre_device(struct soc_intel_braswell_config *config)
 
 	/* Indicate S3 resume to rest of ramstage. */
 	s3_resume_prepare();
+
+	/* Perform silicon specific init. */
+	intel_silicon_init();
 
 	/* Get GPIO initial states from mainboard */
 	gpio_config = mainboard_get_gpios();

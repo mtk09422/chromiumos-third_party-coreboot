@@ -255,8 +255,6 @@ before_romstage:
 __main:
 	post_code(POST_PREPARE_RAMSTAGE)
 	cld			/* Clear direction flag. */
-	/* Set up frame for romstage_after_car(FSP_INFO_HEADER *). */
-	pushl	%ebp
 	call	romstage_after_car
 
 

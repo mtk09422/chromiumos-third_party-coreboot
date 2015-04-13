@@ -64,6 +64,11 @@ void *get_next_type_guid_hob(UINT16 type, const EFI_GUID *guid,
 	const void *hob_start);
 void *get_next_resource_hob(const EFI_GUID *guid, const void *hob_start);
 void *get_first_resource_hob(const EFI_GUID *guid);
+/*
+ * Relocate FSP entire binary into ram. Returns NULL on error. Otherwise the
+ * FSP_INFO_HEADER pointer to the relocated FSP.
+ */
+FSP_INFO_HEADER *fsp_relocate(void *fsp_src, size_t size);
 
 /* The following are chipset support routines */
 #if IS_ENABLED(CONFIG_USING_FSP_1_0)

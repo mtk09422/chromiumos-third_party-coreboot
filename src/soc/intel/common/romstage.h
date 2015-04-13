@@ -61,8 +61,8 @@ struct romstage_params {
  *       after call to romstage_main
  *  21.  FSP binary/TempRamExit
  *  22.  src/soc/intel/common/romstage.c/romstage_after_car
- *  23.  FSP binary/SiliconInit
- *  24.  src/soc/intel/common/romstage.c/romstage_after_car - return
+ *  23.  src/soc/intel/common/romstage.c/romstage_after_car - return
+ *  24.  FSP binary/SiliconInit
  *  25.  src/soc/intel/.../chip.c/skylake_final
  *  26.  src/drivers/intel/fsp/fsp_util.c/fsp_notify
  *  27.  FSP binary/FspNotify
@@ -91,7 +91,6 @@ asmlinkage void *romstage_main(unsigned int bist, uint32_t tsc_lo,
 void *setup_stack_and_mtrrs(void);
 void set_max_freq(void);
 void soc_after_ram_init(struct romstage_params *params);
-void soc_after_silicon_init(void);
 void soc_after_temp_ram_exit(void);
 void soc_pre_console_init(struct romstage_params *params);
 void soc_pre_ram_init(struct romstage_params *params);

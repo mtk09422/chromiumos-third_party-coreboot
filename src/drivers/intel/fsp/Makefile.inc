@@ -27,6 +27,7 @@ romstage-$(CONFIG_USING_FSP_1_0) += fsp_util_1_0.c
 ramstage-$(CONFIG_ENABLE_MRC_CACHE) += fastboot_cache.c
 ramstage-$(CONFIG_GOP_SUPPORT) += fsp_gop.c
 ramstage-y += fsp_hob.c
+ramstage-y += fsp_relocate.c
 ramstage-y += fsp_util.c
 
 CPPFLAGS_common += -Isrc/drivers/intel/fsp

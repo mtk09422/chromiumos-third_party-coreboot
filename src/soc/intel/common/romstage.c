@@ -198,29 +198,6 @@ void romstage_common(struct romstage_params *params)
 
 asmlinkage void romstage_after_car(void *chipset_context)
 {
-#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-	FSP_INFO_HEADER *fsp_info_header;
-	FSP_SILICON_INIT fsp_silicon_init;
-	EFI_STATUS status;
-
-	timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_END);
-	printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
-	soc_after_temp_ram_exit();
-
-	/* Find the FSP image */
-	timestamp_add_now(TS_FSP_FIND_START);
-	fsp_info_header = chipset_context;
-	timestamp_add_now(TS_FSP_FIND_END);
-
-	/* Perform silicon initialization after RAM is configured */
-	printk(BIOS_DEBUG, "Calling FspSiliconInit\n");
-	fsp_silicon_init = (FSP_SILICON_INIT)(fsp_info_header->ImageBase
-		+ fsp_info_header->FspSiliconInitEntryOffset);
-	timestamp_add_now(TS_FSP_SILICON_INIT_START);
-	status = fsp_silicon_init(NULL);
-	timestamp_add_now(TS_FSP_SILICON_INIT_END);
-	printk(BIOS_DEBUG, "FspSiliconInit returned 0x%08x\n", status);
-
 	/* Verify the HOBs */
 #if IS_ENABLED(CONFIG_DISPLAY_HOBS)
 	const EFI_GUID graphics_info_guid = EFI_PEI_GRAPHICS_INFO_HOB_GUID;
@@ -246,8 +223,11 @@ asmlinkage void romstage_after_car(void *chipset_context)
 		die("ERROR - Missing one or more required FSP HOBs!\n");
 #endif
 
-	soc_after_silicon_init();
-#endif	/* CONFIG_PLATFORM_USES_FSP */
+	if (IS_ENABLED(CONFIG_PLATFORM_USES_FSP)) {
+		timestamp_add_now(TS_FSP_TEMP_RAM_EXIT_END);
+		printk(BIOS_DEBUG, "FspTempRamExit returned successfully\n");
+		soc_after_temp_ram_exit();
+	}
 
 	timestamp_add_now(TS_END_ROMSTAGE);
 
@@ -368,12 +348,6 @@ __attribute__((weak)) void set_max_freq(void)
 
 /* SOC initialization after RAM is enabled */
 __attribute__((weak)) void soc_after_ram_init(struct romstage_params *params)
-{
-	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
-}
-
-/* SOC initialization after FSP silicon init */
-__attribute__((weak)) void soc_after_silicon_init(void)
 {
 	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 }

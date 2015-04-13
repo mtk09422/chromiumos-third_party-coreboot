@@ -6,6 +6,7 @@ romstage-$(CONFIG_COMMON_RESET) += reset.c
 romstage-$(CONFIG_COMMON_ROMSTAGE) += romstage.c
 romstage-$(CONFIG_COMMON_STACK) += stack.c
 
+ramstage-$(CONFIG_PLATFORM_USES_FSP) += fsp_ramstage.c
 ramstage-y += hda_verb.c
 ramstage-$(CONFIG_CACHE_MRC_SETTINGS) += nvm.c
 ramstage-$(CONFIG_CACHE_MRC_SETTINGS) += mrc_cache.c

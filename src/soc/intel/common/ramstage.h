@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2014 Google Inc.
+ * Copyright 2015 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,20 +15,22 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * Foundation, Inc.
  */
 
-#include <soc/ramstage.h>
-#include <soc/intel/common/ramstage.h>
+#ifndef _INTEL_COMMON_RAMSTAGE_H_
+#define _INTEL_COMMON_RAMSTAGE_H_
 
-#include <cpu/x86/mtrr.h>
-long x86_mtrr_rom_cache_var_index(void)
-{
-	return 0;
-}
+#include <stdint.h>
 
-void skylake_init_pre_device(void *chip_info)
-{
-	/* Perform silicon specific init. */
-	intel_silicon_init();
-}
+/* Perform Intel silicon init. */
+void intel_silicon_init(void);
+/* Called after the silicon init code has run. */
+void soc_after_silicon_init(void);
+/* SoC implementation for caching support code. */
+void soc_save_support_code(void *start, size_t size, void *entry);
+/* SoC implementation for restoring support code after S3 resume. Returns
+ * previously passed entry pointer from soc_save_support_code(). */
+void *soc_restore_support_code(void);
+
+#endif /* _INTEL_COMMON_RAMSTAGE_H_ */
