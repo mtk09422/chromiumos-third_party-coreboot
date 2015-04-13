@@ -80,3 +80,8 @@ uint32_t *gpio_pad_config_reg(uint8_t community, uint8_t pad)
 
 	return pad_config_reg;
 }
+
+int get_gpio(int community_base, int pad0_offset)
+{
+	return (read32((void *)(community_base + pad0_offset))) & PAD_RX_BIT;
+}
