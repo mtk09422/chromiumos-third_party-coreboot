@@ -114,6 +114,36 @@ struct tegra_mc_regs {
 	uint32_t emem_bank_swizzle_cfg3;	/* 0x9cc */
 	uint32_t rsvd_0x9d0[1];			/* 0x9d0 */
 	uint32_t sec_carveout_adr_hi;		/* 0x9d4 */
+	uint32_t rsvd_0x9d8[140];		/* 0x9d8-0xc04 */
+
+	uint32_t security_carveout1_cfg0;	/* 0xc08 */
+	uint32_t security_carveout1_bom;	/* 0xc0c */
+	uint32_t security_carveout1_bom_hi;	/* 0xc10 */
+	uint32_t security_carveout1_size_128kb;	/* 0xc14 */
+	uint32_t rsvd_0xc18[16];		/* 0xc18-0xc54 */
+
+	uint32_t security_carveout2_cfg0;	/* 0xc58 */
+	uint32_t security_carveout2_bom;	/* 0xc5c */
+	uint32_t security_carveout2_bom_hi;	/* 0xc60 */
+	uint32_t security_carveout2_size_128kb;	/* 0xc64 */
+	uint32_t rsvd_0xc68[16];		/* 0xc68-0xca4 */
+
+	uint32_t security_carveout3_cfg0;	/* 0xca8 */
+	uint32_t security_carveout3_bom;	/* 0xcac */
+	uint32_t security_carveout3_bom_hi;	/* 0xcb0 */
+	uint32_t security_carveout3_size_128kb;	/* 0xcb4 */
+	uint32_t rsvd_0xcb8[16];		/* 0xcb8-0xcf4 */
+
+	uint32_t security_carveout4_cfg0;	/* 0xcf8 */
+	uint32_t security_carveout4_bom;	/* 0xcfc */
+	uint32_t security_carveout4_bom_hi;	/* 0xd00 */
+	uint32_t security_carveout4_size_128kb;	/* 0xd04 */
+	uint32_t rsvd_0xd08[16];		/* 0xd08-0xd44 */
+
+	uint32_t security_carveout5_cfg0;	/* 0xd48 */
+	uint32_t security_carveout5_bom;	/* 0xd4c */
+	uint32_t security_carveout5_bom_hi;	/* 0xd50 */
+	uint32_t security_carveout5_size_128kb;	/* 0xd54 */
 };
 
 enum {
@@ -130,6 +160,8 @@ enum {
 	MC_TIMING_CONTROL_TIMING_UPDATE = 1,
 };
 
-check_member(tegra_mc_regs, sec_carveout_adr_hi, 0x9d4);
+#define MC_SECURITY_CARVEOUT_LOCKED		(1 << 1)
+
+check_member(tegra_mc_regs, security_carveout5_size_128kb, 0xd54);
 
 #endif	/* __SOC_NVIDIA_TEGRA210_MC_H__ */
