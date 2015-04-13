@@ -168,8 +168,8 @@ CAR_init_done:
 	 * mm2:  BIST value
 	 */
 
-	/* Frame for romstage_main(bist, tsc_low, tsc_hi, chipset_context) */
-	pushl	$0
+	/* Frame for romstage_main(bist, tsc_low, tsc_hi, fih) */
+	pushl	%ebx
 	movd	%mm1, %eax
 	pushl	%eax
 	movd	%mm0, %eax
@@ -255,7 +255,8 @@ before_romstage:
 __main:
 	post_code(POST_PREPARE_RAMSTAGE)
 	cld			/* Clear direction flag. */
-	pushl	$0		/* chipset_context */
+	/* Set up frame for romstage_after_car(FSP_INFO_HEADER *). */
+	pushl	%ebp
 	call	romstage_after_car
 
 
@@ -264,7 +265,7 @@ __main:
 
 halt1:
 	/*
-	 * Failures for postcode 0xBA - failed in find_fsp()
+	 * Failures for postcode 0xBA - failed in fsp_fih_early_find()
 	 *
 	 * Values are:
 	 * 0x01 - FV signature, "_FVH" not present

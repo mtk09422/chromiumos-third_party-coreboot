@@ -84,7 +84,7 @@ asmlinkage void *romstage_main(unsigned int bist,
 	/* Display FSP banner */
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 	printk(BIOS_DEBUG, "FSP TempRamInit successful\n");
-	print_fsp_info(find_fsp());
+	print_fsp_info(params.chipset_context);
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 
 	/* Get power state */
@@ -209,7 +209,7 @@ asmlinkage void romstage_after_car(void *chipset_context)
 
 	/* Find the FSP image */
 	timestamp_add_now(TS_FSP_FIND_START);
-	fsp_info_header = find_fsp();
+	fsp_info_header = chipset_context;
 	timestamp_add_now(TS_FSP_FIND_END);
 
 	/* Perform silicon initialization after RAM is configured */
