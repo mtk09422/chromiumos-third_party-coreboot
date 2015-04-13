@@ -44,6 +44,8 @@ are permitted provided that the following conditions are met:
 #include <MdePkg/Include/Pi/PiHob.h>
 #include <MdePkg/Include/Protocol/GraphicsOutput.h>
 #include <MdePkg/Include/Library/HobLib.h>
+#include <MdePkg/Include/Guid/FirmwareFileSystem2.h>
+#include <MdePkg/Include/IndustryStandard/PeImage.h>
 
 ///
 /// For GNU assembly code, .global or .globl can declare global symbols.
