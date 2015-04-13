@@ -53,13 +53,6 @@ void soc_pre_ram_init(struct romstage_params *params)
 	skylake_fill_pei_data(params->pei_data);
 }
 
-/* SOC initialization after FSP silicon init */
-void soc_after_silicon_init(void)
-{
-	post_code(0x35);
-	die("Hang in soc_after_silicon_init!\n");
-}
-
 void ramstage_cache_invalid(struct ramstage_cache *cache)
 {
 }
