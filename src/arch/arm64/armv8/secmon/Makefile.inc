@@ -40,6 +40,7 @@ secmon-y += ../cpu.S
 secmon-y += ../exception.c
 secmon-y += ../../cpu.c
 secmon-y += ../../transition_asm.S ../../transition.c
+secmon-y += ../../../../drivers/gic/gic.c
 
 ramstage-objs += $(SECMON_RAMSTAGE)
 
