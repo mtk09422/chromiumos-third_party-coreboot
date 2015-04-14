@@ -35,6 +35,7 @@
 #include <arch_ops.h>
 
 #include <arch/cache.h>
+#include <arch/cache_helpers.h>
 #include <arch/lib_helpers.h>
 
 void tlb_invalidate_all(void)
@@ -127,7 +128,7 @@ void dcache_mmu_disable(void)
 {
 	uint32_t sctlr;
 
-	flush_dcache_all();
+	flush_dcache_all(DCCISW);
 	sctlr = raw_read_sctlr_current();
 	sctlr &= ~(SCTLR_C | SCTLR_M);
 	raw_write_sctlr_current(sctlr);
@@ -144,7 +145,7 @@ void dcache_mmu_enable(void)
 
 void cache_sync_instructions(void)
 {
-	flush_dcache_all();	/* includes trailing DSB (in assembly) */
+	flush_dcache_all(DCCISW); /* includes trailing DSB (in assembly) */
 	icache_invalidate_all(); /* includdes leading DSB and trailing ISB. */
 }
 
