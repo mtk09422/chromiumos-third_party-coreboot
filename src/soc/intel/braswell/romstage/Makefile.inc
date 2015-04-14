@@ -4,4 +4,4 @@ romstage-y += early_spi.c
 romstage-y += gfx.c
 romstage-y += pmc.c
 romstage-y += romstage.c
-romstage-y += stack.c
+

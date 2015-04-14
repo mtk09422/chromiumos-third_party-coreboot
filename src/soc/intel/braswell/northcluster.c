@@ -25,6 +25,7 @@
 #include <device/pci.h>
 #include <device/pci_ids.h>
 #include <fsp_util.h>
+#include <soc/intel/common/memmap.h>
 #include <soc/iomap.h>
 #include <soc/iosf.h>
 #include <soc/pci_devs.h>
@@ -82,6 +83,8 @@ static void nc_read_resources(device_t dev)
 	unsigned long mmconf;
 	unsigned long bmbound_k;
 	unsigned long bmbound_hi;
+	void *smm_base;
+	size_t smm_size;
 	unsigned long tseg_base_k;
 	unsigned long tseg_top_k;
 	unsigned long fsp_res_base_k;
@@ -93,8 +96,9 @@ static void nc_read_resources(device_t dev)
 	pci_dev_read_resources(dev);
 
 	/* Determine TSEG data */
-	tseg_base_k = RES_IN_KIB((unsigned long) smm_region_start());
-	tseg_top_k = tseg_base_k + RES_IN_KIB(smm_region_size());
+	smm_region(&smm_base, &smm_size);
+	tseg_base_k = RES_IN_KIB((unsigned long) smm_base);
+	tseg_top_k = tseg_base_k + RES_IN_KIB(smm_size);
 
 	/* Determine the base of the FSP reserved memory */
 	fsp_res_base_k = RES_IN_KIB((unsigned long) cbmem_top());

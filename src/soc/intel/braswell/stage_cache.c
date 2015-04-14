@@ -20,16 +20,19 @@
 
 #include <cbmem.h>
 #include <ramstage_cache.h>
+#include <soc/intel/common/memmap.h>
 #include <soc/smm.h>
 
 struct ramstage_cache *ramstage_cache_location(long *size)
 {
 	char *smm_base;
+	size_t smm_size;
 	/* 1MiB cache size */
 	const long cache_size = CONFIG_SMM_RESERVED_SIZE;
 
 	/* Ramstage cache lives in TSEG region. */
-	smm_base = smm_region_start();
+	smm_region((void **)&smm_base, &smm_size);
 	*size = cache_size;
-	return (void *)&smm_base[smm_region_size() - cache_size];
+	return (void *)(&smm_base[smm_size - cache_size]);
 }
+

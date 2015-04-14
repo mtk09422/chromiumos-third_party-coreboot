@@ -27,6 +27,7 @@
 #include <cpu/x86/msr.h>
 #include <cpu/x86/mtrr.h>
 #include <cpu/x86/smm.h>
+#include <soc/intel/common/memmap.h>
 #include <soc/msr.h>
 #include <soc/pattrs.h>
 #include <soc/ramstage.h>
@@ -189,11 +190,15 @@ static int install_permanent_handler(int num_cpus)
 		.per_cpu_save_state_size = save_state_size,
 		.num_concurrent_save_states = num_cpus,
 	};
-	const int tseg_size = smm_region_size() - CONFIG_SMM_RESERVED_SIZE;
+	void *smm_base;
+	size_t smm_size;
+	int tseg_size;
 
 	printk(BIOS_DEBUG, "Installing SMM handler to 0x%08x\n",
 	       relo_attrs.smbase);
 
+	smm_region(&smm_base, &smm_size);
+	tseg_size = smm_size - CONFIG_SMM_RESERVED_SIZE;
 	if (smm_load_module((void *)relo_attrs.smbase, tseg_size, &smm_params))
 		return -1;
 
@@ -207,11 +212,14 @@ static int smm_load_handlers(void)
 	/* All range registers are aligned to 4KiB */
 	const uint32_t rmask = ~((1 << 12) - 1);
 	const struct pattrs *pattrs = pattrs_get();
+	void *smm_base;
+	size_t smm_size;
 
 	/* Initialize global tracking state. */
-	relo_attrs.smbase = (uint32_t)smm_region_start();
+	smm_region(&smm_base, &smm_size);
+	relo_attrs.smbase = (uint32_t)smm_base;
 	relo_attrs.smrr_base = relo_attrs.smbase | MTRR_TYPE_WRBACK;
-	relo_attrs.smrr_mask = ~(smm_region_size() - 1) & rmask;
+	relo_attrs.smrr_mask = ~(smm_size - 1) & rmask;
 	relo_attrs.smrr_mask |= MTRRphysMaskValid;
 
 	/* Install handlers. */

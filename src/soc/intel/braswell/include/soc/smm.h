@@ -21,9 +21,6 @@
 #ifndef _BRASWELL_SMM_H_
 #define _BRASWELL_SMM_H_
 
-int smm_region_size(void);
-void *smm_region_start(void);
-
 #if !defined(__PRE_RAM__) && !defined(__SMM___)
 #include <stdint.h>
 void southcluster_smm_clear_state(void);

@@ -21,26 +21,37 @@
 #include <arch/io.h>
 #include <cbmem.h>
 #include <console/console.h>
+#include <soc/intel/common/memmap.h>
 #include <soc/iosf.h>
 #include <soc/smm.h>
 
-
-void *smm_region_start(void)
-{
-	return (void *)((iosf_bunit_read(BUNIT_SMRRL) & 0xFFFF) << 20);
-}
-
-int smm_region_size(void)
+static size_t smm_region_size(void)
 {
 	u32 smm_size;
 	smm_size = iosf_bunit_read(BUNIT_SMRRH) & 0xFFFF;
 	smm_size -= iosf_bunit_read(BUNIT_SMRRL) & 0xFFFF;
 	smm_size = (smm_size + 1) << 20;
-	printk(BIOS_DEBUG, "TSEG Size: 0x%08x\n", smm_size);
 	return smm_size;
+}
+
+void smm_region(void **start, size_t *size)
+{
+	*start = (void *)((iosf_bunit_read(BUNIT_SMRRL) & 0xFFFF) << 20);
+	*size = smm_region_size();
+}
+
+size_t mmap_region_granluarity(void)
+{
+	/* Align to TSEG size when SMM is in use, and 8MiB by default */
+	return IS_ENABLED(CONFIG_HAVE_SMI_HANDLER) ? smm_region_size()
+		: 8 << 20;
 }
 
 void *cbmem_top(void)
 {
-	return smm_region_start() - CONFIG_FSP_RESERVED_MEM_SIZE;
+	char *smm_base;
+	size_t smm_size;
+
+	smm_region((void **)&smm_base, &smm_size);
+	return (void *)(smm_base - CONFIG_FSP_RESERVED_MEM_SIZE);
 }
