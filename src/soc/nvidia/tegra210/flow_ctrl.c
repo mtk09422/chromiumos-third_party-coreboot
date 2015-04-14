@@ -24,6 +24,7 @@
 #define FLOW_CTRL_HALT_CPU0_EVENTS	0x0
 #define FLOW_CTRL_WAITEVENT		(2 << 29)
 #define FLOW_CTRL_WAIT_FOR_INTERRUPT	(4 << 29)
+#define FLOW_CTRL_HALT_SCLK		(1 << 27)
 #define FLOW_CTRL_HALT_LIC_IRQ		(1 << 11)
 #define FLOW_CTRL_HALT_LIC_FIQ		(1 << 10)
 #define FLOW_CTRL_CPU0_CSR		0x8
@@ -35,32 +36,32 @@
 #define FLOW_CTRL_CSR_ENABLE		(1 << 0)
 #define FLOW_CTRL_HALT_CPU1_EVENTS	0x14
 #define FLOW_CTRL_CPU1_CSR		0x18
-
-#define HALT_REG_CORE0 (\
-	FLOW_CTRL_WAIT_FOR_INTERRUPT | \
-	FLOW_CTRL_HALT_LIC_IRQ | \
-	FLOW_CTRL_HALT_LIC_FIQ)
-
-#define HALT_REG_CORE1 FLOW_CTRL_WAITEVENT
+#define FLOW_CTRL_CC4_CORE0_CTRL	0x6c
 
 static void *tegra_flowctrl_base = (void*)TEGRA_FLOW_BASE;
 
 static const uint8_t flowctrl_offset_halt_cpu[] = {
 	FLOW_CTRL_HALT_CPU0_EVENTS,
-	FLOW_CTRL_HALT_CPU1_EVENTS
+	FLOW_CTRL_HALT_CPU1_EVENTS,
+	FLOW_CTRL_HALT_CPU1_EVENTS + 8,
+	FLOW_CTRL_HALT_CPU1_EVENTS + 16
 };
 
 static const uint8_t flowctrl_offset_cpu_csr[] = {
 	FLOW_CTRL_CPU0_CSR,
-	FLOW_CTRL_CPU1_CSR
+	FLOW_CTRL_CPU1_CSR,
+	FLOW_CTRL_CPU1_CSR + 8,
+	FLOW_CTRL_CPU1_CSR + 16
 };
 
-static uint32_t flowctrl_read_cpu_csr(int cpu)
-{
-	return read32(tegra_flowctrl_base + flowctrl_offset_cpu_csr[cpu]);
-}
+static const uint8_t flowctrl_offset_cc4_ctrl[] = {
+	FLOW_CTRL_CC4_CORE0_CTRL,
+	FLOW_CTRL_CC4_CORE0_CTRL + 4,
+	FLOW_CTRL_CC4_CORE0_CTRL + 8,
+	FLOW_CTRL_CC4_CORE0_CTRL + 12
+};
 
-static void flowctrl_write_cpu_csr(int cpu, uint32_t val)
+void flowctrl_write_cpu_csr(int cpu, uint32_t val)
 {
 	write32(tegra_flowctrl_base + flowctrl_offset_cpu_csr[cpu], val);
 	val = read32(tegra_flowctrl_base + flowctrl_offset_cpu_csr[cpu]);
@@ -72,25 +73,25 @@ void flowctrl_write_cpu_halt(int cpu, uint32_t val)
 	val = read32(tegra_flowctrl_base + flowctrl_offset_halt_cpu[cpu]);
 }
 
-static void flowctrl_prepare_cpu_off(int cpu)
+void flowctrl_write_cc4_ctrl(int cpu, uint32_t val)
 {
-	uint32_t reg;
-
-	reg = flowctrl_read_cpu_csr(cpu);
-	reg &= ~FLOW_CTRL_CSR_WFE_BITMAP;	/* clear wfe bitmap */
-	reg &= ~FLOW_CTRL_CSR_WFI_BITMAP;	/* clear wfi bitmap */
-	reg |= FLOW_CTRL_CSR_INTR_FLAG;		/* clear intr flag */
-	reg |= FLOW_CTRL_CSR_EVENT_FLAG;	/* clear event flag */
-	reg |= FLOW_CTRL_CSR_WFI_CPU0 << cpu;	/* power gating on wfi */
-	reg |= FLOW_CTRL_CSR_ENABLE;		/* enable power gating */
-	flowctrl_write_cpu_csr(cpu, reg);
+	write32(tegra_flowctrl_base + flowctrl_offset_cc4_ctrl[cpu], val);
+	val = read32(tegra_flowctrl_base + flowctrl_offset_cc4_ctrl[cpu]);
 }
 
 void flowctrl_cpu_off(int cpu)
 {
-	uint32_t reg;
+	uint32_t val = FLOW_CTRL_CSR_INTR_FLAG | FLOW_CTRL_CSR_EVENT_FLAG |
+		FLOW_CTRL_CSR_ENABLE | (FLOW_CTRL_CSR_WFI_CPU0 << cpu);
 
-	reg = cpu ? HALT_REG_CORE1 : HALT_REG_CORE0;
-	flowctrl_prepare_cpu_off(cpu);
-	flowctrl_write_cpu_halt(cpu, reg);
+	flowctrl_write_cpu_csr(cpu, val);
+	flowctrl_write_cpu_halt(cpu, FLOW_CTRL_WAITEVENT);
+	flowctrl_write_cc4_ctrl(cpu, 0);
+}
+
+void flowctrl_cpu_on(int cpu)
+{
+	flowctrl_write_cpu_csr(cpu, FLOW_CTRL_CSR_ENABLE);
+	flowctrl_write_cpu_halt(cpu, FLOW_CTRL_WAITEVENT |
+				FLOW_CTRL_HALT_SCLK);
 }

@@ -21,6 +21,9 @@
 #define _TEGRA210_FLOW_CTRL_H_
 
 void flowctrl_cpu_off(int cpu);
+void flowctrl_cpu_on(int cpu);
+void flowctrl_write_cc4_ctrl(int cpu, uint32_t val);
+void flowctrl_write_cpu_csr(int cpu, uint32_t val);
 void flowctrl_write_cpu_halt(int cpu, uint32_t val);
 
 #endif
