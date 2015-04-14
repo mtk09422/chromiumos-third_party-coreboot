@@ -21,7 +21,6 @@
 #include "chip.h"
 #include <arch/io.h>
 #include <console/console.h>
-#include <delay.h>
 #include <device/device.h>
 #include <device/pci.h>
 #include <device/pci_ids.h>
@@ -29,12 +28,6 @@
 #include <soc/gfx.h>
 #include <soc/pci_devs.h>
 #include <soc/ramstage.h>
-
-#define GFX_TIMEOUT 100000 /* 100ms */
-
-static const struct reg_script gfx_init_script[] = {
-	REG_SCRIPT_END
-};
 
 static const struct reg_script gpu_pre_vbios_script[] = {
 	/* Make sure GFX is bus master with MMIO access */
@@ -63,15 +56,6 @@ static void gfx_pre_vbios_init(device_t dev)
 	gfx_run_script(dev, gpu_pre_vbios_script);
 }
 
-
-static void gfx_pm_init(device_t dev)
-{
-	printk(BIOS_SPEW, "%s/%s ( %s )\n",
-			__FILE__, __func__, dev_name(dev));
-	printk(BIOS_INFO, "GFX: Power Management Init\n");
-	gfx_run_script(dev, gfx_init_script);
-}
-
 static void gfx_post_vbios_init(device_t dev)
 {
 	printk(BIOS_SPEW, "%s/%s ( %s )\n",
@@ -87,9 +71,6 @@ static void gfx_init(device_t dev)
 
 	/* Pre VBIOS Init */
 	gfx_pre_vbios_init(dev);
-
-	/* Power Management Init */
-	gfx_pm_init(dev);
 
 	/* Run VBIOS */
 	pci_dev_init(dev);
