@@ -159,45 +159,6 @@ static void sc_rtc_init(void)
 	cmos_init(rtc_fail);
 }
 
-/*
- * The UART hardware loses power while in suspend. Because of this the kernel
- * can hang because it doesn't re-initialize serial ports it is using for
- * consoles at resume time. The following function configures the UART
- * if the hardware is enabled though it may not be the correct baud rate
- * or configuration.  This is definitely a hack, but it helps the kernel
- * along.
- */
-static void com1_configure_resume(device_t dev)
-{
-	const uint16_t port = 0x3f8;
-
-	printk(BIOS_SPEW, "%s/%s ( %s )\n",
-			__FILE__, __func__, dev_name(dev));
-
-	/* Is the UART I/O port eanbled? */
-	if (!(pci_read_config32(dev, UART_CONT) & 1))
-		return;
-
-	/* Disable interrupts */
-	outb(0x0, port + UART8250_IER);
-
-	/* Enable FIFOs */
-	outb(UART8250_FCR_FIFO_EN, port + UART8250_FCR);
-
-	/* assert DTR and RTS so the other end is happy */
-	outb(UART8250_MCR_DTR | UART8250_MCR_RTS, port + UART8250_MCR);
-
-	/* DLAB on */
-	outb(UART8250_LCR_DLAB | 3, port + UART8250_LCR);
-
-	/* Set Baud Rate Divisor. 1 ==> 115200 Baud */
-	outb(1, port + UART8250_DLL);
-	outb(0, port + UART8250_DLM);
-
-	/* Set to 3 for 8N1 */
-	outb(3, port + UART8250_LCR);
-}
-
 static void sc_init(device_t dev)
 {
 	int i;
@@ -235,8 +196,6 @@ static void sc_init(device_t dev)
 			read32(gen_pmcon1) & ~DIS_SLP_X_STRCH_SUS_UP);
 	}
 
-	if (acpi_slp_type == 3)
-		com1_configure_resume(dev);
 }
 
 /*
