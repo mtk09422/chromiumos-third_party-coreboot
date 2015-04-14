@@ -20,7 +20,6 @@
 #include <arch/early_variables.h>
 #include <console/console.h>
 #include <lib.h> /* hexdump */
-#include <mainboard/google/samus/spd/spd.h>
 #include <soc/romstage.h>
 
 #define BSW_SVID_CONFIG1	1

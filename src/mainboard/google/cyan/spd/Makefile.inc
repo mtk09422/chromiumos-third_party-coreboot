@@ -18,6 +18,8 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
+romstage-y += spd.c
+
 SPD_BIN = $(obj)/spd.bin
 
 SPD_SOURCES =  samsung_2GiB_dimm_K4B4G1646Q-HYK0
@@ -38,4 +40,3 @@ $(SPD_BIN): $(SPD_DEPS)
 cbfs-files-y += spd.bin
 spd.bin-file := $(SPD_BIN)
 spd.bin-type := 0xab
-spd.bin-position := $(CONFIG_SPD_CBFS_ADDRESS)

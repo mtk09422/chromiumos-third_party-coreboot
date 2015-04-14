@@ -39,10 +39,6 @@ config MAINBOARD_PART_NUMBER
 	string
 	default "Cyan"
 
-config SPD_CBFS_ADDRESS
-	hex "Location of SPD in CBFS"
-	default 0xfffff500
-
 config VBOOT_RAMSTAGE_INDEX
 	hex
 	default 0x2
