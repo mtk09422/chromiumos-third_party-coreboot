@@ -2,7 +2,7 @@
   Intel FSP API definition from Intel Firmware Support Package External
   Architecture Specification, April 2014, revision 001.
 
-  Copyright (c) 2014, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2014 - 2015, Intel Corporation. All rights reserved.<BR>
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
   which accompanies this distribution.  The full text of the license may be found at
@@ -84,9 +84,15 @@ typedef struct {
   ///
   VOID               *UpdDataRgnPtr;
   ///
+  /// The size of memory to be reserved below the top of low usable memory (TOLUM)
+  /// for BootLoader usage. This is optional and value can be zero. If non-zero, the
+  /// size must be a multiple of 4KB. FSP EAS v1.1
+  ///
+  UINT32              BootLoaderTolumSize;
+  ///
   /// Reserved
   ///
-  UINT32              Reserved[7];
+  UINT32              Reserved[6];
 } FSP_INIT_RT_COMMON_BUFFER;
 
 typedef enum {
@@ -142,7 +148,7 @@ typedef struct {
   @param[in] TempRaminitParamPtr Address pointer to the FSP_TEMP_RAM_INIT_PARAMS structure.
 
   @retval EFI_SUCCESS           Temp RAM was initialized successfully.
-  @retval EFI_INVALID_PARAMETER Input parameters are invalid.
+  @retval EFI_INVALID_PARAMETER Input parameters are invalid..
   @retval EFI_NOT_FOUND         No valid microcode was found in the microcode region.
   @retval EFI_UNSUPPORTED       The FSP calling conditions were not met.
   @retval EFI_DEVICE_ERROR      Temp RAM initialization failed.

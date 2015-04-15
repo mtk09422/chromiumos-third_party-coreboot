@@ -121,7 +121,7 @@ void print_fsp_info(FSP_INFO_HEADER *fsp_header)
 		&fsp_base[fsp_header->TempRamInitEntryOffset]);
 	printk(BIOS_SPEW, "    0x%p: FspInit\n",
 		&fsp_base[fsp_header->FspInitEntryOffset]);
-	if (fsp_header->HeaderRevision >= FSP_HEADER_REVISION_1_1) {
+	if (fsp_header->HeaderRevision >= FSP_HEADER_REVISION_2) {
 		printk(BIOS_SPEW, "    0x%p: MemoryInit\n",
 			&fsp_base[fsp_header->FspMemoryInitEntryOffset]);
 		printk(BIOS_SPEW, "    0x%p: TempRamExit\n",
