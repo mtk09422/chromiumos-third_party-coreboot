@@ -46,8 +46,6 @@ are permitted provided that the following conditions are met:
 #include <lib.h> // hexdump
 #include <string.h>
 
-void *fsp_hob_list_ptr CAR_GLOBAL;
-
 /*
  * Reads a 64-bit value from memory that may be unaligned.
  *
@@ -118,8 +116,7 @@ set_hob_list(
 {
 	void **hob_ptr;
 
-	fsp_hob_list_ptr = hob_list_ptr;
-	printk(BIOS_SPEW, "0x%p: fsp_hob_list_ptr\n", hob_list_ptr);
+	printk(BIOS_SPEW, "0x%p: hob_list_ptr\n", hob_list_ptr);
 	hob_ptr = cbmem_add(CBMEM_ID_HOB_LIST, sizeof(hob_list_ptr));
 	if (hob_ptr == NULL)
 		die("ERROR - cbmem_add failed in set_hob_list!\n");
@@ -135,13 +132,10 @@ get_hob_list(
 {
 	void **hob_ptr;
 
-	if (fsp_hob_list_ptr == NULL) {
-		hob_ptr = cbmem_find(CBMEM_ID_HOB_LIST);
-		if (hob_ptr == NULL)
-			die("Call set_hob_list before this call!\n");
-		fsp_hob_list_ptr = *hob_ptr;
-	}
-	return fsp_hob_list_ptr;
+	hob_ptr = cbmem_find(CBMEM_ID_HOB_LIST);
+	if (hob_ptr == NULL)
+		die("Call set_hob_list before this call!\n");
+	return *hob_ptr;
 }
 
 /* Returns the next instance of a HOB type from the starting HOB. */
@@ -190,16 +184,16 @@ get_next_guid_hob(
 	CONST VOID *hob_start
 	)
 {
-	EFI_PEI_HOB_POINTERS guid_hob;
+	EFI_PEI_HOB_POINTERS hob;
 
-	guid_hob.Raw = (UINT8 *)hob_start;
-	while ((guid_hob.Raw = get_next_hob(EFI_HOB_TYPE_GUID_EXTENSION,
-						guid_hob.Raw)) != NULL) {
-		if (compare_guid(guid, &guid_hob.Guid->Name))
+	hob.Raw = (UINT8 *)hob_start;
+	while ((hob.Raw = get_next_hob(EFI_HOB_TYPE_GUID_EXTENSION, hob.Raw))
+					!= NULL) {
+		if (compare_guid(guid, &hob.Guid->Name))
 			break;
-		guid_hob.Raw = GET_NEXT_HOB(guid_hob.Raw);
+		hob.Raw = GET_NEXT_HOB(hob.Raw);
 	}
-	return guid_hob.Raw;
+	return hob.Raw;
 }
 
 /*
@@ -211,10 +205,33 @@ get_first_guid_hob(
 	CONST EFI_GUID * guid
 	)
 {
-	VOID *hob_list;
+	return get_next_guid_hob(guid, get_hob_list());
+}
 
-	hob_list = get_hob_list();
-	return get_next_guid_hob(guid, hob_list);
+/*
+ * Returns the next instance of the matching resource HOB from the starting HOB.
+ */
+void *get_next_resource_hob(const EFI_GUID *guid, const void *hob_start)
+{
+	EFI_PEI_HOB_POINTERS hob;
+
+	hob.Raw = (UINT8 *)hob_start;
+	while ((hob.Raw = get_next_hob(EFI_HOB_TYPE_RESOURCE_DESCRIPTOR,
+					    hob.Raw)) != NULL) {
+		if (compare_guid(guid, &hob.ResourceDescriptor->Owner))
+			break;
+		hob.Raw = GET_NEXT_HOB(hob.Raw);
+	}
+	return hob.Raw;
+}
+
+/*
+ * Returns the first instance of the matching resource HOB among the whole HOB
+ * list.
+ */
+void *get_first_resource_hob(const EFI_GUID *guid)
+{
+	return get_next_resource_hob(guid, get_hob_list());
 }
 
 static void print_hob_mem_attributes(void *hob_ptr)

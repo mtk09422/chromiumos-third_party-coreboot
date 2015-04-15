@@ -52,6 +52,10 @@ void fsp_notify(u32 phase);
 void print_hob_type_structure(u16 hob_type, void *hob_list_ptr);
 void print_fsp_info(FSP_INFO_HEADER *fsp_header);
 void set_hob_list(void *hob_list_ptr);
+void *get_next_type_guid_hob(UINT16 type, const EFI_GUID *guid,
+	const void *hob_start);
+void *get_next_resource_hob(const EFI_GUID *guid, const void *hob_start);
+void *get_first_resource_hob(const EFI_GUID *guid);
 
 /* The following are chipset support routines */
 #if IS_ENABLED(CONFIG_USING_FSP_1_0)

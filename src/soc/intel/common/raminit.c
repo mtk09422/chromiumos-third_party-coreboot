@@ -42,11 +42,10 @@ void raminit(struct romstage_params *params)
 	UPD_DATA_REGION *upd_ptr;
 	UPD_DATA_REGION upd_data_buffer;
 #if IS_ENABLED(CONFIG_DISPLAY_HOBS)
-	int missing_hob;
+	int missing_hob = 0;
 	const EFI_GUID fsp_reserved_guid =
 		FSP_RESERVED_MEMORY_RESOURCE_HOB_GUID;
 	const EFI_GUID bootldr_tolum_guid = FSP_BOOTLOADER_TOLUM_HOB_GUID;
-	const EFI_GUID graphics_info_guid = EFI_PEI_GRAPHICS_INFO_HOB_GUID;
 #endif
 
 	/*
@@ -69,7 +68,7 @@ void raminit(struct romstage_params *params)
 	memcpy(&upd_data_buffer, upd_ptr, sizeof(upd_data_buffer));
 
 	/* Zero fill RT Buffer data and start populating fields. */
-	memset(&fsp_rt_common_buffer, sizeof(fsp_rt_common_buffer), 0);
+	memset(&fsp_rt_common_buffer, 0, sizeof(fsp_rt_common_buffer));
 	pei_ptr = params->pei_data;
 	if (pei_ptr->boot_mode == SLEEP_STATE_S3) {
 		fsp_rt_common_buffer.BootMode = BOOT_ON_S3_RESUME;
@@ -138,9 +137,12 @@ void raminit(struct romstage_params *params)
 		die("ERROR - HOB pointer is NULL!\n");
 	print_hob_type_structure(0, hob_list_ptr);
 
-	/* Verify that FSP is generating the required HOBs */
-	missing_hob = 0;
-	if (NULL == get_next_guid_hob(&fsp_reserved_guid, hob_list_ptr)) {
+	/*
+	 * Verify that FSP is generating the required HOBs:
+	 *	7.1: FSP_BOOTLOADER_TEMP_MEMORY_HOB only produced for FSP 1.0
+	 *	7.5: EFI_PEI_GRAPHICS_INFO_HOB produced by SiliconInit
+	 */
+	if (NULL == get_next_resource_hob(&fsp_reserved_guid, hob_list_ptr)) {
 		printk(BIOS_ERR, "7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB missing!\n");
 		missing_hob = 1;
 	}
@@ -148,16 +150,15 @@ void raminit(struct romstage_params *params)
 		printk(BIOS_ERR, "7.3: FSP_NON_VOLATILE_STORAGE_HOB missing!\n");
 		missing_hob = 1;
 	}
-	if (NULL == get_next_guid_hob(&bootldr_tolum_guid, hob_list_ptr)) {
+	if ((NULL == get_next_guid_hob(&bootldr_tolum_guid, hob_list_ptr))
+		&& (fsp_rt_common_buffer.BootLoaderTolumSize != 0)) {
 		printk(BIOS_ERR, "7.4: FSP_BOOTLOADER_TOLUM_HOB missing!\n");
-		missing_hob = 1;
-	}
-	if (NULL == get_next_guid_hob(&graphics_info_guid, hob_list_ptr)) {
-		printk(BIOS_ERR, "7.5: EFI_PEI_GRAPHICS_INFO_HOB missing!\n");
+		printk(BIOS_ERR, "BootLoaderTolumSize: 0x%08x bytes\n",
+			fsp_rt_common_buffer.BootLoaderTolumSize);
 		missing_hob = 1;
 	}
 	if (missing_hob)
-		die("ERROR - One or more of the required FSP HOBs are missing!\n");
+		die("ERROR - Missing one or more required FSP HOBs!\n");
 #endif
 
 	/* Locate the memory configuration data to speed up the next reboot */
