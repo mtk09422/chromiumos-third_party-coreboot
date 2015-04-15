@@ -39,54 +39,6 @@ Scope (\_SB)
 		Name (_HID, EisaId ("PNP0C0C"))
 		Name (_UID, 1)
 	}
-
-	/* Wake device for touchpad */
-	Device (TPAD)
-	{
-		Name (_HID, EisaId ("PNP0C0E"))
-		Name (_UID, 1)
-		Name (_PRW, Package() { BOARD_TRACKPAD_WAKE_GPIO, 0x3 })
-
-		Name (RBUF, ResourceTemplate()
-		{
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TRACKPAD_IRQ
-			}
-		})
-
-		Method (_CRS)
-		{
-			/* Only return interrupt if I2C1 is PCI mode */
-			If (LEqual (\S1EN, 0)) {
-				Return (^RBUF)
-			}
-		}
-	}
-
-	/* Wake device for touchscreen */
-	Device (TSCR)
-	{
-		Name (_HID, EisaId ("PNP0C0E"))
-		Name (_UID, 2)
-		Name (_PRW, Package() { BOARD_TOUCHSCREEN_WAKE_GPIO, 0x3 })
-
-		Name (RBUF, ResourceTemplate()
-		{
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TOUCHSCREEN_IRQ
-			}
-		})
-
-		Method (_CRS)
-		{
-			/* Only return interrupt if I2C6 is PCI mode */
-			If (LEqual (\S6EN, 0)) {
-				Return (^RBUF)
-			}
-		}
-	}
 }
 
 
@@ -130,6 +82,8 @@ Scope (\_SB.I2C1)
 				Return (0x0)
 			}
 		}
+
+		Name (_PRW, Package() { BOARD_TOUCHSCREEN_WAKE_GPIO, 0x3 })
 
 		/* Allow device to power off in S0 */
 		Name (_S0W, 4)
@@ -288,6 +242,8 @@ Scope (\_SB.I2C6)
 				Return (0x0)
 			}
 		}
+
+		Name (_PRW, Package() { BOARD_TRACKPAD_WAKE_GPIO, 0x3 })
 
 		/* Allow device to power off in S0 */
 		Name (_S0W, 4)
