@@ -73,37 +73,9 @@ static size_t children_at_level(int parent_level, uint64_t mpidr)
 	}
 }
 
-#define TEGRA210_PM_CORE_C7	0x3
-
-static inline void tegra210_enter_sleep(unsigned long pmstate)
-{
-	asm volatile(
-	"       isb\n"
-	"       msr actlr_el1, %0\n"
-	"       wfi\n"
-	:
-	: "r" (pmstate));
-}
-
-#define POWER_PARTID_CE(n)	[n] = POWER_PARTID_CE##n
-
 static void prepare_cpu_on(int cpu)
 {
-	uint32_t partid;
-
-	const uint32_t partid_arr[] = {
-		POWER_PARTID_CE(0),
-		POWER_PARTID_CE(1),
-		POWER_PARTID_CE(2),
-		POWER_PARTID_CE(3),
-	};
-
-	assert(cpu < ARRAY_SIZE(partid_arr));
-
-	partid = partid_arr[cpu];
-
-	power_ungate_partition(partid);
-	flowctrl_write_cpu_halt(cpu, 0);
+	cpu_prepare_startup(cpu_on_entry_point);
 }
 
 static int cmd_prepare(struct psci_cmd *cmd)
@@ -120,7 +92,6 @@ static int cmd_prepare(struct psci_cmd *cmd)
 			ret = PSCI_RET_INVALID_PARAMETERS;
 			break;
 		}
-		cmd->state_id = TEGRA210_PM_CORE_C7;
 		ret = PSCI_RET_SUCCESS;
 		break;
 	default:
@@ -140,12 +111,12 @@ static int cmd_commit(struct psci_cmd *cmd)
 	switch (cmd->type) {
 	case PSCI_CMD_ON:
 		/* Take CPU out of reset */
-		start_cpu_silent(ci->id, cpu_on_entry_point);
+		flowctrl_cpu_on(ci->id);
 		ret = PSCI_RET_SUCCESS;
 		break;
 	case PSCI_CMD_OFF:
 		flowctrl_cpu_off(ci->id);
-		tegra210_enter_sleep(cmd->state_id);
+		cortex_a57_cpu_power_down(NO_L2_FLUSH);
 		/* Never reach here */
 		ret = PSCI_RET_NOT_SUPPORTED;
 		printk(BIOS_ERR, "t210 CPU%d PSCI_CMD_OFF fail\n", ci->id);
