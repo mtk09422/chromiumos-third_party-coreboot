@@ -85,6 +85,7 @@ secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += psci.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu.c mtcmos.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += timer.c monotonic_timer.c
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += gic.c
 
 ################################################################################
 
