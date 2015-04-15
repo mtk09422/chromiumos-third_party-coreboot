@@ -106,6 +106,7 @@ static void setup_audio(void)
 	 * and clock-enabled, otherwise reading AHUB devices (in our case,
 	 * I2S/APBIF/AUDIO<XBAR>) will hang.
 	 */
+	soc_configure_ape();
 	clock_enable_audio();
 }
 
