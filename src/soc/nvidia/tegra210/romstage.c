@@ -92,6 +92,9 @@ void romstage(void)
 
 	timestamp_add_now(TS_AFTER_INITRAM);
 
+	/* Setup carveout for GPU firmware first */
+	gpu_region_init();
+
 	/*
 	 * Trust Zone needs to be initialized after the DRAM initialization
 	 * because carveout registers are programmed during DRAM init.
