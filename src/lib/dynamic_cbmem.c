@@ -147,6 +147,12 @@ cbmem_entry_append(struct cbmem_root *root, u32 id, u32 start, u32 size)
 
 void cbmem_initialize_empty(void)
 {
+	cbmem_initialize_empty_id_size(0, 0);
+}
+
+void cbmem_initialize_empty_id_size(u32 id, u64 size)
+{
+	void *area;
 	unsigned long pointer_addr;
 	unsigned long root_addr;
 	unsigned long max_entries;
@@ -183,15 +189,20 @@ void cbmem_initialize_empty(void)
 	printk(BIOS_DEBUG, "CBMEM: root @ %p %d entries.\n",
 	       root, root->max_entries);
 
+	/* Add the specified range first */
+	if (size)
+		area = cbmem_add(id, size);
+
+	/* Allow other areas to be added */
 	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
 	car_migrate_variables();
 }
 
-static inline int cbmem_fail_recovery(void)
+static inline int cbmem_fail_recovery(u32 id, u64 size)
 {
-	cbmem_initialize_empty();
+	cbmem_initialize_empty_id_size(id, size);
 	cbmem_handle_acpi_resume();
 	return 1;
 }
@@ -228,6 +239,12 @@ static int validate_entries(struct cbmem_root *root)
 
 int cbmem_initialize(void)
 {
+	return cbmem_initialize_id_size(0, 0);
+}
+
+int cbmem_initialize_id_size(u32 id, u64 size)
+{
+	void *area;
 	struct cbmem_root *root;
 	void *top_according_to_root;
 
@@ -235,23 +252,23 @@ int cbmem_initialize(void)
 
 	/* No recovery possible since root couldn't be recovered. */
 	if (root == NULL)
-		return cbmem_fail_recovery();
+		return cbmem_fail_recovery(id, size);
 
 	/* Sanity check the root. */
 	top_according_to_root = (void *)(root->size + (unsigned long)root);
 	if (get_top_aligned() != top_according_to_root)
-		return cbmem_fail_recovery();
+		return cbmem_fail_recovery(id, size);
 
 	if (root->num_entries > root->max_entries)
-		return cbmem_fail_recovery();
+		return cbmem_fail_recovery(id, size);
 
 	if ((root->max_entries * sizeof(struct cbmem_entry)) >
 	    (root->size - sizeof(struct cbmem_root_pointer) - sizeof(*root)))
-		return cbmem_fail_recovery();
+		return cbmem_fail_recovery(id, size);
 
 	/* Validate current entries. */
 	if (validate_entries(root))
-		return cbmem_fail_recovery();
+		return cbmem_fail_recovery(id, size);
 
 #if defined(__PRE_RAM__)
 	/* Lock the root in the romstage on a recovery. The assumption is that
@@ -259,6 +276,11 @@ int cbmem_initialize(void)
 	root->locked = 1;
 #endif
 
+	/* Add the specified range first */
+	if (size)
+		area = cbmem_add(id, size);
+
+	/* Allow other areas to be added */
 	cbmem_run_init_hooks();
 
 	/* Migrate cache-as-ram variables. */
