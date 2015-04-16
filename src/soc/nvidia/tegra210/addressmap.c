@@ -26,6 +26,7 @@
 #include <soc/sdram.h>
 #include <stdlib.h>
 #include <symbols.h>
+#include <soc/nvidia/tegra/types.h>
 
 static uintptr_t tz_base_mib;
 static const size_t tz_size_mib = CONFIG_TRUSTZONE_CARVEOUT_SIZE_MB;
@@ -70,6 +71,7 @@ void carveout_range(int id, uintptr_t *base_mib, size_t *size_mib)
 	*base_mib = 0;
 	*size_mib = 0;
 	struct tegra_mc_regs * const mc = (struct tegra_mc_regs *)TEGRA_MC_BASE;
+	size_t region_size_mb;
 
 	switch (id) {
 	case CARVEOUT_TZ:
@@ -93,6 +95,16 @@ void carveout_range(int id, uintptr_t *base_mib, size_t *size_mib)
 					read32(&mc->video_protect_bom),
 					read32(&mc->video_protect_bom_adr_hi),
 					read32(&mc->video_protect_size_mb));
+		break;
+	case CARVEOUT_GPU:
+		/* These carveout regs use 128KB granularity - convert to MB */
+		region_size_mb = DIV_ROUND_UP(read32(&mc->security_carveout2_size_128kb), 8);
+
+		/* BOM address set in gpu_region_init, below */
+		carveout_from_regs(base_mib, size_mib,
+					read32(&mc->security_carveout2_bom),
+					read32(&mc->security_carveout2_bom_hi),
+					region_size_mb);
 		break;
 	default:
 		break;
@@ -192,4 +204,29 @@ void trustzone_region_init(void)
 
 	/* Enable SMMU translations */
 	write32(&mc->smmu_config, MC_SMMU_CONFIG_ENABLE);
+}
+
+void gpu_region_init(void)
+{
+	struct tegra_mc_regs * const mc = (void *)(uintptr_t)TEGRA_MC_BASE;
+	uintptr_t gpu_base_mib, end = 4096;
+	size_t gpu_size_mib = GPU_CARVEOUT_SIZE_MB;
+
+	/* Get memory layout below 4GiB */
+	memory_in_range(&gpu_base_mib, &end, CARVEOUT_GPU);
+	gpu_base_mib = end - gpu_size_mib;
+
+	/* Set the carveout2 base address. Everything else has been set in the BCT cfg/inc */
+	write32(&mc->security_carveout2_bom, gpu_base_mib << 20);
+	write32(&mc->security_carveout2_bom_hi, 0);
+
+	/* Set the locked bit. This will lock out any other writes! */
+	setbits_le32(&mc->security_carveout2_cfg0, MC_SECURITY_CARVEOUT_LOCKED);
+
+	/* Set the carveout3 base to 0, unused */
+	write32(&mc->security_carveout3_bom, 0);
+	write32(&mc->security_carveout3_bom_hi, 0);
+
+	/* Set the locked bit. This will lock out any other writes! */
+	setbits_le32(&mc->security_carveout3_cfg0, MC_SECURITY_CARVEOUT_LOCKED);
 }
