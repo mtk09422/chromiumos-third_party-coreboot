@@ -100,7 +100,7 @@ void carveout_range(int id, uintptr_t *base_mib, size_t *size_mib)
 }
 
 static void memory_in_range(uintptr_t *base_mib, uintptr_t *end_mib,
-				int ignore_tz)
+				int ignore_carveout_id)
 {
 	uintptr_t base;
 	uintptr_t end;
@@ -126,7 +126,7 @@ static void memory_in_range(uintptr_t *base_mib, uintptr_t *end_mib,
 		uintptr_t carveout_end;
 		size_t carveout_size;
 
-		if (i == CARVEOUT_TZ && ignore_tz)
+		if (i == ignore_carveout_id)
 			continue;
 
 		carveout_range(i, &carveout_base, &carveout_size);
@@ -156,14 +156,14 @@ void memory_in_range_below_4gb(uintptr_t *base_mib, uintptr_t *end_mib)
 {
 	*base_mib = 0;
 	*end_mib = 4096;
-	memory_in_range(base_mib, end_mib, 0);
+	memory_in_range(base_mib, end_mib, CARVEOUT_NUM);
 }
 
 void memory_in_range_above_4gb(uintptr_t *base_mib, uintptr_t *end_mib)
 {
 	*base_mib = 4096;
 	*end_mib = ~0UL;
-	memory_in_range(base_mib, end_mib, 0);
+	memory_in_range(base_mib, end_mib, CARVEOUT_NUM);
 }
 
 void trustzone_region_init(void)
@@ -179,7 +179,7 @@ void trustzone_region_init(void)
 	 * Get memory layout below 4GiB ignoring the TZ carveout because
 	 * that's the one to initialize.
 	 */
-	memory_in_range(&tz_base_mib, &end, 1);
+	memory_in_range(&tz_base_mib, &end, CARVEOUT_TZ);
 	tz_base_mib = end - tz_size_mib;
 
 	/* AVP cannot set the TZ registers proper as it is always non-secure. */
