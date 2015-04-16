@@ -36,7 +36,6 @@ void mainboard_fill_spd_data(struct pei_data *pei_data);
 
 /* romstage_common.c functions */
 void program_base_addresses(void);
-void spi_init(void);
 void migrate_power_state(void);
 struct chipset_power_state *fill_power_state(void);
 int chipset_prev_sleep_state(struct chipset_power_state *ps);

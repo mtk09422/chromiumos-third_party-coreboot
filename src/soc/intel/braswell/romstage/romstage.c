@@ -77,7 +77,7 @@ void program_base_addresses(void)
 	pci_write_config32(lpc_dev, GBASE, reg);
 }
 
-void spi_init(void)
+static void spi_init(void)
 {
 	void *scs = (void *)(SPI_BASE_ADDRESS + SCS);
 	void *bcr = (void *)(SPI_BASE_ADDRESS + BCR);

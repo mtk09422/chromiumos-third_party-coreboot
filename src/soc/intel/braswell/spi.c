@@ -22,17 +22,18 @@
  */
 
 /* This file is derived from the flashrom project. */
-#include <arch/io.h>
-#include <bootstate.h>
-#include <console/console.h>
-#include <delay.h>
-#include <device/pci_ids.h>
-#include <soc/lpc.h>
-#include <soc/pci_devs.h>
-#include <spi_flash.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <bootstate.h>
+#include <delay.h>
+#include <arch/io.h>
+#include <console/console.h>
+#include <device/pci_ids.h>
+#include <spi_flash.h>
+
+#include <soc/lpc.h>
+#include <soc/pci_devs.h>
 
 #ifdef __SMM__
 #define pci_read_config_byte(dev, reg, targ)\
@@ -99,7 +100,6 @@ typedef struct ich_spi_controller {
 	unsigned databytes;
 	uint8_t *status;
 	uint16_t *control;
-	uint32_t *bbar;
 } ich_spi_controller;
 
 static ich_spi_controller cntlr;
@@ -262,6 +262,11 @@ static ich9_spi_regs *spi_regs(void)
 #else
 	dev = dev_find_slot(0, PCI_DEVFN(LPC_DEV, LPC_FUNC));
 #endif
+	if (!dev) {
+		printk(BIOS_ERR, "%s: PCI device not found", __func__);
+		return NULL;
+	}
+
 	pci_read_config_dword(dev, SBASE, &sbase);
 	sbase &= ~0x1ff;
 
@@ -270,11 +275,14 @@ static ich9_spi_regs *spi_regs(void)
 
 void spi_init(void)
 {
-	ich9_spi_regs *ich9_spi = spi_regs();
+	ich9_spi_regs *ich9_spi;
 
-#if IS_ENABLED(CONFIG_DEBUG_SPI_FLASH)
-	printk(BIOS_DEBUG, "%s/%s\n", __FILE__, __func__);
-#endif	/* CONFIG_DEBUG_SPI_FLASH */
+	ich9_spi = spi_regs();
+	if (!ich9_spi) {
+		printk(BIOS_ERR, "Not initialising spi as %s returned NULL\n",
+			__func__);
+		return;
+	}
 
 	ichspi_lock = readw_(&ich9_spi->hsfs) & HSFS_FLOCKDN;
 	cntlr.opmenu = ich9_spi->opmenu;
@@ -309,284 +317,311 @@ void spi_release_bus(struct spi_slave *slave)
 	/* Handled by ICH automatically. */
 }
 
+typedef struct spi_transaction {
+	const uint8_t *out;
+	uint32_t bytesout;
+	uint8_t *in;
+	uint32_t bytesin;
+	uint8_t type;
+	uint8_t opcode;
+	uint32_t offset;
+} spi_transaction;
+
+static inline void spi_use_out(spi_transaction *trans, unsigned bytes)
+{
+	trans->out += bytes;
+	trans->bytesout -= bytes;
+}
+
+static inline void spi_use_in(spi_transaction *trans, unsigned bytes)
+{
+	trans->in += bytes;
+	trans->bytesin -= bytes;
+}
+
+static void spi_setup_type(spi_transaction *trans)
+{
+	trans->type = 0xFF;
+
+	/* Try to guess spi type from read/write sizes. */
+	if (trans->bytesin == 0) {
+		if (trans->bytesout > 4)
+			/*
+			 * If bytesin = 0 and bytesout > 4, we presume this is
+			 * a write data operation, which is accompanied by an
+			 * address.
+			 */
+			trans->type = SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS;
+		else
+			trans->type = SPI_OPCODE_TYPE_WRITE_NO_ADDRESS;
+		return;
+	}
+
+	if (trans->bytesout == 1) { /* and bytesin is > 0 */
+		trans->type = SPI_OPCODE_TYPE_READ_NO_ADDRESS;
+		return;
+	}
+
+	if (trans->bytesout == 4) { /* and bytesin is > 0 */
+		trans->type = SPI_OPCODE_TYPE_READ_WITH_ADDRESS;
+	}
+
+	/* Fast read command is called with 5 bytes instead of 4 */
+	if (trans->out[0] == SPI_OPCODE_FAST_READ && trans->bytesout == 5) {
+		trans->type = SPI_OPCODE_TYPE_READ_WITH_ADDRESS;
+		--trans->bytesout;
+	}
+}
+
+static int spi_setup_opcode(spi_transaction *trans)
+{
+	uint16_t optypes;
+	uint8_t opmenu[cntlr.menubytes];
+
+	trans->opcode = trans->out[0];
+	spi_use_out(trans, 1);
+	if (!ichspi_lock) {
+		/* The lock is off, so just use index 0. */
+		writeb_(trans->opcode, cntlr.opmenu);
+		optypes = readw_(cntlr.optype);
+		optypes = (optypes & 0xfffc) | (trans->type & 0x3);
+		writew_(optypes, cntlr.optype);
+		return 0;
+	} else {
+		/* The lock is on. See if what we need is on the menu. */
+		uint8_t optype;
+		uint16_t opcode_index;
+
+		/* Write Enable is handled as atomic prefix */
+		if (trans->opcode == SPI_OPCODE_WREN)
+			return 0;
+
+		read_reg(cntlr.opmenu, opmenu, sizeof(opmenu));
+		for (opcode_index = 0; opcode_index < cntlr.menubytes;
+				opcode_index++) {
+			if (opmenu[opcode_index] == trans->opcode)
+				break;
+		}
+
+		if (opcode_index == cntlr.menubytes) {
+			printk(BIOS_DEBUG, "ICH SPI: Opcode %x not found\n",
+				trans->opcode);
+			return -1;
+		}
+
+		optypes = readw_(cntlr.optype);
+		optype = (optypes >> (opcode_index * 2)) & 0x3;
+		if (trans->type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS &&
+			optype == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS &&
+			trans->bytesout >= 3) {
+			/* We guessed wrong earlier. Fix it up. */
+			trans->type = optype;
+		}
+		if (optype != trans->type) {
+			printk(BIOS_DEBUG, "ICH SPI: Transaction doesn't fit type %d\n",
+				optype);
+			return -1;
+		}
+		return opcode_index;
+	}
+}
+
+static int spi_setup_offset(spi_transaction *trans)
+{
+	/* Separate the SPI address and data. */
+	switch (trans->type) {
+	case SPI_OPCODE_TYPE_READ_NO_ADDRESS:
+	case SPI_OPCODE_TYPE_WRITE_NO_ADDRESS:
+		return 0;
+	case SPI_OPCODE_TYPE_READ_WITH_ADDRESS:
+	case SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS:
+		trans->offset = ((uint32_t)trans->out[0] << 16) |
+				((uint32_t)trans->out[1] << 8) |
+				((uint32_t)trans->out[2] << 0);
+		spi_use_out(trans, 3);
+		return 1;
+	default:
+		printk(BIOS_DEBUG, "Unrecognized SPI transaction type %#x\n",
+			trans->type);
+		return -1;
+	}
+}
+
 /*
- * Wait for up to 60ms til the controller completes the operation or
- * returns an error.  Clear the completion status.
+ * Wait for up to 400ms til status register bit(s) turn 1 (in case wait_til_set
+ * below is True) or 0. In case the wait was for the bit(s) to set - write
+ * those bits back, which would cause resetting them.
  *
  * Return the last read status value on success or -1 on failure.
  */
-static int ich_status_poll(void)
+static int ich_status_poll(u16 bitmask, int wait_til_set)
 {
 	int timeout = 40000; /* This will result in 400 ms */
 	u16 status = 0;
 
+	wait_til_set &= 1;
 	while (timeout--) {
 		status = readw_(cntlr.status);
-		if (((status & (SPIS_FCERR | SPIS_CDS | SPIS_SCIP))
-			^ SPIS_SCIP) != 0) {
-			writew_(SPIS_FCERR | SPIS_CDS, cntlr.status);
+		if (wait_til_set ^ ((status & bitmask) == 0)) {
+			if (wait_til_set)
+				writew_((status & bitmask), cntlr.status);
 			return status;
 		}
 		udelay(10);
 	}
 
 	printk(BIOS_ERR, "ICH SPI: SCIP timeout, read %x, expected %x\n",
-		status, (status & (~(SPIS_FCERR | SPIS_SCIP))) | SPIS_CDS);
+		status, bitmask);
 	return -1;
 }
 
 int spi_xfer(struct spi_slave *slave, const void *dout,
 		unsigned int bytesout, void *din, unsigned int bytesin)
 {
-	unsigned int address;
-	unsigned int bytes_to_transfer;
-	unsigned int control;
-	u8 *data;
-	unsigned int data_bytes;
-	u8 opcode;
-	unsigned int opcode_index;
-	u8 opcode_type;
-	unsigned int prefix_index;
-	int status;
+	uint16_t control;
+	int16_t opcode_index;
 	int with_address;
-	int write_operation;
-	static u8 write_prefix;
+	int status;
 
-#if IS_ENABLED(CONFIG_DEBUG_SPI_FLASH)
-	printk(BIOS_DEBUG, "%s/%s (0x%p, 0x%p, 0x%08x, 0x%p, 0x%08x)\n",
-			__FILE__, __func__, slave, dout, bytesout,
-			din, bytesin);
-#endif	/* CONFIG_DEBUG_SPI_FLASH */
-
-	/*
-	 * The following hardware is available for shared use when the
-	 * controller is not locked:
-	 *
-	 *	Opcode 0
-	 *	Opcode Type 0
-	 *	Opcode Prefix 0
-	 *
-	 * The rest of the controller is reserved for static setup.
-	 */
+	spi_transaction trans = {
+		dout, bytesout,
+		din, bytesin,
+		0xff, 0xff, 0
+	};
 
 	/* There has to always at least be an opcode. */
 	if (!bytesout || !dout) {
-		printk(BIOS_ERR, "ICH SPI: No opcode for transfer\n");
-
-		/* Discard the write prefix */
-		write_prefix = 0;
+		printk(BIOS_DEBUG, "ICH SPI: No opcode for transfer\n");
 		return -1;
 	}
-
 	/* Make sure if we read something we have a place to put it. */
 	if (bytesin != 0 && !din) {
-		printk(BIOS_ERR, "ICH SPI: Read but no target buffer\n");
-
-		/* Discard the write prefix */
-		write_prefix = 0;
+		printk(BIOS_DEBUG, "ICH SPI: Read but no target buffer\n");
 		return -1;
 	}
 
-	/* Get the opcode */
-	data = (u8 *)dout;
-	opcode = *data++;
-	bytesout -= 1;
+	if (ich_status_poll(SPIS_SCIP, 0) == -1)
+		return -1;
 
-	/* Determine if this operation contains an address */
-	opcode_type = 0;
-	with_address = 0;
-	address = 0;
-	if (bytesout >= 3) {
+	writew_(SPIS_CDS | SPIS_FCERR, cntlr.status);
+
+	spi_setup_type(&trans);
+	opcode_index = spi_setup_opcode(&trans);
+	if (opcode_index < 0)
+		return -1;
+	with_address = spi_setup_offset(&trans);
+	if (with_address < 0)
+		return -1;
+
+	if (trans.opcode == SPI_OPCODE_WREN) {
 		/*
-		 * Workarounds:
-		 *
-		 * Erase operation have an address with no data.
-		 * For some reason, the controller does not like
-		 * this condition and returns an error.  Instead
-		 * of loading the address into the address register
-		 * the work-around is to send the address as data.
-		 *
-		 * Page writes with a short amount of data are
-		 * failing.  Send the address as data to workaround
-		 * this issue.
+		 * Treat Write Enable as Atomic Pre-Op if possible
+		 * in order to prevent the Management Engine from
+		 * issuing a transaction between WREN and DATA.
 		 */
-		if (bytesin || (bytesout > (cntlr.databytes - 3))) {
-			/* Tell the controller about the address */
-			opcode_type = 2;
-			with_address = 1;
-			address = (unsigned int)(*data++) << 16;
-			address |= (unsigned int)(*data++) << 8;
-			address |= (unsigned int)(*data++);
-			bytesout -= 3;
-		}
+		if (!ichspi_lock)
+			writew_(trans.opcode, cntlr.preop);
+		return 0;
 	}
 
-	/* Determine if this is a write operation */
-	write_operation = 0;
-	if (bytesin == 0) {
-		write_operation = 1;
-		opcode_type |= 1;
+	/* Preset control fields */
+	control = SPIC_SCGO | ((opcode_index & 0x07) << 4);
+
+	/* Issue atomic preop cycle if needed */
+	if (readw_(cntlr.preop))
+		control |= SPIC_ACS;
+
+	if (!trans.bytesout && !trans.bytesin) {
+		/* SPI addresses are 24 bit only */
+		if (with_address)
+			writel_(trans.offset & 0x00FFFFFF, cntlr.addr);
 
 		/*
-		 * The upper layers provide the write prefix byte as
-		 * a separate transaction which is how it is handled
-		 * on the SPI bus.  Note that a SPI transaction starts
-		 * with chip select going low for the target device
-		 * and ends with chip select going high.
-		 *
-		 * However, this controller automatically outputs the
-		 * prefix byte at the beginning of write operations.
-		 * As such, it is necessary to consume the write prefix
-		 * byte.
+		 * This is a 'no data' command (like Write Enable), its
+		 * bitesout size was 1, decremented to zero while executing
+		 * spi_setup_opcode() above. Tell the chip to send the
+		 * command.
 		 */
+		writew_(control, cntlr.control);
 
-		if (write_prefix == 0) {
-			/* Delay sending the write prefix byte.  */
-			write_prefix = opcode;
-#if IS_ENABLED(CONFIG_DEBUG_SPI_FLASH)
-			printk(BIOS_DEBUG, "Buffering write prefix: 0x%02x\n",
-					write_prefix);
-#endif	/* CONFIG_DEBUG_SPI_FLASH */
-			return 0;
+		/* wait for the result */
+		status = ich_status_poll(SPIS_CDS | SPIS_FCERR, 1);
+		if (status == -1)
+			return -1;
+
+		if (status & SPIS_FCERR) {
+			printk(BIOS_ERR, "ICH SPI: Command transaction error\n");
+			return -1;
 		}
+
+		return 0;
 	}
 
 	/*
-	 * Check if more output data exists than the controller can handle.
-	 * Iterations for writes are not supported here because each SPI
-	 * write command needs to be preceded and followed by other SPI
-	 * commands, and this sequence is controlled by the SPI chip driver.
+	 * Check if this is a write command atempting to transfer more bytes
+	 * than the controller can handle. Iterations for writes are not
+	 * supported here because each SPI write command needs to be preceded
+	 * and followed by other SPI commands, and this sequence is controlled
+	 * by the SPI chip driver.
 	 */
-	if (bytesout > cntlr.databytes) {
-		printk(BIOS_ERR,
-			"ICH SPI: Too much to write. Does your SPI chip driver use CONTROLLER_PAGE_LIMIT?\n");
-
-		/* Discard the write prefix */
-		write_prefix = 0;
+	if (trans.bytesout > cntlr.databytes) {
+		printk(BIOS_DEBUG,
+		"ICH SPI: Too much to write. Does your SPI chip driver use"
+		     " CONTROLLER_PAGE_LIMIT?\n");
 		return -1;
 	}
 
-	/* Determine the prefix and opcode indices */
-	opcode_index = 0;
-	prefix_index = 0;
-	if (!ichspi_lock) {
-		/* Set the write prefix byte */
-		if (write_operation) {
-			prefix_index = SPIC_ACS;
-			writew_(write_prefix, cntlr.preop);
+	/*
+	 * Read or write up to databytes bytes at a time until everything has
+	 * been sent.
+	 */
+	while (trans.bytesout || trans.bytesin) {
+		uint32_t data_length;
+
+		/* SPI addresses are 24 bit only */
+		writel_(trans.offset & 0x00FFFFFF, cntlr.addr);
+
+		if (trans.bytesout)
+			data_length = min(trans.bytesout, cntlr.databytes);
+		else
+			data_length = min(trans.bytesin, cntlr.databytes);
+
+		/* Program data into FDATA0 to N */
+		if (trans.bytesout) {
+			write_reg(trans.out, cntlr.data, data_length);
+			spi_use_out(&trans, data_length);
+			if (with_address)
+				trans.offset += data_length;
 		}
 
-		/* Set the opcode */
-		writeb_(opcode, cntlr.opmenu);
+		/* Add proper control fields' values */
+		control &= ~((cntlr.databytes - 1) << 8);
+		control |= SPIC_DS;
+		control |= (data_length - 1) << 8;
 
-		/* Set the opcode type */
-		u16 optypes = readw_(cntlr.optype);
-		optypes = (optypes & (~3)) | opcode_type;
-		writew_(optypes, cntlr.optype);
-	} else {
-		u8 opmenu[cntlr.menubytes];
+		/* write it */
+		writew_(control, cntlr.control);
 
-		/* Get the opcodes supported by the controller */
-		read_reg(cntlr.opmenu, opmenu, cntlr.menubytes);
+		/* Wait for Cycle Done Status or Flash Cycle Error. */
+		status = ich_status_poll(SPIS_CDS | SPIS_FCERR, 1);
+		if (status == -1)
+			return -1;
 
-		/* Verify that the locked controller supports this opcode */
-		for (;;) {
-			if (opcode == opmenu[opcode_index])
-				break;
-			opcode_index++;
-			if (opcode_index > cntlr.menubytes) {
-				printk(BIOS_ERR,
-					"ERROR - SPI transaction failed,"
-					" opcode map full!\n");
-
-				/* Discard the write prefix */
-				write_prefix = 0;
-				return -1;
-			}
+		if (status & SPIS_FCERR) {
+			printk(BIOS_ERR, "ICH SPI: Data transaction error\n");
+			return -1;
 		}
 
-		/* Get the controller write prefix bytes */
-		if (write_operation) {
-			u16 prefix_bytes = readw_(cntlr.optype);
-
-			/*
-			 * Verify that the locked controller contains the write
-			 * prefix byte
-			 */
-			prefix_index = SPIC_ACS;
-			if (write_prefix != (prefix_bytes & 0xff)) {
-				prefix_index |= SPIC_SPOP;
-				if (write_prefix != (prefix_bytes >> 8)) {
-					printk(BIOS_ERR,
-						"ERROR - SPI transaction failed"
-						", prefix not available!\n");
-
-					/* Discard the write prefix */
-					write_prefix = 0;
-					return -1;
-				}
-			}
+		if (trans.bytesin) {
+			read_reg(cntlr.data, trans.in, data_length);
+			spi_use_in(&trans, data_length);
+			if (with_address)
+				trans.offset += data_length;
 		}
 	}
 
-	/* Determine the transfer length */
-	data_bytes = bytesin ? bytesin : bytesout;
+	/* Clear atomic preop now that xfer is done */
+	writew_(0, cntlr.preop);
 
-	/* Clear any previous error */
-	writeb_(SPIS_FCERR | SPIS_CDS, cntlr.status);
-
-	/* Segment the transfer operation if necessary */
-	do {
-		/* Determine the operation data length */
-		control = SPIC_SCGO | prefix_index | (opcode_index << 4);
-		bytes_to_transfer = data_bytes;
-		if (bytes_to_transfer > cntlr.databytes)
-			bytes_to_transfer = cntlr.databytes;
-		if (bytes_to_transfer > 0) {
-			control |= SPIC_DS
-				| (((bytes_to_transfer - 1) & 0x3f) << 8);
-			data_bytes -= bytes_to_transfer;
-
-			/* Output the data for the operation */
-			if (write_operation)
-				write_reg(data, cntlr.data, bytes_to_transfer);
-		}
-
-		/* Set the 24-bit address if necessary */
-		if (with_address) {
-			writel_(address & 0x00ffffff, cntlr.addr);
-			address += bytes_to_transfer;
-		}
-
-		/* Start the SPI operation */
-		writew_((u16)control, cntlr.control);
-
-		/* Wait for the result */
-		status = ich_status_poll();
-		if (status == -1) {
-			/* Discard the write prefix */
-			write_prefix = 0;
-			return -1;
-		}
-		if (status & SPIS_FCERR) {
-			printk(BIOS_ERR, "ICH SPI: Transaction error\n");
-
-			/* Discard the write prefix */
-			write_prefix = 0;
-			return -1;
-		}
-
-		/* Place the data read from the SPI flash into the buffer */
-		if (bytesin > 0) {
-			read_reg(cntlr.data, din, bytes_to_transfer);
-			bytesin -= bytes_to_transfer;
-			din += bytes_to_transfer;
-		}
-	} while (data_bytes > 0);
-
-	/* Discard the write prefix */
-	write_prefix = 0;
-
-	/* Successful SPI transaction */
 	return 0;
 }
