@@ -81,6 +81,7 @@
 #define CBMEM_ID_VBOOT_HANDOFF	0x780074f0
 #define CBMEM_ID_NONE		0x00000000
 #define CBMEM_ID_HOB_POINTER	0x484f4221
+#define CBMEM_ID_FSP_RESERVED_MEMORY 0x46535052
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>
@@ -101,6 +102,7 @@ struct cbmem_id_to_name {
 	{ CBMEM_ID_COVERAGE,		"COVERAGE   " }, \
 	{ CBMEM_ID_ELOG,		"ELOG       " }, \
 	{ CBMEM_ID_FREESPACE,		"FREE SPACE " }, \
+	{ CBMEM_ID_FSP_RESERVED_MEMORY, "FSP MEMORY " }, \
 	{ CBMEM_ID_GDT,			"GDT        " }, \
 	{ CBMEM_ID_HOB_LIST,		"FSP HOB PTR" }, \
 	{ CBMEM_ID_MEMINFO,		"MEM INFO   " }, \
