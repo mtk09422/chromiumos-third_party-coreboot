@@ -149,6 +149,7 @@ struct cbmem_entry;
  */
 
 #define DYN_CBMEM_ALIGN_SIZE (4096)
+#define CBMEM_ROOT_SIZE      DYN_CBMEM_ALIGN_SIZE
 
 /* Initialze cbmem to be empty. */
 void cbmem_initialize_empty(void);
