@@ -49,14 +49,6 @@ struct mmu_ranges {
  */
 extern char _start[], _end[];
 
-/*
- * IMPORTANT!!!!!!!
- * When BITS_PER_VA or GRANULE_SIZE_SHIFT was changed, all macros based on
- * these values will be calculated automatically.
- * The only constraint is we don't support level 0 table. This imply that
- * BITS_PER_VA cannot be over level 1 address range.
- */
-
 /* Memory attributes for mmap regions
  * These attributes act as tag values for memrange regions
  */
@@ -102,30 +94,19 @@ extern char _start[], _end[];
 #define L2_ADDR_SHIFT              (GRANULE_SIZE_SHIFT + BITS_RSLVD_PER_LVL)
 #define L3_ADDR_SHIFT              GRANULE_SIZE_SHIFT
 
+#if BITS_PER_VA > L1_ADDR_SHIFT + BITS_RSLVD_PER_LVL
+  #error "BITS_PER_VA too large (we don't have L0 table support)"
+#endif
+
 #define L1_ADDR_MASK       (((1UL << BITS_RSLVD_PER_LVL) - 1) << L1_ADDR_SHIFT)
 #define L2_ADDR_MASK       (((1UL << BITS_RSLVD_PER_LVL) - 1) << L2_ADDR_SHIFT)
 #define L3_ADDR_MASK       (((1UL << BITS_RSLVD_PER_LVL) - 1) << L3_ADDR_SHIFT)
 
-/* Each entry in XLAT table is 8 bytes */
-#define XLAT_ENTRY_SHIFT           3
-#define XLAT_ENTRY_SIZE            (1 << XLAT_ENTRY_SHIFT)
-
-#define XLAT_TABLE_SHIFT           GRANULE_SIZE_SHIFT
-#define XLAT_TABLE_SIZE            (1 << XLAT_TABLE_SHIFT)
-
-#define XLAT_NUM_ENTRIES_SHIFT     (XLAT_TABLE_SHIFT - XLAT_ENTRY_SHIFT)
-#define XLAT_NUM_ENTRIES           (1 << XLAT_NUM_ENTRIES_SHIFT)
-
-#define L3_XLAT_SIZE_SHIFT         (GRANULE_SIZE_SHIFT)
-#define L2_XLAT_SIZE_SHIFT         (GRANULE_SIZE_SHIFT + XLAT_NUM_ENTRIES_SHIFT)
-#define L1_XLAT_SIZE_SHIFT         (GRANULE_SIZE_SHIFT + \
-				    XLAT_NUM_ENTRIES_SHIFT * 2)
-
 /* These macros give the size of the region addressed by each entry of a xlat
    table at any given level */
-#define L3_XLAT_SIZE               (1UL << L3_XLAT_SIZE_SHIFT)
-#define L2_XLAT_SIZE               (1UL << L2_XLAT_SIZE_SHIFT)
-#define L1_XLAT_SIZE               (1UL << L1_XLAT_SIZE_SHIFT)
+#define L3_XLAT_SIZE               (1UL << L3_ADDR_SHIFT)
+#define L2_XLAT_SIZE               (1UL << L2_ADDR_SHIFT)
+#define L1_XLAT_SIZE               (1UL << L1_ADDR_SHIFT)
 
 /* Block indices required for MAIR */
 #define BLOCK_INDEX_MEM_DEV_NGNRNE 0
