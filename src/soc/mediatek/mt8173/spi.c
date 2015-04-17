@@ -72,11 +72,11 @@ static void mt8173_spi_setup(struct MT8173SpiRegs *regs)
 {
 	struct mt8173_spi_cfg spi_config;
 
-	spi_config.high_time = 50;
-	spi_config.low_time = 50;
-	spi_config.setuptime = 25;
-	spi_config.holdtime = 25;
-	spi_config.cs_idletime = 25;
+	spi_config.high_time = 10;
+	spi_config.low_time = 10;
+	spi_config.setuptime = 10;
+	spi_config.holdtime = 12;
+	spi_config.cs_idletime = 12;
 	spi_config.cpha = 0;
 	spi_config.cpol = 0;
 	spi_config.rx_endian = 0;
