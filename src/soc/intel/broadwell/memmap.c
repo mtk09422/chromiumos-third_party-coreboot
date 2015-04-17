@@ -38,8 +38,8 @@ static unsigned long get_top_of_ram(void)
 		tom -= (dpr & DPR_SIZE_MASK) << 16;
 
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-	/* Allocate some space for FSP */
-	tom -= CONFIG_FSP_RESERVED_MEM_SIZE;
+	/* Allocate any extra space for the chipset */
+	tom -= CONFIG_CHIPSET_RESERVED_MEM_BYTES;
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 
 	return (unsigned long)tom;

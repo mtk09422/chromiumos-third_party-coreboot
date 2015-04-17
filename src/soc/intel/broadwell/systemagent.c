@@ -349,7 +349,7 @@ static void mc_add_dram_resources(device_t dev)
 	size_k = (unsigned long)(mc_values[TSEG_REG] >> 10) - base_k;
 	size_k -= dpr_size >> 10;
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-	size_k -= CONFIG_FSP_RESERVED_MEM_SIZE >> 10;
+	size_k -= CONFIG_CHIPSET_RESERVED_MEM_BYTES >> 10;
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 	ram_resource(dev, index++, base_k, size_k);
 
@@ -358,8 +358,8 @@ static void mc_add_dram_resources(device_t dev)
 	resource->base = mc_values[TSEG_REG] - dpr_size;
 	resource->size = mc_values[BGSM_REG] - resource->base;
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-	resource->base -= CONFIG_FSP_RESERVED_MEM_SIZE;
-	resource->size += CONFIG_FSP_RESERVED_MEM_SIZE;
+	resource->base -= CONFIG_CHIPSET_RESERVED_MEM_BYTES;
+	resource->size += CONFIG_CHIPSET_RESERVED_MEM_BYTES;
 #endif	/* CONFIG_PLATFORM_USES_FSP */
 	resource->flags = IORESOURCE_MEM | IORESOURCE_FIXED |
 	                  IORESOURCE_STORED | IORESOURCE_RESERVE |

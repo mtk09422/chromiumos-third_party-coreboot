@@ -52,6 +52,34 @@ void *cbmem_top(void)
 	char *smm_base;
 	size_t smm_size;
 
+	/*
+	 *     +-------------------------+  Top of RAM (aligned)
+	 *     | System Management Mode  |
+	 *     |      code and data      |  Length: CONFIG_TSEG_SIZE
+	 *     |         (TSEG)          |
+	 *     +-------------------------+  SMM base (aligned)
+	 *     |                         |
+	 *     | Chipset Reserved Memory |  Length: Multiple of CONFIG_TSEG_SIZE
+	 *     |                         |
+	 *     +-------------------------+  top_of_ram (aligned)
+	 *     |                         |
+	 *     |       CBMEM Root        |
+	 *     |                         |
+	 *     +-------------------------+
+	 *     |                         |
+	 *     |   FSP Reserved Memory   |
+	 *     |                         |
+	 *     +-------------------------+
+	 *     |                         |
+	 *     |  Various CBMEM Entries  |
+	 *     |                         |
+	 *     +-------------------------+  top_of_stack (8 byte aligned)
+	 *     |                         |
+	 *     |   stack (CBMEM Entry)   |
+	 *     |                         |
+	 *     +-------------------------+
+	*/
+
 	smm_region((void **)&smm_base, &smm_size);
-	return (void *)(smm_base - CONFIG_FSP_RESERVED_MEM_SIZE);
+	return smm_base - CONFIG_CHIPSET_RESERVED_MEM_BYTES;
 }

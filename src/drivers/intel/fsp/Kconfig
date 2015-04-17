@@ -80,13 +80,6 @@ config FSP_LOC
 	  value that is set in the FSP binary.  If the FSP needs to be moved,
 	  rebase the FSP with Intel's BCT (tool).
 
-config FSP_RESERVED_MEM_SIZE
-	hex "FSP Reserved Memory"
-	default 0x00100000
-	help
-	  Memory size in bytes reserved by FSP between PEI Memory and the
-	  base of TSEG.
-
 config ENABLE_FSP_FAST_BOOT
 	bool "Enable Fast Boot"
 	select ENABLE_MRC_CACHE

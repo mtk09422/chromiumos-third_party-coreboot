@@ -55,8 +55,6 @@ FSP_INFO_HEADER *fsp_get_fih(void);
 /* fsp_get_hob_list() is only valid after calling fsp_set_runtime(). */
 void *fsp_get_hob_list(void);
 void fsp_early_init(FSP_INFO_HEADER *fsp_info);
-void fsp_check_reserved_mem_size(void *hob_list_ptr, void* end_of_region);
-void *fsp_find_reserved_mem(void *hob_list_ptr);
 void fsp_notify(u32 phase);
 void print_hob_type_structure(u16 hob_type, void *hob_list_ptr);
 void print_fsp_info(FSP_INFO_HEADER *fsp_header);

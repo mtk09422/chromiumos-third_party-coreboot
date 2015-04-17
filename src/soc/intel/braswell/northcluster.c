@@ -52,7 +52,7 @@
  * |     TSEG                 |
  * +--------------------------+ SMMRRL
  * |     FSP Reserved Mem     |
- * +--------------------------+ SMMRRL - FSP_RESERVED_MEM_SIZE
+ * +--------------------------+ SMMRRL - CONFIG_CHIPSET_RESERVED_MEM_BYTES
  * |     Usable DRAM          |
  * +--------------------------+ 0
  *

@@ -64,15 +64,15 @@ void *cbmem_top(void)
 	 *     |         (TSEG)          |
 	 *     +-------------------------+  SMM base (aligned)
 	 *     |                         |
-	 *     | Chipset Reserved Memory |
+	 *     | Chipset Reserved Memory |  Length: Multiple of CONFIG_TSEG_SIZE
 	 *     |                         |
-	 *     +-------------------------+  Chipset reserved mem base (aligned)
-	 *     |                         |
-	 *     |   FSP Reserved Memory   |
-	 *     |                         |
-	 *     +-------------------------+  top_of_ram (not aligned)
+	 *     +-------------------------+  top_of_ram (aligned)
 	 *     |                         |
 	 *     |       CBMEM Root        |
+	 *     |                         |
+	 *     +-------------------------+
+	 *     |                         |
+	 *     |   FSP Reserved Memory   |
 	 *     |                         |
 	 *     +-------------------------+
 	 *     |                         |
@@ -83,14 +83,10 @@ void *cbmem_top(void)
 	 *     |   stack (CBMEM Entry)   |
 	 *     |                         |
 	 *     +-------------------------+
-	 *
-	 * Requirement:
-	 *    Chipset reserved memory base needs to be aligned to a multiple
-	 *    of TSEG size when SMM is in use or 8 Mib when SMM is not supported
-	 *    by the SOC/board configuration.
 	 */
 
 	unsigned long top_of_ram = (unsigned long)smm_region_start();
+
 	/*
 	 * Subtract DMA Protected Range size if enabled and align to a multiple
 	 * of TSEG size.
@@ -101,9 +97,6 @@ void *cbmem_top(void)
 		top_of_ram = ALIGN_DOWN(top_of_ram, mmap_region_granluarity());
 	}
 
-	/* Allocate some space for FSP */
-	top_of_ram -= CONFIG_FSP_RESERVED_MEM_SIZE;
-
-	return (void *)top_of_ram;
+	return (void *)(top_of_ram - CONFIG_CHIPSET_RESERVED_MEM_BYTES);
 }
 

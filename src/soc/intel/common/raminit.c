@@ -30,27 +30,28 @@
 
 void raminit(struct romstage_params *params)
 {
+	const EFI_GUID bootldr_tolum_guid = FSP_BOOTLOADER_TOLUM_HOB_GUID;
+	EFI_HOB_RESOURCE_DESCRIPTOR *cbmem_root;
 	FSP_INFO_HEADER *fsp_header;
 	EFI_HOB_RESOURCE_DESCRIPTOR *fsp_memory;
 	FSP_MEMORY_INIT fsp_memory_init;
 	FSP_MEMORY_INIT_PARAMS fsp_memory_init_params;
 	const EFI_GUID fsp_reserved_guid =
 		FSP_RESERVED_MEMORY_RESOURCE_HOB_GUID;
+	void *fsp_reserved_memory_area;
 	FSP_INIT_RT_COMMON_BUFFER fsp_rt_common_buffer;
 	void *hob_list_ptr;
 	const EFI_GUID mrc_guid = FSP_NON_VOLATILE_STORAGE_HOB_GUID;
 	u32 *mrc_hob;
+	u32 fsp_reserved_bytes;
 	EFI_STATUS status;
 	struct pei_data *pei_ptr;
 	VPD_DATA_REGION *vpd_ptr;
 	UPD_DATA_REGION *upd_ptr;
 	UPD_DATA_REGION upd_data_buffer;
+	int fsp_verification_failure = 0;
 #if IS_ENABLED(CONFIG_DISPLAY_HOBS)
-	const EFI_GUID bootldr_tolum_guid = FSP_BOOTLOADER_TOLUM_HOB_GUID;
-	EFI_HOB_RESOURCE_DESCRIPTOR *cbmem_root;
 	unsigned long int data;
-	void *fsp_reserved_memory_area;
-	int missing_hob = 0;
 	EFI_PEI_HOB_POINTERS hob_ptr;
 #endif
 
@@ -122,11 +123,17 @@ void raminit(struct romstage_params *params)
 		die("ERROR - FspMemoryInit failed to initialize memory!\n");
 
 	/* Locate the FSP reserved memory area */
+	fsp_reserved_bytes = 0;
 	fsp_memory = get_next_resource_hob(&fsp_reserved_guid, hob_list_ptr);
-	if (fsp_memory == NULL)
-		die("FSP_RESERVED_MEMORY_RESOURCE_HOB missing!\n");
-	printk(BIOS_DEBUG, "Reserving 0x%016lx bytes for FSP\n",
-		(unsigned long int)fsp_memory->ResourceLength);
+	if (fsp_memory == NULL) {
+		fsp_verification_failure = 1;
+		printk(BIOS_DEBUG,
+			"7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB missing!\n");
+	} else {
+		fsp_reserved_bytes = fsp_memory->ResourceLength;
+		printk(BIOS_DEBUG, "Reserving 0x%016lx bytes for FSP\n",
+			(unsigned long int)fsp_reserved_bytes);
+	}
 
 	/* Display SMM area */
 #if IS_ENABLED(CONFIG_HAVE_SMI_HANDLER)
@@ -139,12 +146,14 @@ void raminit(struct romstage_params *params)
 #endif
 
 	/* Migrate CAR data */
+	printk(BIOS_DEBUG, "0x%08x: CONFIG_CHIPSET_RESERVED_MEM_BYTES\n",
+		CONFIG_CHIPSET_RESERVED_MEM_BYTES);
 	printk(BIOS_DEBUG, "0x%p: cbmem_top\n", cbmem_top());
 	if (pei_ptr->boot_mode != SLEEP_STATE_S3) {
 		cbmem_initialize_empty_id_size(CBMEM_ID_FSP_RESERVED_MEMORY,
-			fsp_memory->ResourceLength);
+			fsp_reserved_bytes);
 	} else if (cbmem_initialize_id_size(CBMEM_ID_FSP_RESERVED_MEMORY,
-		fsp_memory->ResourceLength)) {
+		fsp_reserved_bytes)) {
 #if IS_ENABLED(CONFIG_HAVE_ACPI_RESUME)
 		printk(BIOS_DEBUG, "Failed to recover CBMEM in S3 resume.\n");
 		/* Failed S3 resume, reset to come up cleanly */
@@ -155,6 +164,15 @@ void raminit(struct romstage_params *params)
 	/* Save the FSP runtime parameters. */
 	fsp_set_runtime(params->chipset_context, hob_list_ptr);
 
+	/* Lookup the FSP_BOOTLOADER_TOLUM_HOB */
+	cbmem_root = get_next_resource_hob(&bootldr_tolum_guid, hob_list_ptr);
+	if (cbmem_root == NULL) {
+		fsp_verification_failure = 1;
+		printk(BIOS_ERR, "7.4: FSP_BOOTLOADER_TOLUM_HOB missing!\n");
+		printk(BIOS_ERR, "BootLoaderTolumSize: 0x%08x bytes\n",
+			fsp_rt_common_buffer.BootLoaderTolumSize);
+	}
+
 #if IS_ENABLED(CONFIG_DISPLAY_HOBS)
 	if (hob_list_ptr == NULL)
 		die("ERROR - HOB pointer is NULL!\n");
@@ -164,62 +182,82 @@ void raminit(struct romstage_params *params)
 	 *	7.1: FSP_BOOTLOADER_TEMP_MEMORY_HOB only produced for FSP 1.0
 	 *	7.5: EFI_PEI_GRAPHICS_INFO_HOB produced by SiliconInit
 	 */
-	cbmem_root = NULL;
-	hob_ptr.Raw = get_next_resource_hob(&bootldr_tolum_guid, hob_list_ptr);
-	if ((NULL == hob_ptr.Raw)
-		&& (fsp_rt_common_buffer.BootLoaderTolumSize != 0)) {
-		printk(BIOS_ERR, "7.4: FSP_BOOTLOADER_TOLUM_HOB missing!\n");
-		printk(BIOS_ERR, "BootLoaderTolumSize: 0x%08x bytes\n",
-			fsp_rt_common_buffer.BootLoaderTolumSize);
-		missing_hob = 1;
-	} else {
+	if (NULL != cbmem_root) {
 		printk(BIOS_DEBUG,
 			"7.4: FSP_BOOTLOADER_TOLUM_HOB: 0x%p\n",
-			hob_ptr.Raw);
-		data = hob_ptr.ResourceDescriptor->PhysicalStart;
+			cbmem_root);
+		data = cbmem_root->PhysicalStart;
 		printk(BIOS_DEBUG, "    0x%016lx: PhysicalStart\n", data);
-		data = hob_ptr.ResourceDescriptor->ResourceLength;
+		data = cbmem_root->ResourceLength;
 		printk(BIOS_DEBUG, "    0x%016lx: ResourceLength\n", data);
-		cbmem_root = hob_ptr.ResourceDescriptor;
 	}
 	hob_ptr.Raw = get_next_guid_hob(&mrc_guid, hob_list_ptr);
 	if (NULL == hob_ptr.Raw) {
 		printk(BIOS_ERR, "7.3: FSP_NON_VOLATILE_STORAGE_HOB missing!\n");
-		missing_hob = 1;
+		fsp_verification_failure =
+			(params->pei_data->saved_data == NULL) ? 1 : 0;
 	} else {
 		printk(BIOS_DEBUG,
 			"7.3: FSP_NON_VOLATILE_STORAGE_HOB: 0x%p\n",
 			hob_ptr.Raw);
 	}
-	printk(BIOS_DEBUG,
-		"7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB: 0x%p\n",
-		fsp_memory);
-	data = fsp_memory->PhysicalStart;
-	printk(BIOS_DEBUG, "    0x%016lx: PhysicalStart\n", data);
-	data = fsp_memory->ResourceLength;
-	printk(BIOS_DEBUG, "    0x%016lx: ResourceLength\n", data);
+	if (fsp_memory != NULL) {
+		printk(BIOS_DEBUG,
+			"7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB: 0x%p\n",
+			fsp_memory);
+		data = fsp_memory->PhysicalStart;
+		printk(BIOS_DEBUG, "    0x%016lx: PhysicalStart\n", data);
+		data = fsp_memory->ResourceLength;
+		printk(BIOS_DEBUG, "    0x%016lx: ResourceLength\n", data);
+	}
+
+	/* Verify all the HOBs are present */
+	if (fsp_verification_failure)
+		printk(BIOS_DEBUG,
+			"ERROR - Missing one or more required FSP HOBs!\n");
+
+	/* Display the HOBs */
+	print_hob_type_structure(0, hob_list_ptr);
+#endif
+
+	/* Get the address of the CBMEM region for the FSP reserved memory */
 	fsp_reserved_memory_area = cbmem_find(CBMEM_ID_FSP_RESERVED_MEMORY);
 	printk(BIOS_DEBUG, "0x%p: fsp_reserved_memory_area\n",
 		fsp_reserved_memory_area);
 
-	/* Display the HOBs */
-	print_hob_type_structure(0, hob_list_ptr);
+	/* Verify the order of CBMEM root and FSP memory */
+	if ((fsp_memory != NULL) && (cbmem_root != NULL) &&
+		(cbmem_root->PhysicalStart <= fsp_memory->PhysicalStart)) {
+		fsp_verification_failure = 1;
+		printk(BIOS_DEBUG,
+			"ERROR - FSP reserved memory above CBMEM root!\n");
+	}
 
 	/* Verify that the FSP memory was properly reserved */
 	if ((fsp_memory != NULL) && ((fsp_reserved_memory_area == NULL) ||
-		(cbmem_root->PhysicalStart !=
-			(unsigned int)fsp_reserved_memory_area)))
-		die("ERROR - Reserving FSP memory area!\n");
-
-	/* Verify the order of CBMEM root and FSP memory */
-	if ((fsp_memory != NULL) && (cbmem_root != NULL) &&
-		(cbmem_root->PhysicalStart <= fsp_memory->PhysicalStart))
-		die("ERROR - FSP reserved memory above CBMEM root!\n");
-
-	/* Verify all the HOBs are present */
-	if (missing_hob)
-		die("ERROR - Missing one or more required FSP HOBs!\n");
+		(fsp_memory->PhysicalStart !=
+			(unsigned int)fsp_reserved_memory_area))) {
+		fsp_verification_failure = 1;
+		printk(BIOS_DEBUG, "ERROR - Reserving FSP memory area!\n");
+#if IS_ENABLED(CONFIG_HAVE_SMI_HANDLER)
+		if (cbmem_root != NULL) {
+			size_t delta_bytes = (unsigned int)smm_base
+				- cbmem_root->PhysicalStart
+				- cbmem_root->ResourceLength;
+			printk(BIOS_DEBUG,
+				"0x%08x: CONFIG_CHIPSET_RESERVED_MEM_BYTES\n",
+				CONFIG_CHIPSET_RESERVED_MEM_BYTES);
+			printk(BIOS_DEBUG,
+				"0x%08x: Chipset reserved bytes reported by FSP\n",
+				delta_bytes);
+			die("Please verify the chipset reserved size\n");
+		}
 #endif
+	}
+
+	/* Verify the FSP 1.1 HOB interface */
+	if (fsp_verification_failure)
+		die("ERROR - Coreboot's requirements not met by FSP binary!\n");
 
 	/* Display the memory configuration */
 	report_memory_config();

@@ -103,15 +103,15 @@ void *setup_stack_and_mtrrs(void)
 	 *     |         (TSEG)          |
 	 *     +-------------------------+  SMM base (aligned)
 	 *     |                         |
-	 *     | Chipset Reserved Memory |
+	 *     | Chipset Reserved Memory |  Length: Multiple of CONFIG_TSEG_SIZE
 	 *     |                         |
-	 *     +-------------------------+  Chipset reserved mem base (aligned)
-	 *     |                         |
-	 *     |   FSP Reserved Memory   |
-	 *     |                         |
-	 *     +-------------------------+  top_of_ram (not aligned)
+	 *     +-------------------------+  top_of_ram (aligned)
 	 *     |                         |
 	 *     |       CBMEM Root        |
+	 *     |                         |
+	 *     +-------------------------+
+	 *     |                         |
+	 *     |   FSP Reserved Memory   |
 	 *     |                         |
 	 *     +-------------------------+
 	 *     |                         |
@@ -122,11 +122,6 @@ void *setup_stack_and_mtrrs(void)
 	 *     |   stack (CBMEM Entry)   |
 	 *     |                         |
 	 *     +-------------------------+
-	 *
-	 * Requirement:
-	 *    Chipset reserved memory base needs to be aligned to a multiple
-	 *    of TSEG size when SMM is in use or 8 Mib when SMM is not supported
-	 *    by the SOC/board configuration.
 	 */
 
 	/*
