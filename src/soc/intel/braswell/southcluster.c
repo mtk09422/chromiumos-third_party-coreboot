@@ -34,7 +34,6 @@
 #include <soc/iomap.h>
 #include <soc/irq.h>
 #include <soc/lpc.h>
-#include <soc/nvs.h>
 #include <soc/pci_devs.h>
 #include <soc/pm.h>
 #include <soc/ramstage.h>
@@ -469,21 +468,6 @@ int __attribute__((weak)) mainboard_get_spi_config(struct spi_config *cfg)
 	return -1;
 }
 
-static void update_gnvs(device_t dev, int nvs_index, global_nvs_t *gnvs)
-{
-
-	struct resource *bar;
-	/*
-	 * ACPI code doesn't create a BAR1 address space
-	 * Save BAR0 to ACPI NVS
-	 */
-	bar = find_resource(dev, PCI_BASE_ADDRESS_0);
-	if (bar)
-		gnvs->dev.scc_bar0[nvs_index] = (u32)bar->base;
-	/* Device is enabled in ACPI mode */
-	gnvs->dev.scc_en[nvs_index] = 1;
-}
-
 static void finalize_chipset(void *unused)
 {
 	void *bcr = (void *)(SPI_BASE_ADDRESS + BCR);
@@ -492,24 +476,9 @@ static void finalize_chipset(void *unused)
 	void *etr = (void *)(PMC_BASE_ADDRESS + ETR);
 	uint8_t *spi = (uint8_t *)SPI_BASE_ADDRESS;
 	struct spi_config cfg;
-	global_nvs_t *gnvs;
 
 	printk(BIOS_SPEW, "%s/%s ( 0x%p )\n",
 			__FILE__, __func__, unused);
-	/* Find ACPI NVS to update BARs */
-	gnvs = (global_nvs_t *)cbmem_find(CBMEM_ID_ACPI_GNVS);
-	if (!gnvs) {
-		printk(BIOS_ERR, "Unable to locate Global NVS\n");
-		return;
-	}
-
-	device_t dev0 = dev_find_slot(0, PCI_DEVFN(MMC_DEV, 0));
-	/* Update the ACPI mode for SCC devices in GNVS */
-	update_gnvs(dev0, SCC_NVS_MMC, gnvs);
-
-	device_t dev1 = dev_find_slot(0, PCI_DEVFN(SD_DEV, 0));
-
-	update_gnvs(dev1, SCC_NVS_SD, gnvs);
 
 	/* Set the lock enable on the BIOS control register. */
 	write32(bcr, read32(bcr) | BCR_LE);
