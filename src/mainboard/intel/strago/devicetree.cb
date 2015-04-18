@@ -1,20 +1,14 @@
 chip soc/intel/braswell
 
-
-
-
-
 	# LPE audio codec settings
 	register "lpe_codec_clk_freq" = "25" # 25MHz clock
 	register "lpe_codec_clk_num" = "0"   # PMC_PLT_CLK[0]
 
-
 	# Enable devices in ACPI mode
-	register "lpe_acpi_mode" = "1"
 	register "lpss_acpi_mode" = "1"
-
-
-
+	register "emmc_acpi_mode" = "1"
+	register "sd_acpi_mode" = "1"
+	register "lpe_acpi_mode" = "1"
 
 	# Disable SLP_X stretching after SUS power well fail.
 	register "disable_slp_x_stretch_sus_fail" = "1"
