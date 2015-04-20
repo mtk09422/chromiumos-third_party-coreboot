@@ -134,26 +134,6 @@ void reg_script_write_iosf(struct reg_script_context *ctx);
 #define BUNIT_SMRRH		0x2f
 
 /*
- * PUNIT Registers
- */
-#define SB_BIOS_CONFIG			0x06
-# define  SB_BIOS_CONFIG_ECC_EN			(1 << 31)
-# define  SB_BIOS_CONFIG_DUAL_CH_DIS		(1 << 30)
-# define  SB_BIOS_CONFIG_EFF_ECC		(1 << 29)
-# define  SB_BIOS_CONFIG_EFF_DUAL_CH_DIS	(1 << 28)
-# define  SB_BIOS_CONFIG_PERF_MODE		(1 << 17)
-# define  SB_BIOS_CONFIG_PDM_MODE		(1 << 16)
-# define  SB_BIOS_CONFIG_DDRIO_PWRGATE		(1 << 8)
-# define  SB_BIOS_CONFIG_GFX_TURBO_DIS		(1 << 7)
-# define  SB_BIOS_CONFIG_PS2_EN_VNN		(1 << 3)
-# define  SB_BIOS_CONFIG_PS2_EN_VCC		(1 << 2)
-# define  SB_BIOS_CONFIG_PCIE_PLLOFFOK		(1 << 1)
-# define  SB_BIOS_CONFIG_USB_CACHING_EN		(1 << 0)
-#define BIOS_RESET_CPL			0x05
-# define  BIOS_RESET_CPL_ALL_DONE		(1 << 1)
-# define  BIOS_RESET_CPL_RESET_DONE		(1 << 0)
-
-/*
  * LPSS Registers
  */
 #define LPSS_SIO_DMA1_CTL		0x280
@@ -184,18 +164,6 @@ void reg_script_write_iosf(struct reg_script_context *ctx);
 #define SCC_MMC_CTL			0x500
 # define SCC_CTL_PCI_CFG_DIS			(1 << 0)
 # define SCC_CTL_ACPI_INT_EN			(1 << 1)
-
-/*
- * USHPHY Registers
- */
-#define USHPHY_CDN_PLL_CONTROL			0x03c0
-#define USHPHY_CDN_VCO_START_CAL_POINT		0x0054
-#define USHPHY_CCDRLF				0x8040
-#define USHPHY_PEAKING_AMP_CONFIG_DIAG		0x80a8
-#define USHPHY_OFFSET_COR_CONFIG_DIAG		0x80b0
-#define USHPHY_VGA_GAIN_CONFIG_DIAG		0x8080
-#define USHPHY_REE_DAC_CONTROL			0x80b8
-#define USHPHY_CDN_U1_POWER_STATE_DEF		0x0000
 
 /*
  * LPE Registers

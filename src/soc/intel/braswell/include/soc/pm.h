@@ -165,42 +165,7 @@
 #define   SCI_EN	(1 << 0)
 #define PM1_TMR			0x08
 #define GPE0_STS		0x20
-#define   CORE_GPIO_STS7	(1 << 31)
-#define   CORE_GPIO_STS6	(1 << 30)
-#define   CORE_GPIO_STS5	(1 << 29)
-#define   CORE_GPIO_STS4	(1 << 28)
-#define   CORE_GPIO_STS3	(1 << 27)
-#define   CORE_GPIO_STS2	(1 << 26)
-#define   CORE_GPIO_STS1	(1 << 25)
-#define   CORE_GPIO_STS0	(1 << 24)
-#define   SUS_GPIO_STS7		(1 << 23)
-#define   SUS_GPIO_STS6		(1 << 22)
-#define   SUS_GPIO_STS5		(1 << 21)
-#define   SUS_GPIO_STS4		(1 << 20)
-#define   SUS_GPIO_STS3		(1 << 19)
-#define   SUS_GPIO_STS2		(1 << 18)
-#define   SUS_GPIO_STS1		(1 << 17)
-#define   SUS_GPIO_STS0		(1 << 16)
-#define   PME_B0_STS		(1 << 13)
-#define   BATLOW_STS		(1 << 10)
-#define   PCI_EXP_STS		(1 << 9)
-#define   PCIE_WAKE3_STS	(1 << 8)
-#define   PCIE_WAKE2_STS	(1 << 7)
-#define   PCIE_WAKE1_STS	(1 << 6)
-#define   GUNIT_SCI_STS		(1 << 5)
-#define   PUNIT_SCI_STS		(1 << 4)
-#define   PCIE_WAKE0_STS	(1 << 3)
-#define   SWGPE_STS		(1 << 2)
-#define   HOT_PLUG_STS		(1 << 1)
 #define GPE0_EN			0x28
-#define   CORE_GPIO_EN7	(1 << 31)
-#define   CORE_GPIO_EN6	(1 << 30)
-#define   CORE_GPIO_EN5	(1 << 29)
-#define   CORE_GPIO_EN4	(1 << 28)
-#define   CORE_GPIO_EN3	(1 << 27)
-#define   CORE_GPIO_EN2	(1 << 26)
-#define   CORE_GPIO_EN1	(1 << 25)
-#define   CORE_GPIO_EN0	(1 << 24)
 #define   SUS_GPIO_EN7_BIT	23
 #define   SUS_GPIO_EN7		(1 << SUS_GPIO_EN7_BIT)
 #define   SUS_GPIO_EN6_BIT	22
@@ -218,14 +183,6 @@
 #define   SUS_GPIO_EN0_BIT	16
 #define   SUS_GPIO_EN0		(1 << SUS_GPIO_EN0_BIT)
 #define   PME_B0_EN		(1 << 13)
-#define   BATLOW_EN		(1 << 10)
-#define   PCI_EXP_EN		(1 << 9)
-#define   PCIE_WAKE3_EN		(1 << 8)
-#define   PCIE_WAKE2_EN		(1 << 7)
-#define   PCIE_WAKE1_EN		(1 << 6)
-#define   PCIE_WAKE0_EN		(1 << 3)
-#define   SWGPE_EN		(1 << 2)
-#define   HOT_PLUG_EN		(1 << 1)
 #define   _ACPI_ENABLE_WAKE_SUS_GPIO(x) SUS_GPIO_EN##x##_BIT
 #define   ACPI_ENABLE_WAKE_SUS_GPIO(x) _ACPI_ENABLE_WAKE_SUS_GPIO(x)
 #define SMI_EN			0x30
@@ -254,12 +211,6 @@
 #	define TCO_LOCK		(1 << 12)
 #	define TCO_TMR_HALT	(1 << 11)
 #define TCO_TMR			0x70
-
-/* I/O ports */
-#define RST_CNT			0xcf9
-#	define FULL_RST		(1 << 3)
-#	define RST_CPU		(1 << 2)
-#	define SYS_RST		(1 << 1)
 
 /* Generic sleep state types */
 #define SLEEP_STATE_S0		0
