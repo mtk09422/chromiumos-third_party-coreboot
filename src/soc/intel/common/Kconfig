@@ -49,3 +49,8 @@ config COMMON_ROMSTAGE
 config ROMSTAGE_RAM_STACK_SIZE
 	hex "Size of the romstage RAM stack in bytes"
 	default 0x5000
+
+config COMMON_SPI_LOADING
+	bool "Use the common spi_loading.c module"
+	default n
+	depends on ALT_CBFS_LOAD_PAYLOAD
