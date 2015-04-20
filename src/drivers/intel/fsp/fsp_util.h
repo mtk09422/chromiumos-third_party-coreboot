@@ -44,14 +44,22 @@ int save_mrc_data(void *hob_start);
 void * find_and_set_fastboot_cache(void);
 #endif
 
+/* find_fsp() should only be called from assembly code. */
 FSP_INFO_HEADER *find_fsp(void);
+/* Set FSP's runtime information. */
+void fsp_set_runtime(FSP_INFO_HEADER *fih, void *hob_list);
+/* Use a new FSP_INFO_HEADER at runtime. */
+void fsp_update_fih(FSP_INFO_HEADER *fih);
+/* fsp_get_fih() is only valid after calling fsp_set_runtime(). */
+FSP_INFO_HEADER *fsp_get_fih(void);
+/* fsp_get_hob_list() is only valid after calling fsp_set_runtime(). */
+void *fsp_get_hob_list(void);
 void fsp_early_init(FSP_INFO_HEADER *fsp_info);
 void fsp_check_reserved_mem_size(void *hob_list_ptr, void* end_of_region);
 void *fsp_find_reserved_mem(void *hob_list_ptr);
 void fsp_notify(u32 phase);
 void print_hob_type_structure(u16 hob_type, void *hob_list_ptr);
 void print_fsp_info(FSP_INFO_HEADER *fsp_header);
-void set_hob_list(void *hob_list_ptr);
 void *get_next_type_guid_hob(UINT16 type, const EFI_GUID *guid,
 	const void *hob_start);
 void *get_next_resource_hob(const EFI_GUID *guid, const void *hob_start);

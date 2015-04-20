@@ -109,33 +109,18 @@ compare_guid(
 }
 
 /* Returns the pointer to the HOB list. */
-void
-set_hob_list(
-	void *hob_list_ptr
-	)
-{
-	void **hob_ptr;
-
-	printk(BIOS_SPEW, "0x%p: hob_list_ptr\n", hob_list_ptr);
-	hob_ptr = cbmem_add(CBMEM_ID_HOB_LIST, sizeof(hob_list_ptr));
-	if (hob_ptr == NULL)
-		die("ERROR - cbmem_add failed in set_hob_list!\n");
-	*hob_ptr = hob_list_ptr;
-}
-
-/* Returns the pointer to the HOB list. */
 VOID *
 EFIAPI
 get_hob_list(
 	VOID
 	)
 {
-	void **hob_ptr;
+	void *hob_list;
 
-	hob_ptr = cbmem_find(CBMEM_ID_HOB_LIST);
-	if (hob_ptr == NULL)
-		die("Call set_hob_list before this call!\n");
-	return *hob_ptr;
+	hob_list = fsp_get_hob_list();
+	if (hob_list == NULL)
+		die("Call fsp_set_runtime() before this call!\n");
+	return hob_list;
 }
 
 /* Returns the next instance of a HOB type from the starting HOB. */

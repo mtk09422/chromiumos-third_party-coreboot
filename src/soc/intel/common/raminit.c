@@ -152,8 +152,8 @@ void raminit(struct romstage_params *params)
 #endif
 	}
 
-	/* Save the HOB list */
-	set_hob_list(hob_list_ptr);
+	/* Save the FSP runtime parameters. */
+	fsp_set_runtime(params->chipset_context, hob_list_ptr);
 
 #if IS_ENABLED(CONFIG_DISPLAY_HOBS)
 	if (hob_list_ptr == NULL)
