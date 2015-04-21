@@ -182,6 +182,12 @@
 #define   SUS_GPIO_EN1		(1 << SUS_GPIO_EN1_BIT)
 #define   SUS_GPIO_EN0_BIT	16
 #define   SUS_GPIO_EN0		(1 << SUS_GPIO_EN0_BIT)
+#define   SUS_GPIO_STS0		(1 << 16)
+#define   PCIE_WAKE3_STS	(1 << 8)
+#define   PCIE_WAKE2_STS	(1 << 7)
+#define   PCIE_WAKE1_STS	(1 << 6)
+#define   PCIE_WAKE0_STS	(1 << 3)
+#define   PCI_EXP_STS		(1 << 9)
 #define   PME_B0_EN		(1 << 13)
 #define   _ACPI_ENABLE_WAKE_SUS_GPIO(x) SUS_GPIO_EN##x##_BIT
 #define   ACPI_ENABLE_WAKE_SUS_GPIO(x) _ACPI_ENABLE_WAKE_SUS_GPIO(x)
