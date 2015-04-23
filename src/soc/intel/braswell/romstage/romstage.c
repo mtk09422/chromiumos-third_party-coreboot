@@ -128,6 +128,13 @@ struct chipset_power_state *fill_power_state(void)
 
 	ps->prev_sleep_state = chipset_prev_sleep_state(ps);
 
+	printk(BIOS_DEBUG, "pm1_sts: %04x pm1_en: %04x pm1_cnt: %08x\n",
+		ps->pm1_sts, ps->pm1_en, ps->pm1_cnt);
+	printk(BIOS_DEBUG, "gpe0_sts: %08x gpe0_en: %08x tco_sts: %08x\n",
+		ps->gpe0_sts, ps->gpe0_en, ps->tco_sts);
+	printk(BIOS_DEBUG, "prsts: %08x gen_pmcon1: %08x gen_pmcon2: %08x\n",
+		ps->prsts, ps->gen_pmcon1, ps->gen_pmcon2);
+	printk(BIOS_DEBUG, "prev_sleep_state %d\n", ps->prev_sleep_state);
 	return ps;
 }
 
