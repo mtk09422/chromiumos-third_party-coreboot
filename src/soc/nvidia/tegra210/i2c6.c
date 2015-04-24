@@ -28,6 +28,7 @@
 
 #define I2C6_PADCTL		0xC001
 #define DPAUX_HYBRID_PADCTL	0x545C0124
+#define DPAUX_HYBRID_SPARE	0x545C0134
 
 static void enable_sor_periph_clocks(void)
 {
@@ -66,6 +67,8 @@ void soc_configure_i2c6pad(void)
 
 	/* Now we can write the I2C6 mux in DPAUX */
 	write32((void *)DPAUX_HYBRID_PADCTL, I2C6_PADCTL);
+	/* Finally, power up the pads */
+	write32((void *)DPAUX_HYBRID_SPARE, 0);
 
 	/*
 	 * Delay before turning off Host1X/DPAUX clocks.

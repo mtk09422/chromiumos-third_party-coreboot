@@ -25,8 +25,9 @@
 #include <soc/clk_rst.h>
 #include <soc/clock.h>
 #include <soc/funitcfg.h>
-#include <soc/nvidia/tegra/i2c.h>
 #include <soc/padconfig.h>
+#include <soc/nvidia/tegra/i2c.h>
+#include <soc/nvidia/tegra/pingroup.h>
 #include "gpio.h"
 
 static const struct pad_config padcfgs[] = {
@@ -65,8 +66,18 @@ static const struct funit_cfg funits[] = {
 /* Audio init: clocks and enables/resets */
 static void setup_audio(void)
 {
-	/* Audio codec (RT5677) uses OSC freq (via AUD_MCLK), s/b 38.4MHz */
+	/* Audio codec (RT5677) uses 12MHz CLK1/EXTPERIPH1 */
+	clock_configure_source(extperiph1, PLLP, 12000);
+
+	/* Configure AUD_MCLK pad drive strength */
+	write32((unsigned int *)TEGRA_APB_MISC_GP_BASE + 0xF4,
+		(0x10 << PINGROUP_DRVUP_SHIFT | 0x10 << PINGROUP_DRVDN_SHIFT));
+
+	/* Set up audio peripheral clocks/muxes */
 	soc_configure_funits(audio_funit, ARRAY_SIZE(audio_funit));
+
+	/* Enable CLK1_OUT */
+	clock_external_output(1);
 
 	/*
 	 * As per NVIDIA hardware team, we need to take ALL audio devices
@@ -77,6 +88,7 @@ static void setup_audio(void)
 	soc_configure_ape();
 	clock_enable_audio();
 }
+
 static void mainboard_init(device_t dev)
 {
 	soc_configure_pads(padcfgs, ARRAY_SIZE(padcfgs));
