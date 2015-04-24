@@ -168,7 +168,8 @@ CAR_init_done:
 	 * mm2:  BIST value
 	 */
 
-	/* Build frame for romstage_main(bist, tsc_low, tsc_hi) */
+	/* Frame for romstage_main(bist, tsc_low, tsc_hi, chipset_context) */
+	pushl	$0
 	movd	%mm1, %eax
 	pushl	%eax
 	movd	%mm0, %eax
@@ -254,6 +255,7 @@ before_romstage:
 __main:
 	post_code(POST_PREPARE_RAMSTAGE)
 	cld			/* Clear direction flag. */
+	pushl	$0		/* chipset_context */
 	call	romstage_after_car
 
 

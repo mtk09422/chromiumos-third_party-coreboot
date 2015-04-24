@@ -184,6 +184,7 @@ clear_mtrrs:
 
 	/* Build the call frame. */
 	movl	%esp, %ebp
+	pushl	$0 /* chipset_context */
 	movd	%mm1, %ebx
 	pushl	%ebx
 	movd	%mm0, %ebx
@@ -319,6 +320,7 @@ before_romstage:
 __main:
 	post_code(POST_PREPARE_RAMSTAGE)
 	cld			/* Clear direction flag. */
+	pushl	$0		/* chipset_context */
 	call	romstage_after_car
 
 .Lhlt:

@@ -44,13 +44,15 @@
 
 /* Entry from cache-as-ram.inc. */
 asmlinkage void *romstage_main(unsigned int bist,
-				uint32_t tsc_low, uint32_t tsc_high)
+				uint32_t tsc_low, uint32_t tsc_high,
+				void *chipset_context)
 {
 	void *top_of_stack;
 	struct pei_data pei_data;
 	struct romstage_params params = {
 		.bist = bist,
 		.pei_data = &pei_data,
+		.chipset_context = chipset_context,
 	};
 
 	post_code(0x30);
@@ -194,7 +196,7 @@ void romstage_common(struct romstage_params *params)
 #endif
 }
 
-asmlinkage void romstage_after_car(void)
+asmlinkage void romstage_after_car(void *chipset_context)
 {
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 	FSP_INFO_HEADER *fsp_info_header;

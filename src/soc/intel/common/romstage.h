@@ -33,6 +33,7 @@ struct romstage_params {
 	unsigned long bist;
 	struct chipset_power_state *power_state;
 	struct pei_data *pei_data;
+	void *chipset_context;
 };
 
 /*
@@ -83,10 +84,10 @@ void mainboard_save_dimm_info(struct romstage_params *params);
 void raminit(struct romstage_params *params);
 void report_memory_config(void);
 void report_platform_info(void);
-asmlinkage void romstage_after_car(void);
+asmlinkage void romstage_after_car(void *chipset_context);
 void romstage_common(struct romstage_params *params);
 asmlinkage void *romstage_main(unsigned int bist, uint32_t tsc_lo,
-			       uint32_t tsc_high);
+			       uint32_t tsc_high, void *chipset_context);
 void *setup_stack_and_mtrrs(void);
 void set_max_freq(void);
 void soc_after_ram_init(struct romstage_params *params);
