@@ -46,6 +46,7 @@ int is_big_endian(void)
 int buffer_create(struct buffer *buffer, size_t size, const char *name)
 {
 	buffer->name = strdup(name);
+	buffer->offset = 0;
 	buffer->size = size;
 	buffer->data = (char *)malloc(buffer->size);
 	if (!buffer->data) {
@@ -63,6 +64,7 @@ int buffer_from_file(struct buffer *buffer, const char *filename)
 		return -1;
 	}
 	fseek(fp, 0, SEEK_END);
+	buffer->offset = 0;
 	buffer->size = ftell(fp);
 	buffer->name = strdup(filename);
 	rewind(fp);
@@ -102,9 +104,10 @@ void buffer_delete(struct buffer *buffer)
 		buffer->name = NULL;
 	}
 	if (buffer->data) {
-		free(buffer->data);
+		free(buffer->data - buffer->offset);
 		buffer->data = NULL;
 	}
+	buffer->offset = 0;
 	buffer->size = 0;
 }
 

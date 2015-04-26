@@ -59,6 +59,7 @@ static inline uint32_t align_up(uint32_t value, uint32_t align)
 struct buffer {
 	char *name;
 	char *data;
+	size_t offset;
 	size_t size;
 };
 
@@ -72,6 +73,9 @@ static inline size_t buffer_size(const struct buffer *b)
 	return b->size;
 }
 
+/*
+ * Shrink a buffer toward the beginning of its previous space.
+ * Afterward, buffer_delete() remains the means of cleaning it up. */
 static inline void buffer_set_size(struct buffer *b, size_t size)
 {
 	b->size = size;
@@ -81,12 +85,16 @@ static inline void buffer_set_size(struct buffer *b, size_t size)
  * Splice a buffer into another buffer. If size is zero the entire buffer
  * is spliced while if size is non-zero the buffer is spliced starting at
  * offset for size bytes. Note that it's up to caller to bounds check.
+ * The resulting buffer is backed by the same storage as the original,
+ * so although it is valid to buffer_delete() either one of them, doing
+ * so releases both simultaneously.
  */
 static inline void buffer_splice(struct buffer *dest, const struct buffer *src,
                                  size_t offset, size_t size)
 {
 	dest->name = src->name;
 	dest->data = src->data;
+	dest->offset = src->offset + offset;
 	dest->size = src->size;
 	if (size != 0) {
 		dest->data += offset;
@@ -94,13 +102,20 @@ static inline void buffer_splice(struct buffer *dest, const struct buffer *src,
 	}
 }
 
+/*
+ * Shallow copy a buffer. To clean up the resources, buffer_delete()
+ * either one, but not both. */
 static inline void buffer_clone(struct buffer *dest, const struct buffer *src)
 {
 	buffer_splice(dest, src, 0, 0);
 }
 
+/*
+ * Shrink a buffer toward the end of its previous space.
+ * Afterward, buffer_delete() remains the means of cleaning it up. */
 static inline void buffer_seek(struct buffer *b, size_t size)
 {
+	b->offset += size;
 	b->size -= size;
 	b->data += size;
 }
