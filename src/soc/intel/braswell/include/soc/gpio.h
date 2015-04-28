@@ -211,6 +211,11 @@
 		     | PAD_CONFIG0_GPI_DEFAULT, \
 	  .pad_conf1 = PAD_CONFIG1_DEFAULT0 }
 
+#define GPIO_INPUT_PU_5K \
+	{ .pad_conf0 = PAD_PULL_UP_5K | PAD_GPIO_ENABLE \
+		     | PAD_CONFIG0_GPI_DEFAULT, \
+	  .pad_conf1 = PAD_CONFIG1_DEFAULT0 }
+
 #define GPI(int_type, int_sel, term, int_msk, glitch_cfg, wake_msk, gpe_val) { \
 	.pad_conf0 = PAD_INT_SEL(int_sel) | PAD_GFCFG(glitch_cfg) \
 		   | PAD_PULL(term) | PAD_GPIO_ENABLE | PAD_GPIOFG_GPI, \

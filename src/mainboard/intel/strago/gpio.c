@@ -178,7 +178,7 @@ static const struct soc_gpio_map  gpn_gpio_map[] = {
 	GPIO_NC,
 	/* 23 SEC_GPIO_SUS8 */
 	Native_M6, /* 24 GPIO_SUS2 */
-	GPIO_SCI(L6),/* 25 GPIO_SUS6 */
+	GPIO_INPUT_PU_5K,/* 25 GPIO_SUS6 */
 	Native_M1, /* 26 CX_PREQ_B */
 	GPIO_NC, /* 27 SEC_GPIO_SUS9 */
 	Native_M1, /* 30 TRST_B */
