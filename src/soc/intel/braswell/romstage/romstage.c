@@ -39,7 +39,6 @@
 #include <vendorcode/google/chromeos/chromeos.h>
 #include <fsp_util.h>
 #include <soc/intel/common/mrc_cache.h>
-
 #include <soc/gpio.h>
 #include <soc/iomap.h>
 #include <soc/iosf.h>
@@ -187,7 +186,6 @@ void soc_romstage_init(struct romstage_params *params)
 {
 	/* Continue chipset initialization */
 	spi_init();
-	gfx_init();
 
 #if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
 	/* Ensure the EC is in the right mode for recovery */
