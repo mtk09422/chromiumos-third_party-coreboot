@@ -66,10 +66,8 @@ Scope (\_SB.I2C1)
 				AddressingMode7Bit,       /* AddressingMode */
 				"\\_SB.I2C1",             /* ResourceSource */
 			)
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TOUCHSCREEN_IRQ
-			}
+			GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+				 "\\_SB.GPSW") { STRAGO_TOUCH_GPIO_INDEX }
 		})
 
 		Method (_STA)
@@ -101,10 +99,8 @@ Scope (\_SB.I2C1)
 				AddressingMode7Bit,       /* AddressingMode */
 				"\\_SB.I2C1",             /* ResourceSource */
 			)
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TOUCHSCREEN_IRQ
-			}
+			GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+				 "\\_SB.GPSW") { STRAGO_TOUCH_GPIO_INDEX }
 		})
 
 		Method (_STA)
@@ -227,10 +223,8 @@ Scope (\_SB.I2C6)
 				AddressingMode7Bit,       /* AddressingMode */
 				"\\_SB.I2C6",             /* ResourceSource */
 			)
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TRACKPAD_IRQ
-			}
+			GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+				 "\\_SB.GPNC") { STRAGO_TRACKPAD_GPIO_INDEX }
 		})
 
 		Method (_STA)

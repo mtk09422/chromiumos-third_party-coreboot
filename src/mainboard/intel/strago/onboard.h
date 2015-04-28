@@ -38,33 +38,25 @@
  * gpio based irq for kbd, 17th index in North Bank
  * MAX_DIRECT_IRQ + GPSW_SIZE + 18
  */
-#define STRAGO_KBD_IRQ         230
+/* ToDo: change kbd irq to gpio bank index */
+#define STRAGO_KBD_IRQ         182
 
-/*
- * gpio based irq for trackpad, 18th index in North Bank
- * MAX_DIRECT_IRQ + GPSW_SIZE + 19
- */
-#define STRAGO_TRACKPAD_IRQ    231
-
-/*
- * gpio based irq for touchscreen, 76th index in SW Bank
- * MAX_DIRECT_IRQ + 77
- */
-#define STRAGO_TOUCH_IRQ	191
 
 /* Gpio index or offset number in SE bank */
 #define JACK_DETECT_GPIO_INDEX	77
 /* SCI: Gpio index in N bank */
 #define STRAGO_SCI_GPIO_INDEX		15
+/* Trackpad: Gpio index in N bank */
+#define STRAGO_TRACKPAD_GPIO_INDEX	18
+/* Touch: Gpio index in SW bank */
+#define STRAGO_TOUCH_GPIO_INDEX		76
 
 #define BOARD_TRACKPAD_NAME             "trackpad"
-#define BOARD_TRACKPAD_IRQ              STRAGO_TRACKPAD_IRQ
 #define BOARD_TRACKPAD_WAKE_GPIO        ACPI_ENABLE_WAKE_SUS_GPIO(1)
 #define BOARD_TRACKPAD_I2C_BUS          5
 #define BOARD_TRACKPAD_I2C_ADDR         0x15
 
 #define BOARD_TOUCHSCREEN_NAME          "touchscreen"
-#define BOARD_TOUCHSCREEN_IRQ           STRAGO_TOUCH_IRQ
 #define BOARD_TOUCHSCREEN_WAKE_GPIO     ACPI_ENABLE_WAKE_SUS_GPIO(2)
 #define BOARD_TOUCHSCREEN_I2C_BUS       0
 #define BOARD_TOUCHSCREEN_I2C_ADDR      0x4a    /* TODO(shawnn): Check this */
