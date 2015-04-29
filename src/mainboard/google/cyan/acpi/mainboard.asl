@@ -68,10 +68,8 @@ Scope (\_SB.I2C1)
 				AddressingMode7Bit,       /* AddressingMode */
 				"\\_SB.I2C1",             /* ResourceSource */
 			)
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TOUCHSCREEN_IRQ
-			}
+			GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+				 "\\_SB.GPSW") { CYAN_TOUCH_GPIO_INDEX }
 		})
 
 		Method (_STA)
@@ -113,14 +111,8 @@ Scope (\_SB.I2C2)
 					"\\_SB.I2C2",		/* ResourceSource: I2C bus controller name */
 				)
 
-				Interrupt (ResourceConsumer, Edge, ActiveLow)
-				{
-					BOARD_CODEC_IRQ
-				}
-
-			 /* Jack Detect (index 0) */
-			 GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
-				  "\\_SB.GPSE") { JACK_DETECT_GPIO_INDEX }
+				GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+					"\\_SB.GPSE") { CYAN_JACK_MAXIM_GPIO_INDEX }
 			} )
 			Return (SBUF)
 		}
@@ -154,10 +146,8 @@ Scope (\_SB.I2C2)
 					"\\_SB.I2C2",	/* ResourceSource: I2C bus controller name */
 				)
 
-				Interrupt (ResourceConsumer, Edge, ActiveLow)
-				{
-					AUDIO_JACK_IRQ
-				}
+				GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+					"\\_SB.GPSW") { CYAN_JACK_TI_GPIO_INDEX }
 
 			} )
 			Return (SBUF)
@@ -228,10 +218,8 @@ Scope (\_SB.I2C6)
 				AddressingMode7Bit,       /* AddressingMode */
 				"\\_SB.I2C6",             /* ResourceSource */
 			)
-			Interrupt (ResourceConsumer, Edge, ActiveLow)
-			{
-				BOARD_TRACKPAD_IRQ
-			}
+			GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+				 "\\_SB.GPNC") { CYAN_TRACKPAD_GPIO_INDEX }
 		})
 
 		Method (_STA)
@@ -256,7 +244,7 @@ Scope (\_SB.LPEA)
 	{
 		/* Jack Detect (index 0) */
 		GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
-			 "\\_SB.GPSE") { JACK_DETECT_GPIO_INDEX }
+			"\\_SB.GPSE") { CYAN_JACK_MAXIM_GPIO_INDEX }
 	})
 }
 

@@ -38,45 +38,33 @@
  * gpio based irq for kbd, 17th index in North Bank
  * MAX_DIRECT_IRQ + GPSW_SIZE + 18
  */
-#define CYAN_KBD_IRQ         230
+/* ToDO: change kbd irq to gpio bank index */
+#define CYAN_KBD_IRQ         182
 
-/*
- * gpio based irq for trackpad, 18th index in North Bank
- * MAX_DIRECT_IRQ + GPSW_SIZE + 19
- */
-#define CYAN_TRACKPAD_IRQ    231
 
-/*
- * gpio based irq for touchscreen, 76th index in SW Bank
- * MAX_DIRECT_IRQ + 77
- */
-#define CYAN_TOUCH_IRQ	191
-
-/* Gpio index or offset number in SE bank */
-#define JACK_DETECT_GPIO_INDEX	77
 /* SCI: Gpio index in N bank */
 #define CYAN_SCI_GPIO_INDEX		15
+/* Trackpad: Gpio index in N bank */
+#define CYAN_TRACKPAD_GPIO_INDEX	18
+/* Touch: Gpio index in SW bank */
+#define CYAN_TOUCH_GPIO_INDEX		76
+/* TI Audio: Gpio index in SW bank */
+#define CYAN_JACK_TI_GPIO_INDEX		34
+/* MAXIM Audio: Gpio index in SE bank */
+#define CYAN_JACK_MAXIM_GPIO_INDEX	77
 
 #define BOARD_TRACKPAD_NAME             "trackpad"
-#define BOARD_TRACKPAD_IRQ              CYAN_TRACKPAD_IRQ
 #define BOARD_TRACKPAD_WAKE_GPIO        ACPI_ENABLE_WAKE_SUS_GPIO(1)
 #define BOARD_TRACKPAD_I2C_BUS          5
 #define BOARD_TRACKPAD_I2C_ADDR         0x15
 
 #define BOARD_TOUCHSCREEN_NAME          "touchscreen"
-#define BOARD_TOUCHSCREEN_IRQ           CYAN_TOUCH_IRQ
 #define BOARD_TOUCHSCREEN_WAKE_GPIO     ACPI_ENABLE_WAKE_SUS_GPIO(2)
 #define BOARD_TOUCHSCREEN_I2C_BUS       0
 #define BOARD_TOUCHSCREEN_I2C_ADDR      0x4a    /* TODO(shawnn): Check this */
 
 #define BOARD_I8042_IRQ                 CYAN_KBD_IRQ
 #define BOARD_ALS_IRQ                   GPIO_S0_DED_IRQ(ALS_IRQ_OFFSET)
-
-/*
- * gpio based irq for codec irq, 77th index in GPSE Bank
- * MAX_DIRECT_IRQ+GPSW_SIZE+GPNC_SIZE +GPEC_SIZE + 78
- */
-#define BOARD_CODEC_IRQ	390
 
 /* SD CARD gpio */
 #define SDCARD_CD			81
@@ -86,7 +74,6 @@
 #define AUDIO_CODEC_DDN			"Maxim 98090 Codec  "
 #define AUDIO_CODEC_I2C_ADDR		0x10
 
-#define AUDIO_JACK_IRQ  149
 #define TI_SWITCH_HID           "104C227E"
 #define TI_SWITCH_CID           "104C227E"
 #define TI_SWITCH_DDN           "TI SWITCH "
