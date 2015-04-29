@@ -27,6 +27,8 @@
 #define FLOW_CTRL_HALT_SCLK		(1 << 27)
 #define FLOW_CTRL_HALT_LIC_IRQ		(1 << 11)
 #define FLOW_CTRL_HALT_LIC_FIQ		(1 << 10)
+#define FLOW_CTRL_HALT_GIC_IRQ		(1 << 9)
+#define FLOW_CTRL_HALT_GIC_FIQ		(1 << 8)
 #define FLOW_CTRL_CPU0_CSR		0x8
 #define FLOW_CTRL_CSR_INTR_FLAG		(1 << 15)
 #define FLOW_CTRL_CSR_EVENT_FLAG	(1 << 14)
@@ -94,4 +96,18 @@ void flowctrl_cpu_on(int cpu)
 	flowctrl_write_cpu_csr(cpu, FLOW_CTRL_CSR_ENABLE);
 	flowctrl_write_cpu_halt(cpu, FLOW_CTRL_WAITEVENT |
 				FLOW_CTRL_HALT_SCLK);
+}
+
+void flowctrl_cpu_suspend(int cpu)
+{
+	uint32_t val;
+
+	val = FLOW_CTRL_HALT_GIC_IRQ | FLOW_CTRL_HALT_GIC_FIQ |
+	      FLOW_CTRL_HALT_LIC_IRQ | FLOW_CTRL_HALT_LIC_FIQ |
+	      FLOW_CTRL_WAITEVENT;
+	flowctrl_write_cpu_halt(cpu, val);
+
+	val = FLOW_CTRL_CSR_INTR_FLAG | FLOW_CTRL_CSR_EVENT_FLAG |
+	      FLOW_CTRL_CSR_ENABLE | (FLOW_CTRL_CSR_WFI_CPU0 << cpu);
+	flowctrl_write_cpu_csr(cpu, val);
 }
