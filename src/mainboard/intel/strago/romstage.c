@@ -20,7 +20,6 @@
 
 #include <cbfs.h>
 #include <console/console.h>
-#include <fsp_util.h>
 #include <lib.h>
 #include <soc/gpio.h>
 #include <soc/pci_devs.h>
@@ -30,20 +29,9 @@
 /* All FSP specific code goes in this block */
 void mainboard_romstage_entry(struct romstage_params *rp)
 {
-#if IS_ENABLED(CONFIG_GOP_SUPPORT)
-	void *vbt_content;
-	uint32_t vbt_len;
-#endif
 	struct pei_data *ps = rp->pei_data;
 
 	mainboard_fill_spd_data(ps);
-
-#if IS_ENABLED(CONFIG_GOP_SUPPORT)
-	/* Get VBT data */
-	vbt_content = (void *)fsp_get_vbt(&vbt_len);
-	if (vbt_content != NULL)
-		ps->vbt_data = vbt_content;
-#endif
 
 	/* Set device state/enable information */
 	ps->sdcard_mode = PCH_ACPI_MODE;

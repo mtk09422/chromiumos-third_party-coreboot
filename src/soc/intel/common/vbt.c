@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2013 Google Inc.
+ * Copyright (C) 2015 Google Inc.
  * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,24 +20,28 @@
 
 #include <cbfs.h>
 #include <console/console.h>
+#include <fsp_util.h>
 #include <lib.h>
-#include <soc/gpio.h>
-#include <soc/pci_devs.h>
 #include <soc/romstage.h>
 #include <string.h>
 
-/* All FSP specific code goes in this block */
-void mainboard_romstage_entry(struct romstage_params *rp)
+/* Locate VBT and pass it to FSP GOP */
+void load_vbt(struct romstage_params *rp)
 {
+	void *vbt_content;
+	uint32_t vbt_len;
 	struct pei_data *ps = rp->pei_data;
 
-	mainboard_fill_spd_data(ps);
-
-	/* Set device state/enable information */
-	ps->sdcard_mode = PCH_ACPI_MODE;
-	ps->emmc_mode = PCH_ACPI_MODE;
-	ps->enable_azalia = 1;
-
-	/* Call back into chipset code with platform values updated. */
-	romstage_common(rp);
+	/* Check boot mode - for S3 resume path VBT loading is not needed */
+	if (rp->power_state->prev_sleep_state != SLEEP_STATE_S3) {
+		/* Get VBT data */
+		vbt_content = (void *)fsp_get_vbt(&vbt_len);
+		if (vbt_content != NULL) {
+			ps->vbt_data = vbt_content;
+			printk(BIOS_DEBUG, "Find and pass VBT to GOP\n");
+		}
+	} else {
+		ps->vbt_data = NULL;
+		printk(BIOS_DEBUG, "S3 resume do not pass VBT to GOP\n");
+	}
 }

@@ -99,6 +99,10 @@ asmlinkage void *romstage_main(unsigned int bist,
 	/* Perform SOC specific initialization. */
 	soc_romstage_init(&params);
 
+#if IS_ENABLED(CONFIG_GOP_SUPPORT)
+	/* Locate VBT and pass to FSP GOP */
+	load_vbt(&params);
+#endif
 	/* Call into mainboard. */
 	mainboard_romstage_entry(&params);
 	soc_after_ram_init(&params);

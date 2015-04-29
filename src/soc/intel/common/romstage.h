@@ -71,6 +71,9 @@ struct romstage_params {
  *  30.  FSP binary/FspNotify
  */
 
+#if IS_ENABLED(CONFIG_GOP_SUPPORT)
+void load_vbt(struct romstage_params *params);
+#endif
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 void board_fsp_memory_init_params(
 	struct romstage_params *params,
