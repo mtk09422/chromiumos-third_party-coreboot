@@ -30,6 +30,10 @@
 
 #include <console/console.h>
 
+extern void tegra210_reset_handler(void);
+
+#define TEGRA210_PM_STATE_C7	7
+
 static void *cpu_on_entry_point;
 
 void psci_soc_init(uintptr_t cpu_on_entry)
@@ -41,7 +45,7 @@ void psci_soc_init(uintptr_t cpu_on_entry)
 	 * under us. Therefore, we set the appropriate registers here, but
 	 * it is also done on each CPU_ON request.
 	 */
-	cpu_on_entry_point = (void *)cpu_on_entry;
+	cpu_on_entry_point = tegra210_reset_handler;
 	cpu_prepare_startup(cpu_on_entry_point);
 }
 
@@ -78,13 +82,61 @@ static void prepare_cpu_on(int cpu)
 	cpu_prepare_startup(cpu_on_entry_point);
 }
 
+static void prepare_cpu_suspend(int cpu, uint32_t state_id)
+{
+	flowctrl_write_cc4_ctrl(cpu, 0xffffffff);
+	switch (state_id) {
+	case TEGRA210_PM_STATE_C7:
+		flowctrl_cpu_suspend(cpu);
+		break;
+	default:
+		return;
+	}
+}
+
+static void prepare_cpu_resume(int cpu)
+{
+	flowctrl_write_cpu_csr(cpu, 0);
+	flowctrl_write_cpu_halt(cpu, 0);
+	flowctrl_write_cc4_ctrl(cpu, 0);
+}
+
+static void cpu_suspend_commit(int cpu, uint32_t state_id)
+{
+	int l2_flush;
+
+	switch (state_id) {
+	case TEGRA210_PM_STATE_C7:
+		l2_flush = NO_L2_FLUSH;
+		break;
+	default:
+		return;
+	}
+
+	cortex_a57_cpu_power_down(l2_flush);
+	/* should never be here */
+}
+
 static int cmd_prepare(struct psci_cmd *cmd)
 {
 	int ret;
+	struct cpu_info *ci;
+
+	ci = cmd->target->cpu_state.ci;
 
 	switch (cmd->type) {
+	case PSCI_CMD_SUSPEND:
+		cmd->state_id = cmd->state->id;
+		prepare_cpu_on(ci->id);
+		prepare_cpu_suspend(ci->id, cmd->state_id);
+		ret = PSCI_RET_SUCCESS;
+		break;
+	case PSCI_CMD_RESUME:
+		prepare_cpu_resume(ci->id);
+		ret = PSCI_RET_SUCCESS;
+		break;
 	case PSCI_CMD_ON:
-		prepare_cpu_on(cmd->target->cpu_state.ci->id);
+		prepare_cpu_on(ci->id);
 		ret = PSCI_RET_SUCCESS;
 		break;
 	case PSCI_CMD_OFF:
@@ -109,6 +161,13 @@ static int cmd_commit(struct psci_cmd *cmd)
 	ci = cmd->target->cpu_state.ci;
 
 	switch (cmd->type) {
+	case PSCI_CMD_SUSPEND:
+		cpu_suspend_commit(ci->id, cmd->state_id);
+		ret = PSCI_RET_SUCCESS;
+		break;
+	case PSCI_CMD_RESUME:
+		ret = PSCI_RET_SUCCESS;
+		break;
 	case PSCI_CMD_ON:
 		/* Take CPU out of reset */
 		flowctrl_cpu_on(ci->id);
