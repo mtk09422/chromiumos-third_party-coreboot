@@ -105,6 +105,7 @@ secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += cpu_lib.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += flow_ctrl.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += power.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += psci.c
+secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += reset_handler.S
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += uart.c
 secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += gic.c
 
