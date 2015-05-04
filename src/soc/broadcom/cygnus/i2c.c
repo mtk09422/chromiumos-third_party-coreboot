@@ -83,7 +83,7 @@ static struct cygnus_i2c_regs *i2c_bus[] = {
 
 static unsigned int i2c_bus_busy(struct cygnus_i2c_regs *reg_addr)
 {
-	return readl(&reg_addr->i2c_master_comm) & I2C_MASTER_START_BUSY;
+	return read32(&reg_addr->i2c_master_comm) & I2C_MASTER_START_BUSY;
 }
 
 static int i2c_wait_bus_busy(struct cygnus_i2c_regs *reg_addr)
@@ -103,8 +103,8 @@ static int i2c_wait_bus_busy(struct cygnus_i2c_regs *reg_addr)
 
 static void i2c_flush_fifo(struct cygnus_i2c_regs *reg_addr)
 {
-	writel(I2C_MASTER_RX_FIFO_FLUSH | I2C_MASTER_TX_FIFO_FLUSH,
-		&reg_addr->i2c_fifo_master);
+	write32(&reg_addr->i2c_fifo_master,
+	       I2C_MASTER_RX_FIFO_FLUSH | I2C_MASTER_TX_FIFO_FLUSH);
 }
 
 static int i2c_write(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
@@ -113,7 +113,7 @@ static int i2c_write(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
 	unsigned int val, status;
 	int i, ret;
 
-	writel(segment->chip << 1, &reg_addr->i2c_master_data_wr);
+	write32(&reg_addr->i2c_master_data_wr, segment->chip << 1);
 
 	for (i = 0; i < segment->len; i++) {
 		val = data[i];
@@ -122,16 +122,16 @@ static int i2c_write(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
 		if (i == segment->len - 1)
 			val |= I2C_MASTER_WR_STATUS;
 
-		writel(val, &reg_addr->i2c_master_data_wr);
+		write32(&reg_addr->i2c_master_data_wr, val);
 	}
 	if (segment->len == 0)
-		writel(I2C_MASTER_WR_STATUS, &reg_addr->i2c_master_data_wr);
+		write32(&reg_addr->i2c_master_data_wr, I2C_MASTER_WR_STATUS);
 
 	/*
 	 * Now we can activate the transfer.
 	 */
-	writel(I2C_MASTER_START_BUSY | I2C_MASTER_PROT_BLK_WR,
-		&reg_addr->i2c_master_comm);
+	write32(&reg_addr->i2c_master_comm,
+		I2C_MASTER_START_BUSY | I2C_MASTER_PROT_BLK_WR);
 
 	ret = i2c_wait_bus_busy(reg_addr);
 	if (ret) {
@@ -140,7 +140,7 @@ static int i2c_write(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
 	}
 
 	/* check transaction successful */
-	status = readl(&reg_addr->i2c_master_comm);
+	status = read32(&reg_addr->i2c_master_comm);
 	ret = (status & I2C_MASTER_STATUS_MASK) >> I2C_MASTER_STATUS_SFT;
 	if (ret) {
 		printk(BIOS_ERR, "I2C write error %u\n", status);
@@ -160,13 +160,13 @@ static int i2c_read(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
 	int i, ret;
 	unsigned int status;
 
-	writel(segment->chip << 1 | 1, &reg_addr->i2c_master_data_wr);
+	write32(&reg_addr->i2c_master_data_wr, segment->chip << 1 | 1);
 
 	/*
 	 * Now we can activate the transfer. Specify the number of bytes to read
 	 */
-	writel(I2C_MASTER_START_BUSY | I2C_MASTER_PROT_BLK_RD | segment->len,
-		&reg_addr->i2c_master_comm);
+	write32(&reg_addr->i2c_master_comm,
+		I2C_MASTER_START_BUSY | I2C_MASTER_PROT_BLK_RD | segment->len);
 
 	ret = i2c_wait_bus_busy(reg_addr);
 	if (ret) {
@@ -175,7 +175,7 @@ static int i2c_read(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
 	}
 
 	/* check transaction successful */
-	status = readl(&reg_addr->i2c_master_comm);
+	status = read32(&reg_addr->i2c_master_comm);
 	ret = (status & I2C_MASTER_STATUS_MASK) >> I2C_MASTER_STATUS_SFT;
 	if (ret) {
 		printk(BIOS_ERR, "I2C read error %u\n", status);
@@ -183,7 +183,7 @@ static int i2c_read(struct cygnus_i2c_regs *reg_addr, struct i2c_seg *segment)
 	}
 
 	for (i = 0; i < segment->len; i++)
-		data[i] = readl(&reg_addr->i2c_master_data_rd) &
+		data[i] = read32(&reg_addr->i2c_master_data_rd) &
 			I2C_MASTER_RD_DATA_MASK;
 
 	return 0;
@@ -259,10 +259,10 @@ void i2c_init(unsigned int bus, unsigned int hz)
 	i2c_flush_fifo(regs);
 
 	/* disable all interrupts */
-	writel(0, &regs->i2c_int_en);
+	write32(&regs->i2c_int_en, 0);
 
 	/* clear all pending interrupts */
-	writel(0xffffffff, &regs->i2c_int_status);
+	write32(&regs->i2c_int_status, 0xffffffff);
 
-	writel(I2C_SMB_EN, &regs->i2c_con);
+	write32(&regs->i2c_con, I2C_SMB_EN);
 }

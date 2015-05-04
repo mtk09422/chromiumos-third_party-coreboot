@@ -68,9 +68,9 @@ static int bcm_phy_init(struct bcm_phy_instance *instance_ptr)
 	 * Default setting is device, check if it is set to host */
 	if (instance_ptr->port == 2) {
 		if (instance_ptr->host_mode == PHY2_DEV_HOST_CTRL_SEL_HOST)
-			writel(PHY2_DEV_HOST_CTRL_SEL_HOST,
-				phy_driver.usbphy_regs +
-				CDRU_USBPHY2_HOST_DEV_SEL_OFFSET);
+			write32(phy_driver.usbphy_regs +
+				CDRU_USBPHY2_HOST_DEV_SEL_OFFSET,
+				PHY2_DEV_HOST_CTRL_SEL_HOST);
 		else
 			die("usb device mode unsupported\n");
 	}
@@ -84,14 +84,14 @@ static int bcm_phy_poweron(struct bcm_phy_instance *instance_ptr)
 	u32 val;
 
 	/* Bring the AFE block out of reset to start powering up the PHY */
-	val = readl(phy_driver.usbphy_regs + CRMU_USB_PHY_AON_CTRL_OFFSET);
+	val = read32(phy_driver.usbphy_regs + CRMU_USB_PHY_AON_CTRL_OFFSET);
 	if (instance_ptr->port == 0)
 		val |= (1 << CRMU_USBPHY_P0_AFE_CORERDY_VDDC);
 	else if (instance_ptr->port == 1)
 		val |= (1 << CRMU_USBPHY_P1_AFE_CORERDY_VDDC);
 	else if (instance_ptr->port == 2)
 		val |= (1 << CRMU_USBPHY_P2_AFE_CORERDY_VDDC);
-	writel(val, phy_driver.usbphy_regs + CRMU_USB_PHY_AON_CTRL_OFFSET);
+	write32(phy_driver.usbphy_regs + CRMU_USB_PHY_AON_CTRL_OFFSET, val);
 
 	instance_ptr->power = 1;
 
@@ -100,7 +100,7 @@ static int bcm_phy_poweron(struct bcm_phy_instance *instance_ptr)
 		instance_ptr->host_mode == PHY2_DEV_HOST_CTRL_SEL_DEVICE)
 		die("usb device mode unsupported\n");
 
-	val = readl(phy_driver.usbphy_regs + CDRU_USBPHY_CLK_RST_SEL_OFFSET);
+	val = read32(phy_driver.usbphy_regs + CDRU_USBPHY_CLK_RST_SEL_OFFSET);
 
 	/* Check if the phy that is configured
 	 * to provide clock and reset is powered on*/
@@ -112,8 +112,8 @@ static int bcm_phy_poweron(struct bcm_phy_instance *instance_ptr)
 	/* if not set the current phy */
 	if (clock_reset_flag) {
 		val = instance_ptr->port;
-		writel(val, phy_driver.usbphy_regs +
-		       CDRU_USBPHY_CLK_RST_SEL_OFFSET);
+		write32(phy_driver.usbphy_regs + CDRU_USBPHY_CLK_RST_SEL_OFFSET,
+			val);
 	}
 
 	if (phy_driver.idm_host_enabled != 1) {

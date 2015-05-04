@@ -269,9 +269,9 @@ int cygnus_gpio_request_enable(void *priv, unsigned pin)
 	if (!mux->is_supported)
 		return -ENOTSUPP;
 
-	val = readl(pinctrl->base1 + mux->offset);
+	val = read32(pinctrl->base1 + mux->offset);
 	val |= 0x3 << mux->shift;
-	writel(val, pinctrl->base1 + mux->offset);
+	write32(pinctrl->base1 + mux->offset, val);
 
 	printk(BIOS_INFO, "gpio request enable pin=%u offset=0x%x shift=%u\n",
 		pin, mux->offset, mux->shift);
@@ -288,9 +288,9 @@ void cygnus_gpio_disable_free(void *priv, unsigned pin)
 	if (!mux->is_supported)
 		return;
 
-	val = readl(pinctrl->base1 + mux->offset);
+	val = read32(pinctrl->base1 + mux->offset);
 	val &= ~(0x3 << mux->shift);
-	writel(val, pinctrl->base1 + mux->offset);
+	write32(pinctrl->base1 + mux->offset, val);
 
 	printk(BIOS_INFO, "gpio disable free pin=%u offset=0x%x shift=%u\n",
 		pin, mux->offset, mux->shift);

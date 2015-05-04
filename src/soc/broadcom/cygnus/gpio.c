@@ -208,13 +208,13 @@ static struct cygnus_gpio *cygnus_get_gpio_core(unsigned gpio,
 
 static u32 cygnus_readl(struct cygnus_gpio *chip, unsigned int offset)
 {
-	return readl(chip->base + offset);
+	return read32(chip->base + offset);
 }
 
 static void cygnus_writel(struct cygnus_gpio *chip, unsigned int offset,
 			  u32 val)
 {
-	writel(val, chip->base + offset);
+	write32(chip->base + offset, val);
 }
 
 /**

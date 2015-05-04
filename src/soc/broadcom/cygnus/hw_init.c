@@ -47,7 +47,7 @@ static void scu_ns_config(void)
 	 * Enable NS SCU access to ARM global timer, private timer, and
 	 * components
 	 */
-	writel(0xFFF, (void *)IHOST_SCU_SECURE_ACCESS);
+	write32((void *)IHOST_SCU_SECURE_ACCESS, 0xFFF);
 }
 
 static void smau_ns_config(void)
@@ -55,9 +55,9 @@ static void smau_ns_config(void)
 	unsigned int val;
 
 	/* Disable SMAU NIC IDM TZ */
-	val = readl((void *)SMAU_NIC_IDM_TZ_BASE);
+	val = read32((void *)SMAU_NIC_IDM_TZ_BASE);
 	val &= ~SMAU_TZ_BASE_ENABLE;
-	writel(val, (void *)SMAU_NIC_IDM_TZ_BASE);
+	write32((void *)SMAU_NIC_IDM_TZ_BASE, val);
 
 	/*
 	 * Disable DDR TZ base
@@ -67,9 +67,9 @@ static void smau_ns_config(void)
 	 * NOTE: In the future, multiple regions of DDR may need to be marked
 	 * as SECURE for secure OS and other TZ usages
 	 */
-	val = readl((void *)SMAU_DDR_TZ_BASE);
+	val = read32((void *)SMAU_DDR_TZ_BASE);
 	val &= ~SMAU_TZ_BASE_ENABLE;
-	writel(val, (void *)SMAU_DDR_TZ_BASE);
+	write32((void *)SMAU_DDR_TZ_BASE, val);
 
 
 	/*
@@ -82,24 +82,24 @@ static void smau_ns_config(void)
 	 */
 
 	/* Flash 0: ROM */
-	val = readl((void *)SMAU_FLASH0_TZ_BASE);
+	val = read32((void *)SMAU_FLASH0_TZ_BASE);
 	val &= ~SMAU_TZ_BASE_ENABLE;
-	writel(val, (void *)SMAU_FLASH0_TZ_BASE);
+	write32((void *)SMAU_FLASH0_TZ_BASE, val);
 
 	/* Flash 1: QSPI */
-	val = readl((void *)SMAU_FLASH1_TZ_BASE);
+	val = read32((void *)SMAU_FLASH1_TZ_BASE);
 	val &= ~SMAU_TZ_BASE_ENABLE;
-	writel(val, (void *)SMAU_FLASH1_TZ_BASE);
+	write32((void *)SMAU_FLASH1_TZ_BASE, val);
 
 	/* Flash 2: NAND */
-	val = readl((void *)SMAU_FLASH2_TZ_BASE);
+	val = read32((void *)SMAU_FLASH2_TZ_BASE);
 	val &= ~SMAU_TZ_BASE_ENABLE;
-	writel(val, (void *)SMAU_FLASH2_TZ_BASE);
+	write32((void *)SMAU_FLASH2_TZ_BASE, val);
 
 	/* Flash 3: PNOR */
-	val = readl((void *)SMAU_FLASH3_TZ_BASE);
+	val = read32((void *)SMAU_FLASH3_TZ_BASE);
 	val &= ~SMAU_TZ_BASE_ENABLE;
-	writel(val, (void *)SMAU_FLASH3_TZ_BASE);
+	write32((void *)SMAU_FLASH3_TZ_BASE, val);
 }
 
 static void crmu_ns_config(void)
@@ -113,10 +113,10 @@ static void crmu_ns_config(void)
 	 * programing the CRMU IPROC address range registers. Up to 4 access
 	 * windows can be created
 	 */
-	writel((CRMU_ADDR_START & CRMU_ADDR_MASK) | CRMU_ADDR_VALID,
-	       (void *)CRMU_IPROC_ADDR_RANGE0_LOW);
-	writel((CRMU_ADDR_END &  CRMU_ADDR_MASK) | CRMU_ADDR_VALID,
-	       (void *)CRMU_IPROC_ADDR_RANGE0_HIGH);
+	write32((void *)CRMU_IPROC_ADDR_RANGE0_LOW,
+		(CRMU_ADDR_START & CRMU_ADDR_MASK) | CRMU_ADDR_VALID);
+	write32((void *)CRMU_IPROC_ADDR_RANGE0_HIGH,
+		(CRMU_ADDR_END &  CRMU_ADDR_MASK) | CRMU_ADDR_VALID);
 }
 
 static void tz_init(void)
@@ -165,15 +165,15 @@ static void dmac_init(void)
 	unsigned int val, timeout;
 
 	/* bring the DMAC block out of reset */
-	val = readl((void *)DMAC_M0_IDM_RESET_CONTROL);
+	val = read32((void *)DMAC_M0_IDM_RESET_CONTROL);
 	val |= DMAC_RESET_MASK;
-	writel(val, (void *)DMAC_M0_IDM_RESET_CONTROL);
+	write32((void *)DMAC_M0_IDM_RESET_CONTROL, val);
 	udelay(10);
 	val &= ~DMAC_RESET_MASK;
-	writel(val, (void *)DMAC_M0_IDM_RESET_CONTROL);
+	write32((void *)DMAC_M0_IDM_RESET_CONTROL, val);
 
 	timeout = 0;
-	while (readl((void *)DMAC_M0_IDM_RESET_CONTROL) & DMAC_RESET_MASK) {
+	while (read32((void *)DMAC_M0_IDM_RESET_CONTROL) & DMAC_RESET_MASK) {
 		udelay(1);
 		if (timeout++ > DMAC_RESET_TIMEOUT)
 			die("Failed to bring PL330 DMAC out of reset\n");
@@ -204,18 +204,18 @@ static void neon_init(void)
 	unsigned int i, val;
 
 	/* put Neon into reset */
-	val = readl((void *)CRU_CONTROL);
+	val = read32((void *)CRU_CONTROL);
 	val &= ~CRU_CONTROL_NEON_RESET_N;
-	writel(val, (void *)CRU_CONTROL);
+	write32((void *)CRU_CONTROL, val);
 
 	/* assert the power on register bit */
-	val = readl((void *)CRU_IHOST_PWRDWN_EN);
+	val = read32((void *)CRU_IHOST_PWRDWN_EN);
 	val |= CRU_IHOST_PWRDWN_EN_PWRON_NEON;
-	writel(val, (void *)CRU_IHOST_PWRDWN_EN);
+	write32((void *)CRU_IHOST_PWRDWN_EN, val);
 
 	/* wait for power on */
 	i = 0;
-	while (!(readl((void *)CRU_IHOST_PWRDWN_STATUS) &
+	while (!(read32((void *)CRU_IHOST_PWRDWN_STATUS) &
 		 CRU_IHOST_PWRDWN_STATUS_PWRON_NEON)) {
 		udelay(CRU_RETRY_INTVL_US);
 		if (i++ >= CRU_MAX_RETRY_COUNT)
@@ -225,13 +225,13 @@ static void neon_init(void)
 	udelay(CRU_STATUS_DELAY_US);
 
 	/* assert the power ok register bit */
-	val = readl((void *)CRU_IHOST_PWRDWN_EN);
+	val = read32((void *)CRU_IHOST_PWRDWN_EN);
 	val |= CRU_IHOST_PWRDWN_EN_PWROK_NEON;
-	writel(val, (void *)CRU_IHOST_PWRDWN_EN);
+	write32((void *)CRU_IHOST_PWRDWN_EN, val);
 
 	/* wait for power ok */
 	i = 0;
-	while (!(readl((void *)CRU_IHOST_PWRDWN_STATUS) &
+	while (!(read32((void *)CRU_IHOST_PWRDWN_STATUS) &
 		 CRU_IHOST_PWRDWN_STATUS_PWROK_NEON)) {
 		udelay(CRU_RETRY_INTVL_US);
 		if (i++ >= CRU_MAX_RETRY_COUNT)
@@ -241,16 +241,16 @@ static void neon_init(void)
 	udelay(CRU_STATUS_DELAY_US);
 
 	/* clamp off for the NEON block */
-	val = readl((void *)CRU_IHOST_PWRDWN_EN);
+	val = read32((void *)CRU_IHOST_PWRDWN_EN);
 	val &= ~CRU_IHOST_PWRDWN_EN_CLAMPON_NEON;
-	writel(val, (void *)CRU_IHOST_PWRDWN_EN);
+	write32((void *)CRU_IHOST_PWRDWN_EN, val);
 
 	udelay(CRU_STATUS_DELAY_US);
 
 	/* bring NEON out of reset */
-	val = readl((void *)CRU_CONTROL);
+	val = read32((void *)CRU_CONTROL);
 	val |= CRU_CONTROL_NEON_RESET_N;
-	writel(val, (void *)CRU_CONTROL);
+	write32((void *)CRU_CONTROL, val);
 }
 
 /*****************************************************************************
@@ -271,9 +271,9 @@ static void pcie_init(void)
 	 * This brings down the PCIe interfaces to the lowest possible power
 	 * mode
 	 */
-	val = readl((void *)CRMU_PCIE_CFG);
+	val = read32((void *)CRMU_PCIE_CFG);
 	val |= PCIE1_LNK_PHY_IDDQ | PCIE0_LNK_PHY_IDDQ;
-	writel(val, (void *)CRMU_PCIE_CFG);
+	write32((void *)CRMU_PCIE_CFG, val);
 }
 
 /*****************************************************************************
@@ -285,7 +285,7 @@ static void pcie_init(void)
 static void M0_init(void)
 {
 	/* Set M0 as a secure master */
-	writel(CRMU_MCU_ACCESS_MODE_SECURE, (void *)CRMU_MCU_ACCESS_CONTROL);
+	write32((void *)CRMU_MCU_ACCESS_CONTROL, CRMU_MCU_ACCESS_MODE_SECURE);
 }
 
 /*****************************************************************************
@@ -405,9 +405,9 @@ static void ccu_init(void)
 	uint32_t val;
 	uint32_t i;
 	for (i = 0; i < CCU_REG_TABLE_SIZE; i++) {
-		val = readl((void *)(ccu_reg[i]));
+		val = read32((void *)(ccu_reg[i]));
 		val &= ~WR_ACCESS_PRIVATE_ACCESS_MODE;
-		writel(val, (void *)(ccu_reg[i]));
+		write32((void *)(ccu_reg[i]), val);
 	}
 }
 
@@ -425,9 +425,9 @@ static void lcd_init(void)
 	unsigned int val;
 
 	/* make sure the LCD clock is ungated */
-	val = readl((void *)ASIU_TOP_CLK_GATING_CTRL);
+	val = read32((void *)ASIU_TOP_CLK_GATING_CTRL);
 	val |= ASIU_TOP_CLK_GATING_CTRL_LCD_CLK_GATE_EN;
-	writel(val, (void *)ASIU_TOP_CLK_GATING_CTRL);
+	write32((void *)ASIU_TOP_CLK_GATING_CTRL, val);
 }
 
 /*******************************************************************
@@ -463,15 +463,15 @@ static void lcd_qos_init(unsigned int qos)
 {
 	unsigned int val;
 
-	val = readl((void *)AXIIC_EXT_M0_READ_QOS);
+	val = read32((void *)AXIIC_EXT_M0_READ_QOS);
 	val &= ~AXIIC_EXT_M0_READ_MASK;
 	val |= (qos & AXIIC_EXT_M0_READ_MASK);
-	writel(val, (void *)AXIIC_EXT_M0_READ_QOS);
+	write32((void *)AXIIC_EXT_M0_READ_QOS, val);
 
-	val = readl((void *)AXIIC_EXT_M0_WRITE_QOS);
+	val = read32((void *)AXIIC_EXT_M0_WRITE_QOS);
 	val &= ~AXIIC_EXT_M0_WRITE_MASK;
 	val |= (qos & AXIIC_EXT_M0_WRITE_MASK);
-	writel(val, (void *)AXIIC_EXT_M0_WRITE_QOS);
+	write32((void *)AXIIC_EXT_M0_WRITE_QOS, val);
 }
 
 /*****************************************************************************
@@ -482,10 +482,10 @@ static void v3d_init(void)
 	unsigned int val;
 
 	/* make sure the V3D clock is ungated */
-	val = readl((void *)ASIU_TOP_CLK_GATING_CTRL);
+	val = read32((void *)ASIU_TOP_CLK_GATING_CTRL);
 	val |= ASIU_TOP_CLK_GATING_CTRL_MIPI_DSI_CLK_GATE_EN |
 	       ASIU_TOP_CLK_GATING_CTRL_GFX_CLK_GATE_EN;
-	writel(val, (void *)ASIU_TOP_CLK_GATING_CTRL);
+	write32((void *)ASIU_TOP_CLK_GATING_CTRL, val);
 }
 
 /*****************************************************************************
@@ -502,17 +502,17 @@ static void audio_init(void)
 	unsigned int val;
 
 	/* Ungate (enable) audio clock. */
-	val = readl((void *)ASIU_TOP_CLK_GATING_CTRL);
+	val = read32((void *)ASIU_TOP_CLK_GATING_CTRL);
 	val |= ASIU_TOP_CLK_GATING_CTRL_AUD_CLK_GATE_EN;
-	writel(val, (void *)ASIU_TOP_CLK_GATING_CTRL);
+	write32((void *)ASIU_TOP_CLK_GATING_CTRL, val);
 
 	/* Power on audio GEN PLL, LDO, and BG. Input isolation = normal. */
-	val = readl((void *)CRMU_PLL_AON_CTRL);
+	val = read32((void *)CRMU_PLL_AON_CTRL);
 	val |= CRMU_PLL_AON_CTRL_ASIU_AUDIO_GENPLL_PWRON_BG;
 	val |= CRMU_PLL_AON_CTRL_ASIU_AUDIO_GENPLL_PWRON_LDO;
 	val |= CRMU_PLL_AON_CTRL_ASIU_AUDIO_GENPLL_PWRON_PLL;
 	val &= ~CRMU_PLL_AON_CTRL_ASIU_AUDIO_GENPLL_ISO_IN;
-	writel(val, (void *)CRMU_PLL_AON_CTRL);
+	write32((void *)CRMU_PLL_AON_CTRL, val);
 }
 
 /*****************************************************************************
@@ -667,28 +667,28 @@ static void sdio_ctrl_init(unsigned int idx)
 	/*
 	 * Disable the cmd conflict error interrupt and enable feedback clock
 	 */
-	val = readl((void *)sdio_idm_io_control_direct_reg);
+	val = read32((void *)sdio_idm_io_control_direct_reg);
 	val |= SDIO_CMD_COMFLICT_DISABLE | SDIO_FEEDBACK_CLK_EN |
 	       SDIO_CLK_ENABLE;
-	writel(val, (void *)sdio_idm_io_control_direct_reg);
+	write32((void *)sdio_idm_io_control_direct_reg, val);
 
 	/*
 	 * Set drive strength, enable hysteresis and slew rate control
 	 */
 	val = SDIO_DEFAULT_DRIVE_STRENGTH |
 		HYSTERESIS_ENABLE | SLEW_RATE_ENABLE;
-	writel(val, (void *)cdru_sdio_io_control_reg);
+	write32((void *)cdru_sdio_io_control_reg, val);
 
 	/* Reset SDIO controller */
-	val = readl((void *)sdio_idm_reset_control_reg);
+	val = read32((void *)sdio_idm_reset_control_reg);
 	val |= SDIO_RESET_MASK;
-	writel(SDIO_RESET_MASK, (void *)sdio_idm_reset_control_reg);
+	write32((void *)sdio_idm_reset_control_reg, SDIO_RESET_MASK);
 	udelay(10);
 	val &= ~SDIO_RESET_MASK;
-	writel(val, (void *)sdio_idm_reset_control_reg);
+	write32((void *)sdio_idm_reset_control_reg, val);
 
 	timeout = 0;
-	while (readl((void *)sdio_idm_reset_control_reg) & SDIO_RESET_MASK) {
+	while (read32((void *)sdio_idm_reset_control_reg) & SDIO_RESET_MASK) {
 		udelay(1);
 		if (timeout++ > SDIO_RESET_TIMEOUT)
 			die("Failed to bring SDIO out of reset\n");
@@ -703,16 +703,16 @@ static void sdio_init(void)
 	 * Configure SDIO host controller capabilities
 	 * (common setting for all SDIO controllers)
 	 */
-	writel(SDIO_CAPS_H, (void *)CRMU_SDIO_CONTROL0);
-	writel(SDIO_CAPS_L, (void *)CRMU_SDIO_CONTROL1);
+	write32((void *)CRMU_SDIO_CONTROL0, SDIO_CAPS_H);
+	write32((void *)CRMU_SDIO_CONTROL1, SDIO_CAPS_L);
 	/*
 	 * Configure SDIO host controller preset values
 	 * (common setting for all SDIO controllers)
 	 */
-	writel(SDIO_PRESETVAL1, (void *)CRMU_SDIO_CONTROL2);
-	writel(SDIO_PRESETVAL2, (void *)CRMU_SDIO_CONTROL3);
-	writel(SDIO_PRESETVAL3, (void *)CRMU_SDIO_CONTROL4);
-	writel(SDIO_PRESETVAL4, (void *)CRMU_SDIO_CONTROL5);
+	write32((void *)CRMU_SDIO_CONTROL2, SDIO_PRESETVAL1);
+	write32((void *)CRMU_SDIO_CONTROL3, SDIO_PRESETVAL2);
+	write32((void *)CRMU_SDIO_CONTROL4, SDIO_PRESETVAL3);
+	write32((void *)CRMU_SDIO_CONTROL5, SDIO_PRESETVAL4);
 
 	/*
 	 * The sdhci driver attempts to change the SDIO IO voltage for UHS-I
@@ -726,9 +726,9 @@ static void sdio_init(void)
 	 * register to indicate success.
 	 * (common setting for all SDIO controllers)
 	 */
-	val = readl((void *)CRMU_SDIO_1P8_FAIL_CONTROL);
+	val = read32((void *)CRMU_SDIO_1P8_FAIL_CONTROL);
 	val &= ~UHS1_18V_VREG_FAIL;
-	writel(val, (void *)CRMU_SDIO_1P8_FAIL_CONTROL);
+	write32((void *)CRMU_SDIO_1P8_FAIL_CONTROL, val);
 
 	/*
 	 * Initialize each SDIO controller

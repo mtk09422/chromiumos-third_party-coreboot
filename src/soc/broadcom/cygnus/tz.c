@@ -95,25 +95,25 @@ void tz_set_masters_security(uint32_t masters, uint32_t ns_bit)
 	if (masters & TZPCDECPROT0_MASK) {
 		val = masters & TZPCDECPROT0_MASK;
 		if (ns_bit)
-			writel(val, (void *)TZPC_TZPCDECPROT0SET);
+			write32((void *)TZPC_TZPCDECPROT0SET, val);
 		else
-			writel(val, (void *)TZPC_TZPCDECPROT0CLR);
+			write32((void *)TZPC_TZPCDECPROT0CLR, val);
 	}
 	/* Check any TZPCDECPROT1 is set and then write to TZPCDECPROT1 */
 	if ((masters >> 8) & TZPCDECPROT1_MASK) {
 		val = (masters >> 8) & TZPCDECPROT1_MASK;
 		if (ns_bit)
-			writel(val, (void *)TZPC_TZPCDECPROT1SET);
+			write32((void *)TZPC_TZPCDECPROT1SET, val);
 		else
-			writel(val, (void *)TZPC_TZPCDECPROT1CLR);
+			write32((void *)TZPC_TZPCDECPROT1CLR, val);
 	}
 	/* Check any TZPCDECPROT2 is set and then write to TZPCDECPROT2 */
 	if ((masters >> 16) & TZPCDECPROT2_MASK) {
 		val = (masters >> 16) & TZPCDECPROT2_MASK;
 		if (ns_bit)
-			writel(val, (void *)TZPC_TZPCDECPROT2SET);
+			write32((void *)TZPC_TZPCDECPROT2SET, val);
 		else
-			writel(val, (void *)TZPC_TZPCDECPROT2CLR);
+			write32((void *)TZPC_TZPCDECPROT2CLR, val);
 	}
 }
 
@@ -132,7 +132,7 @@ void tz_set_non_virtual_slaves_security(uint32_t slave_vector, uint32_t ns_bit)
 	slave_vector = slave_vector & mask;
 	for (i = 0; i < total; i++) {
 		if (slave_vector & (0x1 << i))
-			writel(ns_bit, (void *)(non_virtual_slave_regs[i]));
+			write32((void *)(non_virtual_slave_regs[i]), ns_bit);
 	}
 }
 
@@ -146,8 +146,8 @@ void tz_set_periph_security(uint32_t slave_vector, uint32_t ns_bit)
 	uint32_t mask_x = AXIIC_APBX_s0_security_MASK;
 	uint32_t mask_y = AXIIC_APBY_s0_security_MASK;
 	uint32_t tz_periphs_sec_status =
-		(mask_x & readl((void *)AXIIC_APBX_s0_security)) |
-		((mask_y & readl((void *)AXIIC_APBY_s0_security)) << 16);
+		(mask_x & read32((void *)AXIIC_APBX_s0_security)) |
+		((mask_y & read32((void *)AXIIC_APBY_s0_security)) << 16);
 
 	if (ns_bit == TZ_STATE_SECURE)
 		tz_periphs_sec_status &= ~slave_vector;
@@ -155,10 +155,10 @@ void tz_set_periph_security(uint32_t slave_vector, uint32_t ns_bit)
 		tz_periphs_sec_status |= slave_vector;
 
 	val = tz_periphs_sec_status & mask_x;
-	writel(val, (void *)AXIIC_APBX_s0_security);
+	write32((void *)AXIIC_APBX_s0_security, val);
 
 	val = (tz_periphs_sec_status >> 16) & mask_y;
-	writel(val, (void *)AXIIC_APBY_s0_security);
+	write32((void *)AXIIC_APBY_s0_security, val);
 }
 
 /*
@@ -170,7 +170,7 @@ void tz_set_sec_periphs_security(uint32_t slave_vector, uint32_t ns_bit)
 	uint32_t val;
 	uint32_t mask = AXIIC_APBZ_s0_security_MASK;
 	uint32_t tz_sec_periphs_sec_status =
-		readl((void *)AXIIC_APBZ_s0_security);
+		read32((void *)AXIIC_APBZ_s0_security);
 
 	if (ns_bit == TZ_STATE_SECURE)
 		tz_sec_periphs_sec_status &= ~slave_vector;
@@ -178,7 +178,7 @@ void tz_set_sec_periphs_security(uint32_t slave_vector, uint32_t ns_bit)
 		tz_sec_periphs_sec_status |= slave_vector;
 
 	val = tz_sec_periphs_sec_status & mask;
-	writel(val, (void *)AXIIC_APBZ_s0_security);
+	write32((void *)AXIIC_APBZ_s0_security, val);
 }
 
 /*
@@ -191,8 +191,8 @@ void tz_set_ext_slaves_security(uint32_t slave_vector, uint32_t ns_bit)
 	uint32_t mask_s0 = AXIIC_ext_s0_security_MASK;
 	uint32_t mask_s1 = AXIIC_ext_s1_security_MASK;
 	uint32_t tz_ext_slaves_sec_status =
-		(mask_s0 & readl((void *)AXIIC_ext_s0_security)) |
-		((mask_s1 & readl((void *)AXIIC_ext_s0_security)) << 16);
+		(mask_s0 & read32((void *)AXIIC_ext_s0_security)) |
+		((mask_s1 & read32((void *)AXIIC_ext_s0_security)) << 16);
 
 	if (ns_bit == TZ_STATE_SECURE)
 		tz_ext_slaves_sec_status &= ~slave_vector;
@@ -200,10 +200,10 @@ void tz_set_ext_slaves_security(uint32_t slave_vector, uint32_t ns_bit)
 		tz_ext_slaves_sec_status |= slave_vector;
 
 	val = tz_ext_slaves_sec_status & mask_s0;
-	writel(val, (void *)AXIIC_ext_s0_security);
+	write32((void *)AXIIC_ext_s0_security, val);
 
 	val = (tz_ext_slaves_sec_status >> 16) & mask_s1;
-	writel(val, (void *)AXIIC_ext_s1_security);
+	write32((void *)AXIIC_ext_s1_security, val);
 }
 
 /*
@@ -216,8 +216,8 @@ void tz_set_cfg_slaves_security(uint32_t slave_vector, uint32_t ns_bit)
 	uint32_t mask_r = AXIIC_APBR_s0_security_MASK;
 	uint32_t mask_s = AXIIC_APBS_s0_security_MASK;
 	uint32_t tz_cfg_slaves_sec_status =
-		(mask_r & readl((void *)AXIIC_APBR_s0_security)) |
-		((mask_s & readl((void *)AXIIC_APBS_s0_security)) << 16);
+		(mask_r & read32((void *)AXIIC_APBR_s0_security)) |
+		((mask_s & read32((void *)AXIIC_APBS_s0_security)) << 16);
 
 	if (ns_bit == TZ_STATE_SECURE)
 		tz_cfg_slaves_sec_status &= ~slave_vector;
@@ -225,10 +225,10 @@ void tz_set_cfg_slaves_security(uint32_t slave_vector, uint32_t ns_bit)
 		tz_cfg_slaves_sec_status |= slave_vector;
 
 	val = tz_cfg_slaves_sec_status & mask_r;
-	writel(val, (void *)AXIIC_APBR_s0_security);
+	write32((void *)AXIIC_APBR_s0_security, val);
 
 	val = (tz_cfg_slaves_sec_status >> 16) & mask_s;
-	writel(val, (void *)AXIIC_APBS_s0_security);
+	write32((void *)AXIIC_APBS_s0_security, val);
 }
 
 /*
@@ -245,7 +245,7 @@ void tz_set_sram_sec_region(uint32_t r0size)
 {
 	uint32_t mask = TZPC_TZPCR0SIZE_MASK;
 
-	writel(r0size & mask, (void *)TZPC_TZPCR0SIZE);
+	write32((void *)TZPC_TZPCR0SIZE, r0size & mask);
 }
 
 /*
@@ -260,10 +260,10 @@ void tz_set_wrapper_security(uint32_t wrapper1, uint32_t wrapper2,
 	uint32_t mask_w3 = AXIIC_APB_W3_security_MASK;
 	uint32_t mask_w2 = AXIIC_APB_W2_security_MASK;
 	uint32_t mask_w1 = AXIIC_APB_W1_security_MASK;
-	uint32_t tz_wrapper1_sec_status = readl((void *)AXIIC_APB_W1_security);
-	uint32_t tz_wrapper2_sec_status = readl((void *)AXIIC_APB_W2_security);
-	uint32_t tz_wrapper3_sec_status = readl((void *)AXIIC_APB_W3_security);
-	uint32_t tz_wrapper4_sec_status = readl((void *)AXIIC_APB_W4_security);
+	uint32_t tz_wrapper1_sec_status = read32((void *)AXIIC_APB_W1_security);
+	uint32_t tz_wrapper2_sec_status = read32((void *)AXIIC_APB_W2_security);
+	uint32_t tz_wrapper3_sec_status = read32((void *)AXIIC_APB_W3_security);
+	uint32_t tz_wrapper4_sec_status = read32((void *)AXIIC_APB_W4_security);
 
 	if (ns_bit == TZ_STATE_SECURE) {
 		tz_wrapper1_sec_status &= ~wrapper1;
@@ -276,12 +276,12 @@ void tz_set_wrapper_security(uint32_t wrapper1, uint32_t wrapper2,
 		tz_wrapper3_sec_status |= wrapper3;
 		tz_wrapper4_sec_status |= wrapper4;
 	}
-	writel(tz_wrapper1_sec_status & mask_w1,
-	       (void *)AXIIC_APB_W1_security);
-	writel(tz_wrapper2_sec_status & mask_w2,
-	       (void *)AXIIC_APB_W2_security);
-	writel(tz_wrapper3_sec_status & mask_w3,
-	       (void *)AXIIC_APB_W3_security);
-	writel(tz_wrapper4_sec_status & mask_w4,
-	       (void *)AXIIC_APB_W4_security);
+	write32((void *)AXIIC_APB_W1_security,
+		tz_wrapper1_sec_status & mask_w1);
+	write32((void *)AXIIC_APB_W2_security,
+		tz_wrapper2_sec_status & mask_w2);
+	write32((void *)AXIIC_APB_W3_security,
+		tz_wrapper3_sec_status & mask_w3);
+	write32((void *)AXIIC_APB_W4_security,
+		tz_wrapper4_sec_status & mask_w4);
 }
