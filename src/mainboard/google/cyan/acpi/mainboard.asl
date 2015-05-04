@@ -259,3 +259,20 @@ Scope (\_SB.LPEA)
 			 "\\_SB.GPSE") { JACK_DETECT_GPIO_INDEX }
 	})
 }
+
+Scope (\_SB.GPNC)
+{
+	Method (_AEI, 0, NotSerialized)  // _AEI: ACPI Event Interrupts
+	{
+		Name (RBUF, ResourceTemplate ()
+		{
+			GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
+				"\\_SB.GPNC") { CYAN_SCI_GPIO_INDEX }
+		})
+		Return (RBUF)
+	}
+
+	Method (_E0F, 0, NotSerialized)  // _Exx: Edge-Triggered GPE
+	{
+	}
+}

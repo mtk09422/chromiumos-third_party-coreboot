@@ -54,6 +54,8 @@
 
 /* Gpio index or offset number in SE bank */
 #define JACK_DETECT_GPIO_INDEX	77
+/* SCI: Gpio index in N bank */
+#define CYAN_SCI_GPIO_INDEX		15
 
 #define BOARD_TRACKPAD_NAME             "trackpad"
 #define BOARD_TRACKPAD_IRQ              CYAN_TRACKPAD_IRQ
