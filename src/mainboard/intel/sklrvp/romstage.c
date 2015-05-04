@@ -18,3 +18,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
+
+#include <cbfs.h>
+#include <console/console.h>
+#include <string.h>
+#include <ec/google/chromeec/ec.h>
+#include <soc/cpu.h>
+#include <soc/gpio.h>
+#include <soc/pei_data.h>
+#include <soc/pei_wrapper.h>
+#include <soc/pm.h>
+#include <soc/romstage.h>
+#include <mainboard/intel/sklrvp/spd/spd.h>
+
+void mainboard_romstage_entry(struct romstage_params *params)
+{
+	post_code(0x31);
+	/* Fill out PEI DATA */
+	mainboard_fill_pei_data(params->pei_data);
+	mainboard_fill_spd_data(params->pei_data);
+	/* Initliaze memory */
+	romstage_common(params);
+}
+

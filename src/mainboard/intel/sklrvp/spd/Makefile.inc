@@ -1,7 +1,7 @@
 ##
 ## This file is part of the coreboot project.
 ##
-## Copyright (C) 2013 Google Inc.
+## Copyright (C) 2014 Google Inc.
 ## Copyright (C) 2015 Intel Corporation.
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,24 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
-subdirs-y += spd
+romstage-y += spd.c
 
-romstage-y += pei_data.c
-romstage-y += fsp.c
-ramstage-y += pei_data.c
+SPD_BIN = $(obj)/spd.bin
+
+# SPD data by index.  No method for board identification yet
+SPD_SOURCES = rvp3	# 0
+SPD_SOURCES += empty	# 1
+
+SPD_DEPS := $(foreach f, $(SPD_SOURCES), src/mainboard/$(MAINBOARDDIR)/spd/$(f).spd.hex)
+
+# Include spd rom data
+$(SPD_BIN): $(SPD_DEPS)
+	for f in $+; \
+	  do for c in $$(cat $$f | grep -v ^#); \
+	    do echo -e -n "\\x$$c"; \
+	  done; \
+	done > $@
+
+cbfs-files-y += spd.bin
+spd.bin-file := $(SPD_BIN)
+spd.bin-type := 0xab

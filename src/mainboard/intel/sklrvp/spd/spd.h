@@ -18,22 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _SKYLAKE_ROMSTAGE_H_
-#define _SKYLAKE_ROMSTAGE_H_
+#ifndef _MAINBOARD_SPD_H_
+#define _MAINBOARD_SPD_H_
 
-#include <soc/intel/common/romstage.h>
+#define SPD_LEN			256
 
-struct chipset_power_state;
-struct chipset_power_state *fill_power_state(void);
-void systemagent_early_init(void);
-void pch_early_init(void);
-void intel_early_me_status(void);
+#define SPD_DRAM_TYPE		2
+#define  SPD_DRAM_DDR3		0x0b
+#define  SPD_DRAM_LPDDR3	0xf1
+#define SPD_DENSITY_BANKS	4
+#define SPD_ADDRESSING		5
+#define SPD_ORGANIZATION	7
+#define SPD_BUS_DEV_WIDTH	8
+#define SPD_PART_OFF		128
+#define  SPD_PART_LEN		18
 
-void enable_smbus(void);
-int smbus_read_byte(unsigned device, unsigned address);
 
-int early_spi_read(u32 offset, u32 size, u8 *buffer);
-int early_spi_read_wpsr(u8 *sr);
-void mainboard_fill_spd_data(struct pei_data *pei_data);
-
-#endif /* _SKYLAKE_ROMSTAGE_H_ */
+#endif /* _MAINBOARD_SPD_H_ */

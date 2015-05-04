@@ -170,14 +170,15 @@ struct pei_data {
 	 * DQByteMap[5] - CmdVDQByteMap: Always program to [0xFF, 0]
 	 *                since we have 1 CA Vref
 	 */
-	uint8_t dq_map[2][6][2];
+	uint8_t dq_map[2][12];
 
 	/*
 	 * LPDDR3 Map from CPU DQS pins to SDRAM DQS pins
 	 * [CHANNEL][MAX_BYTES]
 	 */
 	uint8_t dqs_map[2][8];
-
+	uint16_t RcompResistorSkl[3];
+	uint16_t RcompTargetSkl[5];
 	/* Data read from flash and passed into MRC */
 	const void *saved_data;
 	int saved_data_size;
