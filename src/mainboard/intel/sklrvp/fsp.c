@@ -23,6 +23,7 @@
 #include <string.h>
 #include <fsp_util.h>
 #include "mainboard/intel/sklrvp/spd/spd.h"
+#include "gpio_rvp3.h"
 
 void board_fsp_memory_init_params(
 	struct romstage_params *params,
@@ -77,4 +78,7 @@ void board_fsp_memory_init_params(
 	/* update spd length*/
 	upd_ptr->MemorySpdDataLen = SPD_LEN;
 	upd_ptr->DqPinsInterleaved = FALSE;
+
+	/*update gpio table*/
+	upd_ptr->GpioTablePtr = (UINT32 *)GpioTableRvp3;
 }
