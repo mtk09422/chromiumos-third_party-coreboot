@@ -11,6 +11,7 @@ subdirs-y += ../../../cpu/x86/tsc
 
 romstage-y += memmap.c
 romstage-y += pch.c
+romstage-y += pcr.c
 romstage-y += pei_data.c
 romstage-y += pmutil.c
 romstage-y += smbus_common.c
@@ -29,6 +30,7 @@ ramstage-y += memmap.c
 ramstage-y += monotonic_timer.c
 ramstage-y += pch.c
 ramstage-y += pcie.c
+ramstage-y += pcr.c
 ramstage-y += pei_data.c
 ramstage-y += pmutil.c
 ramstage-y += ramstage.c
@@ -42,6 +44,7 @@ ramstage-y += tsc_freq.c
 ramstage-y += xhci.c
 
 smm-y += cpu_info.c
+smm-y += pcr.c
 smm-y += pmutil.c
 smm-y += smihandler.c
 smm-$(CONFIG_SPI_FLASH_SMM) += spi.c
