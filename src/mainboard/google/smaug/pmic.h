@@ -73,5 +73,7 @@
 #define MAX77621_VOUT_DVC_REG		0x01
 
 void pmic_init(unsigned bus);
+void pmic_write_reg_77620(unsigned bus, uint8_t reg, uint8_t val,
+					int delay);
 
 #endif /* __MAINBOARD_GOOGLE_FOSTER_PMIC_H__ */

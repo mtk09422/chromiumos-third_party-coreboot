@@ -58,7 +58,7 @@ static void pmic_write_reg(unsigned bus, uint8_t chip, uint8_t reg, uint8_t val,
 	}
 }
 
-static inline void pmic_write_reg_77620(unsigned bus, uint8_t reg, uint8_t val,
+void pmic_write_reg_77620(unsigned bus, uint8_t reg, uint8_t val,
 					int delay)
 {
 	pmic_write_reg(bus, MAX77620_I2C_ADDR, reg, val, delay);
