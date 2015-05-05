@@ -396,6 +396,10 @@ enum {
 #define PLLD_N_SHIFT			11
 #define PLLD_M_SHIFT			0
 #define PLLD_P_SHIFT			20
+#define PLLD_MISC1_SETUP		0x20
+#define PLLD_MISC_EN_SDM		(1 << 16)
+#define PLLD_MISC_SDM_DIN		0x9aa
+
 
 /* PLLM specific registers */
 #define PLLM_MISC1_SETUP_SHIFT			0

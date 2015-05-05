@@ -413,7 +413,7 @@ u32 clock_configure_plld(u32 frequency)
 	u32 ref = clock_get_pll_input_khz() * 1000, m, n, p = 0;
 	u32 cf, vco, rounded_rate = frequency;
 	u32 diff, best_diff;
-	const u32 max_m = 1 << 5, max_n = 1 << 10, max_p = 1 << 3,
+	const u32 max_m = 1 << 8, max_n = 1 << 8, max_p = 1 << 3,
 		  mhz = 1000 * 1000, min_vco = 500 * mhz, max_vco = 1000 * mhz,
 		  min_cf = 1 * mhz, max_cf = 6 * mhz;
 	u32 osc = clock_get_osc_bits();
@@ -467,6 +467,11 @@ u32 clock_configure_plld(u32 frequency)
 	printk(BIOS_DEBUG, "%s: PLLD=%u ref=%u, m/n/p=%u/%u/%u\n",
 	       __func__, rounded_rate, ref, plld->m, plld->n, plld->p);
 
+	/* Write misc1 and misc */
+	write32(CLK_RST_REG(plld_misc1), PLLD_MISC1_SETUP);
+	write32(CLK_RST_REG(plld_misc), (PLLD_MISC_EN_SDM | PLLD_MISC_SDM_DIN));
+
+	/* configure PLLD */
 	init_pll(PLLD_INDEX, osc);
 
 	if (rounded_rate != frequency)
