@@ -217,6 +217,9 @@ int mipi_dsi_dcs_set_tear_on(struct mipi_dsi_device *dsi,
 int mipi_dsi_dcs_set_pixel_format(struct mipi_dsi_device *dsi, u8 format);
 
 #define MIPI_CAL_CTRL			0x00
+#define MIPI_CAL_CTRL_NOISE_FILTER(x)	(((x) & 0xf) << 26)
+#define MIPI_CAL_CTRL_PRESCALE(x)	(((x) & 0x3) << 24)
+#define MIPI_CAL_CTRL_CLKEN_OVR		(1 << 4)
 #define MIPI_CAL_CTRL_START		(1 << 0)
 
 #define MIPI_CAL_AUTOCAL_CTRL		0x01
@@ -230,22 +233,30 @@ int mipi_dsi_dcs_set_pixel_format(struct mipi_dsi_device *dsi, u8 format);
 #define MIPI_CAL_CONFIG_CSIC		0x07
 #define MIPI_CAL_CONFIG_CSID		0x08
 #define MIPI_CAL_CONFIG_CSIE		0x09
+#define MIPI_CAL_CONFIG_CSIF		0x0a
 #define MIPI_CAL_CONFIG_DSIA		0x0e
 #define MIPI_CAL_CONFIG_DSIB		0x0f
 #define MIPI_CAL_CONFIG_DSIC		0x10
 #define MIPI_CAL_CONFIG_DSID		0x11
 
-#define MIPI_CAL_CONFIG_DSIAB_CLK	0x19
-#define MIPI_CAL_CONFIG_DSICD_CLK	0x1a
+#define MIPI_CAL_CONFIG_DSIA_CLK	0x19
+#define MIPI_CAL_CONFIG_DSIB_CLK	0x1a
 #define MIPI_CAL_CONFIG_CSIAB_CLK	0x1b
+#define MIPI_CAL_CONFIG_DSIC_CLK	0x1c
 #define MIPI_CAL_CONFIG_CSICD_CLK	0x1c
+#define MIPI_CAL_CONFIG_DSID_CLK	0x1d
 #define MIPI_CAL_CONFIG_CSIE_CLK	0x1d
 
+/* for data and clock lanes */
 #define MIPI_CAL_CONFIG_SELECT		(1 << 21)
+
+/* for data lanes */
 #define MIPI_CAL_CONFIG_HSPDOS(x)	(((x) & 0x1f) << 16)
 #define MIPI_CAL_CONFIG_HSPUOS(x)	(((x) & 0x1f) <<  8)
 #define MIPI_CAL_CONFIG_TERMOS(x)	(((x) & 0x1f) <<  0)
-#define MIPI_CAL_CONFIG_HSCLKPDOSD(x)	(((x) & 0x1f) << 8)
+
+/* for clock lanes */
+#define MIPI_CAL_CONFIG_HSCLKPDOSD(x)	(((x) & 0x1f) <<  8)
 #define MIPI_CAL_CONFIG_HSCLKPUOSD(x)	(((x) & 0x1f) <<  0)
 
 #define MIPI_CAL_BIAS_PAD_CFG0		0x16
@@ -253,29 +264,51 @@ int mipi_dsi_dcs_set_pixel_format(struct mipi_dsi_device *dsi, u8 format);
 #define MIPI_CAL_BIAS_PAD_E_VCLAMP_REF	(1 << 0)
 
 #define MIPI_CAL_BIAS_PAD_CFG1		0x17
-#define MIPI_CAL_BIAS_PAD_CFG1_DEFAULT	(0x20000)
+#define MIPI_CAL_BIAS_PAD_DRV_DN_REF(x) (((x) & 0x7) << 16)
+#define MIPI_CAL_BIAS_PAD_DRV_UP_REF(x) (((x) & 0x7) << 8)
 
 #define MIPI_CAL_BIAS_PAD_CFG2		0x18
+#define MIPI_CAL_BIAS_PAD_VCLAMP(x)	(((x) & 0x7) << 16)
+#define MIPI_CAL_BIAS_PAD_VAUXP(x)	(((x) & 0x7) << 4)
 #define MIPI_CAL_BIAS_PAD_PDVREG	(1 << 1)
 
-struct calibration_regs {
+struct tegra_mipi_pad {
 	unsigned long data;
 	unsigned long clk;
 };
 
-struct tegra_mipi_config {
-	int calibrate_clk_lane;
-	int num_pads;
-	const struct calibration_regs *regs;
+struct tegra_mipi_soc {
+	int has_clk_lane;
+	const struct tegra_mipi_pad *pads;
+	unsigned int num_pads;
+
+	int clock_enable_override;
+	int needs_vclamp_ref;
+
+	/* bias pad configuration settings */
+	u8 pad_drive_down_ref;
+	u8 pad_drive_up_ref;
+
+	u8 pad_vclamp_level;
+	u8 pad_vauxp_level;
+
+	/* calibration settings for data lanes */
+	u8 hspdos;
+	u8 hspuos;
+	u8 termos;
+
+	/* calibration settings for clock lanes */
+	u8 hsclkpdos;
+	u8 hsclkpuos;
 };
 
 struct tegra_mipi {
+	const struct tegra_mipi_soc *soc;
 	void *regs;
 };
 
 struct tegra_mipi_device {
 	struct tegra_mipi *mipi;
-	const struct tegra_mipi_config *config;
 	unsigned long pads;
 };
 
