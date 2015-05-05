@@ -987,7 +987,7 @@ void dsi_display_startup(device_t dev)
 	}
 
 	/* set disp1's clock source to PLLD_OUT0 */
-	clock_configure_source(disp1, PLLD, (plld_rate/KHz)/2);
+	clock_configure_source(disp1, PLLD_OUT0, (plld_rate/KHz));
 
 	/* Init dc */
 	if (tegra_dc_init(disp_ctrl)) {
