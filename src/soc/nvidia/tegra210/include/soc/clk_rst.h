@@ -64,7 +64,8 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 _rsv4[2];			/*                      0x0c4-0c8 */
 	u32 pllu_misc;			/* _PLLU_MISC,              0x0cc */
 	u32 plld_base;			/* _PLLD_BASE,              0x0d0 */
-	u32 _rsv5[2];			/*                      0x0d4-0d8 */
+	u32 _rsv5[1];			/*                          0x0d4 */
+	u32 plld_misc1;			/* _PLLD_MISC1,             0x0d8 */
 	u32 plld_misc;			/* _PLLD_MISC,              0x0dc */
 	u32 pllx_base;			/* _PLLX_BASE,              0x0e0 */
 	u32 pllx_misc;			/* _PLLX_MISC,              0x0e4 */
