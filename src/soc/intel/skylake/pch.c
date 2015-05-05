@@ -28,7 +28,7 @@
 #include <soc/pch.h>
 #include <soc/pci_devs.h>
 #include <soc/ramstage.h>
-#include <soc/rcba.h>
+
 #include <soc/spi.h>
 
 u8 pch_revision(void)
@@ -41,25 +41,38 @@ u16 pch_type(void)
 	return pci_read_config16(PCH_DEV_LPC, PCI_DEVICE_ID);
 }
 
+void *get_spi_bar(void)
+{
+	device_t dev = PCH_DEV_SPI;
+	uint32_t bar;
+
+	bar = pci_read_config32(dev, PCH_SPI_BASE_ADDRESS);
+	/* Bits 31-12 are the base address as per EDS for SPI 1F/5,
+	 *  Don't care about  0-11 bit
+	 */
+	return (void *)(bar & ~(B_PCH_SPI_BAR0_MASK));
+}
+
 u32 pch_read_soft_strap(int id)
 {
-	u32 fdoc;
+	uint32_t fdoc;
+	void *spibar = get_spi_bar();
 
-	fdoc = SPIBAR32(SPIBAR_FDOC);
+	fdoc = read32(spibar + SPIBAR_FDOC);
 	fdoc &= ~0x00007ffc;
-	SPIBAR32(SPIBAR_FDOC) = fdoc;
+	write32(spibar + SPIBAR_FDOC, fdoc);
 
 	fdoc |= 0x00004000;
 	fdoc |= id * 4;
-	SPIBAR32(SPIBAR_FDOC) = fdoc;
+	write32(spibar + SPIBAR_FDOC, fdoc);
 
-	return SPIBAR32(SPIBAR_FDOD);
+	return read32(spibar + SPIBAR_FDOD);
 }
 
 #ifndef __PRE_RAM__
-
 void skylake_pch_enable_dev(device_t dev)
 {
+	/* FSP should implement routines to disable PCH IPs */
 	u32 reg32;
 
 	/* These devices need special enable/disable handling */
