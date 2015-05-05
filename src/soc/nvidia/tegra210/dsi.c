@@ -58,6 +58,47 @@ struct tegra_dsi dsi_data[NUM_DSI] = {
 	},
 };
 
+static const u32 init_reg[] = {
+	DSI_INT_ENABLE,
+	DSI_INT_STATUS,
+	DSI_INT_MASK,
+	DSI_INIT_SEQ_DATA_0,
+	DSI_INIT_SEQ_DATA_1,
+	DSI_INIT_SEQ_DATA_2,
+	DSI_INIT_SEQ_DATA_3,
+	DSI_INIT_SEQ_DATA_4,
+	DSI_INIT_SEQ_DATA_5,
+	DSI_INIT_SEQ_DATA_6,
+	DSI_INIT_SEQ_DATA_7,
+	DSI_INIT_SEQ_DATA_15,
+	DSI_DCS_CMDS,
+	DSI_PKT_SEQ_0_LO,
+	DSI_PKT_SEQ_1_LO,
+	DSI_PKT_SEQ_2_LO,
+	DSI_PKT_SEQ_3_LO,
+	DSI_PKT_SEQ_4_LO,
+	DSI_PKT_SEQ_5_LO,
+	DSI_PKT_SEQ_0_HI,
+	DSI_PKT_SEQ_1_HI,
+	DSI_PKT_SEQ_2_HI,
+	DSI_PKT_SEQ_3_HI,
+	DSI_PKT_SEQ_4_HI,
+	DSI_PKT_SEQ_5_HI,
+	DSI_CONTROL,
+	DSI_HOST_CONTROL,
+	DSI_PAD_CONTROL_0,
+	DSI_PAD_CONTROL_CD,
+	DSI_SOL_DELAY,
+	DSI_MAX_THRESHOLD,
+	DSI_TRIGGER,
+	DSI_TX_CRC,
+	DSI_INIT_SEQ_CONTROL,
+	DSI_PKT_LEN_0_1,
+	DSI_PKT_LEN_2_3,
+	DSI_PKT_LEN_4_5,
+	DSI_PKT_LEN_6_7,
+};
+
 static inline struct tegra_dsi *host_to_tegra(struct mipi_dsi_host *host)
 {
 	return container_of(host, struct tegra_dsi, host);
@@ -822,6 +863,8 @@ static int dsi_probe_if(int dsi_index,
 	struct tegra_dsi *dsi = &dsi_data[dsi_index];
 	int err;
 
+	tegra_dsi_writel(dsi, 0, DSI_INIT_SEQ_CONTROL);
+
 	/*
 	 * Set default value. Will be taken from attached device once detected
 	 */
@@ -863,6 +906,16 @@ static int dsi_probe(struct soc_nvidia_tegra210_config *config)
 	return 0;
 }
 
+static void tegra_dsi_init_regs(struct tegra_dsi *dsi)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(init_reg); i++)
+		tegra_dsi_writel(dsi, 0, init_reg[i]);
+
+	if (dsi->slave)
+		tegra_dsi_init_regs(dsi->slave);
+}
+
 static int dsi_enable(struct soc_nvidia_tegra210_config *config)
 {
 	struct tegra_dsi *dsi_a = &dsi_data[DSI_A];
@@ -877,6 +930,9 @@ static int dsi_enable(struct soc_nvidia_tegra210_config *config)
 
 	/* configure phy interface timing registers */
 	tegra_dsi_set_phy_timing(dsi_a);
+
+	/* Initialize DSI registers */
+	tegra_dsi_init_regs(dsi_a);
 
 	/* prepare panel */
 	panel_jdi_prepare(dsi_a->panel);
