@@ -90,38 +90,12 @@ static void pch_power_options(device_t dev)
  * Preserve Vboot NV data when clearing CMOS as it will
  * have been re-initialized already by Vboot firmware init.
  */
-static void pch_cmos_init_preserve(int reset)
-{
-	uint8_t vbnv[CONFIG_VBNV_SIZE];
-
-	if (reset)
-		read_vbnv(vbnv);
-
-	cmos_init(reset);
-
-	if (reset)
-		save_vbnv(vbnv);
-}
+/* TODO  Modify for SPT Taken care of in later patch */
 #endif
 
 static void pch_rtc_init(struct device *dev)
 {
-	u8 reg8;
-	int rtc_failed;
-
-	reg8 = pci_read_config8(dev, GEN_PMCON_3);
-	rtc_failed = reg8 & RTC_BATTERY_DEAD;
-	if (rtc_failed) {
-		reg8 &= ~RTC_BATTERY_DEAD;
-		pci_write_config8(dev, GEN_PMCON_3, reg8);
-		printk(BIOS_DEBUG, "rtc_failed = 0x%x\n", rtc_failed);
-	}
-
-#if IS_ENABLED(CONFIG_CHROMEOS_VBNV_CMOS)
-	pch_cmos_init_preserve(rtc_failed);
-#else
-	cmos_init(rtc_failed);
-#endif
+	/* TODO Modify for SPT Taken care of in later patch */
 }
 
 static const struct reg_script pch_misc_init_script[] = {
@@ -129,8 +103,6 @@ static const struct reg_script pch_misc_init_script[] = {
 	REG_IO_RMW8(0x61, ~0xf0, (1 << 2)),
 	/* Disable NMI sources */
 	REG_IO_OR8(0x70, (1 << 7)),
-	/* Indicate DRAM init done for MRC */
-	REG_PCI_OR8(GEN_PMCON_2, (1 << 7)),
 	/* Enable BIOS updates outside of SMM */
 	REG_PCI_RMW8(0xdc, ~(1 << 5), 0),
 	/* Setup SERIRQ, enable continuous mode */

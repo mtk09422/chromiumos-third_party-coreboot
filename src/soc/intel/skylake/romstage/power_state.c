@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <soc/iomap.h>
-#include <soc/lpc.h>
+#include <soc/pmc.h>
 #include <soc/pci_devs.h>
 #include <soc/pm.h>
 #include <soc/romstage.h>
@@ -116,9 +116,9 @@ struct chipset_power_state *fill_power_state(void)
 	ps->gpe0_en[2] = inl(ACPI_BASE_ADDRESS + GPE0_EN(2));
 	ps->gpe0_en[3] = inl(ACPI_BASE_ADDRESS + GPE0_EN(3));
 
-	ps->gen_pmcon1 = pci_read_config16(PCH_DEV_LPC, GEN_PMCON_1);
-	ps->gen_pmcon2 = pci_read_config16(PCH_DEV_LPC, GEN_PMCON_2);
-	ps->gen_pmcon3 = pci_read_config16(PCH_DEV_LPC, GEN_PMCON_3);
+	ps->gen_pmcon1 = pci_read_config16(PCH_DEV_LPC, GEN_PMCON_A_1);
+	ps->gen_pmcon2 = pci_read_config16(PCH_DEV_LPC, GEN_PMCON_A_2);
+	ps->gen_pmcon3 = pci_read_config16(PCH_DEV_LPC, GEN_PMCON_B_1);
 
 	ps->prev_sleep_state = prev_sleep_state(ps);
 

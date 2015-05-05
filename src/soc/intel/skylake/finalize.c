@@ -59,42 +59,6 @@ const struct reg_script system_agent_finalize_script[] = {
 	REG_SCRIPT_END
 };
 
-const struct reg_script pch_finalize_script[] = {
-	/* Set SPI opcode menu */
-	REG_MMIO_WRITE16(RCBA_BASE_ADDRESS + SPIBAR_OFFSET + SPIBAR_PREOP,
-			 SPI_OPPREFIX),
-	REG_MMIO_WRITE16(RCBA_BASE_ADDRESS + SPIBAR_OFFSET + SPIBAR_OPTYPE,
-			 SPI_OPTYPE),
-	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + SPIBAR_OFFSET +
-			 SPIBAR_OPMENU_LOWER, SPI_OPMENU_LOWER),
-	REG_MMIO_WRITE32(RCBA_BASE_ADDRESS + SPIBAR_OFFSET +
-			 SPIBAR_OPMENU_UPPER, SPI_OPMENU_UPPER),
-
-	/* Lock SPIBAR */
-	REG_MMIO_OR32(RCBA_BASE_ADDRESS + SPIBAR_OFFSET + SPIBAR_HSFS,
-		      SPIBAR_HSFS_FLOCKDN),
-
-	/* TC Lockdown */
-	REG_MMIO_OR32(RCBA_BASE_ADDRESS + 0x0050, (1 << 31)),
-
-	/* BIOS Interface Lockdown */
-	REG_MMIO_OR32(RCBA_BASE_ADDRESS + GCS, (1 << 0)),
-
-	/* Function Disable SUS Well Lockdown */
-	REG_MMIO_OR8(RCBA_BASE_ADDRESS + FDSW, (1 << 7)),
-
-	/* Global SMI Lock */
-	REG_PCI_OR16(GEN_PMCON_1, SMI_LOCK),
-
-	/* GEN_PMCON Lock */
-	REG_PCI_OR8(GEN_PMCON_LOCK, SLP_STR_POL_LOCK | ACPI_BASE_LOCK),
-
-	/* PMSYNC */
-	REG_MMIO_OR32(RCBA_BASE_ADDRESS + PMSYNC_CONFIG, (1 << 31)),
-
-
-	REG_SCRIPT_END
-};
 
 static void skylake_finalize(void *unused)
 {

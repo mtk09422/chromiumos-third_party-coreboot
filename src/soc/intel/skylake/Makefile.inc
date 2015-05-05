@@ -32,6 +32,7 @@ ramstage-y += pch.c
 ramstage-y += pcie.c
 ramstage-y += pcr.c
 ramstage-y += pei_data.c
+ramstage-y += pmc.c
 ramstage-y += pmutil.c
 ramstage-y += ramstage.c
 ramstage-y += smbus.c
