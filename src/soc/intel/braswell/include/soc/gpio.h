@@ -85,6 +85,32 @@
 #define GP_FAMILY_CONF_REG(community, family)		\
 (COMMUNITY_BASE(community) + 0x1094 + 0x80 * family)
 
+
+/* Value written into pad control reg 0 */
+#define PAD_CONTROL_REG0_TRISTATE      (PAD_CONFIG0_DEFAULT|PAD_GPIOFG_HI_Z)
+
+/* Calculate the MMIO Address for specific GPIO pin
+ * control register pointed by index.
+ */
+#define FAMILY_NUMBER(gpio_pad)		(gpio_pad / MAX_FAMILY_PAD_GPIO_NO)
+#define INTERNAL_PAD_NUM(gpio_pad)	(gpio_pad % MAX_FAMILY_PAD_GPIO_NO)
+#define GPIO_OFFSET(gpio_pad)		(FAMILY_PAD_REGS_OFF \
+			+ (FAMILY_PAD_REGS_SIZE * FAMILY_NUMBER(gpio_pad) \
+			+ (GPIO_REGS_SIZE * INTERNAL_PAD_NUM(gpio_pad))))
+
+/* Gpio to Pad mapping */
+#define SDMMC1_CMD_MMIO_OFFSET		GPIO_OFFSET(23)
+#define SDMMC1_D0_MMIO_OFFSET		GPIO_OFFSET(17)
+#define SDMMC1_D1_MMIO_OFFSET		GPIO_OFFSET(24)
+#define SDMMC1_D2_MMIO_OFFSET		GPIO_OFFSET(20)
+#define SDMMC1_D3_MMIO_OFFSET		GPIO_OFFSET(26)
+#define MMC1_D4_SD_WE_MMIO_OFFSET	GPIO_OFFSET(67)
+#define MMC1_D5_MMIO_OFFSET		GPIO_OFFSET(65)
+#define MMC1_D6_MMIO_OFFSET		GPIO_OFFSET(63)
+#define MMC1_D7_MMIO_OFFSET		GPIO_OFFSET(68)
+#define HV_DDI2_DDC_SDA_MMIO_OFFSET	GPIO_OFFSET(62)
+#define HV_DDI2_DDC_SCL_MMIO_OFFSET	GPIO_OFFSET(67)
+
 /* GPIO Security registers offset */
 #define GPIO_READ_ACCESS_POLICY_REG	0x0000
 #define GPIO_WRITE_ACCESS_POLICY_REG	0x0100
@@ -544,5 +570,4 @@ static inline void ssus_disable_internal_pull(int pad)
 int get_gpio(int community_base, int pad0_offset);
 uint16_t gpio_family_number(uint8_t community, uint8_t pad);
 uint32_t *gpio_pad_config_reg(uint8_t community, uint8_t pad);
-
 #endif /* _BRASWELL_GPIO_H_ */

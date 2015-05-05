@@ -31,6 +31,7 @@
 #include <spi-generic.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <soc/gpio.h>
 
 /* GNVS needs to be set by coreboot initiating a software SMI. */
 static global_nvs_t *gnvs;
@@ -99,6 +100,36 @@ static void busmaster_disable_on_bus(int bus)
 	}
 }
 
+static void tristate_gpios(uint32_t val)
+{
+	/* Tri-state eMMC */
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			SDMMC1_CMD_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			SDMMC1_D0_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			SDMMC1_D1_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			SDMMC1_D2_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			SDMMC1_D3_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			MMC1_D4_SD_WE_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			MMC1_D5_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			MMC1_D6_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPSOUTHEAST_BASE +
+			MMC1_D7_MMIO_OFFSET, val);
+
+	/* Tri-state HDMI */
+	write32((void *)COMMUNITY_GPNORTH_BASE +
+			HV_DDI2_DDC_SDA_MMIO_OFFSET, val);
+	write32((void *)COMMUNITY_GPNORTH_BASE +
+			HV_DDI2_DDC_SCL_MMIO_OFFSET, val);
+}
+
+
 static void southbridge_smi_sleep(void)
 {
 	uint32_t reg32;
@@ -158,6 +189,10 @@ static void southbridge_smi_sleep(void)
 	/* Clear pending wake status bit to avoid immediate wake */
 	write32((void *)(0xfed88000 + 0x0200),
 		read32((void *)(0xfed88000 + 0x0200)));
+
+	/* Tri-state specific GPIOS to avoid leakage during S3/S5 */
+	if ((slp_typ == SLP_TYP_S3) || (slp_typ == SLP_TYP_S5))
+		tristate_gpios(PAD_CONTROL_REG0_TRISTATE);
 
 	/*
 	 * Write back to the SLP register to cause the originally intended
