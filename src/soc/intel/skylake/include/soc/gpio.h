@@ -39,13 +39,15 @@
 #define GPIO_IRQ_IE(set)	(0x90 + ((set) * 4))
 #define GPIO_CONFIG0(gpio)	(0x100 + ((gpio) * 8))
 #define GPIO_CONFIG1(gpio)	(0x104 + ((gpio) * 8))
+
 /*
  * GPP_Ax to GPP_Gx;
  * where x=24 [between GPIO Community A to F]
  * = 7 [only for GPIO Community G]
  */
-#define MAX_GPIO_NUMBER	151	/* zero based */
+#define MAX_GPIO_NUMBER		151	/* zero based */
 #define GPIO_LIST_END		0xffffffff
+
 /*
  * Skylake LP GPIO PIN to Pad Mapping
  */
@@ -71,6 +73,7 @@
 /* GPIO TX STATE */
 #define B_PCH_GPIO_TX_STATE	0x0001
 #define N_PCH_GPIO_TX_STATE	0
+
 /* Interrupt number */
 #define B_PCH_GPIO_INTSEL 0x7F
 #define N_PCH_GPIO_INTSEL 0
@@ -95,6 +98,7 @@ typedef struct {
 #define R_PCH_PCR_GPIO_GPP_B_SMI_STS	0x0184
 #define R_PCH_PCR_GPIO_GPP_A_SMI_EN	0x01A0
 #define R_PCH_PCR_GPIO_GPP_B_SMI_EN	0x01A4
+
 /*
  * GPIO Community 1 Registers are for GPP_C, GPP_D, GPP_E groups
  */
@@ -107,11 +111,13 @@ typedef struct {
 #define R_PCH_PCR_GPIO_GPP_C_SMI_EN	0x01A0
 #define R_PCH_PCR_GPIO_GPP_D_SMI_EN	0x01A4
 #define R_PCH_PCR_GPIO_GPP_E_SMI_EN	0x01A8
+
 /*
  * GPIO Community 3 Registers are for GPP_F and GPP_G groups
  */
 #define R_PCH_PCR_GPIO_GPP_F_PADCFG_OFFSET	0x400
 #define R_PCH_PCR_GPIO_GPP_G_PADCFG_OFFSET	0x4C0
+
 /*
  * GPIO Community 2 Registers are for GPP_DSW
  */
@@ -119,6 +125,7 @@ typedef struct {
 
 #define READ	0
 #define WRITE	1
+
 /* If in GPIO_GROUP_INFO structure certain register doesn't exist
  * it will have value equal to NO_REGISTER_PROPERTY
  */
@@ -139,7 +146,6 @@ typedef struct {
 #define GPIO_GET_PAD_NUMBER(pad)	(pad & 0xFFFF)
 
 /* conf0 */
-
 #define GPIO_MODE_NATIVE	(0 << 0)
 #define GPIO_MODE_GPIO		(1 << 0)
 
@@ -162,7 +168,6 @@ typedef struct {
 #define GPO_LEVEL_HIGH		(GPIO_OUT_HIGH << GPO_LEVEL_SHIFT)
 
 /* conf1 */
-
 #define GPIO_PULL_NONE		(0 << 0)
 #define GPIO_PULL_DOWN		(1 << 0)
 #define GPIO_PULL_UP		(2 << 0)
@@ -171,27 +176,22 @@ typedef struct {
 #define GPIO_SENSE_DISABLE	(1 << 2)
 
 /* owner */
-
 #define GPIO_OWNER_ACPI		0
 #define GPIO_OWNER_GPIO		1
 
 /* route */
-
 #define GPIO_ROUTE_SCI		0
 #define GPIO_ROUTE_SMI		1
 
 /* irqen */
-
 #define GPIO_IRQ_DISABLE	0
 #define GPIO_IRQ_ENABLE		1
 
 /* blink */
-
 #define GPO_NO_BLINK		0
 #define GPO_BLINK		1
 
 /* reset */
-
 #define GPIO_RESET_PWROK	0
 #define GPIO_RESET_RSMRST	1
 
@@ -253,6 +253,19 @@ typedef struct {
 	{ .conf0 = GPIO_MODE_GPIO | GPIO_DIR_OUTPUT | GPO_LEVEL_LOW, \
 	  .owner = GPIO_OWNER_GPIO, \
 	  .conf1 = GPIO_SENSE_DISABLE }
+
+struct gpio_config {
+	u8 gpio;
+	u32 conf0;
+	u32 conf1;
+	u8 owner;
+	u8 route;
+	u8 irqen;
+	u8 reset;
+	u8 blink;
+	u8 pirq;
+} __attribute__ ((packed));
+
 
 /* For any GpioPad usage in code use GPIO_PAD type*/
 typedef u32 GPIO_PAD;
@@ -345,7 +358,6 @@ typedef enum {
 	GpioPadModeNative4	= 0x9,
 } GPIO_PAD_MODE;
 
-
 /* Host Software Pad Ownership modes */
 typedef enum {
 	GpioHostOwnDefault	= 0x0,	/* Leave ownership value unmodified */
@@ -406,6 +418,20 @@ typedef enum {
 	GpioResetNormal		= 0x5,	/* GPIO Reset */
 	GpioResetResume		= 0x7	/* Resume Reset */
 } GPIO_RESET_CONFIG;
+
+typedef int gpio_t;
+
+/* Clear GPIO SMI Status */
+void clear_all_smi(void);
+
+/* Get GPIO SMI Status */
+int get_smi_status(u32 *status);
+
+/* Enable GPIO SMI  */
+void enable_all_smi(void);
+
+/* Enable GPIO individual Group SMI  */
+void enable_gpio_groupsmi(gpio_t gpio_num, u32 mask);
 
 /*
  * GPIO Electrical Configuration

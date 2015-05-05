@@ -9,6 +9,7 @@ subdirs-y += ../../../cpu/x86/mtrr
 subdirs-y += ../../../cpu/x86/smm
 subdirs-y += ../../../cpu/x86/tsc
 
+romstage-y += gpio.c
 romstage-y += memmap.c
 romstage-y += pch.c
 romstage-y += pcr.c
@@ -24,6 +25,7 @@ ramstage-y += cpu.c
 ramstage-y += cpu_info.c
 ramstage-y += elog.c
 ramstage-y += finalize.c
+ramstage-y += gpio.c
 ramstage-y += igd.c
 ramstage-y += lpc.c
 ramstage-y += memmap.c
@@ -45,6 +47,7 @@ ramstage-y += tsc_freq.c
 ramstage-y += xhci.c
 
 smm-y += cpu_info.c
+smm-y += gpio.c
 smm-y += pcr.c
 smm-y += pmutil.c
 smm-y += smihandler.c
