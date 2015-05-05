@@ -280,7 +280,7 @@ static void init_pll(u32 index, u32 osc)
 
 	/* Set Lock bit if needed. */
 	if (pll_reg->lock_enb_val)
-		write32(pll_reg->lock_enb_reg, pll_reg->lock_enb_val);
+		setbits_le32(pll_reg->lock_enb_reg, pll_reg->lock_enb_val);
 
 	/* Set KCP/KVCO if needed. */
 	if (pll_reg->kcp_kvco_reg)
