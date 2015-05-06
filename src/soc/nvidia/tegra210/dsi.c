@@ -517,9 +517,11 @@ static int tegra_output_dsi_setup_clock(struct tegra_dsi *dsi,
 	/* set up plld */
 	plld = clock_configure_plld(plld);
 	if (plld == 0) {
-                printk(BIOS_ERR, "%s: clock init failed\n", __func__);
-                return -1;
-        }
+		printk(BIOS_ERR, "%s: clock init failed\n", __func__);
+		return -1;
+	} else
+		printk(BIOS_INFO, "%s:  plld is configured to: %u\n",
+			 __func__, plld);
 
 	/*
 	 * Derive pixel clock from bit clock using the shift clock divider.
@@ -781,29 +783,28 @@ static ssize_t tegra_dsi_host_transfer(struct mipi_dsi_host *host,
 	}
 
 	err = tegra_dsi_transmit(dsi, 250);
-	if (err < 0)
+	if (err < 0) {
+		printk(BIOS_INFO, "Failed to transmit. %d\n", err);
 		return err;
+	}
 
 	if ((msg->flags & MIPI_DSI_MSG_REQ_ACK) ||
 	    (msg->rx_buf && msg->rx_len > 0)) {
 		err = tegra_dsi_wait_for_response(dsi, 250);
-		if (err < 0)
+		if (err < 0) {
+			printk(BIOS_INFO, "Failed to read response. %d\n", err);
 			return err;
-
+		}
 		count = err;
 
 		value = tegra_dsi_readl(dsi, DSI_RD_DATA);
 		switch (value) {
 		case 0x84:
-			/*
-			dev_dbg(dsi->dev, "ACK\n");
-			*/
+			printk(BIOS_INFO, "ACK\n");
 			break;
 
 		case 0x87:
-			/*
-			dev_dbg(dsi->dev, "ESCAPE\n");
-			*/
+			printk(BIOS_INFO, "ESCAPE\n");
 			break;
 
 		default:
