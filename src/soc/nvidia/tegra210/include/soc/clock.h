@@ -151,6 +151,7 @@ enum {
 	CLK_X_SOR0 = 0x1 << 22,
 	CLK_X_DPAUX = 0x1 << 21,
 	CLK_X_VIC = 0x1 << 18,
+	CLK_X_UART_FST_MIPI_CAL = 0x1 << 17,
 	CLK_X_MIPIBIF = 0x1 << 13,
 	CLK_X_I2C6 = 0x1 << 6,
 	CLK_X_ETR = 0x1 << 3,
@@ -180,6 +181,8 @@ enum {
 	PLLC4_OUT1_L = 16,
 	PLLC4_OUT2_L = 17,
 	PLLD_OUT0 = 18,
+	PLLP_OUT3 = 19,
+	PLLC2_OUT0 = 20,
 	UNUSED0 = 100,
 	UNUSED1 = 101,
 	UNUSED2 = 102,
@@ -246,6 +249,8 @@ enum {
 		       UNUSED6, UNUSED7),
 	CLK_SRC_DEVICE(QSPI, PLLP, PLLC_OUT1, PLLC, UNUSED3, PLLC4_OUT2,
 		       PLLC4_OUT1, CLK_M, PLLC4_OUT0),
+	CLK_SRC_DEVICE(uart_fst_mipi_cal, PLLP_OUT3, PLLP, PLLC, UNUSED3, PLLC2_OUT0,
+			UNUSED5, CLK_M, UNUSED7),
 };
 
 /* PLL stabilization delay in usec */

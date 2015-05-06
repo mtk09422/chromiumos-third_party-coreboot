@@ -305,7 +305,9 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 clk_src_soc_therm;		/* _CLK_SOURCE_SOC_THERM    0x644 */
 	u32 _rsv33[5];			/*                      0x648-658 */
 	u32 clk_src_i2c6;		/* _CLK_SOURCE_I2C6,        0x65c */
-	u32 _rsv34[25];		/*                      0x680-6c0 */
+	u32 _rsv34[3];			/*                      0x660-668 */
+	u32 clk_src_uart_fst_mipi_cal;	/* _CLK_SOURCE_UART_FST_MIP_CAL, 0x66c */
+	u32 _rsv35[21];		/*                      0x670-6c0 */
 	u32 clk_src_qspi;		/* _CLK_SOURCE_QSPI         0x6C4 */
 };
 check_member(clk_rst_ctlr, clk_src_qspi, 0x6C4);
