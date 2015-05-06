@@ -27,10 +27,5 @@
 void intel_silicon_init(void);
 /* Called after the silicon init code has run. */
 void soc_after_silicon_init(void);
-/* SoC implementation for caching support code. */
-void soc_save_support_code(void *start, size_t size, void *entry);
-/* SoC implementation for restoring support code after S3 resume. Returns
- * previously passed entry pointer from soc_save_support_code(). */
-void *soc_restore_support_code(void);
 
 #endif /* _INTEL_COMMON_RAMSTAGE_H_ */

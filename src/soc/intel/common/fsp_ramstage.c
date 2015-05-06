@@ -22,7 +22,9 @@
 #include <cbfs.h>
 #include <console/console.h>
 #include <fsp_util.h>
+#include <ramstage_cache.h>
 #include <romstage_handoff.h>
+#include <soc/intel/common/memmap.h>
 #include <soc/intel/common/ramstage.h>
 #include <timestamp.h>
 
@@ -32,16 +34,134 @@ __attribute__((weak)) void soc_after_silicon_init(void)
 	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 }
 
-__attribute__((weak)) void soc_save_support_code(void *start, size_t size,
-							void *entry)
+/*
+ * SMM Memory Map:
+ *
+ * +--------------------------+ smm_region_size() ----.
+ * |     FSP Cache            | CONFIG_FSP_CACHE_SIZE |
+ * +--------------------------+                       |
+ * |     SMM Ramstage Cache   |                       + CONFIG_SMM_RESERVED_SIZE
+ * +--------------------------+  ---------------------'
+ * |     SMM Code             |
+ * +--------------------------+ smm_base
+ *
+ */
+
+static void *smm_fsp_cache_base(size_t *size)
 {
-	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
+	long cache_size;
+	u8 *cache_base;
+
+	/* Determine the location of the FSP cache */
+	cache_base = (u8 *)ramstage_cache_location(&cache_size);
+	*size = CONFIG_FSP_CACHE_SIZE;
+	return &cache_base[cache_size];
 }
 
-__attribute__((weak)) void *soc_restore_support_code(void)
+/* Display SMM memory map */
+static void smm_memory_map(void)
 {
-	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
-	return NULL;
+	u8 *smm_base;
+	size_t smm_bytes;
+	size_t smm_code_bytes;
+	u8 *fsp_cache;
+	size_t fsp_cache_bytes;
+	u8 *ramstage_cache;
+	long ramstage_cache_bytes;
+	u8 *smm_reserved;
+	size_t smm_reserved_bytes;
+
+	/* Locate the SMM regions */
+	smm_region((void **)&smm_base, &smm_bytes);
+	fsp_cache = smm_fsp_cache_base(&fsp_cache_bytes);
+	ramstage_cache = (u8 *)ramstage_cache_location(&ramstage_cache_bytes);
+	smm_code_bytes = ramstage_cache - smm_base;
+	smm_reserved = fsp_cache + fsp_cache_bytes;
+	smm_reserved_bytes = smm_bytes - fsp_cache_bytes - ramstage_cache_bytes
+		- smm_code_bytes;
+
+	/* Display the SMM regions */
+	printk(BIOS_SPEW, "\nLocation          SMM Memory Map        Offset\n");
+	if (smm_reserved_bytes) {
+		printk(BIOS_SPEW, "0x%p +--------------------------+ 0x%08x\n",
+			&smm_reserved[smm_reserved_bytes], smm_bytes);
+		printk(BIOS_SPEW, "           |   Other reserved region  |\n");
+	}
+	printk(BIOS_SPEW, "0x%p +--------------------------+ 0x%08x\n",
+		smm_reserved, smm_reserved - smm_base);
+	printk(BIOS_SPEW, "           |   FSP binary cache       |\n");
+	printk(BIOS_SPEW, "0x%p +--------------------------+ 0x%08x\n",
+		fsp_cache, fsp_cache - smm_base);
+	printk(BIOS_SPEW, "           |   ramstage cache         |\n");
+	printk(BIOS_SPEW, "0x%p +--------------------------+ 0x%08x\n",
+		ramstage_cache, ramstage_cache - smm_base);
+	printk(BIOS_SPEW, "           |   SMM code               |\n");
+	printk(BIOS_SPEW, "0x%p +--------------------------+ 0x%08x\n",
+		smm_base, 0);
+	printk(BIOS_ERR, "\nCONFIG_FSP_CACHE_SIZE: 0x%08x bytes\n\n",
+		CONFIG_FSP_CACHE_SIZE);
+}
+
+struct smm_fsp_cache_header {
+	void *start;
+	size_t size;
+	FSP_INFO_HEADER *fih;
+};
+
+/* SoC implementation for caching support code. */
+static void soc_save_support_code(void *start, size_t size,
+	FSP_INFO_HEADER *fih)
+{
+	u8 *fsp_cache;
+	size_t fsp_cache_length;
+	struct smm_fsp_cache_header *header;
+	size_t smm_fsp_cache_length;
+
+	if (IS_ENABLED(CONFIG_DISPLAY_SMM_MEMORY_MAP))
+		smm_memory_map();
+
+	/* Locate the FSP cache in SMM */
+	fsp_cache = smm_fsp_cache_base(&smm_fsp_cache_length);
+
+	/* Initialize the FSP cache header */
+	header = (struct smm_fsp_cache_header *)fsp_cache;
+	fsp_cache += sizeof(*header);
+	header->start = start;
+	header->size = size;
+	header->fih = fih;
+
+	/* Validate the CONFIG_FSP_CACHE_SIZE value */
+	fsp_cache_length = sizeof(*header) + size;
+	if (smm_fsp_cache_length < fsp_cache_length) {
+		printk(BIOS_ERR, "CONFIG_FSP_CACHE_SIZE < 0x%08x bytes\n",
+			fsp_cache_length);
+		die("ERROR: Insufficent space to cache FSP binary!\n");
+	}
+
+	/* Copy the FSP binary into the SMM region for safe keeping */
+	memcpy(fsp_cache, start, size);
+}
+
+/* SoC implementation for restoring support code after S3 resume. Returns
+ * previously passed fih pointer from soc_save_support_code(). */
+static FSP_INFO_HEADER *soc_restore_support_code(void)
+{
+	u8 *fsp_cache;
+	struct smm_fsp_cache_header *header;
+	size_t smm_fsp_cache_length;
+
+	/* Locate the FSP cache in SMM */
+	fsp_cache = smm_fsp_cache_base(&smm_fsp_cache_length);
+
+	/* Get the FSP cache header */
+	header = (struct smm_fsp_cache_header *)fsp_cache;
+	fsp_cache += sizeof(*header);
+
+	/* Copy the FSP binary from the SMM region back into RAM */
+	memcpy(header->start, fsp_cache, header->size);
+
+	/* Return the FSP_INFO_HEADER address */
+	return header->fih;
 }
 
 static void fsp_run_silicon_init(void)

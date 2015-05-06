@@ -23,6 +23,21 @@
 #include <soc/smm.h>
 #include <stdint.h>
 
+/*
+ * SMM Memory Map:
+ *
+ * +--------------------------+
+ * |     IED region           | CONFIG_IED_REGION_SIZE
+ * +--------------------------+ smm_region_size() ----.
+ * |     FSP Cache            | CONFIG_FSP_CACHE_SIZE |
+ * +--------------------------+                       |
+ * |     SMM Ramstage Cache   |                       + CONFIG_SMM_RESERVED_SIZE
+ * +--------------------------+  ---------------------'
+ * |     SMM Code             |
+ * +--------------------------+ smm_base
+ *
+ */
+
 struct ramstage_cache *ramstage_cache_location(long *size)
 {
 	/*
@@ -33,6 +48,6 @@ struct ramstage_cache *ramstage_cache_location(long *size)
 	offset -= CONFIG_IED_REGION_SIZE;
 	offset -= CONFIG_SMM_RESERVED_SIZE;
 
-	*size = CONFIG_SMM_RESERVED_SIZE;
+	*size = CONFIG_SMM_RESERVED_SIZE - CONFIG_FSP_CACHE_SIZE;
 	return (void *)(((u8 *)cbmem_top()) + offset);
 }
