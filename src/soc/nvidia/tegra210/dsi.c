@@ -346,14 +346,18 @@ static int tegra_dsi_configure(struct tegra_dsi *dsi, unsigned int pipe,
 
 		/* horizontal sync width */
 		hsw = (hsync_end(mode) - hsync_start(mode)) * mul / div;
-		hsw -= 10;
 
 		/* horizontal back porch */
 		hbp = (htotal(mode) - hsync_end(mode)) * mul / div;
-		hbp -= 14;
+		if ((dsi->flags & MIPI_DSI_MODE_VIDEO_SYNC_PULSE) == 0)
+			hbp += hsw;
 
 		/* horizontal front porch */
 		hfp = (hsync_start(mode) - mode->xres) * mul / div;
+
+		/* subtract packet overhead */
+		hsw -= 10;
+		hbp -= 14;
 		hfp -= 8;
 
 		tegra_dsi_writel(dsi, hsw << 16 | 0, DSI_PKT_LEN_0_1);
@@ -434,8 +438,10 @@ static int tegra_output_dsi_enable(struct tegra_dsi *dsi,
 		return 0;
 
 	err = tegra_dsi_configure(dsi, 0, config);
-	if (err < 0)
+	if (err < 0) {
+		printk(BIOS_ERR, "DSI configuration failed\n");
 		return err;
+	}
 
 	/* enable DSI controller */
 	tegra_dsi_enable(dsi);
@@ -811,9 +817,23 @@ static ssize_t tegra_dsi_host_transfer(struct mipi_dsi_host *host,
 				printk(BIOS_INFO,
 					"failed to parse response: %d\n",
 					err);
+			else {
+				/*
+				 * For read commands, return the number of
+				 * bytes returned by the peripheral.
+				 */
+				count = err;
+			}
 		}
+	} else {
+		/*
+		 * For write commands, we have transmitted the 4-byte header
+		 * plus the variable-length payload.
+		 */
+		count = 4 + msg->tx_len;
 	}
-	return 0;
+
+	return count;
 }
 
 static int tegra_dsi_ganged_setup(struct tegra_dsi *dsi,
