@@ -198,3 +198,8 @@ struct chip_operations mainboard_ops = {
 	.name   = "smaug",
 	.enable_dev = mainboard_enable,
 };
+
+void lb_board(struct lb_header *header)
+{
+	lb_table_add_serialno_from_vpd(header);
+}
