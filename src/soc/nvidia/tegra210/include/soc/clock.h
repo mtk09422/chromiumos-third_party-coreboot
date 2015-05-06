@@ -324,6 +324,7 @@ static inline void _clock_set_div(u32 *reg, const char *name, u32 div,
 #define TEGRA_CLK_M_KHZ	 clock_get_osc_khz()
 #define TEGRA_PLLX_KHZ   CONFIG_PLLX_KHZ
 #define TEGRA_PLLP_KHZ   (408000)
+#define TEGRA_PLLP_OUT3_KHZ	(68000)
 #define TEGRA_PLLC_KHZ   (600000)
 #define TEGRA_PLLD_KHZ   (925000)
 #define TEGRA_PLLU_KHZ   (960000)
