@@ -342,31 +342,35 @@ static void *relocate_remaining_items(void *fsp, size_t size, size_t fih_offset)
 	return NULL;
 }
 
-static FSP_INFO_HEADER *fsp_relocate_in_place(void *fsp, size_t size)
+static ssize_t relocate_fvh(void *fsp, size_t fsp_size, size_t fvh_offset,
+				size_t *fih_offset)
 {
 	EFI_FIRMWARE_VOLUME_HEADER *fvh;
 	EFI_FFS_FILE_HEADER *ffsfh;
 	EFI_COMMON_SECTION_HEADER *csh;
 	size_t offset;
 	size_t file_offset;
-	size_t fih_offset;
+	size_t size;
 
-	fih_offset = 0;
-	offset = 0;
-	fvh = fsp;
+	offset = fvh_offset;
+	fvh = relative_offset(fsp, offset);
 
 	if (fvh->Signature != EFI_FVH_SIGNATURE)
-		return NULL;
+		return -1;
 
-	printk(FSP_DBG_LVL, "FVH length: %zx Mapping length: %zx\n",
-		(size_t)fvh->FvLength, size);
+	printk(FSP_DBG_LVL, "FVH length: %zx Offset: %zx Mapping length: %zx\n",
+		(size_t)fvh->FvLength, offset, fsp_size);
 
-	if (fvh->FvLength != size)
-		return NULL;
+	if (fvh->FvLength + offset > fsp_size)
+		return -1;
+
+	/* Parse only this FV. However, the algorithm uses offsets into the
+	 * entire FSP region so make size include the starting offset. */
+	size = fvh->FvLength + offset;
 
 	if (memcmp(&fvh->FileSystemGuid, &ffs2_guid, sizeof(ffs2_guid))) {
 		printk(BIOS_ERR, "FVH not an FFS2 type.\n");
-		return NULL;
+		return -1;
 	}
 
 	if (fvh->ExtHeaderOffset != 0) {
@@ -390,8 +394,8 @@ static FSP_INFO_HEADER *fsp_relocate_in_place(void *fsp, size_t size)
 		printk(FSP_DBG_LVL, "file offset: %zx\n", file_offset);
 
 		/* First file and section should be FSP info header. */
-		if (fih_offset == 0)
-			fih_offset = file_offset;
+		if (fih_offset != NULL && *fih_offset == 0)
+			*fih_offset = file_offset;
 
 		ffsfh = relative_offset(fsp, file_offset);
 
@@ -422,7 +426,7 @@ static FSP_INFO_HEADER *fsp_relocate_in_place(void *fsp, size_t size)
 
 			if (data_size + data_offset + offset > file_offset) {
 				printk(BIOS_ERR, "Section exceeds FV size.\n");
-				return NULL;
+				return -1;
 			}
 
 			if (csh->Type == EFI_SECTION_TE) {
@@ -439,6 +443,37 @@ static FSP_INFO_HEADER *fsp_relocate_in_place(void *fsp, size_t size)
 			/* Sections are aligned to 4 bytes. */
 			offset = ALIGN_UP(offset, 4);
 		}
+	}
+
+	/* Return amount of buffer parsed: FV size. */
+	return fvh->FvLength;
+}
+
+static FSP_INFO_HEADER *fsp_relocate_in_place(void *fsp, size_t size)
+{
+	size_t offset;
+	size_t fih_offset;
+
+	offset = 0;
+	fih_offset = 0;
+	while (offset < size) {
+		ssize_t nparsed;
+
+		/* Relocate each FV within the FSP region. The FSP_INFO_HEADER
+		 * should only be located in the first FV. */
+		if (offset == 0)
+			nparsed = relocate_fvh(fsp, size, offset, &fih_offset);
+		else
+			nparsed = relocate_fvh(fsp, size, offset, NULL);
+
+		/* FV should be larger than 0 or failed to parse. */
+		if (nparsed <= 0) {
+			printk(BIOS_ERR, "FV @ offset %zx relocation failed\n",
+				offset);
+			return NULL;
+		}
+
+		offset += nparsed;
 	}
 
 	return relocate_remaining_items(fsp, size, fih_offset);
