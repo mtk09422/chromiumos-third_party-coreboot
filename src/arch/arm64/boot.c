@@ -30,31 +30,31 @@
 void jmp_to_elf_entry(void *entry, unsigned long buffer, unsigned long size)
 {
 	void (*payload_entry)(void *) = entry;
-
 	void *cb_tables = cbmem_find(CBMEM_ID_CBTABLE);
-	uint8_t current_el = get_current_el();
 
-	printk(BIOS_SPEW, "entry    = %p\n", entry);
+	if (IS_ENABLED(CONFIG_ARM64_USE_SECURE_MONITOR))
+		secmon_run(payload_entry, cb_tables);
+	else {
+		uint8_t current_el = get_current_el();
 
-	secmon_run(payload_entry, cb_tables);
+		/* Start the other CPUs spinning. */
+		if (IS_ENABLED(CONFIG_ARM64_USE_SPINTABLE))
+			spintable_start();
 
-	/* Start the other CPUs spinning. */
-	spintable_start();
-
-	/* If current EL is not EL3, jump to payload at same EL. */
-	if (current_el != EL3) {
 		cache_sync_instructions();
-		/* Point of no-return */
-		payload_entry(cb_tables);
+
+		printk(BIOS_SPEW, "entry    = %p\n", entry);
+
+		/* If current EL is not EL3, jump to payload at same EL. */
+		if (current_el != EL3)
+			payload_entry(cb_tables);
+		else {
+			/* If currently EL3, we transition to payload in EL2. */
+			struct exc_state exc_state;
+			memset(&exc_state, 0, sizeof(exc_state));
+			exc_state.elx.spsr = get_eret_el(EL2, SPSR_USE_L);
+
+			transition_with_entry(entry, cb_tables, &exc_state);
+		}
 	}
-
-	/* If current EL is EL3, we transition to payload in EL2. */
-	struct exc_state exc_state;
-
-	memset(&exc_state, 0, sizeof(exc_state));
-
-	exc_state.elx.spsr = get_eret_el(EL2, SPSR_USE_L);
-
-	cache_sync_instructions();
-	transition_with_entry(entry, cb_tables, &exc_state);
 }

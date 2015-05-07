@@ -15,16 +15,6 @@ config ARCH_RAMSTAGE_ARM64
 	bool
 	default n
 
-config ARCH_USE_SECURE_MONITOR
-	bool
-	select RELOCATABLE_MODULES
-	default n
-
-config ARCH_SPINTABLE
-	bool
-	default n
-	depends on ARCH_RAMSTAGE_ARM64
-
 source src/arch/arm64/armv8/Kconfig
 source src/arch/arm64/cpu/Kconfig
 
@@ -33,3 +23,14 @@ source src/arch/arm64/cpu/Kconfig
 config ARM64_BOOTBLOCK_CUSTOM
 	bool
 	default n
+
+config ARM64_USE_SECURE_MONITOR
+	bool
+	select RELOCATABLE_MODULES
+	default n
+	depends on ARCH_RAMSTAGE_ARM64
+
+config ARM64_USE_SPINTABLE
+	bool
+	default n
+	depends on ARCH_RAMSTAGE_ARM64

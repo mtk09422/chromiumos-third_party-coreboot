@@ -30,7 +30,7 @@ ramstage-$(CONFIG_CONSOLE_CBMEM) += cbmem_console.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_IPQ806X) += uart_wrapper.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_BG4CD) += uart_wrapper.c
 
-secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += vtxprintf.c
-secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += console.c
-secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += die.c
-secmon-$(CONFIG_ARCH_USE_SECURE_MONITOR) += printk.c
+secmon-y += vtxprintf.c
+secmon-y += console.c
+secmon-y += die.c
+secmon-y += printk.c
