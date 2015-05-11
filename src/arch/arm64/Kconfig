@@ -29,8 +29,14 @@ config ARM64_USE_SECURE_MONITOR
 	select RELOCATABLE_MODULES
 	default n
 	depends on ARCH_RAMSTAGE_ARM64
+	depends on !ARM64_USE_ARM_TRUSTED_FIRMWARE
 
 config ARM64_USE_SPINTABLE
+	bool
+	default n
+	depends on ARCH_RAMSTAGE_ARM64
+
+config ARM64_USE_ARM_TRUSTED_FIRMWARE
 	bool
 	default n
 	depends on ARCH_RAMSTAGE_ARM64
