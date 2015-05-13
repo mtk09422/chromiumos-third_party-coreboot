@@ -297,6 +297,14 @@ config BOARD_GOOGLE_VEYRON_RIALTO
 	  Veyron_Rialto is a Chrome OS mainboard.
 	  Veyron_Rialto is based on the Rockchip RK3288 platform.
 
+config BOARD_GOOGLE_VEYRON_ROMY
+	bool "Veyron_Romy"
+	help
+	  Google Veyron_Romy mainboard.
+	  Enable this config to select the Google Veyron_Romy mainboard.
+	  Veyron_Romy is a Chrome OS mainboard.
+	  Veyron_Romy is based on the Rockchip RK3288 platform.
+
 config BOARD_GOOGLE_VEYRON_SPEEDY
 	bool "Veyron_Speedy"
 	help
@@ -340,6 +348,7 @@ source "src/mainboard/google/veyron_jerry/Kconfig"
 source "src/mainboard/google/veyron_mighty/Kconfig"
 source "src/mainboard/google/veyron_pinky/Kconfig"
 source "src/mainboard/google/veyron_rialto/Kconfig"
+source "src/mainboard/google/veyron_romy/Kconfig"
 source "src/mainboard/google/veyron_speedy/Kconfig"
 
 config MAINBOARD_VENDOR
