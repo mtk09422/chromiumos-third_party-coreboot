@@ -142,14 +142,10 @@ Scope (\_SB.I2C2)
 					"\\_SB.I2C2",		/* ResourceSource: I2C bus controller name */
 				)
 
-				Interrupt (ResourceConsumer, Edge, ActiveLow)
-				{
-					BOARD_CODEC_IRQ
-				}
 
 			 /* Jack Detect (index 0) */
 			 GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
-				  "\\_SB.GPSE") { JACK_DETECT_GPIO_INDEX }
+				  "\\_SB.GPSW") { JACK_DETECT_GPIO_INDEX }
 			} )
 			Return (SBUF)
 		}
@@ -248,7 +244,7 @@ Scope (\_SB.LPEA)
 	{
 		/* Jack Detect (index 0) */
 		GpioInt (Edge, ActiveLow, ExclusiveAndWake, PullNone,,
-			 "\\_SB.GPSE") { JACK_DETECT_GPIO_INDEX }
+			 "\\_SB.GPSW") { JACK_DETECT_GPIO_INDEX }
 	})
 }
 

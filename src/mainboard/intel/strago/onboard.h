@@ -42,8 +42,8 @@
 #define STRAGO_KBD_IRQ         182
 
 
-/* Gpio index or offset number in SE bank */
-#define JACK_DETECT_GPIO_INDEX	77
+/* Audio: Gpio index in SW bank */
+#define JACK_DETECT_GPIO_INDEX		95
 /* SCI: Gpio index in N bank */
 #define STRAGO_SCI_GPIO_INDEX		15
 /* Trackpad: Gpio index in N bank */
@@ -64,23 +64,13 @@
 #define BOARD_I8042_IRQ                 STRAGO_KBD_IRQ
 #define BOARD_ALS_IRQ                   GPIO_S0_DED_IRQ(ALS_IRQ_OFFSET)
 
-/*
- * gpio based irq for codec irq, 77th index in GPSE Bank
- * MAX_DIRECT_IRQ+GPSW_SIZE+GPNC_SIZE +GPEC_SIZE + 78
- */
-#define BOARD_CODEC_IRQ	390
 
 /* SD CARD gpio */
 #define SDCARD_CD			81
 
-#define AUDIO_CODEC_HID			"193C9890"
-#define AUDIO_CODEC_CID			"193C9890"
-#define AUDIO_CODEC_DDN			"Maxim 98090 Codec  "
-#define AUDIO_CODEC_I2C_ADDR		0x10
+#define AUDIO_CODEC_HID			"10EC5650"
+#define AUDIO_CODEC_CID			"10EC5650"
+#define AUDIO_CODEC_DDN			"RTEK Codec Controller "
+#define AUDIO_CODEC_I2C_ADDR		0x1A
 
-#define AUDIO_JACK_IRQ  149
-#define TI_SWITCH_HID           "104C227E"
-#define TI_SWITCH_CID           "104C227E"
-#define TI_SWITCH_DDN           "TI SWITCH "
-#define TI_SWITCH_I2C_ADDR		0x3B
 #endif
