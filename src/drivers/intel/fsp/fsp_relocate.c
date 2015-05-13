@@ -402,6 +402,10 @@ static ssize_t relocate_fvh(void *fsp, size_t fsp_size, size_t fvh_offset,
 		printk(FSP_DBG_LVL, "file type = %x\n", ffsfh->Type);
 		printk(FSP_DBG_LVL, "file attribs = %x\n", ffsfh->Attributes);
 
+		/* Exit FV relocation when empty space found */
+		if (ffsfh->Type == EFI_FV_FILETYPE_FFS_MAX)
+			break;
+
 		/* Next file on 8 byte alignment. */
 		file_offset += ffs_file_size(ffsfh);
 		file_offset = ALIGN_UP(file_offset, 8);
