@@ -32,7 +32,7 @@ void jmp_to_elf_entry(void *entry, unsigned long buffer, unsigned long size)
 {
 	void (*payload_entry)(void *) = entry;
 	void *payload_arg = cbmem_find(CBMEM_ID_CBTABLE);
-	u64 payload_spsr = get_eret_el(EL2, SPSR_USE_L);
+	u64 payload_spsr = SPSR_EXCEPTION_MASK | get_eret_el(EL2, SPSR_USE_L);
 
 	if (IS_ENABLED(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE))
 		arm_tf_run_bl31((u64)entry, (u64)payload_arg, payload_spsr);
