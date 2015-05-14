@@ -28,9 +28,11 @@
 #include <soc/gpio.h>
 #include <string.h>
 #include <vendorcode/google/chromeos/chromeos.h>
+#include <console/console.h>
 
-/* The WP status pin lives on GPIO_SSUS_6 which is pad 36 in the SUS well. */
-#define WP_STATUS_PAD	36
+/* The WP status pin lives on MF_ISH_GPIO_4 */
+#define WP_STATUS_PAD_CFG0	0x4838
+#define WP_STATUS_PAD_CFG1	0x483C
 
 #ifndef __PRE_RAM__
 #include <boot/coreboot_tables.h>
@@ -128,15 +130,18 @@ int get_write_protect_state(void)
 {
 	/*
 	 * The vboot loader queries this function in romstage. The GPIOs have
-	 * not been set up yet as that configuration is done in ramstage. The
-	 * hardware defaults to an input but there is a 20K pulldown. Externally
-	 * there is a 10K pullup. Disable the internal pull in romstage so that
-	 * there isn't any ambiguity in the reading.
+	 * not been set up yet as that configuration is done in ramstage.
+	 * Configuring this GPIO as input so that there isn't any ambiguity
+	 * in the reading.
 	 */
 #if defined(__PRE_RAM__)
-	ssus_disable_internal_pull(WP_STATUS_PAD);
+	write32((void *)(COMMUNITY_GPEAST_BASE + WP_STATUS_PAD_CFG0),
+	(PAD_PULL_UP_20K | PAD_GPIO_ENABLE | PAD_CONFIG0_GPI_DEFAULT));
+	write32((void *)(COMMUNITY_GPEAST_BASE + WP_STATUS_PAD_CFG1),
+		PAD_CONFIG1_DEFAULT0);
 #endif
 
 	/* WP is enabled when the pin is reading high. */
-	return ssus_get_gpio(WP_STATUS_PAD);
+	return (read32((void *)(COMMUNITY_GPEAST_BASE + WP_STATUS_PAD_CFG0))
+		& PAD_VAL_HIGH);
 }

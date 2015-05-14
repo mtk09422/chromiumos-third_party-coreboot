@@ -548,6 +548,8 @@ typedef enum {
 	inv_tx_data	   = 0x8,
 } invert_rx_tx_t;
 
+#define PAD_VAL_HIGH (1 << 0)
+
 void setup_soc_gpios(struct soc_gpio_config *config, u8 enable_xdp_tap);
 struct soc_gpio_config *mainboard_get_gpios(void);
 
