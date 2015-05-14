@@ -406,6 +406,7 @@ static u32 tis_probe(void)
 				break;
 			}
 			j++;
+			dev = &vendor_names[i].dev_names[j];
 		}
 		break;
 	}
