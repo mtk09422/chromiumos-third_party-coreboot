@@ -28,38 +28,61 @@ static int isprint(int c)
 	return (c >= 32 && c <= 126);
 }
 
-void hexdump(const void *memory, size_t length)
+void hexdump_bounds(const void *memory, size_t length, const void *base,
+	char separator, uint32_t extra_spaces, const char *bounds,
+	const char *ellipse, uint32_t match_zeros_only,
+	uint32_t print_duplicate_lines)
 {
 	int i;
 	uint8_t *m;
-	int all_zero = 0;
+	int matched_lines = -1;
+	uint8_t *offset;
+	uint8_t previous_values[16];
 
 	m = (uint8_t *) memory;
+	offset = (uint8_t *)(m - (uint8_t *)base);
 
 	for (i = 0; i < length; i += 16) {
 		int j;
 
-		all_zero++;
+		matched_lines++;
 		for (j = 0; j < 16; j++) {
-			if (m[i + j] != 0) {
-				all_zero = 0;
+			if (m[i + j] != (match_zeros_only ? 0 :
+				previous_values[j])) {
+				matched_lines = 0;
 				break;
 			}
 		}
-
-		if (all_zero < 2) {
-			printk(BIOS_DEBUG, "%p:", memory + i);
+		if (matched_lines == 0) {
 			for (j = 0; j < 16; j++)
+				previous_values[j] = m[i + j];
+		}
+
+		if (matched_lines < print_duplicate_lines) {
+			printk(BIOS_DEBUG, "%p%c", offset + i, separator);
+			for (j = 0; j < 16; j++) {
+				if ((extra_spaces & (1 << j)) != 0)
+					printk(BIOS_DEBUG, " ");
 				printk(BIOS_DEBUG, " %02x", m[i + j]);
+			}
 			printk(BIOS_DEBUG, "  ");
+			if (bounds)
+				printk(BIOS_DEBUG, "%s", bounds);
 			for (j = 0; j < 16; j++)
 				printk(BIOS_DEBUG, "%c",
 				       isprint(m[i + j]) ? m[i + j] : '.');
+			if (bounds)
+				printk(BIOS_DEBUG, "%s", bounds);
 			printk(BIOS_DEBUG, "\n");
-		} else if (all_zero == 2) {
-			printk(BIOS_DEBUG, "...\n");
+		} else if (matched_lines == print_duplicate_lines) {
+			printk(BIOS_DEBUG, "%s\n", ellipse);
 		}
 	}
+}
+
+void hexdump(const void *memory, size_t length)
+{
+	hexdump_bounds(memory, length, NULL, ':', 0, NULL, "...", 1, 2);
 }
 
 void hexdump32(char LEVEL, const void *d, size_t len)

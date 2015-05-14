@@ -54,6 +54,10 @@ void cache_as_ram_main(unsigned long bist, unsigned long cpu_init_detectedx);
 #endif
 
 /* Defined in src/lib/hexdump.c */
+void hexdump_bounds(const void *memory, size_t length, const void *base,
+	char separator, uint32_t extra_space, const char *bounds,
+	const char *ellipse, uint32_t match_zeros_only,
+	uint32_t print_duplicate_lines);
 void hexdump(const void *memory, size_t length);
 void hexdump32(char LEVEL, const void *d, size_t len);
 
