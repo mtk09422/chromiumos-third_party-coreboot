@@ -122,9 +122,8 @@ static int te_relocate_in_place(void *te, size_t size)
 		(void *)(uintptr_t)(teih->ImageBase + fixup_offset),
 		te, adj);
 
-	/* Adjust ImageBase for consistency. Need to subtract fixup_offset
-	 * so the image could be relocated if needed. */
-	teih->ImageBase += adj - fixup_offset;
+	/* Adjust ImageBase for consistency. */
+	teih->ImageBase = (uint32_t)(teih->ImageBase + adj);
 
 	relocd = &teih->DataDirectory[EFI_TE_IMAGE_DIRECTORY_ENTRY_BASERELOC];
 
