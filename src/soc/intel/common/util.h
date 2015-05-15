@@ -1,7 +1,6 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2015 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,25 +14,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc.
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _INTEL_COMMON_RAMSTAGE_H_
-#define _INTEL_COMMON_RAMSTAGE_H_
+#ifndef _INTEL_COMMON_UTIL_H_
+#define _INTEL_COMMON_UTIL_H_
 
-#include <fsp_util.h>
-#include <soc/intel/common/util.h>
 #include <stdint.h>
 
-/* Perform Intel silicon init. */
-void intel_silicon_init(void);
-/* Called after the silicon init code has run. */
-void soc_after_silicon_init(void);
-/* Initialize UPD data before SiliconInit call. */
-void soc_silicon_init_params(UPD_DATA_REGION *upd_ptr);
-void mainboard_silicon_init_params(UPD_DATA_REGION *upd_ptr);
-void soc_display_silicon_init_params(const UPD_DATA_REGION *original,
-	UPD_DATA_REGION *upd_ptr);
-void load_vbt(uint8_t s3_resume, UPD_DATA_REGION *upd_ptr);
+void soc_display_upd_value(const char *name, uint32_t size, uint64_t old,
+	uint64_t new);
 
-#endif /* _INTEL_COMMON_RAMSTAGE_H_ */
+#endif /* _INTEL_COMMON_UTIL_H_ */

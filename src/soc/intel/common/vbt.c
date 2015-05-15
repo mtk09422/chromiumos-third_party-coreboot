@@ -22,26 +22,26 @@
 #include <console/console.h>
 #include <fsp_util.h>
 #include <lib.h>
-#include <soc/romstage.h>
+#include <soc/intel/common/ramstage.h>
 #include <string.h>
 
 /* Locate VBT and pass it to FSP GOP */
-void load_vbt(struct romstage_params *rp)
+void load_vbt(uint8_t s3_resume, UPD_DATA_REGION *upd_ptr)
 {
-	void *vbt_content;
+	const optionrom_vbt_t *vbt_data;
 	uint32_t vbt_len;
-	struct pei_data *ps = rp->pei_data;
 
 	/* Check boot mode - for S3 resume path VBT loading is not needed */
-	if (rp->power_state->prev_sleep_state != SLEEP_STATE_S3) {
-		/* Get VBT data */
-		vbt_content = (void *)fsp_get_vbt(&vbt_len);
-		if (vbt_content != NULL) {
-			ps->vbt_data = vbt_content;
-			printk(BIOS_DEBUG, "Find and pass VBT to GOP\n");
-		}
-	} else {
-		ps->vbt_data = NULL;
+	if (s3_resume) {
+		vbt_data = NULL;
 		printk(BIOS_DEBUG, "S3 resume do not pass VBT to GOP\n");
+	} else {
+		/* Get VBT data */
+		vbt_data = fsp_get_vbt(&vbt_len);
+		if (vbt_data != NULL)
+			printk(BIOS_DEBUG, "Passing VBT to GOP\n");
+		else
+			printk(BIOS_DEBUG, "VBT not found!\n");
 	}
+	upd_ptr->PcdGraphicsConfigPtr = (u32)vbt_data;
 }

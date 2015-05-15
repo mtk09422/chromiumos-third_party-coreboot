@@ -27,54 +27,18 @@
 #define _BRASWELL_CHIP_H_
 
 #include <stdint.h>
+#include <fsp_util.h>
+#include <soc/pci_devs.h>
+
+#define SVID_CONFIG1	1
+#define SVID_CONFIG3	3
 
 struct soc_intel_braswell_config {
 	uint8_t enable_xdp_tap;
-	uint8_t sata_port_map;
-	uint8_t sata_ahci;
-	uint8_t ide_legacy_combined;
 	uint8_t clkreq_enable;
-
-	/*
-	 * Enable SATA features
-	 * Bits 15-12: Reserved
-	 * Bits 11-10: OROM UI Normal Delay in seconds: 00=2, 01=4, 10=6, 11=8
-	 * Bit 9: Smart Response Technology
-	 * Bit 8: RRT only on eSATA
-	 * Bit 7: LED Locate
-	 * Bit 6: HDD unlock
-	 * Bit 5: Option ROM UI and banner
-	 * Bit 4: Rapid Recovery Technology (RRT)
-	 * Bit 3: RAID 5
-	 * Bit 2: RAID 10
-	 * Bit 1: RAID 1
-	 * Bit 0: RAID 0
-	 */
-	uint32_t sata_software_feature_mask;
-
-	/* VR low power settings -- enable PS2 mode for gfx and core */
-	int vnn_ps2_enable;
-	int vcc_ps2_enable;
 
 	/* Disable SLP_X stretching after SUS power well loss. */
 	int disable_slp_x_stretch_sus_fail;
-
-	/* USB Port Disable mask */
-	uint16_t usb2_port_disable_mask;
-	uint16_t usb3_port_disable_mask;
-
-	/* USB routing */
-	int usb_route_to_xhci;
-
-	/* USB PHY settings specific to the board */
-	uint32_t usb2_per_port_lane0;
-	uint32_t usb2_per_port_rcomp_hs_pullup0;
-	uint32_t usb2_per_port_lane1;
-	uint32_t usb2_per_port_rcomp_hs_pullup1;
-	uint32_t usb2_per_port_lane2;
-	uint32_t usb2_per_port_rcomp_hs_pullup2;
-	uint32_t usb2_per_port_lane3;
-	uint32_t usb2_per_port_rcomp_hs_pullup3;
 
 	/* LPE Audio Clock configuration. */
 	int lpe_codec_clk_freq; /* 19 or 25 are valid. */
@@ -93,21 +57,85 @@ struct soc_intel_braswell_config {
 	/* Allow PCIe devices to wake system from suspend. */
 	int pcie_wake_enable;
 
-	int gpu_pipea_port_select;	/* Port select: 1=DP_B 2=DP_C */
-	uint16_t gpu_pipea_power_on_delay;
-	uint16_t gpu_pipea_light_on_delay;
-	uint16_t gpu_pipea_power_off_delay;
-	uint16_t gpu_pipea_light_off_delay;
-	uint16_t gpu_pipea_power_cycle_delay;
-	int gpu_pipea_pwm_freq_hz;
+	/*
+	 * The following fields come from fsp_vpd.h .aka. VpdHeader.h.
+	 * These are configuration values that are passed to FSP during
+	 * MemoryInit.
+	 */
+	UINT16 PcdMrcInitTsegSize;
+	UINT16 PcdMrcInitMmioSize;
+	UINT8  PcdMrcInitSpdAddr1;
+	UINT8  PcdMrcInitSpdAddr2;
+	UINT8  PcdIgdDvmt50PreAlloc;
+	UINT8  PcdApertureSize;
+	UINT8  PcdGttSize;
+	UINT8  ISPEnable;
+	UINT8  ISPPciDevConfig;
+	UINT8  PcdLegacySegDecode;
 
-	int gpu_pipeb_port_select;	/* Port select: 1=DP_B 2=DP_C */
-	uint16_t gpu_pipeb_power_on_delay;
-	uint16_t gpu_pipeb_light_on_delay;
-	uint16_t gpu_pipeb_power_off_delay;
-	uint16_t gpu_pipeb_light_off_delay;
-	uint16_t gpu_pipeb_power_cycle_delay;
-	int gpu_pipeb_pwm_freq_hz;
+	/*
+	 * The following fields come from fsp_vpd.h .aka. VpdHeader.h.
+	 * These are configuration values that are passed to FSP during
+	 * SiliconInit.
+	 */
+	UINT8  PcdSdcardMode;
+	UINT8  PcdEnableHsuart0;
+	UINT8  PcdEnableHsuart1;
+	UINT8  PcdEnableAzalia;
+	UINT32 AzaliaConfigPtr;
+	UINT8  PcdEnableSata;
+	UINT8  PcdEnableXhci;
+	UINT8  PcdEnableLpe;
+	UINT8  PcdEnableDma0;
+	UINT8  PcdEnableDma1;
+	UINT8  PcdEnableI2C0;
+	UINT8  PcdEnableI2C1;
+	UINT8  PcdEnableI2C2;
+	UINT8  PcdEnableI2C3;
+	UINT8  PcdEnableI2C4;
+	UINT8  PcdEnableI2C5;
+	UINT8  PcdEnableI2C6;
+	UINT32 PcdGraphicsConfigPtr;
+	UINT8  PunitPwrConfigDisable;
+	UINT8  ChvSvidConfig;
+	UINT8  DptfDisable;
+	UINT8  PcdEmmcMode;
+	UINT8  PcdPciClkSsc;
+	UINT8  PcdUsb3ClkSsc;
+	UINT8  PcdDispClkSsc;
+	UINT8  PcdSataClkSsc;
+	UINT8  Usb2Port0PerPortPeTxiSet;
+	UINT8  Usb2Port0PerPortTxiSet;
+	UINT8  Usb2Port0IUsbTxEmphasisEn;
+	UINT8  Usb2Port0PerPortTxPeHalf;
+	UINT8  Usb2Port1PerPortPeTxiSet;
+	UINT8  Usb2Port1PerPortTxiSet;
+	UINT8  Usb2Port1IUsbTxEmphasisEn;
+	UINT8  Usb2Port1PerPortTxPeHalf;
+	UINT8  Usb2Port2PerPortPeTxiSet;
+	UINT8  Usb2Port2PerPortTxiSet;
+	UINT8  Usb2Port2IUsbTxEmphasisEn;
+	UINT8  Usb2Port2PerPortTxPeHalf;
+	UINT8  Usb2Port3PerPortPeTxiSet;
+	UINT8  Usb2Port3PerPortTxiSet;
+	UINT8  Usb2Port3IUsbTxEmphasisEn;
+	UINT8  Usb2Port3PerPortTxPeHalf;
+	UINT8  Usb2Port4PerPortPeTxiSet;
+	UINT8  Usb2Port4PerPortTxiSet;
+	UINT8  Usb2Port4IUsbTxEmphasisEn;
+	UINT8  Usb2Port4PerPortTxPeHalf;
+	UINT8  Usb3Lane0Ow2tapgen2deemph3p5;
+	UINT8  Usb3Lane1Ow2tapgen2deemph3p5;
+	UINT8  Usb3Lane2Ow2tapgen2deemph3p5;
+	UINT8  Usb3Lane3Ow2tapgen2deemph3p5;
+	UINT8  PcdSataInterfaceSpeed;
+	UINT8  PcdPchUsbSsicPort;
+	UINT8  PcdPchUsbHsicPort;
+	UINT8  PcdPcieRootPortSpeed;
+	UINT8  PcdPchSsicEnable;
+	UINT32 PcdLogoPtr;
+	UINT32 PcdLogoSize;
+	UINT8  PcdRtcLock;
 };
 
 extern struct chip_operations soc_intel_braswell_ops;

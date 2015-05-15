@@ -33,11 +33,16 @@ void mainboard_romstage_entry(struct romstage_params *rp)
 
 	mainboard_fill_spd_data(ps);
 
-	/* Set device state/enable information */
-	ps->sdcard_mode = PCH_ACPI_MODE;
-	ps->emmc_mode = PCH_ACPI_MODE;
-	ps->enable_azalia = 1;
-
 	/* Call back into chipset code with platform values updated. */
 	romstage_common(rp);
+}
+
+void mainboard_memory_init_params(
+	struct romstage_params *params,
+	UPD_DATA_REGION *upd_ptr)
+{
+	/* Update SPD data */
+	upd_ptr->PcdMemorySpdPtr = (u32)params->pei_data->spd_data_ch0;
+	upd_ptr->PcdMemChannel0Config = params->pei_data->spd_ch0_config;
+	upd_ptr->PcdMemChannel1Config = params->pei_data->spd_ch1_config;
 }

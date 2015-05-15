@@ -22,12 +22,12 @@ subdirs-y += spd
 
 romstage-$(CONFIG_CHROMEOS) += chromeos.c
 romstage-$(CONFIG_ENABLE_BUILTIN_COM1) += com_init.c
-romstage-y += fsp.c
 
 ramstage-$(CONFIG_CHROMEOS) += chromeos.c
 ramstage-y += ec.c
 ramstage-$(CONFIG_CHROMEOS) += gpio.c
 ramstage-y += irqroute.c
+ramstage-y += ramstage.c
 ramstage-y += w25q64.c
 
 smm-$(CONFIG_HAVE_SMI_HANDLER) += smihandler.c

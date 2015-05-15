@@ -25,8 +25,11 @@
 #include <arch/io.h>
 #include <arch/cbfs.h>
 #include <arch/stages.h>
+#include <chip.h>
 #include <cpu/x86/mtrr.h>
 #include <console/console.h>
+#include <device/device.h>
+#include <device/pci_def.h>
 #if IS_ENABLED(CONFIG_EC_GOOGLE_CHROMEEC)
 #include <ec/google/chromeec/ec.h>
 #include <ec/google/chromeec/ec_commands.h>
@@ -203,4 +206,60 @@ void soc_after_ram_init(struct romstage_params *params)
 	value = iosf_bunit_read(BUNIT_BMISC);
 	value |= 3;
 	iosf_bunit_write(BUNIT_BMISC, value);
+}
+
+/* Initialize the UPD parameters for MemoryInit */
+void soc_memory_init_params(UPD_DATA_REGION *upd_ptr)
+{
+	const struct device *dev;
+	const struct soc_intel_braswell_config *config;
+
+	/* Set the parameters for MemoryInit */
+	dev = dev_find_slot(0, PCI_DEVFN(LPC_DEV, LPC_FUNC));
+	config = dev->chip_info;
+	printk(BIOS_DEBUG, "Updating UPD values for MemoryInit\n");
+	upd_ptr->PcdMrcInitTsegSize = IS_ENABLED(CONFIG_HAVE_SMI_HANDLER) ?
+		config->PcdMrcInitTsegSize : 0;
+	upd_ptr->PcdMrcInitMmioSize = config->PcdMrcInitMmioSize;
+	upd_ptr->PcdMrcInitSpdAddr1 = config->PcdMrcInitSpdAddr1;
+	upd_ptr->PcdMrcInitSpdAddr2 = config->PcdMrcInitSpdAddr2;
+	upd_ptr->PcdIgdDvmt50PreAlloc = config->PcdIgdDvmt50PreAlloc;
+	upd_ptr->PcdApertureSize = config->PcdApertureSize;
+	upd_ptr->PcdGttSize = config->PcdGttSize;
+	upd_ptr->ISPEnable = config->ISPEnable;
+	upd_ptr->ISPPciDevConfig = config->ISPPciDevConfig;
+	upd_ptr->PcdLegacySegDecode = config->PcdLegacySegDecode;
+}
+
+void soc_display_memory_init_params(const UPD_DATA_REGION *original,
+	UPD_DATA_REGION *upd_ptr)
+{
+	/* Display the parameters for MemoryInit */
+	printk(BIOS_SPEW, "UPD values for MemoryInit:\n");
+	soc_display_upd_value("PcdMrcInitTsegSize", 2,
+		original->PcdMrcInitTsegSize, upd_ptr->PcdMrcInitTsegSize);
+	soc_display_upd_value("PcdMrcInitMmioSize", 2,
+		original->PcdMrcInitMmioSize, upd_ptr->PcdMrcInitMmioSize);
+	soc_display_upd_value("PcdMrcInitSpdAddr1", 1,
+		original->PcdMrcInitSpdAddr1, upd_ptr->PcdMrcInitSpdAddr1);
+	soc_display_upd_value("PcdMrcInitSpdAddr2", 1,
+		original->PcdMrcInitSpdAddr2, upd_ptr->PcdMrcInitSpdAddr2);
+	soc_display_upd_value("PcdMemChannel0Config", 1,
+		original->PcdMemChannel0Config, upd_ptr->PcdMemChannel0Config);
+	soc_display_upd_value("PcdMemChannel1Config", 1,
+		original->PcdMemChannel1Config, upd_ptr->PcdMemChannel1Config);
+	soc_display_upd_value("PcdMemorySpdPtr", 4,
+		original->PcdMemorySpdPtr, upd_ptr->PcdMemorySpdPtr);
+	soc_display_upd_value("PcdIgdDvmt50PreAlloc", 1,
+		original->PcdIgdDvmt50PreAlloc, upd_ptr->PcdIgdDvmt50PreAlloc);
+	soc_display_upd_value("PcdApertureSize", 1,
+		original->PcdApertureSize, upd_ptr->PcdApertureSize);
+	soc_display_upd_value("PcdGttSize", 1,
+		original->PcdGttSize, upd_ptr->PcdGttSize);
+	soc_display_upd_value("ISPEnable", 1,
+		original->ISPEnable, upd_ptr->ISPEnable);
+	soc_display_upd_value("ISPPciDevConfig", 1,
+		original->ISPPciDevConfig, upd_ptr->ISPPciDevConfig);
+	soc_display_upd_value("PcdLegacySegDecode", 1,
+		original->PcdLegacySegDecode, upd_ptr->PcdLegacySegDecode);
 }

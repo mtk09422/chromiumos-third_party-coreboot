@@ -92,15 +92,15 @@ void raminit(struct romstage_params *params)
 	fsp_memory_init_params.NvsBufferPtr = (void *)pei_ptr->saved_data;
 	fsp_memory_init_params.RtBufferPtr = &fsp_rt_common_buffer;
 	fsp_memory_init_params.HobListPtr = &hob_list_ptr;
-	board_fsp_memory_init_params(params, fsp_header,
-		&fsp_memory_init_params);
+
+	/* Update the UPD data */
+	soc_memory_init_params(&upd_data_buffer);
+	mainboard_memory_init_params(params, &upd_data_buffer);
 	post_code(0x36);
 
 	/* Display the UPD data */
-#if IS_ENABLED(CONFIG_DISPLAY_UPD_DATA)
-	printk(BIOS_SPEW, "Updated Product Data (UPD):\n");
-	hexdump32(BIOS_SPEW, (void *)&upd_data_buffer, sizeof(upd_data_buffer));
-#endif
+	if (IS_ENABLED(CONFIG_DISPLAY_UPD_DATA))
+		soc_display_memory_init_params(upd_ptr, &upd_data_buffer);
 
 	/* Call FspMemoryInit to initialize RAM */
 	fsp_memory_init = (FSP_MEMORY_INIT)(fsp_header->ImageBase
@@ -180,6 +180,9 @@ void raminit(struct romstage_params *params)
 	/*
 	 * Verify that FSP is generating the required HOBs:
 	 *	7.1: FSP_BOOTLOADER_TEMP_MEMORY_HOB only produced for FSP 1.0
+	 *	7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB verified above
+	 *	7.3: FSP_NON_VOLATILE_STORAGE_HOB verified below
+	 *	7.4: FSP_BOOTLOADER_TOLUM_HOB verified above
 	 *	7.5: EFI_PEI_GRAPHICS_INFO_HOB produced by SiliconInit
 	 */
 	if (NULL != cbmem_root) {
@@ -272,4 +275,26 @@ void raminit(struct romstage_params *params)
 		pei_ptr->data_to_save_size = ALIGN(
 			((u32)GET_HOB_LENGTH(mrc_hob)), 16);
 	}
+}
+
+/* Initialize the UPD parameters for MemoryInit */
+__attribute__((weak)) void mainboard_memory_init_params(
+	struct romstage_params *params,
+	UPD_DATA_REGION *upd_ptr)
+{
+	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
+}
+
+/* Display the UPD parameters for MemoryInit */
+__attribute__((weak)) void soc_display_memory_init_params(
+	const UPD_DATA_REGION *original, UPD_DATA_REGION *upd_ptr)
+{
+	printk(BIOS_SPEW, "UPD values for MemoryInit:\n");
+	hexdump32(BIOS_SPEW, upd_ptr, sizeof(*upd_ptr));
+}
+
+/* Initialize the UPD parameters for MemoryInit */
+__attribute__((weak)) void soc_memory_init_params(UPD_DATA_REGION *upd_ptr)
+{
+	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 }

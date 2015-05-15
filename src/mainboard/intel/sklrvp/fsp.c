@@ -25,22 +25,13 @@
 #include "mainboard/intel/sklrvp/spd/spd.h"
 #include "gpio_rvp3.h"
 
-void board_fsp_memory_init_params(
-	struct romstage_params *params,
-	FSP_INFO_HEADER *fsp_header,
-	FSP_MEMORY_INIT_PARAMS *fsp_memory_init_params)
+void mainboard_memory_init_params(struct romstage_params *params,
+	UPD_DATA_REGION *upd_ptr)
 {
-	FSP_INIT_RT_COMMON_BUFFER *rt_ptr;
-	UPD_DATA_REGION *upd_ptr;
 	struct pei_data *pei_data_ptr;
 
 	/* Find the PEI DATA information that is filled out by the platform.*/
 	pei_data_ptr = params->pei_data;
-
-	/* Get pointers to the region that we need to mess with the UPD. */
-
-	rt_ptr = fsp_memory_init_params->RtBufferPtr;
-	upd_ptr = rt_ptr->UpdDataRgnPtr;
 
 	/* Get SPD data passing strucutre and initialize it.*/
 	if (params->pei_data->spd_data[0][0][0] != 0) {

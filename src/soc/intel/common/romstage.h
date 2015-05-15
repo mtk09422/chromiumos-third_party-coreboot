@@ -26,6 +26,7 @@
 #if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
 #include <fsp_util.h>
 #endif	/* CONFIG_PLATFORM_USES_FSP */
+#include <soc/intel/common/util.h>
 #include <soc/pei_data.h>
 #include <soc/pm.h>		/* chip_power_state */
 
@@ -71,16 +72,11 @@ struct romstage_params {
  *  30.  FSP binary/FspNotify
  */
 
-#if IS_ENABLED(CONFIG_GOP_SUPPORT)
-void load_vbt(struct romstage_params *params);
-#endif
-#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
-void board_fsp_memory_init_params(
-	struct romstage_params *params,
-	FSP_INFO_HEADER *fsp_header,
-	FSP_MEMORY_INIT_PARAMS * fsp_memory_init_params);
-#endif	/* CONFIG_PLATFORM_USES_FSP */
 void mainboard_check_ec_image(struct romstage_params *params);
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+void mainboard_memory_init_params(struct romstage_params *params,
+	UPD_DATA_REGION *upd_ptr);
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 void mainboard_pre_console_init(struct romstage_params *params);
 void mainboard_romstage_entry(struct romstage_params *params);
 void mainboard_save_dimm_info(struct romstage_params *params);
@@ -95,6 +91,11 @@ void *setup_stack_and_mtrrs(void);
 void set_max_freq(void);
 void soc_after_ram_init(struct romstage_params *params);
 void soc_after_temp_ram_exit(void);
+#if IS_ENABLED(CONFIG_PLATFORM_USES_FSP)
+void soc_display_memory_init_params(const UPD_DATA_REGION *original,
+	UPD_DATA_REGION *upd_ptr);
+void soc_memory_init_params(UPD_DATA_REGION *upd_ptr);
+#endif	/* CONFIG_PLATFORM_USES_FSP */
 void soc_pre_console_init(struct romstage_params *params);
 void soc_pre_ram_init(struct romstage_params *params);
 void soc_romstage_init(struct romstage_params *params);

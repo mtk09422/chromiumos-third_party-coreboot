@@ -22,6 +22,7 @@
 #include <cbfs.h>
 #include <console/console.h>
 #include <fsp_util.h>
+#include <lib.h>
 #include <ramstage_cache.h>
 #include <romstage_handoff.h>
 #include <soc/intel/common/memmap.h>
@@ -164,11 +165,14 @@ static FSP_INFO_HEADER *soc_restore_support_code(void)
 	return header->fih;
 }
 
-static void fsp_run_silicon_init(void)
+static void fsp_run_silicon_init(struct romstage_handoff *handoff)
 {
 	FSP_INFO_HEADER *fsp_info_header;
 	FSP_SILICON_INIT fsp_silicon_init;
 	EFI_STATUS status;
+	UPD_DATA_REGION upd_data;
+	UPD_DATA_REGION *upd_ptr;
+	VPD_DATA_REGION *vpd_ptr;
 
 	/* Find the FSP image */
 	timestamp_add_now(TS_FSP_FIND_START);
@@ -179,13 +183,33 @@ static void fsp_run_silicon_init(void)
 		printk(BIOS_ERR, "FSP_INFO_HEADER not set!\n");
 		return;
 	}
+	print_fsp_info(fsp_info_header);
+
+	/* Initialize the UPD values */
+	vpd_ptr = (VPD_DATA_REGION *)(fsp_info_header->CfgRegionOffset +
+					fsp_info_header->ImageBase);
+	printk(BIOS_DEBUG, "0x%p: VPD Data\n", vpd_ptr);
+	upd_ptr = (UPD_DATA_REGION *)(vpd_ptr->PcdUpdRegionOffset +
+					fsp_info_header->ImageBase);
+	printk(BIOS_DEBUG, "0x%p: UPD Data\n", upd_ptr);
+	memcpy(&upd_data, upd_ptr, sizeof(upd_data));
+	soc_silicon_init_params(&upd_data);
+	/* Locate VBT and pass to FSP GOP */
+	if (IS_ENABLED(CONFIG_GOP_SUPPORT))
+		load_vbt(handoff->s3_resume, &upd_data);
+	mainboard_silicon_init_params(&upd_data);
+
+	/* Display the UPD data */
+	if (IS_ENABLED(CONFIG_DISPLAY_UPD_DATA))
+		soc_display_silicon_init_params(upd_ptr, &upd_data);
 
 	/* Perform silicon initialization after RAM is configured */
-	printk(BIOS_DEBUG, "Calling FspSiliconInit\n");
 	fsp_silicon_init = (FSP_SILICON_INIT)(fsp_info_header->ImageBase
 		+ fsp_info_header->FspSiliconInitEntryOffset);
 	timestamp_add_now(TS_FSP_SILICON_INIT_START);
-	status = fsp_silicon_init(NULL);
+	printk(BIOS_DEBUG, "Calling FspSiliconInit(0x%p) at 0x%p\n", &upd_data,
+		 fsp_silicon_init);
+	status = fsp_silicon_init(&upd_data);
 	timestamp_add_now(TS_FSP_SILICON_INIT_END);
 	printk(BIOS_DEBUG, "FspSiliconInit returned 0x%08x\n", status);
 
@@ -205,6 +229,7 @@ static void fsp_run_silicon_init(void)
 	 *	7.2: FSP_RESERVED_MEMORY_RESOURCE_HOB verified by raminit
 	 *	7.3: FSP_NON_VOLATILE_STORAGE_HOB verified by raminit
 	 *	7.4: FSP_BOOTLOADER_TOLUM_HOB verified by raminit
+	 *	7.5: EFI_PEI_GRAPHICS_INFO_HOB verified below
 	 */
 	if (NULL == get_next_guid_hob(&graphics_info_guid, hob_list_ptr)) {
 		printk(BIOS_ERR, "7.5: EFI_PEI_GRAPHICS_INFO_HOB missing!\n");
@@ -265,12 +290,35 @@ void intel_silicon_init(void)
 
 	handoff = cbmem_find(CBMEM_ID_ROMSTAGE_INFO);
 
-	if (handoff != NULL && handoff->s3_resume)
+	if (handoff != NULL && handoff->s3_resume) {
+		printk(BIOS_DEBUG, "FSP: Loading binary from cache\n");
 		fsp_update_fih(soc_restore_support_code());
-	else {
+	} else {
 		fsp_find_and_relocate();
+		printk(BIOS_DEBUG, "FSP: Saving binary in cache\n");
 		fsp_cache_save();
 	}
 
-	fsp_run_silicon_init();
+	fsp_run_silicon_init(handoff);
+}
+
+/* Initialize the UPD parameters for SiliconInit */
+__attribute__((weak)) void mainboard_silicon_init_params(
+	UPD_DATA_REGION *upd_ptr)
+{
+	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
+};
+
+/* Display the UPD parameters for SiliconInit */
+__attribute__((weak)) void soc_display_silicon_init_params(
+	const UPD_DATA_REGION *original, UPD_DATA_REGION *upd_ptr)
+{
+	printk(BIOS_SPEW, "UPD values for SiliconInit:\n");
+	hexdump32(BIOS_SPEW, upd_ptr, sizeof(*upd_ptr));
+}
+
+/* Initialize the UPD parameters for SiliconInit */
+__attribute__((weak)) void soc_silicon_init_params(UPD_DATA_REGION *upd_ptr)
+{
+	printk(BIOS_DEBUG, "WEAK: %s/%s called\n", __FILE__, __func__);
 }
