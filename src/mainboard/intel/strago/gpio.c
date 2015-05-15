@@ -141,7 +141,7 @@ static const struct soc_gpio_map  gpsw_gpio_map[] = {
 	Native_M1, /* 90 PCIE_CLKREQ0B */
 	GPIO_INPUT_PU_20K, /* 91 GPI PCIE_CLKREQ1B/LTE_WAKE# */
 	Native_M1, /* 92 GP_SSP_2_CLK */
-	GPIO_INPUT_PU_20K, /* 93 PCIE_CLKREQ2B/PCIE_CLKREQ_WLAN# */
+	NATIVE_PU20K(1), /* 93 PCIE_CLKREQ2B/PCIE_CLKREQ_WLAN# */
 	Native_M1, /* 94 GP_SSP_2_RXD */
 	GPI(trig_edge_both, L1, P_5K_H, non_maskable, en_edge_detect, NA, NA),
 		/* 95 PCIE_CLKREQ3B/AUDIO_CODEC_IRQ */
