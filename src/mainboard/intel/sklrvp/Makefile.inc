@@ -21,5 +21,6 @@
 subdirs-y += spd
 
 romstage-y += pei_data.c
-romstage-y += fsp.c
+
 ramstage-y += pei_data.c
+ramstage-y += ramstage.c

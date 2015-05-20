@@ -29,7 +29,7 @@
 #include <soc/pei_wrapper.h>
 #include <soc/pm.h>
 #include <soc/romstage.h>
-#include <mainboard/intel/sklrvp/spd/spd.h>
+#include "spd/spd.h"
 
 void mainboard_romstage_entry(struct romstage_params *params)
 {
@@ -41,3 +41,44 @@ void mainboard_romstage_entry(struct romstage_params *params)
 	romstage_common(params);
 }
 
+void mainboard_memory_init_params(
+	struct romstage_params *params,
+	UPD_DATA_REGION *upd_ptr)
+{
+	/* Get SPD data passing strucutre and initialize it.*/
+	if (params->pei_data->spd_data[0][0][0] != 0) {
+		upd_ptr->MemorySpdPtr00 =
+				(UINT32)(params->pei_data->spd_data[0][0]);
+		upd_ptr->MemorySpdPtr10 =
+				(UINT32)(params->pei_data->spd_data[1][0]);
+		printk(BIOS_SPEW, "0x%08x: SpdDataBuffer_0_0\n",
+				upd_ptr->MemorySpdPtr00);
+		printk(BIOS_SPEW, "0x%08x: SpdDataBuffer_0_1\n",
+				upd_ptr->MemorySpdPtr01);
+		printk(BIOS_SPEW, "0x%08x: SpdDataBuffer_1_0\n",
+				upd_ptr->MemorySpdPtr10);
+		printk(BIOS_SPEW, "0x%08x: SpdDataBuffer_1_1\n",
+				upd_ptr->MemorySpdPtr11);
+	}
+	/*
+	* Configure the DQ/DQS settings if required. In general the settings
+	* should be set in the FSP flash image and should not need to be
+	* changed.
+	*/
+	memcpy(upd_ptr->DqByteMapCh0, params->pei_data->dq_map[0],
+			sizeof(params->pei_data->dq_map[0]));
+	memcpy(upd_ptr->DqByteMapCh1, params->pei_data->dq_map[1],
+			sizeof(params->pei_data->dq_map[1]));
+	memcpy(upd_ptr->DqsMapCpu2DramCh0, params->pei_data->dqs_map[0],
+			sizeof(params->pei_data->dqs_map[0]));
+	memcpy(upd_ptr->DqsMapCpu2DramCh1, params->pei_data->dqs_map[1],
+			sizeof(params->pei_data->dqs_map[1]));
+	memcpy(upd_ptr->RcompResistor, params->pei_data->RcompResistorSkl,
+			sizeof(params->pei_data->RcompResistorSkl));
+	memcpy(upd_ptr->RcompTarget, params->pei_data->RcompTargetSkl,
+			sizeof(params->pei_data->RcompTargetSkl));
+
+	/* update spd length*/
+	upd_ptr->MemorySpdDataLen = SPD_LEN;
+	upd_ptr->DqPinsInterleaved = FALSE;
+}

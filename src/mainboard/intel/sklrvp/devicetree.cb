@@ -1,5 +1,10 @@
 chip soc/intel/skylake
 
+	# SerialIO device modes
+	register sio_disable = "0"
+	register sio_acpi_mode = "1"
+	register sio_pci_mode = "2"
+
 	# Enable eDP Hotplug with 6ms pulse
 	register "gpu_dp_d_hotplug" = "0x06"
 
@@ -34,8 +39,9 @@ chip soc/intel/skylake
 	register "gen1_dec" = "0x00fc0801"
 	register "gen2_dec" = "0x00fc0901"
 
-	# EC_SMI is GPIO34
-	register "alt_gp_smi_en" = "0x0004"
+	# EC_SMI
+	register "ec_smi_gpio" = "34"
+	register "alt_gp_smi_en" = "0x0400"
 	register "gpe0_en_1" = "0x00000000"
 	# EC_SCI is GPIO36
 	register "gpe0_en_2" = "0x00000010"
@@ -53,6 +59,44 @@ chip soc/intel/skylake
 
 	# Enable S0ix
 	register "s0ix_enable" = "0"
+
+	# Memory related
+	register "probeless_trace" = "0"
+
+	# Lan
+	register "enable_lan" = "0"
+
+	# SATA related
+	register "enable_sata" = "1"
+	register "sata_salp_support" = "1"
+	register "sata_mode" = "2"
+	register "sata_ports_enable" = "1"
+	register "ssic_port_enable" = "0"
+
+	# Audio related
+	register "enable_azalia" = "1"
+	register "enable_trace_hub" = "0"
+	register "dsp_enable" = "1"
+
+	# I/O Buffer Ownership:
+	# 0: HD-A Link
+	# 1 Shared, HD-A Link and I2S Port
+	# 3: I2S Ports
+	register "io_buffer_ownership" = "3"
+
+	# SMBUS
+	register "smbus_enable" = "1"
+
+	# Camera
+	register "cio2_enable" = "0"
+
+	# eMMC
+	register "scs_emmc_enabled" = "1"
+	register "scs_emmchs400_enabled" = "0"
+	register "scs_sdcard_enabled" = "2"
+
+	# Integrated Sensor
+	register "ish_enable" = "0"
 
 	device cpu_cluster 0 on
 		device lapic 0 on end

@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2014 Google Inc.
+ * Copyright (C) 2013 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -12,23 +12,33 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _SKYLAKE_RAMSTAGE_H_
-#define _SKYLAKE_RAMSTAGE_H_
+#ifndef _SERIALIO_H_
+#define _SERIALIO_H_
 
-#include <chip.h>
-#include <device/device.h>
-#include <soc/intel/common/ramstage.h>
+typedef enum {
+	PchSerialIoDisabled,
+	PchSerialIoAcpi,
+	PchSerialIoPci,
+	PchSerialIoAcpiHidden,
+	PchSerialIoLegacyUart
+} PCH_SERIAL_IO_MODE;
 
-void skylake_init_pre_device(void *chip_info);
-void skylake_init_cpus(device_t dev);
-void skylake_pch_enable_dev(device_t dev);
-
-extern struct pci_operations skylake_pci_ops;
+typedef enum {
+	PchSerialIoIndexI2C0,
+	PchSerialIoIndexI2C1,
+	PchSerialIoIndexI2C2,
+	PchSerialIoIndexI2C3,
+	PchSerialIoIndexI2C4,
+	PchSerialIoIndexI2C5,
+	PchSerialIoIndexSpi0,
+	PchSerialIoIndexSpi1,
+	PchSerialIoIndexUart0,
+	PchSerialIoIndexUart1,
+	PchSerialIoIndexUart2,
+	PchSerialIoIndexMax
+} PCH_SERIAL_IO_CONTROLLER;
 
 #endif
+

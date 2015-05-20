@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <stdint.h>
+#include <soc/pci_devs.h>
+
 #ifndef _SOC_INTEL_SKYLAKE_CHIP_H_
 #define _SOC_INTEL_SKYLAKE_CHIP_H_
 
@@ -43,6 +46,7 @@ struct soc_intel_skylake_config {
 	uint32_t gpe0_en_4;
 
 	/* GPIO SMI configuration */
+	uint32_t ec_smi_gpio;
 	uint32_t alt_gp_smi_en;
 
 	/* Generic IO decode ranges */
@@ -58,11 +62,9 @@ struct soc_intel_skylake_config {
 	uint8_t pcie_port_force_aspm;
 
 	/* Put SerialIO devices into ACPI mode instead of a PCI device */
+	uint8_t sio_disable;
 	uint8_t sio_acpi_mode;
-
-	/* I2C voltage select: 0=3.3V 1=1.8V */
-	uint8_t sio_i2c0_voltage;
-	uint8_t sio_i2c1_voltage;
+	uint8_t sio_pci_mode;
 
 	/* Enable ADSP power gating features */
 	uint8_t adsp_d3_pg_enable;
@@ -85,6 +87,39 @@ struct soc_intel_skylake_config {
 	u8 gpu_dp_b_hotplug;
 	u8 gpu_dp_c_hotplug;
 	u8 gpu_dp_d_hotplug;
+
+	/* Memory related */
+	u8 probeless_trace;
+
+	/* Lan */
+	u8 enable_lan;
+
+	/* SATA related */
+	u8 enable_sata;
+	u8 sata_salp_support;
+	u8 sata_mode;
+	u8 sata_ports_enable;
+	u8 ssic_port_enable;
+
+	/* Audio related */
+	u8 enable_azalia;
+	u8 enable_trace_hub;
+	u8 dsp_enable;
+	u8 io_buffer_ownership;
+
+	/* SMBUS */
+	u8 smbus_enable;
+
+	/* Camera */
+	u8 cio2_enable;
+
+	/* eMMC */
+	u8 scs_emmc_enabled;
+	u8 scs_emmchs400_enabled;
+	u8 scs_sdcard_enabled;
+
+	/* Integrated Sensor */
+	u8 ish_enable;
 
 	/* Panel power sequence timings */
 	u8 gpu_panel_port_select;
