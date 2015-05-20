@@ -21,6 +21,7 @@
 #include <console/console.h>
 #include <cpu/cpu.h>
 #include <cpu/intel/microcode.h>
+#include <cpu/intel/turbo.h>
 #include <cpu/x86/cache.h>
 #include <cpu/x86/lapic.h>
 #include <cpu/x86/mp.h>
@@ -76,6 +77,8 @@ void braswell_init_cpus(device_t dev)
 	mp_params.microcode_pointer = pattrs->microcode_patch;
 
 	default_smm_area = backup_default_smm_area();
+
+	enable_turbo();
 
 	if (mp_init(cpu_bus, &mp_params))
 		printk(BIOS_ERR, "MP initialization failure.\n");
