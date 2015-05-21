@@ -415,9 +415,8 @@ int clock_get_pll_input_khz(void);
 u32 clock_configure_plld(u32 frequency);
 void clock_early_uart(void);
 void clock_external_output(int clk_id);
-void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 ph45, u32 ph90,
-		 u32 ph135, u32 kvco, u32 kcp, u32 stable_time, u32 emc_source,
-		 u32 same_freq);
+void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 kvco, u32 kcp,
+		 u32 stable_time, u32 emc_source, u32 same_freq);
 void clock_cpu0_config(void);
 void clock_halt_avp(void);
 void clock_enable_regs(u32 bits[DEV_CONFIG_BLOCKS]);

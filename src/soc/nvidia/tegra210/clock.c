@@ -518,16 +518,13 @@ void clock_external_output(int clk_id)
 }
 
 /* Start PLLM for SDRAM. */
-void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 ph45, u32 ph90,
-		 u32 ph135, u32 kvco, u32 kcp, u32 stable_time, u32 emc_source,
-		 u32 same_freq)
+void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 kvco, u32 kcp,
+		 u32 stable_time, u32 emc_source, u32 same_freq)
 {
-	u32 misc1 = ((setup << PLLM_MISC1_SETUP_SHIFT) |
-		     (ph45 << PLLM_MISC1_PD_LSHIFT_PH45_SHIFT) |
-		     (ph90 << PLLM_MISC1_PD_LSHIFT_PH90_SHIFT) |
-		     (ph135 << PLLM_MISC1_PD_LSHIFT_PH135_SHIFT)),
+	u32 misc1 = ((setup << PLLM_MISC1_SETUP_SHIFT)),
 	    misc2 = ((kvco << PLLM_MISC2_KVCO_SHIFT) |
-		     (kcp << PLLM_MISC2_KCP_SHIFT)),
+		     (kcp << PLLM_MISC2_KCP_SHIFT) |
+		     PLLM_EN_LCKDET),
 	    base;
 
 	if (same_freq)
@@ -564,9 +561,6 @@ void clock_sdram(u32 m, u32 n, u32 p, u32 setup, u32 ph45, u32 ph90,
 	 * enabling PLLM_OUT.
 	 */
 	udelay(10);
-
-	/* Put OUT1 out of reset state (start to output). */
-	setbits_le32(CLK_RST_REG(pllm_out), PLLM_OUT1_RSTN_RESET_DISABLE);
 
 	/* Enable and start MEM(MC) and EMC. */
 	clock_enable_clear_reset(0, CLK_H_MEM | CLK_H_EMC, 0, 0, 0, 0, 0);
