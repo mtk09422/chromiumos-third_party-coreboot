@@ -305,9 +305,11 @@ struct  __attribute__ ((__packed__)) clk_rst_ctlr {
 	u32 clk_src_soc_therm;		/* _CLK_SOURCE_SOC_THERM    0x644 */
 	u32 _rsv33[5];			/*                      0x648-658 */
 	u32 clk_src_i2c6;		/* _CLK_SOURCE_I2C6,        0x65c */
-	u32 _rsv34[3];			/*                      0x660-668 */
+	u32 clk_src_mipibif;		/* _CLK_SOURCE_MIPIBIF,     0x660 */
+	u32 clk_src_emc_dll;		/* _CLK_SOURCE_EMC_DLL,     0x664 */
+	u32 _rsv34;			/*                          0x668 */
 	u32 clk_src_uart_fst_mipi_cal;	/* _CLK_SOURCE_UART_FST_MIP_CAL, 0x66c */
-	u32 _rsv35[21];		/*                      0x670-6c0 */
+	u32 _rsv35[21];			/*                      0x670-6c0 */
 	u32 clk_src_qspi;		/* _CLK_SOURCE_QSPI         0x6C4 */
 };
 check_member(clk_rst_ctlr, clk_src_qspi, 0x6C4);
@@ -331,6 +333,7 @@ check_member(clk_rst_ctlr, clk_src_qspi, 0x6C4);
 #define SWR_TRIG_SYS_RST		(1 << 2)
 #define SWR_CSITE_RST			(1 << 9)
 #define CLK_ENB_CSITE			(1 << 9)
+#define CLK_ENB_EMC_DLL			(1 << 14)
 
 /* _CCLK_BURST_POLICY 0x20 */
 #define CCLK_BURST_POLICY_VAL		0x20008888
@@ -388,12 +391,12 @@ enum {
 
 /* SPECIAL CASE: PLLM, PLLC and PLLX use different-sized fields here */
 #define PLLCX_BASE_DIVP_MASK		(0xfU << PLL_BASE_DIVP_SHIFT)
-#define PLLM_BASE_DIVP_MASK		(0x1U << PLL_BASE_DIVP_SHIFT)
+#define PLLM_BASE_DIVP_MASK		(0x1fU << PLL_BASE_DIVP_SHIFT)
 #define PLLCMX_BASE_DIVN_MASK		(0xffU << PLL_BASE_DIVN_SHIFT)
 #define PLLCMX_BASE_DIVM_MASK		(0xffU << PLL_BASE_DIVM_SHIFT)
 
 /* Added based on T210 TRM */
-#define PLLC_MISC_RESET		(1U << 30)
+#define PLLC_MISC_RESET			(1U << 30)
 #define PLLC_MISC_1_IDDQ		(1U << 27)
 #define PLLD_N_SHIFT			11
 #define PLLD_M_SHIFT			0
@@ -402,15 +405,15 @@ enum {
 #define PLLD_MISC_EN_SDM		(1 << 16)
 #define PLLD_MISC_SDM_DIN		0x9aa
 
-
 /* PLLM specific registers */
-#define PLLM_MISC1_SETUP_SHIFT			0
+#define PLLM_MISC1_SETUP_SHIFT		0
 #define PLLM_MISC1_PD_LSHIFT_PH45_SHIFT		28
 #define PLLM_MISC1_PD_LSHIFT_PH90_SHIFT		29
 #define PLLM_MISC1_PD_LSHIFT_PH135_SHIFT	30
-#define PLLM_MISC2_KCP_SHIFT			1
-#define PLLM_MISC2_KVCO_SHIFT			0
-#define PLLM_OUT1_RSTN_RESET_DISABLE		(1 << 0)
+#define PLLM_MISC2_KCP_SHIFT		1
+#define PLLM_MISC2_KVCO_SHIFT		0
+#define PLLM_OUT1_RSTN_RESET_DISABLE	(1 << 0)
+#define PLLM_EN_LCKDET          	(1 << 4)
 
 /* PLLU specific registers */
 #define PLLU_MISC_IDDQ			(1U << 31)
@@ -468,6 +471,8 @@ enum {
 #define CLK_SOURCE_MASK			(0x7 << CLK_SOURCE_SHIFT)
 
 #define CLK_SOURCE_EMC_MC_EMC_SAME_FREQ (1 << 16)
+#define EMC_2X_CLK_SRC_SHIFT		29
+#define PLLM_UD				4
 
 #define CLK_UART_DIV_OVERRIDE		(1 << 24)
 

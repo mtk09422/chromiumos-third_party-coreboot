@@ -50,6 +50,9 @@ enum {
 	/* Specifies the memory type to be DDR3 SDRAM */
 	NvBootMemoryType_Ddr3,
 
+	/* Specifies the memory type to be LPDDR4 SDRAM */
+	NvBootMemoryType_LpDdr4,
+
 	NvBootMemoryType_Num,
 
 	/* Specifies an entry in the ram_code table that's not in use */
@@ -83,14 +86,8 @@ struct sdram_params {
 	uint32_t PllMStableTime;
 	/* Specifies misc. control bits */
 	uint32_t PllMSetupControl;
-	/* Enables the Div by 2 */
-	uint32_t PllMSelectDiv2;
-	/* Powers down VCO output Level shifter */
-	uint32_t PllMPDLshiftPh45;
-	/* Powers down VCO output Level shifter */
-	uint32_t PllMPDLshiftPh90;
-	/* Powers down VCO output Level shifter */
-	uint32_t PllMPDLshiftPh135;
+	/* Specifies the P value for PLLM */
+	uint32_t PllMPostDivider;
 	/* Specifies value for Charge Pump Gain Control */
 	uint32_t PllMKCP;
 	/* Specifies VCO gain */
@@ -119,8 +116,21 @@ struct sdram_params {
 	uint32_t EmcBctSpare10;
 	/* Spare BCT param */
 	uint32_t EmcBctSpare11;
+	/* Spare BCT param */
+	uint32_t EmcBctSpare12;
+	/* Spare BCT param */
+	uint32_t EmcBctSpare13;
+
 	/* Defines EMC_2X_CLK_SRC, EMC_2X_CLK_DIVISOR, EMC_INVERT_DCD */
 	uint32_t EmcClockSource;
+	uint32_t EmcClockSourceDll;
+
+	/* Defines possible override for PLLLM_MISC2 */
+	uint32_t ClkRstControllerPllmMisc2Override;
+	/* enables override for PLLLM_MISC2 */
+	uint32_t ClkRstControllerPllmMisc2OverrideEnable;
+	/* defines CLK_ENB_MC1 in register clk_rst_controller_clk_enb_w_clr */
+	uint32_t ClearClk2Mc1;
 
 	/* Auto-calibration of EMC pads */
 
@@ -138,11 +148,40 @@ struct sdram_params {
 	/* Specifies the value for EMC_AUTO_CAL_CONFIG3 */
 	uint32_t EmcAutoCalConfig3;
 
+	/* Specifies the values for EMC_AUTO_CAL_CONFIG4-8 */
+	uint32_t EmcAutoCalConfig4;
+	uint32_t EmcAutoCalConfig5;
+	uint32_t EmcAutoCalConfig6;
+	uint32_t EmcAutoCalConfig7;
+	uint32_t EmcAutoCalConfig8;
+
+	/* Specifies the value for EMC_AUTO_CAL_VREF_SEL_0 */
+	uint32_t EmcAutoCalVrefSel0;
+	uint32_t EmcAutoCalVrefSel1;
+
+	/* Specifies the value for EMC_AUTO_CAL_CHANNEL */
+	uint32_t EmcAutoCalChannel;
+
+	/* Specifies the value for EMC_PMACRO_AUTOCAL_CFG_0 */
+	uint32_t EmcPmacroAutocalCfg0;
+	uint32_t EmcPmacroAutocalCfg1;
+	uint32_t EmcPmacroAutocalCfg2;
+	uint32_t EmcPmacroRxTerm;
+	uint32_t EmcPmacroDqTxDrv;
+	uint32_t EmcPmacroCaTxDrv;
+	uint32_t EmcPmacroCmdTxDrv;
+	uint32_t EmcPmacroAutocalCfgCommon;
+	uint32_t EmcPmacroZctrl;
+
 	/*
 	 * Specifies the time for the calibration
 	 * to stabilize (in microseconds)
 	 */
 	uint32_t EmcAutoCalWait;
+
+	uint32_t EmcXm2CompPadCtrl;
+	uint32_t EmcXm2CompPadCtrl2;
+	uint32_t EmcXm2CompPadCtrl3;
 
 	/*
 	 * DRAM size information
@@ -157,6 +196,10 @@ struct sdram_params {
 	uint32_t EmcPinProgramWait;
 	/* Specifies the extra delay before/after pin RESET/CKE command */
 	uint32_t EmcPinExtraWait;
+
+	uint32_t EmcPinGpioEn;
+	uint32_t EmcPinGpio;
+
 	/*
 	 * Specifies the extra delay after the first writing
 	 * of EMC_TIMING_CONTROL
@@ -169,6 +212,10 @@ struct sdram_params {
 	uint32_t EmcRc;
 	/* Specifies the value for EMC_RFC */
 	uint32_t EmcRfc;
+	/* Specifies the value for EMC_RFC_PB */
+	uint32_t EmcRfcPb;
+	/* Specifies the value for EMC_RFC_CTRL2 */
+	uint32_t EmcRefctrl2;
 	/* Specifies the value for EMC_RFC_SLR */
 	uint32_t EmcRfcSlr;
 	/* Specifies the value for EMC_RAS */
@@ -187,6 +234,10 @@ struct sdram_params {
 	uint32_t EmcR2p;
 	/* Specifies the value for EMC_W2P */
 	uint32_t EmcW2p;
+
+	uint32_t EmcTppd;
+	uint32_t EmcCcdmw;
+
 	/* Specifies the value for EMC_RD_RCD */
 	uint32_t EmcRdRcd;
 	/* Specifies the value for EMC_WR_RCD */
@@ -199,14 +250,25 @@ struct sdram_params {
 	uint32_t EmcWext;
 	/* Specifies the value for EMC_WDV */
 	uint32_t EmcWdv;
+
+	uint32_t EmcWdvChk;
+	uint32_t EmcWsv;
+	uint32_t EmcWev;
+
 	/* Specifies the value for EMC_WDV_MASK */
 	uint32_t EmcWdvMask;
+
+	uint32_t EmcWsDuration;
+	uint32_t EmcWeDuration;
+
 	/* Specifies the value for EMC_QUSE */
 	uint32_t EmcQUse;
 	/* Specifies the value for EMC_QUSE_WIDTH */
 	uint32_t EmcQuseWidth;
 	/* Specifies the value for EMC_IBDLY */
 	uint32_t EmcIbdly;
+	/* Specifies the value for EMC_OBDLY */
+	uint32_t EmcObdly;
 	/* Specifies the value for EMC_EINPUT */
 	uint32_t EmcEInput;
 	/* Specifies the value for EMC_EINPUT_DURATION */
@@ -217,12 +279,7 @@ struct sdram_params {
 	uint32_t EmcPutermWidth;
 	/* Specifies the value for EMC_PUTERM_ADJ */
 	uint32_t EmcPutermAdj;
-	/* Specifies the value for EMC_CDB_CNTL_1 */
-	uint32_t EmcCdbCntl1;
-	/* Specifies the value for EMC_CDB_CNTL_2 */
-	uint32_t EmcCdbCntl2;
-	/* Specifies the value for EMC_CDB_CNTL_3 */
-	uint32_t EmcCdbCntl3;
+
 	/* Specifies the value for EMC_QRST */
 	uint32_t EmcQRst;
 	/* Specifies the value for EMC_QSAFE */
@@ -231,12 +288,13 @@ struct sdram_params {
 	uint32_t EmcRdv;
 	/* Specifies the value for EMC_RDV_MASK */
 	uint32_t EmcRdvMask;
+	/* Specifies the value for EMC_RDV_EARLY */
+	uint32_t EmcRdvEarly;
+	/* Specifies the value for EMC_RDV_EARLY_MASK */
+	uint32_t EmcRdvEarlyMask;
 	/* Specifies the value for EMC_QPOP */
 	uint32_t EmcQpop;
-	/* Specifies the value for EMC_CTT */
-	uint32_t EmcCtt;
-	/* Specifies the value for EMC_CTT_DURATION */
-	uint32_t EmcCttDuration;
+
 	/* Specifies the value for EMC_REFRESH */
 	uint32_t EmcRefresh;
 	/* Specifies the value for EMC_BURST_REFRESH_NUM */
@@ -255,6 +313,12 @@ struct sdram_params {
 	uint32_t EmcAr2Pden;
 	/* Specifies the value for EMC_RW2PDEN */
 	uint32_t EmcRw2Pden;
+	/* Specifies the value for EMC_CKE2PDEN */
+	uint32_t EmcCke2Pden;
+	/* Specifies the value for EMC_PDEX2CKE */
+	uint32_t EmcPdex2Cke;
+	/* Specifies the value for EMC_PDEX2MRR */
+	uint32_t EmcPdex2Mrr;
 	/* Specifies the value for EMC_TXSR */
 	uint32_t EmcTxsr;
 	/* Specifies the value for EMC_TXSRDLL */
@@ -280,8 +344,26 @@ struct sdram_params {
 
 	/* Specifies the value for EMC_FBIO_CFG5 */
 	uint32_t EmcFbioCfg5;
-	/* Specifies the value for EMC_FBIO_CFG6 */
-	uint32_t EmcFbioCfg6;
+	/* Specifies the value for EMC_FBIO_CFG7 */
+	uint32_t EmcFbioCfg7;
+	/* Specifies the value for EMC_FBIO_CFG8 */
+	uint32_t EmcFbioCfg8;
+
+	/* Command mapping for CMD brick 0 */
+	uint32_t EmcCmdMappingCmd0_0;
+	uint32_t EmcCmdMappingCmd0_1;
+	uint32_t EmcCmdMappingCmd0_2;
+	uint32_t EmcCmdMappingCmd1_0;
+	uint32_t EmcCmdMappingCmd1_1;
+	uint32_t EmcCmdMappingCmd1_2;
+	uint32_t EmcCmdMappingCmd2_0;
+	uint32_t EmcCmdMappingCmd2_1;
+	uint32_t EmcCmdMappingCmd2_2;
+	uint32_t EmcCmdMappingCmd3_0;
+	uint32_t EmcCmdMappingCmd3_1;
+	uint32_t EmcCmdMappingCmd3_2;
+	uint32_t EmcCmdMappingByte;
+
 	/* Specifies the value for EMC_FBIO_SPARE */
 	uint32_t EmcFbioSpare;
 
@@ -306,6 +388,20 @@ struct sdram_params {
 	uint32_t EmcMrw3;
 	/* Specifies the programming to LPDDR2 Mode Register 11 at cold boot */
 	uint32_t EmcMrw4;
+	/* Specifies the programming to LPDDR2 Mode Register 3? at cold boot */
+	uint32_t EmcMrw6;
+	/* Specifies the programming to LPDDR2 Mode Register 11 at cold boot */
+	uint32_t EmcMrw8;
+	/* Specifies the programming to LPDDR2 Mode Register 11? at cold boot */
+	uint32_t EmcMrw9;
+	/* Specifies the programming to LPDDR2 Mode Register 12 at cold boot */
+	uint32_t EmcMrw10;
+	/* Specifies the programming to LPDDR2 Mode Register 14 at cold boot */
+	uint32_t EmcMrw12;
+	/* Specifies the programming to LPDDR2 Mode Register 14? at cold boot */
+	uint32_t EmcMrw13;
+	/* Specifies the programming to LPDDR2 Mode Register 22 at cold boot */
+	uint32_t EmcMrw14;
 	/*
 	 * Specifies the programming to extra LPDDR2 Mode Register
 	 * at cold boot
@@ -344,8 +440,14 @@ struct sdram_params {
 	uint32_t EmcCfg2;
 	/* Specifies the pipe bypass controls */
 	uint32_t EmcCfgPipe;
+	uint32_t EmcCfgPipeClk;
+	uint32_t EmcFdpdCtrlCmdNoRamp;
+	uint32_t EmcCfgUpdate;
+
 	/* Specifies the value for EMC_DBG */
 	uint32_t EmcDbg;
+	uint32_t EmcDbgWriteMux;
+
 	/* Specifies the value for EMC_CMDQ */
 	uint32_t EmcCmdQ;
 	/* Specifies the value for EMC_MC2EMCQ */
@@ -358,6 +460,7 @@ struct sdram_params {
 
 	/* Specifies the value for EMC_CFG_DIG_DLL */
 	uint32_t EmcCfgDigDll;
+	uint32_t EmcCfgDigDll_1;
 	/* Specifies the value for EMC_CFG_DIG_DLL_PERIOD */
 	uint32_t EmcCfgDigDllPeriod;
 	/* Specifies the value of *DEV_SELECTN of various EMC registers */
@@ -367,131 +470,73 @@ struct sdram_params {
 	uint32_t EmcSelDpdCtrl;
 
 	/* Pads trimmer delays */
+	uint32_t EmcFdpdCtrlDq;
+	uint32_t EmcFdpdCtrlCmd;
+	uint32_t EmcPmacroIbVrefDq_0;
+	uint32_t EmcPmacroIbVrefDq_1;
+	uint32_t EmcPmacroIbVrefDqs_0;
+	uint32_t EmcPmacroIbVrefDqs_1;
+	uint32_t EmcPmacroIbRxrt;
+	uint32_t EmcCfgPipe1;
+	uint32_t EmcCfgPipe2;
 
-	/* Specifies the value for EMC_DLL_XFORM_DQS0 */
-	uint32_t EmcDllXformDqs0;
-	/* Specifies the value for EMC_DLL_XFORM_DQS1 */
-	uint32_t EmcDllXformDqs1;
-	/* Specifies the value for EMC_DLL_XFORM_DQS2 */
-	uint32_t EmcDllXformDqs2;
-	/* Specifies the value for EMC_DLL_XFORM_DQS3 */
-	uint32_t EmcDllXformDqs3;
-	/* Specifies the value for EMC_DLL_XFORM_DQS4 */
-	uint32_t EmcDllXformDqs4;
-	/* Specifies the value for EMC_DLL_XFORM_DQS5 */
-	uint32_t EmcDllXformDqs5;
-	/* Specifies the value for EMC_DLL_XFORM_DQS6 */
-	uint32_t EmcDllXformDqs6;
-	/* Specifies the value for EMC_DLL_XFORM_DQS7 */
-	uint32_t EmcDllXformDqs7;
-	/* Specifies the value for EMC_DLL_XFORM_DQS8 */
-	uint32_t EmcDllXformDqs8;
-	/* Specifies the value for EMC_DLL_XFORM_DQS9 */
-	uint32_t EmcDllXformDqs9;
-	/* Specifies the value for EMC_DLL_XFORM_DQS10 */
-	uint32_t EmcDllXformDqs10;
-	/* Specifies the value for EMC_DLL_XFORM_DQS11 */
-	uint32_t EmcDllXformDqs11;
-	/* Specifies the value for EMC_DLL_XFORM_DQS12 */
-	uint32_t EmcDllXformDqs12;
-	/* Specifies the value for EMC_DLL_XFORM_DQS13 */
-	uint32_t EmcDllXformDqs13;
-	/* Specifies the value for EMC_DLL_XFORM_DQS14 */
-	uint32_t EmcDllXformDqs14;
-	/* Specifies the value for EMC_DLL_XFORM_DQS15 */
-	uint32_t EmcDllXformDqs15;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE0 */
-	uint32_t EmcDllXformQUse0;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE1 */
-	uint32_t EmcDllXformQUse1;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE2 */
-	uint32_t EmcDllXformQUse2;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE3 */
-	uint32_t EmcDllXformQUse3;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE4 */
-	uint32_t EmcDllXformQUse4;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE5 */
-	uint32_t EmcDllXformQUse5;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE6 */
-	uint32_t EmcDllXformQUse6;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE7 */
-	uint32_t EmcDllXformQUse7;
-	/* Specifies the value for EMC_DLL_XFORM_ADDR0 */
-	uint32_t EmcDllXformAddr0;
-	/* Specifies the value for EMC_DLL_XFORM_ADDR1 */
-	uint32_t EmcDllXformAddr1;
-	/* Specifies the value for EMC_DLL_XFORM_ADDR2 */
-	uint32_t EmcDllXformAddr2;
-	/* Specifies the value for EMC_DLL_XFORM_ADDR3 */
-	uint32_t EmcDllXformAddr3;
-	/* Specifies the value for EMC_DLL_XFORM_ADDR4 */
-	uint32_t EmcDllXformAddr4;
-	/* Specifies the value for EMC_DLL_XFORM_ADDR5 */
-	uint32_t EmcDllXformAddr5;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE8 */
-	uint32_t EmcDllXformQUse8;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE9 */
-	uint32_t EmcDllXformQUse9;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE10 */
-	uint32_t EmcDllXformQUse10;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE11 */
-	uint32_t EmcDllXformQUse11;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE12 */
-	uint32_t EmcDllXformQUse12;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE13 */
-	uint32_t EmcDllXformQUse13;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE14 */
-	uint32_t EmcDllXformQUse14;
-	/* Specifies the value for EMC_DLL_XFORM_QUSE15 */
-	uint32_t EmcDllXformQUse15;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS0 */
-	uint32_t EmcDliTrimTxDqs0;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS1 */
-	uint32_t EmcDliTrimTxDqs1;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS2 */
-	uint32_t EmcDliTrimTxDqs2;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS3 */
-	uint32_t EmcDliTrimTxDqs3;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS4 */
-	uint32_t EmcDliTrimTxDqs4;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS5 */
-	uint32_t EmcDliTrimTxDqs5;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS6 */
-	uint32_t EmcDliTrimTxDqs6;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS7 */
-	uint32_t EmcDliTrimTxDqs7;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS8 */
-	uint32_t EmcDliTrimTxDqs8;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS9 */
-	uint32_t EmcDliTrimTxDqs9;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS10 */
-	uint32_t EmcDliTrimTxDqs10;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS11 */
-	uint32_t EmcDliTrimTxDqs11;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS12 */
-	uint32_t EmcDliTrimTxDqs12;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS13 */
-	uint32_t EmcDliTrimTxDqs13;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS14 */
-	uint32_t EmcDliTrimTxDqs14;
-	/* Specifies the value for EMC_DLI_TRIM_TXDQS15 */
-	uint32_t EmcDliTrimTxDqs15;
-	/* Specifies the value for EMC_DLL_XFORM_DQ0 */
-	uint32_t EmcDllXformDq0;
-	/* Specifies the value for EMC_DLL_XFORM_DQ1 */
-	uint32_t EmcDllXformDq1;
-	/* Specifies the value for EMC_DLL_XFORM_DQ2 */
-	uint32_t EmcDllXformDq2;
-	/* Specifies the value for EMC_DLL_XFORM_DQ3 */
-	uint32_t EmcDllXformDq3;
-	/* Specifies the value for EMC_DLL_XFORM_DQ4 */
-	uint32_t EmcDllXformDq4;
-	/* Specifies the value for EMC_DLL_XFORM_DQ5 */
-	uint32_t EmcDllXformDq5;
-	/* Specifies the value for EMC_DLL_XFORM_DQ6 */
-	uint32_t EmcDllXformDq6;
-	/* Specifies the value for EMC_DLL_XFORM_DQ7 */
-	uint32_t EmcDllXformDq7;
+	/* Specifies the value for EMC_PMACRO_QUSE_DDLL_RANK0_0 */
+	uint32_t EmcPmacroQuseDdllRank0_0;
+	uint32_t EmcPmacroQuseDdllRank0_1;
+	uint32_t EmcPmacroQuseDdllRank0_2;
+	uint32_t EmcPmacroQuseDdllRank0_3;
+	uint32_t EmcPmacroQuseDdllRank0_4;
+	uint32_t EmcPmacroQuseDdllRank0_5;
+	uint32_t EmcPmacroQuseDdllRank1_0;
+	uint32_t EmcPmacroQuseDdllRank1_1;
+	uint32_t EmcPmacroQuseDdllRank1_2;
+	uint32_t EmcPmacroQuseDdllRank1_3;
+	uint32_t EmcPmacroQuseDdllRank1_4;
+	uint32_t EmcPmacroQuseDdllRank1_5;
+
+	uint32_t EmcPmacroObDdllLongDqRank0_0;
+	uint32_t EmcPmacroObDdllLongDqRank0_1;
+	uint32_t EmcPmacroObDdllLongDqRank0_2;
+	uint32_t EmcPmacroObDdllLongDqRank0_3;
+	uint32_t EmcPmacroObDdllLongDqRank0_4;
+	uint32_t EmcPmacroObDdllLongDqRank0_5;
+	uint32_t EmcPmacroObDdllLongDqRank1_0;
+	uint32_t EmcPmacroObDdllLongDqRank1_1;
+	uint32_t EmcPmacroObDdllLongDqRank1_2;
+	uint32_t EmcPmacroObDdllLongDqRank1_3;
+	uint32_t EmcPmacroObDdllLongDqRank1_4;
+	uint32_t EmcPmacroObDdllLongDqRank1_5;
+
+	uint32_t EmcPmacroObDdllLongDqsRank0_0;
+	uint32_t EmcPmacroObDdllLongDqsRank0_1;
+	uint32_t EmcPmacroObDdllLongDqsRank0_2;
+	uint32_t EmcPmacroObDdllLongDqsRank0_3;
+	uint32_t EmcPmacroObDdllLongDqsRank0_4;
+	uint32_t EmcPmacroObDdllLongDqsRank0_5;
+	uint32_t EmcPmacroObDdllLongDqsRank1_0;
+	uint32_t EmcPmacroObDdllLongDqsRank1_1;
+	uint32_t EmcPmacroObDdllLongDqsRank1_2;
+	uint32_t EmcPmacroObDdllLongDqsRank1_3;
+	uint32_t EmcPmacroObDdllLongDqsRank1_4;
+	uint32_t EmcPmacroObDdllLongDqsRank1_5;
+
+	uint32_t EmcPmacroIbDdllLongDqsRank0_0;
+	uint32_t EmcPmacroIbDdllLongDqsRank0_1;
+	uint32_t EmcPmacroIbDdllLongDqsRank0_2;
+	uint32_t EmcPmacroIbDdllLongDqsRank0_3;
+	uint32_t EmcPmacroIbDdllLongDqsRank1_0;
+	uint32_t EmcPmacroIbDdllLongDqsRank1_1;
+	uint32_t EmcPmacroIbDdllLongDqsRank1_2;
+	uint32_t EmcPmacroIbDdllLongDqsRank1_3;
+
+	uint32_t EmcPmacroDdllLongCmd_0;
+	uint32_t EmcPmacroDdllLongCmd_1;
+	uint32_t EmcPmacroDdllLongCmd_2;
+	uint32_t EmcPmacroDdllLongCmd_3;
+	uint32_t EmcPmacroDdllLongCmd_4;
+	uint32_t EmcPmacroDdllShortCmd_0;
+	uint32_t EmcPmacroDdllShortCmd_1;
+	uint32_t EmcPmacroDdllShortCmd_2;
 
 	/*
 	 * Specifies the delay after asserting CKE pin during a WarmBoot0
@@ -499,13 +544,8 @@ struct sdram_params {
 	 */
 	uint32_t WarmBootWait;
 
-	/* Specifies the value for EMC_CTT_TERM_CTRL */
-	uint32_t EmcCttTermCtrl;
-
 	/* Specifies the value for EMC_ODT_WRITE */
 	uint32_t EmcOdtWrite;
-	/* Specifies the value for EMC_ODT_WRITE */
-	uint32_t EmcOdtRead;
 
 	/* Periodic ZQ calibration */
 
@@ -549,6 +589,7 @@ struct sdram_params {
 	 * Is issued to both devices separately
 	 */
 	uint32_t EmcZqCalDdr3WarmBoot;
+	uint32_t EmcZqCalLpDdr4WarmBoot;
 	/*
 	 * Specifies the wait time for ZQ calibration on warmboot
 	 * (in microseconds)
@@ -581,8 +622,7 @@ struct sdram_params {
 	uint32_t EmcDdr2Wait;
 	/* Specifies the value for EMC_CLKEN_OVERRIDE */
 	uint32_t EmcClkenOverride;
-	/* Specifies the value for MC_DIS_EXTRA_SNAP_LEVELS */
-	uint32_t McDisExtraSnapLevels;
+
 	/*
 	 * Specifies LOG2 of the extra refresh numbers after booting
 	 * Program 0 to disable
@@ -609,52 +649,16 @@ struct sdram_params {
 	uint32_t PmcIoDpd3Req;
 	/* Specifies the wait time after programming PMC_IO_DPD3_REQ */
 	uint32_t PmcIoDpd3ReqWait;
+	uint32_t PmcIoDpd4ReqWait;
+
 	/* Specifies the value for PMC_REG_SHORT */
 	uint32_t PmcRegShort;
 	/* Specifies the value for PMC_NO_IOPOWER */
 	uint32_t PmcNoIoPower;
-	/* Specifies the wait time after programming PMC_POR_DPD_CTRL */
-	uint32_t PmcPorDpdCtrlWait;
-	/* Specifies the value for EMC_XM2CMDPADCTRL */
-	uint32_t EmcXm2CmdPadCtrl;
-	/* Specifies the value for EMC_XM2CMDPADCTRL2 */
-	uint32_t EmcXm2CmdPadCtrl2;
-	/* Specifies the value for EMC_XM2CMDPADCTRL3 */
-	uint32_t EmcXm2CmdPadCtrl3;
-	/* Specifies the value for EMC_XM2CMDPADCTRL4 */
-	uint32_t EmcXm2CmdPadCtrl4;
-	/* Specifies the value for EMC_XM2CMDPADCTRL5 */
-	uint32_t EmcXm2CmdPadCtrl5;
-	/* Specifies the value for EMC_XM2DQSPADCTRL */
-	uint32_t EmcXm2DqsPadCtrl;
-	/* Specifies the value for EMC_XM2DQSPADCTRL2 */
-	uint32_t EmcXm2DqsPadCtrl2;
-	/* Specifies the value for EMC_XM2DQSPADCTRL3 */
-	uint32_t EmcXm2DqsPadCtrl3;
-	/* Specifies the value for EMC_XM2DQSPADCTRL4 */
-	uint32_t EmcXm2DqsPadCtrl4;
-	/* Specifies the value for EMC_XM2DQSPADCTRL5 */
-	uint32_t EmcXm2DqsPadCtrl5;
-	/* Specifies the value for EMC_XM2DQSPADCTRL6 */
-	uint32_t EmcXm2DqsPadCtrl6;
-	/* Specifies the value for EMC_XM2DQPADCTRL */
-	uint32_t EmcXm2DqPadCtrl;
-	/* Specifies the value for EMC_XM2DQPADCTRL2 */
-	uint32_t EmcXm2DqPadCtrl2;
-	/* Specifies the value for EMC_XM2DQPADCTRL3 */
-	uint32_t EmcXm2DqPadCtrl3;
-	/* Specifies the value for EMC_XM2CLKPADCTRL */
-	uint32_t EmcXm2ClkPadCtrl;
-	/* Specifies the value for EMC_XM2CLKPADCTRL2 */
-	uint32_t EmcXm2ClkPadCtrl2;
-	/* Specifies the value for EMC_XM2COMPPADCTRL */
-	uint32_t EmcXm2CompPadCtrl;
-	/* Specifies the value for EMC_XM2VTTGENPADCTRL */
-	uint32_t EmcXm2VttGenPadCtrl;
-	/* Specifies the value for EMC_XM2VTTGENPADCTRL2 */
-	uint32_t EmcXm2VttGenPadCtrl2;
-	/* Specifies the value for EMC_XM2VTTGENPADCTRL3 */
-	uint32_t EmcXm2VttGenPadCtrl3;
+
+	uint32_t PmcDdrCntrlWait;
+	uint32_t PmcDdrCntrl;
+
 	/* Specifies the value for EMC_ACPD_CONTROL */
 	uint32_t EmcAcpdControl;
 
@@ -679,13 +683,82 @@ struct sdram_params {
 	/* Specifies the value for EMC_SWIZZLE_RANK1_BYTE3 */
 	uint32_t EmcSwizzleRank1Byte3;
 
-	/* Specifies the value for EMC_DSR_VTTGEN_DRV */
-	uint32_t EmcDsrVttgenDrv;
-
 	/* Specifies the value for EMC_TXDSRVTTGEN */
 	uint32_t EmcTxdsrvttgen;
-	/* Specifies the value for EMC_BGBIAS_CTL */
-	uint32_t EmcBgbiasCtl0;
+
+	/* Specifies the value for EMC_DATA_BRLSHFT_0 */
+	uint32_t EmcDataBrlshft0;
+	uint32_t EmcDataBrlshft1;
+
+	uint32_t EmcDqsBrlshft0;
+	uint32_t EmcDqsBrlshft1;
+
+	uint32_t EmcCmdBrlshft0;
+	uint32_t EmcCmdBrlshft1;
+	uint32_t EmcCmdBrlshft2;
+	uint32_t EmcCmdBrlshft3;
+
+	uint32_t EmcQuseBrlshft0;
+	uint32_t EmcQuseBrlshft1;
+	uint32_t EmcQuseBrlshft2;
+	uint32_t EmcQuseBrlshft3;
+
+	uint32_t EmcDllCfg0;
+	uint32_t EmcDllCfg1;
+
+	uint32_t EmcPmcScratch1;
+	uint32_t EmcPmcScratch2;
+	uint32_t EmcPmcScratch3;
+
+	uint32_t EmcPmacroPadCfgCtrl;
+
+	uint32_t EmcPmacroVttgenCtrl0;
+	uint32_t EmcPmacroVttgenCtrl1;
+	uint32_t EmcPmacroVttgenCtrl2;
+
+	uint32_t EmcPmacroBrickCtrlRfu1;
+	uint32_t EmcPmacroCmdBrickCtrlFdpd;
+	uint32_t EmcPmacroBrickCtrlRfu2;
+	uint32_t EmcPmacroDataBrickCtrlFdpd;
+	uint32_t EmcPmacroBgBiasCtrl0;
+	uint32_t EmcPmacroDataPadRxCtrl;
+	uint32_t EmcPmacroCmdPadRxCtrl;
+	uint32_t EmcPmacroDataRxTermMode;
+	uint32_t EmcPmacroCmdRxTermMode;
+	uint32_t EmcPmacroDataPadTxCtrl;
+	uint32_t EmcPmacroCommonPadTxCtrl;
+	uint32_t EmcPmacroCmdPadTxCtrl;
+	uint32_t EmcCfg3;
+
+	uint32_t EmcPmacroTxPwrd0;
+	uint32_t EmcPmacroTxPwrd1;
+	uint32_t EmcPmacroTxPwrd2;
+	uint32_t EmcPmacroTxPwrd3;
+	uint32_t EmcPmacroTxPwrd4;
+	uint32_t EmcPmacroTxPwrd5;
+
+	uint32_t EmcConfigSampleDelay;
+
+	uint32_t EmcPmacroBrickMapping0;
+	uint32_t EmcPmacroBrickMapping1;
+	uint32_t EmcPmacroBrickMapping2;
+
+	uint32_t EmcPmacroTxSelClkSrc0;
+	uint32_t EmcPmacroTxSelClkSrc1;
+	uint32_t EmcPmacroTxSelClkSrc2;
+	uint32_t EmcPmacroTxSelClkSrc3;
+	uint32_t EmcPmacroTxSelClkSrc4;
+	uint32_t EmcPmacroTxSelClkSrc5;
+
+	uint32_t EmcPmacroDdllBypass;
+
+	uint32_t EmcPmacroDdllPwrd0;
+	uint32_t EmcPmacroDdllPwrd1;
+	uint32_t EmcPmacroDdllPwrd2;
+
+	uint32_t EmcPmacroCmdCtrl0;
+	uint32_t EmcPmacroCmdCtrl1;
+	uint32_t EmcPmacroCmdCtrl2;
 
 	/* DRAM size information */
 
@@ -695,14 +768,14 @@ struct sdram_params {
 	uint32_t McEmemAdrCfgDev0;
 	/* Specifies the value for MC_EMEM_ADR_CFG_DEV1 */
 	uint32_t McEmemAdrCfgDev1;
-	/* Specifies the value for MC_EMEM_BANK_SWIZZLE_CFG0 */
+	uint32_t McEmemAdrCfgChannelMask;
+
+	/* Specifies the value for MC_EMEM_BANK_SWIZZLECfg0 */
 	uint32_t McEmemAdrCfgBankMask0;
 	/* Specifies the value for MC_EMEM_BANK_SWIZZLE_CFG1 */
 	uint32_t McEmemAdrCfgBankMask1;
 	/* Specifies the value for MC_EMEM_BANK_SWIZZLE_CFG2 */
 	uint32_t McEmemAdrCfgBankMask2;
-	/* Specifies the value for MC_EMEM_BANK_SWIZZLE_CFG3 */
-	uint32_t McEmemAdrCfgBankSwizzle3;
 
 	/*
 	 * Specifies the value for MC_EMEM_CFG which holds the external memory
@@ -716,6 +789,10 @@ struct sdram_params {
 	uint32_t McEmemArbCfg;
 	/* Specifies the value for MC_EMEM_ARB_OUTSTANDING_REQ */
 	uint32_t McEmemArbOutstandingReq;
+
+	uint32_t McEmemArbRefpbHpCtrl;
+	uint32_t McEmemArbRefpbBankCtrl;
+
 	/* Specifies the value for MC_EMEM_ARB_TIMING_RCD */
 	uint32_t McEmemArbTimingRcd;
 	/* Specifies the value for MC_EMEM_ARB_TIMING_RP */
@@ -740,6 +817,9 @@ struct sdram_params {
 	uint32_t McEmemArbTimingR2W;
 	/* Specifies the value for MC_EMEM_ARB_TIMING_W2R */
 	uint32_t McEmemArbTimingW2R;
+
+	uint32_t McEmemArbTimingRFCPB;
+
 	/* Specifies the value for MC_EMEM_ARB_DA_TURNS */
 	uint32_t McEmemArbDaTurns;
 	/* Specifies the value for MC_EMEM_ARB_DA_COVERS */
@@ -748,6 +828,8 @@ struct sdram_params {
 	uint32_t McEmemArbMisc0;
 	/* Specifies the value for MC_EMEM_ARB_MISC1 */
 	uint32_t McEmemArbMisc1;
+	uint32_t McEmemArbMisc2;
+
 	/* Specifies the value for MC_EMEM_ARB_RING1_THROTTLE */
 	uint32_t McEmemArbRing1Throttle;
 	/* Specifies the value for MC_EMEM_ARB_OVERRIDE */
@@ -757,13 +839,15 @@ struct sdram_params {
 	/* Specifies the value for MC_EMEM_ARB_RSV */
 	uint32_t McEmemArbRsv;
 
+	uint32_t McDaCfg0;
+	uint32_t McEmemArbTimingCcdmw;
+
 	/* Specifies the value for MC_CLKEN_OVERRIDE */
 	uint32_t McClkenOverride;
 
 	/* Specifies the value for MC_STAT_CONTROL */
 	uint32_t McStatControl;
-	/* Specifies the value for MC_DISPLAY_SNAP_RING */
-	uint32_t McDisplaySnapRing;
+
 	/* Specifies the value for MC_VIDEO_PROTECT_BOM */
 	uint32_t McVideoProtectBom;
 	/* Specifies the value for MC_VIDEO_PROTECT_BOM_ADR_HI */
@@ -785,18 +869,91 @@ struct sdram_params {
 	/* Specifies the value for MC_SEC_CARVEOUT_SIZE_MB */
 	uint32_t McSecCarveoutSizeMb;
 	/* Specifies the value for MC_VIDEO_PROTECT_REG_CTRL.
-	   VIDEO_PROTECT_WRITE_ACCESS */
+	   VIDEO_PROTECT_WRITEAccess */
 	uint32_t McVideoProtectWriteAccess;
 	/* Specifies the value for MC_SEC_CARVEOUT_REG_CTRL.
-	   SEC_CARVEOUT_WRITE_ACCESS */
+	   SEC_CARVEOUT_WRITEAccess */
 	uint32_t McSecCarveoutProtectWriteAccess;
+
+	/* Write-Protect Regions (WPR) */
+	uint32_t McGeneralizedCarveout1Bom;
+	uint32_t McGeneralizedCarveout1BomHi;
+	uint32_t McGeneralizedCarveout1Size128kb;
+	uint32_t McGeneralizedCarveout1Access0;
+	uint32_t McGeneralizedCarveout1Access1;
+	uint32_t McGeneralizedCarveout1Access2;
+	uint32_t McGeneralizedCarveout1Access3;
+	uint32_t McGeneralizedCarveout1Access4;
+	uint32_t McGeneralizedCarveout1ForceInternalAccess0;
+	uint32_t McGeneralizedCarveout1ForceInternalAccess1;
+	uint32_t McGeneralizedCarveout1ForceInternalAccess2;
+	uint32_t McGeneralizedCarveout1ForceInternalAccess3;
+	uint32_t McGeneralizedCarveout1ForceInternalAccess4;
+	uint32_t McGeneralizedCarveout1Cfg0;
+
+	uint32_t McGeneralizedCarveout2Bom;
+	uint32_t McGeneralizedCarveout2BomHi;
+	uint32_t McGeneralizedCarveout2Size128kb;
+	uint32_t McGeneralizedCarveout2Access0;
+	uint32_t McGeneralizedCarveout2Access1;
+	uint32_t McGeneralizedCarveout2Access2;
+	uint32_t McGeneralizedCarveout2Access3;
+	uint32_t McGeneralizedCarveout2Access4;
+	uint32_t McGeneralizedCarveout2ForceInternalAccess0;
+	uint32_t McGeneralizedCarveout2ForceInternalAccess1;
+	uint32_t McGeneralizedCarveout2ForceInternalAccess2;
+	uint32_t McGeneralizedCarveout2ForceInternalAccess3;
+	uint32_t McGeneralizedCarveout2ForceInternalAccess4;
+	uint32_t McGeneralizedCarveout2Cfg0;
+
+	uint32_t McGeneralizedCarveout3Bom;
+	uint32_t McGeneralizedCarveout3BomHi;
+	uint32_t McGeneralizedCarveout3Size128kb;
+	uint32_t McGeneralizedCarveout3Access0;
+	uint32_t McGeneralizedCarveout3Access1;
+	uint32_t McGeneralizedCarveout3Access2;
+	uint32_t McGeneralizedCarveout3Access3;
+	uint32_t McGeneralizedCarveout3Access4;
+	uint32_t McGeneralizedCarveout3ForceInternalAccess0;
+	uint32_t McGeneralizedCarveout3ForceInternalAccess1;
+	uint32_t McGeneralizedCarveout3ForceInternalAccess2;
+	uint32_t McGeneralizedCarveout3ForceInternalAccess3;
+	uint32_t McGeneralizedCarveout3ForceInternalAccess4;
+	uint32_t McGeneralizedCarveout3Cfg0;
+
+	uint32_t McGeneralizedCarveout4Bom;
+	uint32_t McGeneralizedCarveout4BomHi;
+	uint32_t McGeneralizedCarveout4Size128kb;
+	uint32_t McGeneralizedCarveout4Access0;
+	uint32_t McGeneralizedCarveout4Access1;
+	uint32_t McGeneralizedCarveout4Access2;
+	uint32_t McGeneralizedCarveout4Access3;
+	uint32_t McGeneralizedCarveout4Access4;
+	uint32_t McGeneralizedCarveout4ForceInternalAccess0;
+	uint32_t McGeneralizedCarveout4ForceInternalAccess1;
+	uint32_t McGeneralizedCarveout4ForceInternalAccess2;
+	uint32_t McGeneralizedCarveout4ForceInternalAccess3;
+	uint32_t McGeneralizedCarveout4ForceInternalAccess4;
+	uint32_t McGeneralizedCarveout4Cfg0;
+
+	uint32_t McGeneralizedCarveout5Bom;
+	uint32_t McGeneralizedCarveout5BomHi;
+	uint32_t McGeneralizedCarveout5Size128kb;
+	uint32_t McGeneralizedCarveout5Access0;
+	uint32_t McGeneralizedCarveout5Access1;
+	uint32_t McGeneralizedCarveout5Access2;
+	uint32_t McGeneralizedCarveout5Access3;
+	uint32_t McGeneralizedCarveout5Access4;
+	uint32_t McGeneralizedCarveout5ForceInternalAccess0;
+	uint32_t McGeneralizedCarveout5ForceInternalAccess1;
+	uint32_t McGeneralizedCarveout5ForceInternalAccess2;
+	uint32_t McGeneralizedCarveout5ForceInternalAccess3;
+	uint32_t McGeneralizedCarveout5ForceInternalAccess4;
+	uint32_t McGeneralizedCarveout5Cfg0;
 
 	/* Specifies enable for CA training */
 	uint32_t EmcCaTrainingEnable;
-	/* Specifies the value for EMC_CA_TRAINING_TIMING_CNTRL1 */
-	uint32_t EmcCaTrainingTimingCntl1;
-	/* Specifies the value for EMC_CA_TRAINING_TIMING_CNTRL2 */
-	uint32_t EmcCaTrainingTimingCntl2;
+
 	/* Set if bit 6 select is greater than bit 7 select; uses aremc.
 	   spec packet SWIZZLE_BIT6_GT_BIT7 */
 	uint32_t SwizzleRankByteEncode;
@@ -804,6 +961,7 @@ struct sdram_params {
 	uint32_t BootRomPatchControl;
 	/* Specifies data for patched boot rom write */
 	uint32_t BootRomPatchData;
+
 	/* Specifies the value for MC_MTS_CARVEOUT_BOM */
 	uint32_t McMtsCarveoutBom;
 	/* Specifies the value for MC_MTS_CARVEOUT_ADR_HI */
@@ -813,9 +971,9 @@ struct sdram_params {
 	/* Specifies the value for MC_MTS_CARVEOUT_REG_CTRL */
 	uint32_t McMtsCarveoutRegCtrl;
 
-	/* End of generated code by warmboot_code_gen */
+	/* End */
 };
 
-check_member(sdram_params, McMtsCarveoutRegCtrl, 0x4d0);
+check_member(sdram_params, McMtsCarveoutRegCtrl, 0x770);
 
 #endif /* __SOC_NVIDIA_TEGRA210_SDRAM_PARAM_H__ */
