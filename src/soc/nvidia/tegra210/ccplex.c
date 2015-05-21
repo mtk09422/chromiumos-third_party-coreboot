@@ -47,9 +47,26 @@ static void enable_cpu_power_partitions(void)
 	power_ungate_partition(POWER_PARTID_CRAIL);
 	power_ungate_partition(POWER_PARTID_C0NC);
 	power_ungate_partition(POWER_PARTID_CE0);
-	power_ungate_partition(POWER_PARTID_CE1);
-	power_ungate_partition(POWER_PARTID_CE2);
-	power_ungate_partition(POWER_PARTID_CE3);
+	if (IS_ENABLED(CONFIG_ARM64_USE_SECURE_MONITOR)) {
+		power_ungate_partition(POWER_PARTID_CE1);
+		power_ungate_partition(POWER_PARTID_CE2);
+		power_ungate_partition(POWER_PARTID_CE3);
+	}
+
+	if (IS_ENABLED(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE)) {
+		/*
+		 * Deassert reset signal of all the secondary CPUs.
+		 * PMC and flow controller will take over the power sequence
+		 * controller in the ATF.
+		 */
+		uint32_t reg = CRC_RST_CPUG_CLR_CPU1 | CRC_RST_CPUG_CLR_DBG1 |
+			       CRC_RST_CPUG_CLR_CORE1 | CRC_RST_CPUG_CLR_CX1 |
+			       CRC_RST_CPUG_CLR_CPU2 | CRC_RST_CPUG_CLR_DBG2 |
+			       CRC_RST_CPUG_CLR_CORE2 | CRC_RST_CPUG_CLR_CX2 |
+			       CRC_RST_CPUG_CLR_CPU3 | CRC_RST_CPUG_CLR_DBG3 |
+			       CRC_RST_CPUG_CLR_CORE3 | CRC_RST_CPUG_CLR_CX3;
+		write32(CLK_RST_REG(rst_cpug_cmplx_clr), reg);
+	}
 }
 
 static void request_ram_repair(void)
