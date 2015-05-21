@@ -654,11 +654,3 @@ void sdram_init(const struct sdram_params *param)
 
 	sdram_lp0_save_params(param);
 }
-
-uint32_t sdram_get_ram_code(void)
-{
-	struct tegra_pmc_regs *pmc = (struct tegra_pmc_regs*)TEGRA_PMC_BASE;
-	return ((read32(&pmc->strapping_opt_a) &
-		 PMC_STRAPPING_OPT_A_RAM_CODE_MASK) >>
-		PMC_STRAPPING_OPT_A_RAM_CODE_SHIFT);
-}

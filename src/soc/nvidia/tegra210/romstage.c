@@ -28,6 +28,7 @@
 #include <soc/sdram.h>
 #include <soc/sdram_configs.h>
 #include <soc/romstage.h>
+#include <soc/nvidia/tegra/apbmisc.h>
 #include <timer.h>
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
@@ -67,6 +68,15 @@ static void *load_ramstage(void)
 		stopwatch_duration_usecs(&sw));
 
 	return entry;
+}
+
+uint32_t sdram_get_ram_code(void)
+{
+	struct apbmisc *misc = (struct apbmisc *)TEGRA_APB_MISC_BASE;
+
+	return ((read32(&misc->pp_strapping_opt_a) &
+		PP_STRAPPING_OPT_A_RAM_CODE_MASK) >>
+		PP_STRAPPING_OPT_A_RAM_CODE_SHIFT);
 }
 
 void romstage(void)

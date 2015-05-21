@@ -53,8 +53,12 @@ romstage-y += padconfig.c
 romstage-y += funitcfg.c
 romstage-y += romstage.c
 romstage-y += power.c
+ifneq ($(CONFIG_BOOTROM_SDRAM_INIT),y)
 romstage-y += sdram.c
+ ifeq ($(CONFIG_LP0_SUPPORT),y)
 romstage-y += sdram_lp0.c
+ endif
+endif
 romstage-y += ../tegra/gpio.c
 romstage-y += ../tegra/i2c.c
 romstage-y += ../tegra/pinmux.c
