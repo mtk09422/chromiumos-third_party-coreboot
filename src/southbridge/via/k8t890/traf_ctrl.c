@@ -21,9 +21,8 @@
 #include <device/pci.h>
 #include <device/pci_ids.h>
 #include <console/console.h>
+#include <lib.h>
 #include "k8t890.h"
-
-extern unsigned long log2(unsigned long x);
 
 static void mmconfig_set_resources(device_t dev)
 {

@@ -164,8 +164,8 @@ static inline __attribute__((always_inline)) void write32(volatile void *addr, u
 	*((volatile uint32_t *)(addr)) = value;
 }
 
-#if defined(__PRE_RAM__) || defined(__SMM__)
-static inline int log2(int value)
+#ifdef __ROMCC__
+static inline int log2(u32 value)
 {
         unsigned int r = 0;
         __asm__ volatile (
@@ -177,7 +177,7 @@ static inline int log2(int value)
         return r;
 
 }
-static inline int log2f(int value)
+static inline int __ffs(u32 value)
 {
         unsigned int r = 0;
         __asm__ volatile (
@@ -189,6 +189,9 @@ static inline int log2f(int value)
         return r;
 
 }
+#endif /* __ROMCC__ */
+
+#if defined(__PRE_RAM__) || defined(__SMM__)
 
 #define PCI_ADDR(SEGBUS, DEV, FN, WHERE) ( \
         (((SEGBUS) & 0xFFF) << 20) | \

@@ -20,6 +20,7 @@
 
 #include <cpu/x86/mtrr.h>
 #include <cpu/x86/cache.h>
+#include <lib.h>
 #include <stdlib.h>
 #include "raminit.h"
 #include "e7525.h"
