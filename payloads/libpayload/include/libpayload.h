@@ -62,8 +62,16 @@
 #include <lar.h>
 #endif
 
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ({ \
+	typeof(a) _a = a; \
+	typeof(b) _b = b; \
+	_a < _b ? _a : _b; \
+})
+#define MAX(a, b) ({ \
+	typeof(a) _a = a; \
+	typeof(b) _b = b; \
+	_a > _b ? _a : _b; \
+})
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #define LITTLE_ENDIAN	1234
