@@ -34,10 +34,10 @@
 /*
  * 0b0000 - 4GiB total - 2 x 2GiB Samsung K4B4G1646Q-HYK0 1600MHz
  * 0b0001 - 4GiB total - 2 x 2GiB Hynix  H5TC4G63CFR-PBA 1600MHz
- * 0b0010- 2GiB total - 1 x 2GiB Samsung K4B4G1646Q-HYK0 1600MHz
+ * 0b0010 - 2GiB total - 1 x 2GiB Samsung K4B4G1646Q-HYK0 1600MHz
  * 0b0011 - 2GiB total - 1 x 2GiB Hynix  H5TC4G63CFR-PBA 1600MHz
  */
-static const uint32_t dual_channel_config = (1 << 0);
+static const uint32_t dual_channel_config = (1 << 0) | (1 << 1);
 
 static void *get_spd_pointer(char *spd_file_content, int total_spds, int *dual)
 {
@@ -48,17 +48,6 @@ static void *get_spd_pointer(char *spd_file_content, int total_spds, int *dual)
 		<< 2;
 	ram_id |= get_gpio(COMMUNITY_GPSOUTHWEST_BASE, I2C3_SDA_PAD_CFG0) << 3;
 
-	/*
-	 * There are only 2 SPDs supported on Cyan Board:
-	 * Samsung 4G:0000 & Hynix 2G:0011
-	 */
-
-	/*
-	 * RAMID0 on the first boot does not read the correct value,so checking
-	 * bit 1 is enough as WA
-	 */
-	if (ram_id > 0)
-		ram_id = 3;
 	printk(BIOS_DEBUG, "ram_id=%d, total_spds: %d\n", ram_id, total_spds);
 
 	if (ram_id >= total_spds)
