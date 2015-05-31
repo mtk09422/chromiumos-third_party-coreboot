@@ -47,3 +47,15 @@ uint8_t board_id(void)
 
 	return board_id_value;
 }
+
+uint32_t ram_code(void)
+{
+	uint32_t code;
+
+	code = gpio_get(RAM_ID_0) << 0 |
+	       gpio_get(RAM_ID_1) << 1 |
+	       gpio_get(RAM_ID_2) << 2 |
+	       gpio_get(RAM_ID_3) << 3;
+
+	return code;
+}

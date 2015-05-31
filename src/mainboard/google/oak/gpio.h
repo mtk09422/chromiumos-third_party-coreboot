@@ -28,6 +28,11 @@ enum {
 	BOARD_ID_0	= GPIO(55),
 	BOARD_ID_1	= GPIO(56),
 	BOARD_ID_2	= GPIO(53),
+	/* Board ID related GPIOS. */
+	RAM_ID_0	= GPIO(54),
+	RAM_ID_1	= GPIO(51),
+	RAM_ID_2	= GPIO(52),
+	RAM_ID_3	= GPIO(49),
 	/* Warm reset */
 	AP_SYS_RESET_L	= GPIO(121),
 	/* Write Protect */
