@@ -19,14 +19,46 @@
 
 #include <arch/cache.h>
 #include <arch/io.h>
+#include <boardid.h>
 #include <boot/coreboot_tables.h>
 #include <device/device.h>
 #include <edid.h>
 #include <soc/display.h>
 #include <soc/ddp.h>
 #include <soc/gpio.h>
+#include <soc/pmic.h>
 #include <soc/spm.h>
 #include <soc/usb.h>
+
+static void configure_regulator(void)
+{
+	/* set vgp1 */
+	pmic_config_interface(DIGLDO_CON30, 0, PMIC_VCAMD_ON_CTRL_MASK,
+			      PMIC_VCAMD_ON_CTRL_SHIFT);
+	pmic_config_interface(DIGLDO_CON5, 1, PMIC_RG_VCAMD_SW_EN_MASK,
+			      PMIC_RG_VCAMD_SW_EN_SHIFT);
+	switch (board_id()) {
+	case 0:
+		/* vgp1 set to 1.22V */
+		pmic_config_interface(DIGLDO_CON19, 0, PMIC_RG_VCAMD_VOSEL_MASK,
+				      PMIC_RG_VCAMD_VOSEL_SHIFT);
+		/* vgp4 set to 1.8V */
+		pmic_config_interface(DIGLDO_CON30, 0, PMIC_VGP4_ON_CTRL_MASK,
+				      PMIC_VGP4_ON_CTRL_SHIFT);
+		pmic_config_interface(DIGLDO_CON8, 1, PMIC_RG_VGP4_SW_EN_MASK,
+				      PMIC_RG_VGP4_SW_EN_SHIFT);
+		pmic_config_interface(DIGLDO_CON22, 3, PMIC_RG_VGP4_VOSEL_MASK,
+				      PMIC_RG_VGP4_VOSEL_SHIFT);
+		break;
+	case 1:
+		/* vgp1 set to 1.8V */
+		pmic_config_interface(DIGLDO_CON19, 3, PMIC_RG_VCAMD_VOSEL_MASK,
+				      PMIC_RG_VCAMD_VOSEL_SHIFT);
+		break;
+	default:
+		break;
+	}
+}
 
 static void configure_hdmi(void)
 {
@@ -66,6 +98,7 @@ static void mainboard_init(device_t dev)
 	usb_port_switch();
 	configure_hdmi();
 	configure_vpu_sram();
+	configure_regulator();
 }
 
 static void mainboard_enable(device_t dev)
