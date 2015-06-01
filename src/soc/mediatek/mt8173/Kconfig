@@ -1,0 +1,83 @@
+config SOC_MEDIATEK_MT8173
+	bool
+	default n
+	select ARM64_BOOTBLOCK_CUSTOM
+	select ARCH_BOOTBLOCK_ARM_V8_64
+	select ARCH_RAMSTAGE_ARM_V8_64
+	select ARCH_ROMSTAGE_ARM_V8_64
+	select BOOTBLOCK_CONSOLE
+	select DYNAMIC_CBMEM
+	select GIC
+	select EARLY_CONSOLE
+	select HAVE_UART_MEMORY_MAPPED
+	select HAVE_UART_SPECIAL
+	select SPI_ATOMIC_SEQUENCING
+	select HAVE_MONOTONIC_TIMER
+	select GENERIC_UDELAY
+	select HAVE_INIT_TIMER
+	select HAS_PRECBMEM_TIMESTAMP_REGION
+	select DEBUG_CBFS
+#	select DEBUG_SOC_DRIVER
+
+if SOC_MEDIATEK_MT8173
+
+config DEBUG_SOC_DRIVER
+	bool "The top level switch for soc driver debug message"
+	default n
+#	select DEBUG_CBFS_EMMC
+#	select DEBUG_MEMORY_DRAM
+#	select DEBUG_I2C
+#	select DEBUG_KEY
+#	select DEBUG_MMC
+#	select DEBUG_MSDC
+#	select DEBUG_PMIC
+#	select DEBUG_PMIC_WRAP
+
+config DEBUG_CBFS_EMMC
+	bool "Output verbose EMMC CBFS debug messages"
+	default n
+	help
+	  This option enables additional EMMC CBFS related debug messages.
+
+config DEBUG_MEMORY_DRAM
+	bool "Output verbose DRAM related debug message"
+	default n
+	help
+	  This option enables additional DRAM related debug messages.
+
+config DEBUG_I2C
+	bool "Output verbose I2C related debug message"
+	default n
+	help
+	  This option enables I2C related debug message.
+
+config DEBUG_KEY
+	bool "Output verbose key related debug message"
+	default n
+	help
+	  This option enables key related debug message.
+
+config DEBUG_MMC
+	bool "Output verbose eMMC related debug message"
+	default n
+	help
+	  This option enables eMMC related debug message.
+
+config DEBUG_MSDC
+	bool "Output verbose MSDC related debug message"
+	default n
+	help
+	  This option enables MSDC related debug message.
+
+config DEBUG_PMIC
+	bool "Output verbose PMIC related debug message"
+	default n
+	help
+	  This option enables PMIC related debug message.
+
+config DEBUG_PMIC_WRAP
+	bool "Output verbose PMIC WRAP related debug message"
+	default n
+	help
+	  This option enables PMIC WRAP related debug message.
+endif

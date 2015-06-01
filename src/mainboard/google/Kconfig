@@ -138,6 +138,14 @@ config BOARD_GOOGLE_NYAN_BLAZE
 	  Nyan Blaze is a Chrome OS mainboard.
 	  Nyan Blaze is based on the Nvidia Tegra 124 platform.
 
+config BOARD_GOOGLE_OAK
+	bool "Oak"
+	help
+	  Google Oak mainboard.
+	  Enable this config to select the Google Oak mainboard.
+	  Oak is a Chrome OS mainboard.
+	  Oak is based on the MediaTek MT8173 platform.
+
 config BOARD_GOOGLE_PANTHER
 	bool "Panther"
 	help
@@ -336,6 +344,7 @@ source "src/mainboard/google/link/Kconfig"
 source "src/mainboard/google/nyan/Kconfig"
 source "src/mainboard/google/nyan_big/Kconfig"
 source "src/mainboard/google/nyan_blaze/Kconfig"
+source "src/mainboard/google/oak/Kconfig"
 source "src/mainboard/google/panther/Kconfig"
 source "src/mainboard/google/parrot/Kconfig"
 source "src/mainboard/google/peach_pit/Kconfig"

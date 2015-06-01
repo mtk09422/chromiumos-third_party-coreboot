@@ -5,6 +5,7 @@ subdirs-y += broadcom
 subdirs-y += imgtec
 subdirs-y += intel
 subdirs-y += marvell
+subdirs-y += mediatek
 subdirs-y += nvidia
 subdirs-y += qualcomm
 subdirs-y += samsung

@@ -1,0 +1,1 @@
+subdirs-$(CONFIG_SOC_MEDIATEK_MT8173) += mt8173
