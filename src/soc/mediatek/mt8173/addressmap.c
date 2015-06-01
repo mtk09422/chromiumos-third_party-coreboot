@@ -25,6 +25,9 @@
 
 int sdram_size_mb(void);
 
+static uintptr_t tz_base_mib;
+static const size_t tz_size_mib = CONFIG_TRUSTZONE_CARVEOUT_SIZE_MB;
+
 /* returns total amount of DRAM (in MB) from memory controller registers */
 int sdram_size_mb(void)
 {
@@ -38,6 +41,10 @@ void carveout_range(int id, uintptr_t *base_mib, size_t *size_mib)
 	*size_mib = 0;
 
 	switch (id) {
+	case CARVEOUT_TZ:
+		*base_mib = tz_base_mib;
+		*size_mib = tz_size_mib;
+		break;
 	default:
 		break;
 	}
@@ -111,4 +118,27 @@ void memory_in_range_above_4gb(uintptr_t *base_mib, uintptr_t *end_mib)
 	*base_mib = 4096;
 	*end_mib = ~0UL;
 	memory_in_range(base_mib, end_mib, CARVEOUT_NUM);
+}
+
+void trustzone_region_init(void)
+{
+	uintptr_t end = 3072;
+
+	if (((uintptr_t)_dram / MiB) >= 0x1000) {
+		tz_base_mib += 0x1000;
+		end += 0x1000;
+	}
+
+	/*
+	 * Get memory layout ignoring the TZ carveout because
+	 * that's the one to initialize.
+	 */
+	memory_in_range(&tz_base_mib, &end, CARVEOUT_TZ);
+	tz_base_mib = end - tz_size_mib;
+
+	if (end <= 0)
+		printk(BIOS_DEBUG, "trustzone init fail !\n");
+
+	printk(BIOS_DEBUG, "%s tz: %#lx, end: %#lx\n",
+		__func__, (unsigned long)tz_base_mib, (unsigned long)end);
 }

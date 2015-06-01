@@ -37,6 +37,8 @@ static void mt8173_memrange_init(void)
 	const unsigned long non_cachedmem = MA_MEM | MA_NS | MA_RW | MA_MEM_NC;
 	uint64_t dram_start = ((uintptr_t)_dram);
 	uint64_t dram_size = (uint64_t)CONFIG_DRAM_SIZE_MB * MiB;
+	uint64_t tz_start;
+	size_t tz_size;
 
 	/* keep xlat table in sram */
 	mmu_init(NULL, (uint64_t *)_sram_ttb, _sram_ttb_size);
@@ -52,6 +54,11 @@ static void mt8173_memrange_init(void)
 
 	/* DRAM is cached */
 	mmu_config_range((void *)dram_start, dram_size, cachedmem);
+
+	/* Add trustzone carveout region */
+	carveout_range(CARVEOUT_TZ, &tz_start, &tz_size);
+	tz_start *= MiB;
+	mmu_config_range((void *)tz_start, tz_size * MiB, secure_mem);
 
 	/* set ttb as secure */
 	mmu_config_range((void *)_sram_ttb, _sram_ttb_size, secure_mem);
