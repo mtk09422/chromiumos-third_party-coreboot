@@ -22,6 +22,7 @@
 #include <delay.h>
 #include <soc/mt8173.h>
 #include <soc/pericfg.h>
+#include <soc/wdt.h>
 
 extern void bootblock_soc_init(void);
 
@@ -34,6 +35,9 @@ void bootblock_mainboard_init(void)
 	clrbits_le32(&mt8173_pericfg->pdn0_set, PERICFG_UART0_PDN);
 
 	init_timer();
+
+	/* init watch dog, will disable AP watch dog */
+	mtk_wdt_init();
 
 	bootblock_soc_init();
 }

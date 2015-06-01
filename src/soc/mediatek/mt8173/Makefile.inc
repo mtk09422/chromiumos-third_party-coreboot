@@ -27,6 +27,7 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 bootblock-y += emmc_cbfs.c
+bootblock-y += wdt.c
 
 ################################################################################
 
