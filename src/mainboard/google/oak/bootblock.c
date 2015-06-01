@@ -20,6 +20,7 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <delay.h>
+#include <soc/gpio.h>
 #include <soc/mt8173.h>
 #include <soc/pericfg.h>
 #include <soc/pll.h>
@@ -40,7 +41,11 @@ void bootblock_mainboard_init(void)
 
 	mt_pll_init();
 
+	mt_gpio_init();
+
 	pwrap_init_preloader();
+
+	mt_gpio_set_default_ext();
 
 	/* post init pll */
 	mt_pll_post_init();
