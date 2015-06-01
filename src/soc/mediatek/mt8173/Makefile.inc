@@ -28,6 +28,7 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 bootblock-y += emmc_cbfs.c
+bootblock-y += pmic_wrap_init.c pmic.c
 bootblock-y += wdt.c
 
 ################################################################################
@@ -39,6 +40,7 @@ verstage-y += spi.c
 verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
 verstage-y += timer.c cpu_lib.S
+verstage-y += pmic_wrap_init.c pmic.c da9212.c
 verstage-y += emmc_cbfs.c
 verstage-y += mmu_operations.c
 
@@ -53,6 +55,7 @@ romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 romstage-y += spi.c
+romstage-y += pmic_wrap_init.c i2c.c pmic.c da9212.c
 romstage-y += addressmap.c
 
 ################################################################################
@@ -64,6 +67,7 @@ ramstage-y += emmc_cbfs.c
 ramstage-y += soc.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
+ramstage-y += pmic_wrap_init.c
 ramstage-y += ramstage.c mmu_operations.c
 ramstage-y += gic.c
 ramstage-y += addressmap.c

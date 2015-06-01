@@ -23,6 +23,7 @@
 #include <soc/mt8173.h>
 #include <soc/pericfg.h>
 #include <soc/pll.h>
+#include <soc/pmic_wrap_init.h>
 #include <soc/wdt.h>
 
 extern void bootblock_soc_init(void);
@@ -38,6 +39,8 @@ void bootblock_mainboard_init(void)
 	init_timer();
 
 	mt_pll_init();
+
+	pwrap_init_preloader();
 
 	/* post init pll */
 	mt_pll_post_init();
