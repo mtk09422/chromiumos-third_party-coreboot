@@ -73,7 +73,7 @@ ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += pmic_wrap_init.c pmic.c i2c.c
 ramstage-y += ramstage.c mmu_operations.c
-ramstage-y += gic.c
+ramstage-$(CONFIG_ARM64_USE_SECURE_MONITOR) += gic.c
 ramstage-y += addressmap.c
 ramstage-y += gpio.c gpio_init.c
 
@@ -85,13 +85,19 @@ ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += it6151.c
 ramstage-y += usb.c
 ramstage-$(CONFIG_HAVE_USB_HUB_HX3) += usb_hub_hx3_config.c
 
-ramstage-y += secmon.c
+ramstage-$(CONFIG_ARM64_USE_SECURE_MONITOR) += secmon.c
 
-secmon-y += cpu_lib.S
-secmon-y += psci.c
-secmon-y += cpu.c mtcmos.c
-secmon-y += timer.c
-secmon-y += gic.c
+secmon-$(CONFIG_ARM64_USE_SECURE_MONITOR) += cpu_lib.S
+secmon-$(CONFIG_ARM64_USE_SECURE_MONITOR) += psci.c
+secmon-$(CONFIG_ARM64_USE_SECURE_MONITOR) += cpu.c mtcmos.c
+secmon-$(CONFIG_ARM64_USE_SECURE_MONITOR) += timer.c
+secmon-$(CONFIG_ARM64_USE_SECURE_MONITOR) += gic.c
+
+ramstage-$(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE) += bl31_plat_param.c
+
+ifeq ($(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE),y)
+BL31_MAKEARGS += PLAT=mt8173
+endif
 
 ################################################################################
 

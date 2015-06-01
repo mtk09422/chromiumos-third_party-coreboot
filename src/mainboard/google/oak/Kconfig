@@ -72,4 +72,8 @@ config VBOOT_RAMSTAGE_INDEX
 	hex
 	default 0x3
 
+config VBOOT_BL31_INDEX
+	hex
+	default 0x4
+
 endif # BOARD_GOOGLE_OAK
