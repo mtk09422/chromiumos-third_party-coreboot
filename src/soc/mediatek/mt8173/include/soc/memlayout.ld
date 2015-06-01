@@ -30,6 +30,7 @@
 #define SRAM_L2C_START(addr) SYMBOL(sram_l2c, addr)
 #define SRAM_L2C_END(addr) SYMBOL(esram_l2c, addr)
 #define SRAM_TTB(addr, size) REGION(sram_ttb, addr, size, 4K)
+#define DMA(addr, size) REGION(dma, addr, size, 4K)
 
 SECTIONS
 {
@@ -46,6 +47,7 @@ SECTIONS
 	ROMSTAGE(0x0010A000, 118K)
 	STACK(0x00128000, 4K)
 	SRAM_TTB(0x00129000, 24K)
+	DMA(0x0012F000, 4K)
 	SRAM_END(0x00130000)
 
 	DRAM_START(0x40000000)

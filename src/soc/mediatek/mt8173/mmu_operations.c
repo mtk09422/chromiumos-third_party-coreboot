@@ -32,6 +32,7 @@ static void mt8173_memrange_init(void)
 	const unsigned long devmem = MA_DEV | MA_S | MA_RW;
 	const unsigned long cachedmem = MA_MEM | MA_NS | MA_RW;
 	const unsigned long secure_mem = MA_MEM | MA_S | MA_RW;
+	const unsigned long non_cachedmem = MA_MEM | MA_NS | MA_RW | MA_MEM_NC;
 	uint64_t dram_start = ((uintptr_t)_dram);
 	uint64_t dram_size = (uint64_t)CONFIG_DRAM_SIZE_MB * MiB;
 
@@ -43,6 +44,9 @@ static void mt8173_memrange_init(void)
 
 	/* SRAM is cached */
 	mmu_config_range((void *)_sram, _sram_size, cachedmem);
+
+	/* DMA is non-cached and is reserved for it6151 I2C DMA use */
+	mmu_config_range((void *)_dma, _dma_size, non_cachedmem);
 
 	/* DRAM is cached */
 	mmu_config_range((void *)dram_start, dram_size, cachedmem);
@@ -56,6 +60,7 @@ static void mt8173_sramrange_init(void)
 	const unsigned long devmem = MA_DEV | MA_S | MA_RW;
 	const unsigned long cachedmem = MA_MEM | MA_NS | MA_RW;
 	const unsigned long secure_mem = MA_MEM | MA_S | MA_RW;
+	const unsigned long non_cachedmem = MA_MEM | MA_NS | MA_RW | MA_MEM_NC;
 
 	const uint64_t dram_size = (uint64_t)CONFIG_DRAM_SIZE_MB * MiB;
 
@@ -67,6 +72,9 @@ static void mt8173_sramrange_init(void)
 	/* SRAM is cached */
 	mmu_config_range((void *)_sram_l2c, _sram_l2c_size + _sram_size,
 			 cachedmem);
+
+	/* DMA is non-cached and is reserved for TPM & da9212 I2C DMA */
+	mmu_config_range((void *)_dma, _dma_size, non_cachedmem);
 
 	/* set ttb as secure */
 	mmu_config_range((void *)_sram_ttb, _sram_ttb_size, secure_mem);
