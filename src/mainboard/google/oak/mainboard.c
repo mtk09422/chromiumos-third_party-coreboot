@@ -24,6 +24,8 @@
 #include <edid.h>
 #include <soc/display.h>
 #include <soc/ddp.h>
+#include <soc/gpio.h>
+#include <soc/usb.h>
 
 static void configure_hdmi(void)
 {
@@ -34,8 +36,27 @@ static void configure_hdmi(void)
 	write32((void *)DISPSYS_CONFIG_BASE + DISP_REG_CONFIG_HDMI_EN, reg);
 }
 
+#define USB_PORT_SWITCH_GPIO GPIO3
+
+static void usb_port_switch(void)
+{
+	switch (board_id()) {
+	case 0:
+		/* Rev0: switch download port to type A */
+		mt_set_gpio_mode(USB_PORT_SWITCH_GPIO, GPIO_MODE_00);
+		mt_set_gpio_dir(USB_PORT_SWITCH_GPIO, GPIO_DIR_OUT);
+		mt_set_gpio_out(USB_PORT_SWITCH_GPIO, GPIO_OUT_ONE);
+		break;
+	default:
+		break;
+	}
+
+}
+
 static void mainboard_init(device_t dev)
 {
+	setup_usb_host();
+	usb_port_switch();
 	configure_hdmi();
 }
 
