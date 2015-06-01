@@ -257,6 +257,131 @@ u16 gpio_init_smt_data[] = {
 	 (GPIO_SMT_GROUP_40 <<  8) |(GPIO_SMT_GROUP_41 <<  9)),
 }; /* end of gpio_init_smt_more_data */
 
+enum proType {
+	T_MODE = 0,
+	T_DIR,
+	T_DATAOUT,
+	T_PULLEN,
+	T_PULLSEL,
+};
+
+struct pinPro {
+	u32 pin;
+	u32 val;
+	u32 pro;
+};
+
+/* Board Rev0 GPIO Setting difference from Board Rev1*/
+static struct pinPro boardRev0Pins[] = {
+	{GPIO3,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO4,	GPIO_MODE_00,	T_MODE},
+	{GPIO5,	GPIO_MODE_00,	T_MODE},
+	{GPIO5,	GPIO_DIR_IN,	T_DIR},
+	{GPIO5,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO6,	GPIO_MODE_00,	T_MODE},
+	{GPIO6,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO6,	GPIO_PULL_DISABLE,	T_PULLEN},
+	{GPIO6,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO6,	GPIO_OUT_ONE,	T_DATAOUT},
+	{GPIO7,	GPIO_MODE_00,	T_MODE},
+	{GPIO7,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO8,	GPIO_MODE_00,	T_MODE},
+	{GPIO8,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO8,	GPIO_PULL_DISABLE,	T_PULLEN},
+	{GPIO8,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO9,	GPIO_MODE_00,	T_MODE},
+	{GPIO12,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO12,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO13,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO13,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO30,	GPIO_MODE_02,	T_MODE},
+	{GPIO30,	GPIO_DIR_IN,	T_DIR},
+	{GPIO30,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO33,	GPIO_PULL_UP,	T_PULLSEL},
+	{GPIO33,	GPIO_OUT_ONE,	T_DATAOUT},
+	{GPIO35,	GPIO_DIR_IN,	T_DIR},
+	{GPIO35,	GPIO_PULL_DISABLE,	T_PULLEN},
+	{GPIO35,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO36,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO36,	GPIO_PULL_UP,	T_PULLSEL},
+	{GPIO37,	GPIO_PULL_UP,	T_PULLSEL},
+	{GPIO38,	GPIO_MODE_00,	T_MODE},
+	{GPIO38,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO38,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO41,	GPIO_MODE_01,	T_MODE},
+	{GPIO41,	GPIO_DIR_IN,	T_DIR},
+	{GPIO41,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO42,	GPIO_PULL_DISABLE,	T_PULLEN},
+	{GPIO69,	GPIO_DIR_IN,	T_DIR},
+	{GPIO71,	GPIO_DIR_IN,	T_DIR},
+	{GPIO72,	GPIO_DIR_IN,	T_DIR},
+	{GPIO94,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO94,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO94,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO95,	GPIO_DIR_IN,	T_DIR},
+	{GPIO95,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO96,	GPIO_MODE_01,	T_MODE},
+	{GPIO96,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO96,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO97,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO97,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO97,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO98,	GPIO_MODE_01,	T_MODE},
+	{GPIO98,	GPIO_DIR_IN,	T_DIR},
+	{GPIO98,	GPIO_PULL_UP,	T_PULLSEL},
+	{GPIO99,	GPIO_MODE_01,	T_MODE},
+	{GPIO99,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO101,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO101,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO115,	GPIO_MODE_01,	T_MODE},
+	{GPIO115,	GPIO_DIR_IN,	T_DIR},
+	{GPIO115,	GPIO_PULL_UP,	T_PULLSEL},
+	{GPIO115,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO116,	GPIO_MODE_01,	T_MODE},
+	{GPIO116,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO120,	GPIO_MODE_01,	T_MODE},
+	{GPIO120,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO120,	GPIO_OUT_ZERO,	T_DATAOUT},
+	{GPIO121,	GPIO_MODE_01,	T_MODE},
+	{GPIO121,	GPIO_DIR_OUT,	T_DIR},
+	{GPIO124,	GPIO_MODE_01,	T_MODE},
+	{GPIO124,	GPIO_PULL_ENABLE,	T_PULLEN},
+	{GPIO127,	GPIO_PULL_DOWN,	T_PULLSEL},
+	{GPIO127,	GPIO_OUT_ZERO,	T_DATAOUT},
+};
+
+static void mt_set_gpio_for_board_rev0(void)
+{
+	u32 i = 0;
+	u32 pin, val, pro;
+
+	for(i = 0; i< sizeof(boardRev0Pins)/sizeof(boardRev0Pins[0]); i++) {
+		pro = boardRev0Pins[i].pro;
+		pin = boardRev0Pins[i].pin;
+		val = boardRev0Pins[i].val;
+
+		switch(pro)
+		{
+			case T_MODE:
+				mt_set_gpio_mode(pin, val);
+				break;
+			case T_DIR:
+				mt_set_gpio_dir(pin, val);
+				break;
+			case T_DATAOUT:
+				mt_set_gpio_out(pin, val);
+				break;
+			case T_PULLEN:
+				mt_set_gpio_pull_enable(pin, val);
+				break;
+			case T_PULLSEL:
+				mt_set_gpio_pull_select(pin, val);
+				break;
+			default:
+				break;
+		}
+	}
+}
 /*
  * As GPIO53, GPIO55, GPIO56 is configured as GPI
  * we need set mipi registers to switch them from mipi function
@@ -279,6 +404,7 @@ static void mt_gpio_set_default_chip(void)
 	GPIO_REGS *pReg = (GPIO_REGS*)(GPIO_BASE);
 	int idx;
 	u32 val;
+	u32 boardId = 0;
 
 	for (idx = 0; idx < sizeof(pReg->dir)/sizeof(pReg->dir[0]); idx++){
 		val = gpio_init_dir_data[idx];
@@ -321,6 +447,12 @@ static void mt_gpio_set_default_chip(void)
 	}
 
 	mt_set_gpi_from_mipi();
+
+	boardId = mt_get_gpio_in(GPIO55) << 0 | mt_get_gpio_in(GPIO56) << 1 |
+		  mt_get_gpio_in(GPIO53) << 2;
+
+	if (0 == boardId || 4 == boardId)
+		mt_set_gpio_for_board_rev0();
 }
 
 u16 gpioext_init_dir_data[4] = {
