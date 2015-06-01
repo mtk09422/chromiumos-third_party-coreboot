@@ -69,4 +69,10 @@ ramstage-y += addressmap.c
 
 ################################################################################
 
+# Generate the actual coreboot bootblock code
+$(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.elf
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(OBJCOPY_bootblock) -O binary $< $@.tmp
+	./util/mtkheader/gen-bl-img.py mt8173 emmc $@.tmp $@
+
 INCLUDES += -Isrc/soc/mediatek/mt8173/include
