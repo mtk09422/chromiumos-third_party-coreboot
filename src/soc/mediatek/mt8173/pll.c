@@ -22,7 +22,92 @@
 #include <delay.h>
 #include <soc/addressmap.h>
 #include <soc/pll.h>
+#include <soc/pmic.h>
 #include <soc/spm.h>
+
+static void set_freq(int mode, unsigned long clks)
+{
+	int wait_pll = 0;
+
+	if (clks & FCLK_VENCPLL) {
+		if (mode == FREQ_SP) {
+			/* 660 MHz */
+			write32((void *)(uintptr_t)VENCPLL_CON1, 0x800CB13B);
+		} else if (mode == FREQ_HP) {
+			/* 800 MHz */
+			write32((void *)(uintptr_t)VENCPLL_CON1, 0x800F6276);
+		}
+		wait_pll = 1;
+	}
+
+	if (clks & FCLK_VCODECPLL) {
+		if (mode == FREQ_SP) {
+			/* 384 MHz (1152 / 3) */
+			write32((void *)(uintptr_t)VCODECPLL_CON1, 0x800B13B1);
+		} else if (mode == FREQ_HP) {
+			/* 494 MHz (1482 / 3) */
+			write32((void *)(uintptr_t)VCODECPLL_CON1, 0x800E4000);
+		}
+		wait_pll = 1;
+	}
+
+	if (clks & FCLK_MMPLL) {
+		if (mode == FREQ_SP) {
+			/* 455 MHz */
+			write32((void *)(uintptr_t)MMPLL_CON1, 0x82118000);
+		} else if (mode == FREQ_HP) {
+			/* 600 MHz */
+			write32((void *)(uintptr_t)MMPLL_CON1, 0x821713B1);
+		}
+		wait_pll = 1;
+	}
+
+	if (clks & FCLK_AXI_CK) {
+		if (mode == FREQ_SP) {
+			/* axi_ck = 208 MHz (UNIVPLL2_D2) */
+			write32((void *)(uintptr_t)CLK_CFG_0,
+				read32((void *)(uintptr_t)CLK_CFG_0) &
+				(0xFFFFFF00 | 0x00000005));
+		} else if (mode == FREQ_HP) {
+			/* axi_ck = 273 MHz (SYSPLL1_D2) */
+			write32((void *)(uintptr_t)CLK_CFG_0,
+				read32((void *)(uintptr_t)CLK_CFG_0) &
+				(0xFFFFFF00 | 0x00000001));
+		}
+	}
+
+	if (clks & FCLK_VENCLT_CK) {
+		if (mode == FREQ_SP) {
+			/* venclite_ck = 312 MHz (UNIVPLL1_D2) */
+			write32((void *)(uintptr_t)CLK_CFG_5,
+				read32((void *)(uintptr_t)CLK_CFG_5) &
+				(0x00FFFFFF | 0x06000000));
+		} else if (mode == FREQ_HP) {
+			/* venclite_ck = 370.5 MHz (VCODECPLL_370P5_CK) */
+			write32((void *)(uintptr_t)CLK_CFG_5,
+				read32((void *)(uintptr_t)CLK_CFG_5) &
+				(0x00FFFFFF | 0x0A000000));
+		}
+	}
+
+	if (clks & FCLK_CCI400_CK) {
+		if (mode == FREQ_SP) {
+			/* cci400_ck = 546 MHz (SYSPLL_D2) */
+			write32((void *)(uintptr_t)CLK_CFG_6,
+				read32((void *)(uintptr_t)CLK_CFG_6) &
+				(0xFF00FFFF | 0x00050100));
+		} else if (mode == FREQ_HP) {
+			/* cci400_ck = 624 MHz (UNIVPLL_D2) */
+			write32((void *)(uintptr_t)CLK_CFG_6,
+				read32((void *)(uintptr_t)CLK_CFG_6) &
+				(0xFF00FFFF | 0x00040100));
+		}
+	}
+
+	if (wait_pll)
+		udelay(5);
+
+}
 
 void mt_pll_init(void)
 {
@@ -353,6 +438,20 @@ int spm_mtcmos_ctrl_audio(int state)
 			;
 	}
 	return err;
+}
+
+void mt_vcore_pll_adjust(void)
+{
+	/* Vcore 1.125v */
+	pmic_config_interface(VCORE_CON9, 0x44, 0x7F, 0);
+	pmic_config_interface(VCORE_CON10, 0x44, 0x7F, 0);
+
+	set_freq(FREQ_HP, FCLK_MMPLL);
+	set_freq(FREQ_HP, FCLK_AXI_CK);
+	set_freq(FREQ_HP, FCLK_CCI400_CK);
+	set_freq(FREQ_HP, FCLK_VENCPLL);
+	set_freq(FREQ_HP, FCLK_VCODECPLL);
+	set_freq(FREQ_HP, FCLK_VENCLT_CK);
 }
 
 /* after pmic_init */

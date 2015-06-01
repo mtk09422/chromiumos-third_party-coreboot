@@ -51,6 +51,8 @@ void bootblock_mainboard_init(void)
 	/* post init pll */
 	mt_pll_post_init();
 	mt_arm_pll_sel();
+	/* Init pll which relate to Vcore */
+	mt_vcore_pll_adjust();
 
 	/* init watch dog, will disable AP watch dog */
 	mtk_wdt_init();
