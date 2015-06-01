@@ -51,6 +51,7 @@ romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 romstage-y += spi.c
+romstage-y += addressmap.c
 
 ################################################################################
 
@@ -63,6 +64,7 @@ ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += ramstage.c mmu_operations.c
 ramstage-y += gic.c
+ramstage-y += addressmap.c
 
 ################################################################################
 
