@@ -18,11 +18,13 @@
  */
 
 #include <console/console.h>
+#include <soc/da9212.h>
 #include <soc/pmic.h>
 #include <soc/verstage.h>
 
 void verstage_mainboard_init(void)
 {
 	/* init pmic i2c interface and pmic */
+	ext_buck_en(1);
 	pmic_init();
 }

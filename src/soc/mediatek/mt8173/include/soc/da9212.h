@@ -21,6 +21,7 @@
 #define _da9212_SW_H_
 
 void da9212_driver_probe(void);
+void ext_buck_en(int val);
 
 enum {
 	/* Page selection */
