@@ -27,7 +27,7 @@ ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
-bootblock-y += emmc_cbfs.c
+bootblock-y += emmc_cbfs.c blkdev.c mmc_common_inter.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 bootblock-y += gpio.c gpio_init.c pmic_wrap_init.c pmic.c
 bootblock-y += wdt.c rtc.c
 
@@ -41,13 +41,13 @@ verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
 verstage-y += timer.c cpu_lib.S
 verstage-y += gpio.c pmic_wrap_init.c pmic.c da9212.c
-verstage-y += emmc_cbfs.c
+verstage-y += emmc_cbfs.c blkdev.c mmc_common_inter.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 verstage-y += mmu_operations.c
 
 ################################################################################
 
 romstage-y += cpu_lib.S cpu.c
-romstage-y += emmc_cbfs.c
+romstage-y += emmc_cbfs.c blkdev.c mmc_common_inter.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 romstage-y += pll.c mempll.c
 romstage-y += timer.c
 
@@ -67,7 +67,7 @@ romstage-y += emi.c dramc_pi_basic_api.c dramc_pi_calibration_api.c
 ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
 ramstage-y += spi.c
-ramstage-y += emmc_cbfs.c
+ramstage-y += emmc_cbfs.c blkdev.c mmc_common_inter.c mmc_core.c msdc.c msdc_utils.c cust_msdc.c
 ramstage-y += soc.c cpu.c mtcmos.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
