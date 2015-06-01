@@ -17,42 +17,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/exception.h>
-#include <arch/hlt.h>
-#include <arch/stages.h>
-#include <bootblock_common.h>
-#include <cbfs.h>
 #include <console/console.h>
-#include <timestamp.h>
+#include <soc/verstage.h>
 
-void main(void)
-{
-	void *entry;
-
-	timestamp_early_init(0);
-
-	if (IS_ENABLED(CONFIG_BOOTBLOCK_CONSOLE)) {
-		console_init();
-		exception_init();
-		printk(BIOS_INFO, "MT8173: Bootblock here\n");
-	}
-
-	bootblock_mainboard_init();
-
-	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE))
-		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-					CONFIG_CBFS_PREFIX "/verstage");
-	else
-		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-					CONFIG_CBFS_PREFIX "/romstage");
-
-	if (entry)
-		stage_exit(entry);
-	hlt();
-}
-
-extern void _start(void);
-
-void bootblock_soc_init(void)
+void verstage_mainboard_init(void)
 {
 }

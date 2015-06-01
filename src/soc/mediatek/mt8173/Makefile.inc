@@ -31,6 +31,16 @@ bootblock-y += wdt.c
 
 ################################################################################
 
+verstage-y += verstage.c
+verstage-y += spi.c
+
+verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
+
+verstage-y += timer.c cpu_lib.S
+verstage-y += emmc_cbfs.c
+
+################################################################################
+
 romstage-y += cpu_lib.S
 romstage-y += emmc_cbfs.c
 romstage-y += timer.c

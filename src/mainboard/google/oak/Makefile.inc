@@ -17,15 +17,24 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
+bootblock-y += reset.c
 bootblock-y += memlayout.ld
 bootblock-c-ccopts += -mstrict-align
 
+verstage-y += verstage.c
+verstage-y += chromeos.c
+verstage-y += reset.c
+verstage-y += memlayout.ld
+verstage-c-ccopts += -mstrict-align
+
 romstage-y += romstage.c
+romstage-y += reset.c
 romstage-y += memlayout.ld
 romstage-c-ccopts += -mstrict-align
 
 ramstage-y += mainboard.c
 ramstage-y += chromeos.c
+ramstage-y += reset.c
 ramstage-y += memlayout.ld
 
 INCLUDES += -Isrc/mainboard/google/oak/include

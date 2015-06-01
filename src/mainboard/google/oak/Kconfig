@@ -26,7 +26,9 @@ config BOARD_SPECIFIC_OPTIONS
 	select CHROMEOS_VBNV_EC
 	select EC_GOOGLE_CHROMEEC
 	select EC_GOOGLE_CHROMEEC_SPI
+	select HAVE_HARD_RESET
 	select VIRTUAL_DEV_SWITCH
+	select VBOOT2_MOCK_SECDATA
 
 config BOOTBLOCK_MAINBOARD_INIT
 	string
@@ -47,5 +49,17 @@ config DRAM_SIZE_MB
 config EC_GOOGLE_CHROMEEC_SPI_BUS
 	hex
 	default 0
+
+config DRIVER_TPM_I2C_BUS
+        hex
+	default 0x2
+
+config DRIVER_TPM_I2C_ADDR
+	hex
+	default 0x20
+
+config VBOOT_RAMSTAGE_INDEX
+	hex
+	default 0x3
 
 endif # BOARD_GOOGLE_OAK

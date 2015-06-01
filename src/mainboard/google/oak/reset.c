@@ -17,42 +17,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/exception.h>
-#include <arch/hlt.h>
-#include <arch/stages.h>
-#include <bootblock_common.h>
-#include <cbfs.h>
-#include <console/console.h>
-#include <timestamp.h>
+#include <arch/io.h>
+#include <reset.h>
+#include <soc/wdt.h>
 
-void main(void)
+static struct mt8173_wdt_regs * const mt8173_wdt = (void *)RGU_BASE;
+
+void hard_reset(void)
 {
-	void *entry;
+	clrsetbits_le32(&mt8173_wdt->wdt_mode,
+			MTK_WDT_MODE_DUAL_MODE | MTK_WDT_MODE_IRQ,
+			MTK_WDT_MODE_KEY | MTK_WDT_MODE_EXTEN);
+	setbits_le32(&mt8173_wdt->wdt_swrst, MTK_WDT_SWRST_KEY);
 
-	timestamp_early_init(0);
-
-	if (IS_ENABLED(CONFIG_BOOTBLOCK_CONSOLE)) {
-		console_init();
-		exception_init();
-		printk(BIOS_INFO, "MT8173: Bootblock here\n");
-	}
-
-	bootblock_mainboard_init();
-
-	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE))
-		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-					CONFIG_CBFS_PREFIX "/verstage");
-	else
-		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-					CONFIG_CBFS_PREFIX "/romstage");
-
-	if (entry)
-		stage_exit(entry);
-	hlt();
-}
-
-extern void _start(void);
-
-void bootblock_soc_init(void)
-{
+	while (1)
+		;
 }

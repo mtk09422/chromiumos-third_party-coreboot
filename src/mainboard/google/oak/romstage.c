@@ -29,6 +29,7 @@
 #include <romstage_handoff.h>
 #include <symbols.h>
 #include <timestamp.h>
+#include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/mt8173.h>
 
@@ -40,6 +41,8 @@ void main(void)
 	/* init uart baudrate when pll on */
 	console_init();
 	exception_init();
+
+	entry = vboot2_load_ramstage();
 
 	timestamp_add_now(TS_START_COPYRAM);
 
