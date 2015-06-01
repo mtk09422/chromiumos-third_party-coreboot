@@ -21,6 +21,8 @@
 #define SOC_MEDIATEK_MT8173_PLL_H
 
 #include <soc/addressmap.h>
+#include <soc/dramc_pi_api.h>
+#include "custom_emi.h"
 
 /* APMIXEDSYS Register */
 enum {
@@ -287,6 +289,9 @@ int spm_mtcmos_ctrl_disp(int state);
 int spm_mtcmos_ctrl_audio(int state);
 void mt_pll_post_init(void);
 void mt_pll_init(void);
+void mt_mempll_cali(DRAMC_CTX_T *p);
+void mt_mempll_pre(void);
+void mt_mempll_post(void);
 void mt_arm_pll_sel(void);
 void mt_vcore_pll_adjust(void);
 
