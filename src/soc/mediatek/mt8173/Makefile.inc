@@ -46,7 +46,7 @@ verstage-y += mmu_operations.c
 
 ################################################################################
 
-romstage-y += cpu_lib.S
+romstage-y += cpu_lib.S cpu.c
 romstage-y += emmc_cbfs.c
 romstage-y += pll.c mempll.c
 romstage-y += timer.c
@@ -68,7 +68,7 @@ ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
 ramstage-y += spi.c
 ramstage-y += emmc_cbfs.c
-ramstage-y += soc.c
+ramstage-y += soc.c cpu.c mtcmos.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += pmic_wrap_init.c pmic.c i2c.c
@@ -89,6 +89,8 @@ ramstage-y += secmon.c
 
 secmon-y += cpu_lib.S
 secmon-y += psci.c
+secmon-y += cpu.c mtcmos.c
+secmon-y += timer.c
 secmon-y += gic.c
 
 ################################################################################

@@ -33,6 +33,7 @@
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/addressmap.h>
+#include <soc/cpu.h>
 #include <soc/memory.h>
 #include <soc/mt8173.h>
 #include <soc/pll.h>
@@ -57,6 +58,8 @@ void main(void)
 
 	/* should be called after memory init */
 	cbmem_initialize_empty();
+
+	set_secondary_cpu_boot_arm64();
 
 	entry = vboot2_load_ramstage();
 

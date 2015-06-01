@@ -20,9 +20,13 @@
 #include <arch/cpu.h>
 #include <arch/io.h>
 #include <arch/psci.h>
+#include <soc/cpu.h>
+
+static uintptr_t cpu_on_entry_point;
 
 void psci_soc_init(uintptr_t cpu_on_entry)
 {
+	cpu_on_entry_point = cpu_on_entry;
 }
 
 static size_t children_at_level(int parent_level, uint64_t mpidr)
@@ -52,7 +56,11 @@ static int cmd_prepare(struct psci_cmd *cmd)
 
 	switch (cmd->type) {
 	case PSCI_CMD_ON:
+		ret = PSCI_RET_SUCCESS;
+		break;
 	case PSCI_CMD_OFF:
+		ret = PSCI_RET_SUCCESS;
+		break;
 	default:
 		ret = PSCI_RET_NOT_SUPPORTED;
 		break;
@@ -63,10 +71,19 @@ static int cmd_prepare(struct psci_cmd *cmd)
 static int cmd_commit(struct psci_cmd *cmd)
 {
 	int ret;
+	unsigned int cpu;
+
+	cpu = cmd->target->cpu_state.ci->id;
 
 	switch (cmd->type) {
 	case PSCI_CMD_ON:
+		cpu_wakeup(cpu);
+		ret = PSCI_RET_SUCCESS;
+		break;
 	case PSCI_CMD_OFF:
+		cpu_sleep(cpu, cpu_on_entry_point);
+		ret = PSCI_RET_SUCCESS;
+		break;
 	default:
 		ret = PSCI_RET_NOT_SUPPORTED;
 		break;
