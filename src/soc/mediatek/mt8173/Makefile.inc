@@ -29,7 +29,7 @@ endif
 
 bootblock-y += emmc_cbfs.c
 bootblock-y += gpio.c gpio_init.c pmic_wrap_init.c pmic.c
-bootblock-y += wdt.c
+bootblock-y += wdt.c rtc.c
 
 ################################################################################
 

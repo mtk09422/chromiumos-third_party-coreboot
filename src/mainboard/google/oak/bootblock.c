@@ -25,6 +25,7 @@
 #include <soc/pericfg.h>
 #include <soc/pll.h>
 #include <soc/pmic_wrap_init.h>
+#include <soc/rtc.h>
 #include <soc/wdt.h>
 
 extern void bootblock_soc_init(void);
@@ -53,6 +54,10 @@ void bootblock_mainboard_init(void)
 
 	/* init watch dog, will disable AP watch dog */
 	mtk_wdt_init();
+
+	rtc_boot_check();
+
+	rtc_bbpu_power_on();
 
 	bootblock_soc_init();
 }
