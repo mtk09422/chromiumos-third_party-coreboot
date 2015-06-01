@@ -38,6 +38,7 @@ verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
 verstage-y += timer.c cpu_lib.S
 verstage-y += emmc_cbfs.c
+verstage-y += mmu_operations.c
 
 ################################################################################
 

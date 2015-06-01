@@ -22,8 +22,10 @@
 #include <arch/hlt.h>
 #include <arch/stages.h>
 #include <console/console.h>
+#include <soc/mmu_operations.h>
 #include <soc/mt8173.h>
 #include <soc/verstage.h>
+#include <symbols.h>
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
@@ -41,6 +43,7 @@ void main(void)
 	exception_init();
 	verstage_mainboard_init();
 
+	mt8173_vboot2_mmu_init();
 	entry = vboot2_verify_firmware();
 
 	if (entry)

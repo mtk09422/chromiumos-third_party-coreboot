@@ -20,6 +20,7 @@
 #ifndef __SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
 #define __SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
 
+void mt8173_vboot2_mmu_init(void);
 void mt8173_mmu_init(void);
 
 #endif //__SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__

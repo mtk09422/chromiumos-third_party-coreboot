@@ -18,6 +18,7 @@
  */
 
 #include <arch/mmu.h>
+#include <console/console.h>
 #include <symbols.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -48,6 +49,33 @@ static void mt8173_memrange_init(void)
 
 	/* set ttb as secure */
 	mmu_config_range((void *)_sram_ttb, _sram_ttb_size, secure_mem);
+}
+
+static void mt8173_sramrange_init(void)
+{
+	const unsigned long devmem = MA_DEV | MA_S | MA_RW;
+	const unsigned long cachedmem = MA_MEM | MA_NS | MA_RW;
+	const unsigned long secure_mem = MA_MEM | MA_S | MA_RW;
+
+	const uint64_t dram_size = (uint64_t)CONFIG_DRAM_SIZE_MB * MiB;
+
+	mmu_init(NULL, (uint64_t *)_sram_ttb, _sram_ttb_size);
+
+	/* Set 0x0 to end of dram as device memory */
+	mmu_config_range((void *)0, (uintptr_t)_dram + dram_size, devmem);
+
+	/* SRAM is cached */
+	mmu_config_range((void *)_sram_l2c, _sram_l2c_size + _sram_size,
+			 cachedmem);
+
+	/* set ttb as secure */
+	mmu_config_range((void *)_sram_ttb, _sram_ttb_size, secure_mem);
+}
+
+void mt8173_vboot2_mmu_init(void)
+{
+	mt8173_sramrange_init();
+	mmu_enable();
 }
 
 void mt8173_mmu_init(void)

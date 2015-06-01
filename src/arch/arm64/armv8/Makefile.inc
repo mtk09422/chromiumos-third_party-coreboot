@@ -55,6 +55,7 @@ verstage-y += cache.c
 verstage-y += cpu.S
 verstage-y += cache_helpers.S
 verstage-y += exception.c
+verstage-y += mmu.c
 
 verstage-c-ccopts += $(armv8_flags)
 verstage-S-ccopts += $(armv8_asm_flags)
