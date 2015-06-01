@@ -19,6 +19,7 @@ config SOC_MEDIATEK_MT8173
 	select HAS_PRECBMEM_TIMESTAMP_REGION
 	select MEDIATEK_DISPLAY_INIT
 	select DEBUG_CBFS
+	select HAVE_USB_HUB_HX3
 #	select DEBUG_SOC_DRIVER
 
 if SOC_MEDIATEK_MT8173
@@ -32,6 +33,12 @@ config TRUSTZONE_CARVEOUT_SIZE_MB
 config MEDIATEK_DISPLAY_INIT
 	bool "initial mediatek display port"
 	default n
+
+config HAVE_USB_HUB_HX3
+	bool "Initial external Cypress USB Hub HX3"
+	default n
+	help
+	  Initial & config the Cypress USB Hub HX3 via I2C bus
 
 config DEBUG_SOC_DRIVER
 	bool "The top level switch for soc driver debug message"

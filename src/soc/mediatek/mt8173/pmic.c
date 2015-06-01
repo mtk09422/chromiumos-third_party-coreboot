@@ -364,6 +364,17 @@ static void pmic_default_buck_voltage(void)
 		/* set the power control by register(use original) */
 		pmic_config_interface(BUCK_CON3, 0x1, 0x1, 12);
 	}
+
+	/* Set VPCA7 to 1.2V */
+	pmic_config_interface(VPCA7_CON9, 0x50, PMIC_VPCA7_VOSEL_MASK,
+		PMIC_VPCA7_VOSEL_SHIFT);
+	pmic_config_interface(VPCA7_CON10, 0x50, PMIC_VPCA7_VOSEL_ON_MASK,
+		PMIC_VPCA7_VOSEL_ON_SHIFT);
+	/* Enable VGP6 */
+	pmic_config_interface(DIGLDO_CON10, 0x1, 0x1, 15);
+	/* Set VGP6 to 3.3V */
+	pmic_config_interface(DIGLDO_CON33, 0x07, 0x07, 5);
+
 }
 
 u32 pmic_init(void)
@@ -397,7 +408,7 @@ u32 pmic_init(void)
 	/* Enable CA15 by default for different PMIC behavior */
 	pmic_config_interface(VCA15_CON7, 0x1, PMIC_VCA15_EN_MASK, PMIC_VCA15_EN_SHIFT);
 	pmic_config_interface(VSRMCA15_CON7, 0x1, PMIC_VSRMCA15_EN_MASK, PMIC_VSRMCA15_EN_SHIFT);
-	pmic_config_interface(VPCA7_CON7, 0x0, PMIC_VPCA7_EN_MASK, PMIC_VPCA7_EN_SHIFT);
+	pmic_config_interface(VPCA7_CON7, 0x1, PMIC_VPCA7_EN_MASK, PMIC_VPCA7_EN_SHIFT);
 	udelay(200); /* delay for Buck ready */
 	g_ca15_ready = 1;
 
