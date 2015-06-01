@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/io.h>
+#include <arch/cache.h>
 #include <arch/mmu.h>
 #include <console/console.h>
 #include <symbols.h>
@@ -88,6 +90,12 @@ void mt8173_vboot2_mmu_init(void)
 
 void mt8173_mmu_init(void)
 {
+	/* Return L2C from SRAM.
+	 * Sets it to 512KB which is the maximum available L2 cache for the
+	 * A53s on MT8173
+	 */
+	write32(&mt8173_mcucfg->mp0_ca7l_cache_config, 3 << 8);
+
 	mt8173_memrange_init();
 	mmu_enable();
 }
