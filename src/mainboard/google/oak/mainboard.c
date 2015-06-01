@@ -25,6 +25,7 @@
 #include <soc/display.h>
 #include <soc/ddp.h>
 #include <soc/gpio.h>
+#include <soc/spm.h>
 #include <soc/usb.h>
 
 static void configure_hdmi(void)
@@ -53,11 +54,18 @@ static void usb_port_switch(void)
 
 }
 
+/* vpu sram power configuration */
+static inline void configure_vpu_sram(void)
+{
+	write32((void *)SPM_VPU_SRAM_CON, 0xfffffff0);
+}
+
 static void mainboard_init(device_t dev)
 {
 	setup_usb_host();
 	usb_port_switch();
 	configure_hdmi();
+	configure_vpu_sram();
 }
 
 static void mainboard_enable(device_t dev)
