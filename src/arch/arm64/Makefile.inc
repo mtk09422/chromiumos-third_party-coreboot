@@ -181,11 +181,6 @@ ifeq ($(V),1)
 BL31_MAKEARGS += V=1
 endif
 
-# Build ARM TF in debug mode (with serial output) if coreboot uses serial
-ifeq ($(CONFIG_CONSOLE_SERIAL),y)
-BL31_MAKEARGS += DEBUG=1
-endif # CONFIG_CONSOLE_SERIAL
-
 # Avoid build/release|build/debug distinction by overriding BUILD_PLAT directly
 BL31_MAKEARGS += BUILD_PLAT="$(top)/$(obj)/3rdparty/arm-trusted-firmware"
 
