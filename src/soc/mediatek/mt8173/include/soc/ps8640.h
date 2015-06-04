@@ -17,11 +17,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _CUST_I2C_H
-#define _CUST_I2C_H
+#ifndef _PS8640_H_
+#define _PS8640_H_
 
-#define I2C_EXTBUCK_CHANNEL		1
-#define I2C_DISPLAY_CHANNEL		4
-#define I2C_USB_HUB_CHANNEL		4
+struct ps8640_bridge {
+	int gpio_pd_n;
+	int gpio_rst_n;
+	int gpio_1v2_n;
+	int gpio_mode_sel_n;
+	int enabled;
+	int gpio_panel_3v3_n;
+	int gpio_panel_bl_n;
+};
 
-#endif /* _CUST_I2C_H */
+void ps8640_enable(void);
+void ps8640_disable(void);
+void ps8640_pre_enable(void);
+int  ps8640_init(void);
+
+#endif
+

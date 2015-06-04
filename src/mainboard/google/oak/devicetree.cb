@@ -22,13 +22,13 @@ chip soc/mediatek/mt8173
 		device cpu 0 on end
 	end
 	register "framebuffer_bits_per_pixel" = "16"
-	register "pixelclock" = "76000"
-	register "hactive" = "1368"
-	register "hfront_porch" = "100"
-	register "hback_porch" = "106"
-	register "hsync_len" = "26"
+	register "pixelclock" = "76420"
+	register "hactive" = "1366"
+	register "hfront_porch" = "136"
+	register "hback_porch" = "60"
+	register "hsync_len" = "30"
 	register "vactive" = "768"
-	register "vfront_porch" = "10"
-	register "vback_porch" = "10"
+	register "vfront_porch" = "8"
+	register "vback_porch" = "12"
 	register "vsync_len" = "12"
 end

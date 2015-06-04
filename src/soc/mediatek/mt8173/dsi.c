@@ -26,6 +26,7 @@
 #include <soc/gpio.h>
 #include <soc/dsi.h>
 #include <soc/it6151.h>
+#include <soc/ps8640.h>
 
 #ifdef DEBUGDPF
 #define MTKFBTAG                "[MTKFB] "
@@ -39,47 +40,47 @@
 #endif
 
 struct mtk_dsi {
-	u32 dsi_reg_base;
-	u32 dsi_tx_reg_base;
-
+	void *dsi_reg_base;
+	void *dsi_tx_reg_base;
 	u32 pll_clk_rate;
 	unsigned long mode_flags;
 	enum mipi_dsi_pixel_format format;
 	unsigned int lanes;
 	struct videomode vm;
-
 	u8 enabled;
 };
 
 static struct mtk_dsi _mtk_dsi = {
-	.dsi_reg_base = 0x1401B000,
-	.dsi_tx_reg_base = 0x10215000,
-
-	.pll_clk_rate = 200,
-	.mode_flags = MIPI_DSI_MODE_VIDEO,
+	.dsi_reg_base = (void *)0x1401b000,
+	.dsi_tx_reg_base = (void *)0x10215000,
+	.pll_clk_rate = 230,
+	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
 	.format = MIPI_DSI_FMT_RGB888,
 	.lanes = 4,
 };
 
-#define dsi_write(data, addr) \
-	write32((void *)((uintptr_t)(addr)), data)
-#define dsi_read(addr) \
-	read32((void *)((uintptr_t)(addr)))
+static inline void dsi_write(u32 data, void *base, u32 offset)
+{
+	write32(base + offset, data);
+}
+
+static inline u32 dsi_read(void *base, u32 offset)
+{
+	return read32(base + offset);
+}
+
 
 static void dsi_phy_clk_switch(struct mtk_dsi *dsi, u8 on)
 {
 	u32 tmp_reg;
+	void *base = dsi->dsi_tx_reg_base;
 
 	if (on) {
-		tmp_reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_SW_CTRL);
+		tmp_reg = dsi_read(base, MIPITX_DSI_SW_CTRL);
 		tmp_reg = (tmp_reg & (~SW_CTRL_EN));
-		dsi_write(tmp_reg, dsi->dsi_tx_reg_base + MIPITX_DSI_SW_CTRL);
+		dsi_write(tmp_reg, base, MIPITX_DSI_SW_CTRL);
 	} else {
-		u32 base = dsi->dsi_tx_reg_base;
-
-		return;
-
-		tmp_reg = dsi_read(base + MIPITX_DSI_SW_CTRL_CON0);
+		tmp_reg = dsi_read(base, MIPITX_DSI_SW_CTRL_CON0);
 		tmp_reg = tmp_reg  | (SW_LNTC_LPTX_PRE_OE | SW_LNTC_LPTX_OE |
 			  SW_LNTC_HSTX_PRE_OE | SW_LNTC_HSTX_OE |
 			  SW_LNT0_LPTX_PRE_OE | SW_LNT0_LPTX_OE |
@@ -88,73 +89,67 @@ static void dsi_phy_clk_switch(struct mtk_dsi *dsi, u8 on)
 			  SW_LNT1_HSTX_PRE_OE | SW_LNT1_HSTX_OE |
 			  SW_LNT2_LPTX_PRE_OE | SW_LNT2_LPTX_OE |
 			  SW_LNT2_HSTX_PRE_OE | SW_LNT2_HSTX_OE);
-		dsi_write(tmp_reg, base + MIPITX_DSI_SW_CTRL_CON0);
+		dsi_write(tmp_reg, base, MIPITX_DSI_SW_CTRL_CON0);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI_SW_CTRL);
+		tmp_reg = dsi_read(base, MIPITX_DSI_SW_CTRL);
 		tmp_reg = (tmp_reg | SW_CTRL_EN);
-		dsi_write(tmp_reg, base + MIPITX_DSI_SW_CTRL);
+		dsi_write(tmp_reg, base, MIPITX_DSI_SW_CTRL);
 
 
-		tmp_reg = dsi_read(base + MIPITX_DSI_PLL_CON0);
+		tmp_reg = dsi_read(base, MIPITX_DSI_PLL_CON0);
 		tmp_reg = (tmp_reg & (~RG_DSI0_MPPLL_PLL_EN));
-		dsi_write(tmp_reg, base + MIPITX_DSI_PLL_CON0);
+		dsi_write(tmp_reg, base, MIPITX_DSI_PLL_CON0);
 
-		udelay(100);
-
-		tmp_reg = dsi_read(base + MIPITX_DSI_TOP_CON);
+		tmp_reg = dsi_read(base, MIPITX_DSI_TOP_CON);
 		tmp_reg = (tmp_reg & (~(RG_DSI_LNT_HS_BIAS_EN |
 			RG_DSI_LNT_IMP_CAL_EN |
 			RG_DSI_LNT_TESTMODE_EN)));
-		dsi_write(tmp_reg, base + MIPITX_DSI_TOP_CON);
+		dsi_write(tmp_reg, base, MIPITX_DSI_TOP_CON);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI0_CLOCK_LANE);
+		tmp_reg = dsi_read(base, MIPITX_DSI0_CLOCK_LANE);
 		tmp_reg = tmp_reg & (~RG_DSI0_LNTC_LDOOUT_EN);
-		dsi_write(tmp_reg, base + MIPITX_DSI0_CLOCK_LANE);
+		dsi_write(tmp_reg, base, MIPITX_DSI0_CLOCK_LANE);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI0_DATA_LANE0);
+		tmp_reg = dsi_read(base, MIPITX_DSI0_DATA_LANE0);
 		tmp_reg = tmp_reg & (~RG_DSI0_LNT0_LDOOUT_EN);
-		dsi_write(tmp_reg, base + MIPITX_DSI0_DATA_LANE0);
+		dsi_write(tmp_reg, base, MIPITX_DSI0_DATA_LANE0);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI0_DATA_LANE1);
+		tmp_reg = dsi_read(base, MIPITX_DSI0_DATA_LANE1);
 		tmp_reg = tmp_reg & (~RG_DSI0_LNT1_LDOOUT_EN);
-		dsi_write(tmp_reg, base + MIPITX_DSI0_DATA_LANE1);
+		dsi_write(tmp_reg, base, MIPITX_DSI0_DATA_LANE1);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI0_DATA_LANE2);
+		tmp_reg = dsi_read(base, MIPITX_DSI0_DATA_LANE2);
 		tmp_reg = tmp_reg & (~RG_DSI0_LNT2_LDOOUT_EN);
-		dsi_write(tmp_reg, base + MIPITX_DSI0_DATA_LANE2);
+		dsi_write(tmp_reg, base, MIPITX_DSI0_DATA_LANE2);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI0_DATA_LANE3);
+		tmp_reg = dsi_read(base, MIPITX_DSI0_DATA_LANE3);
 		tmp_reg = tmp_reg & (~RG_DSI0_LNT3_LDOOUT_EN);
-		dsi_write(tmp_reg, base + MIPITX_DSI0_DATA_LANE3);
+		dsi_write(tmp_reg, base, MIPITX_DSI0_DATA_LANE3);
 
-		mdelay(1);
-
-		tmp_reg = dsi_read(base + MIPITX_DSI0_CON);
+		tmp_reg = dsi_read(base, MIPITX_DSI0_CON);
 		tmp_reg = tmp_reg & (~(RG_DSI0_CKG_LDOOUT_EN |
 			RG_DSI0_LDOCORE_EN));
-		dsi_write(tmp_reg, base + MIPITX_DSI0_CON);
+		dsi_write(tmp_reg, base, MIPITX_DSI0_CON);
 
-		tmp_reg = dsi_read(base + MIPITX_DSI_BG_CON);
+		tmp_reg = dsi_read(base, MIPITX_DSI_BG_CON);
 		tmp_reg = tmp_reg & (~(RG_DSI_BG_CKEN | RG_DSI_BG_CORE_EN));
-		dsi_write(tmp_reg, base + MIPITX_DSI_BG_CON);
-
-		mdelay(1);
+		dsi_write(tmp_reg, base, MIPITX_DSI_BG_CON);
 	}
 
 	if (on) {
-		tmp_reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+		tmp_reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 		tmp_reg = (tmp_reg | RG_DSI0_MPPLL_PLL_EN);
-		dsi_write(tmp_reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+		dsi_write(tmp_reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 	} else {
-		tmp_reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+		tmp_reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 		tmp_reg = (tmp_reg & (~RG_DSI0_MPPLL_PLL_EN));
-		dsi_write(tmp_reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+		dsi_write(tmp_reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 	}
 }
 
 static void dsi_phy_clk_setting(struct mtk_dsi *dsi)
 {
-	unsigned int data_rate = dsi->pll_clk_rate * 2;
+	unsigned int data_rate = dsi->vm.pixelclock * 3 * 21 /(1 * 1000 * 10);
 	unsigned int txdiv = 0;
 	unsigned int txdiv0 = 0;
 	unsigned int txdiv1 = 0;
@@ -162,7 +157,7 @@ static void dsi_phy_clk_setting(struct mtk_dsi *dsi)
 	u32 reg;
 	u32 temp;
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_BG_CON);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_BG_CON);
 	reg = (reg & (~RG_DSI_V032_SEL)) | (4 << 17);
 	reg = (reg & (~RG_DSI_V04_SEL)) | (4 << 14);
 	reg = (reg & (~RG_DSI_V072_SEL)) | (4 << 11);
@@ -170,30 +165,28 @@ static void dsi_phy_clk_setting(struct mtk_dsi *dsi)
 	reg = (reg & (~RG_DSI_V12_SEL)) | (4 << 5);
 	reg = (reg & (~RG_DSI_BG_CKEN)) | (1 << 1);
 	reg = (reg & (~RG_DSI_BG_CORE_EN)) | (1);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_BG_CON);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_BG_CON);
 
-	udelay(1000);
+	udelay(30);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_TOP_CON);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_TOP_CON);
 	reg = (reg & (~RG_DSI_LNT_IMP_CAL_CODE)) | (8 << 4);
 	reg = (reg & (~RG_DSI_LNT_HS_BIAS_EN)) | (1 << 1);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_TOP_CON);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_TOP_CON);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI0_CON);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI0_CON);
 	reg = (reg & (~RG_DSI0_CKG_LDOOUT_EN)) | (1 << 1);
 	reg = (reg & (~RG_DSI0_LDOCORE_EN)) | (1);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI0_CON);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI0_CON);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_PWR);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_PWR);
 	reg = (reg & (~RG_DSI_MPPLL_SDM_PWR_ON)) | (1 << 0);
 	reg = (reg & (~RG_DSI_MPPLL_SDM_ISO_EN));
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_PWR);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_PWR);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 	reg = (reg & (~RG_DSI0_MPPLL_PLL_EN));
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
-
-	udelay(1000);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 
 	if (data_rate > 1250) {
 		txdiv = 1;
@@ -222,7 +215,7 @@ static void dsi_phy_clk_setting(struct mtk_dsi *dsi)
 	} else {
 	}
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 
 	switch (txdiv) {
 	case 1:
@@ -251,7 +244,7 @@ static void dsi_phy_clk_setting(struct mtk_dsi *dsi)
 		break;
 	}
 	reg = (reg & (~RG_DSI0_MPPLL_PREDIV));
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 
 	/*
 	 * PLL PCW config
@@ -263,48 +256,49 @@ static void dsi_phy_clk_setting(struct mtk_dsi *dsi)
 	 */
 	pcw = data_rate * txdiv / 13;
 	temp = data_rate * txdiv % 13;
-	reg = ((pcw & 0x7F) << 24) + (((256 * temp / 13) & 0xFF) << 16) +
+	reg = ((pcw & 0x7f) << 24) + (((256 * temp / 13) & 0xff) << 16) +
 	      (((256 * (256 * temp % 13) / 13) & 0xFF) << 8) +
-	      ((256 * (256 * (256 * temp % 13) % 13) / 13) & 0xFF);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON2);
+	      ((256 * (256 * (256 * temp % 13) % 13) / 13) & 0xff);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON2);
 
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON1);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON1);
 	reg = (reg & (~RG_DSI0_MPPLL_SDM_FRA_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON1);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON1);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI0_CLOCK_LANE);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI0_CLOCK_LANE);
 	reg = (reg & (~RG_DSI0_LNTC_LDOOUT_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI0_CLOCK_LANE);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI0_CLOCK_LANE);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE0);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE0);
 	reg = (reg & (~RG_DSI0_LNT0_LDOOUT_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE0);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE0);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE1);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE1);
 	reg = (reg & (~RG_DSI0_LNT1_LDOOUT_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE1);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE1);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE2);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE2);
 	reg = (reg & (~RG_DSI0_LNT2_LDOOUT_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE2);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE2);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE3);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE3);
 	reg = (reg & (~RG_DSI0_LNT3_LDOOUT_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI0_DATA_LANE3);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI0_DATA_LANE3);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 	reg = (reg & (~RG_DSI0_MPPLL_PLL_EN)) | (1 << 0);
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON0);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON0);
 
-	udelay(1000);
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON1);
+	udelay(40);
+
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON1);
 	reg = (reg & (~RG_DSI0_MPPLL_SDM_SSC_EN));
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_PLL_CON1);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_PLL_CON1);
 
-	reg = dsi_read(dsi->dsi_tx_reg_base + MIPITX_DSI_TOP_CON);
+	reg = dsi_read(dsi->dsi_tx_reg_base, MIPITX_DSI_TOP_CON);
 	reg = (reg & (~RG_DSI_PAD_TIE_LOW_EN));
-	dsi_write(reg, dsi->dsi_tx_reg_base + MIPITX_DSI_TOP_CON);
+	dsi_write(reg, dsi->dsi_tx_reg_base, MIPITX_DSI_TOP_CON);
 
 }
 
@@ -334,7 +328,7 @@ static void dsi_phy_timconfig(struct mtk_dsi *dsi)
 	if ((timcon0 & HS_PRPR) == 0)
 		timcon0 = (timcon0 & (~HS_PRPR)) | 1 << 8;
 
-	timcon0 =  (timcon0 & (~HS_ZERO)) | 0xA << 16;
+	timcon0 =  (timcon0 & (~HS_ZERO)) | 0xa << 16;
 	timcon0 =  (timcon0 & (~LPX)) | 5;
 
 	if ((timcon0 & LPX) == 0)
@@ -369,18 +363,18 @@ static void dsi_phy_timconfig(struct mtk_dsi *dsi)
 	timcon3 =  (timcon3 & (~CLK_HS_POST)) |
 		   (NS_TO_CYCLE((80 + 52 * ui), cycle_time) << 8);
 
-	dsi_write(timcon0, dsi->dsi_reg_base + DSI_PHY_TIMECON0);
-	dsi_write(timcon1, dsi->dsi_reg_base + DSI_PHY_TIMECON1);
-	dsi_write(timcon2, dsi->dsi_reg_base + DSI_PHY_TIMECON2);
-	dsi_write(timcon3, dsi->dsi_reg_base + DSI_PHY_TIMECON3);
+	dsi_write(timcon0, dsi->dsi_reg_base, DSI_PHY_TIMECON0);
+	dsi_write(timcon1, dsi->dsi_reg_base, DSI_PHY_TIMECON1);
+	dsi_write(timcon2, dsi->dsi_reg_base, DSI_PHY_TIMECON2);
+	dsi_write(timcon3, dsi->dsi_reg_base, DSI_PHY_TIMECON3);
 
 }
 
 
 static void mtk_dsi_reset(struct mtk_dsi *dsi)
 {
-	dsi_write(3, dsi->dsi_reg_base + DSI_CON_CTRL);
-	dsi_write(2, dsi->dsi_reg_base + DSI_CON_CTRL);
+	dsi_write(3, dsi->dsi_reg_base, DSI_CON_CTRL);
+	dsi_write(2, dsi->dsi_reg_base, DSI_CON_CTRL);
 }
 
 
@@ -400,25 +394,25 @@ static void dsi_clk_ulp_mode(struct mtk_dsi *dsi, u8 enter)
 {
 	u32 tmp_reg1;
 
-	tmp_reg1 = dsi_read(dsi->dsi_reg_base + DSI_PHY_LCCON);
+	tmp_reg1 = dsi_read(dsi->dsi_reg_base, DSI_PHY_LCCON);
 
 	if (enter) {
 		tmp_reg1 = tmp_reg1 & (~LC_HS_TX_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 		udelay(100);
 		tmp_reg1 = tmp_reg1 & (~LC_ULPM_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 		udelay(100);
 
 	} else {
 		tmp_reg1 = tmp_reg1 & (~LC_ULPM_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 		udelay(100);
 		tmp_reg1 = tmp_reg1 | LC_WAKEUP_EN;
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 		udelay(100);
 		tmp_reg1 = tmp_reg1 & (~LC_WAKEUP_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 		udelay(100);
 
 	}
@@ -429,26 +423,26 @@ static void dsi_lane0_ulp_mode(struct mtk_dsi *dsi, u8 enter)
 {
 	u32 tmp_reg1;
 
-	tmp_reg1 = dsi_read(dsi->dsi_reg_base + DSI_PHY_LD0CON);
+	tmp_reg1 = dsi_read(dsi->dsi_reg_base, DSI_PHY_LD0CON);
 
 	if (enter) {
 
 		tmp_reg1 = tmp_reg1 & (~LD0_HS_TX_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LD0CON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LD0CON);
 		udelay(100);
 		tmp_reg1 = tmp_reg1 & (~LD0_ULPM_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LD0CON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LD0CON);
 		udelay(100);
 
 	} else {
 		tmp_reg1 = tmp_reg1 & (~LD0_ULPM_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LD0CON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LD0CON);
 		udelay(100);
 		tmp_reg1 = tmp_reg1 | LD0_WAKEUP_EN;
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LD0CON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LD0CON);
 		udelay(100);
 		tmp_reg1 = tmp_reg1 & (~LD0_WAKEUP_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LD0CON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LD0CON);
 		udelay(100);
 
 	}
@@ -459,7 +453,7 @@ static u8 dsi_clk_hs_state(struct mtk_dsi *dsi)
 
 	u32 tmp_reg1;
 
-	tmp_reg1 = dsi_read(dsi->dsi_reg_base + DSI_PHY_LCCON);
+	tmp_reg1 = dsi_read(dsi->dsi_reg_base, DSI_PHY_LCCON);
 
 	return ((tmp_reg1 & LC_HS_TX_EN) == 1) ? 1 : 0;
 }
@@ -469,14 +463,14 @@ static void dsi_clk_hs_mode(struct mtk_dsi *dsi, u8 enter)
 {
 	u32 tmp_reg1;
 
-	tmp_reg1 = dsi_read(dsi->dsi_reg_base + DSI_PHY_LCCON);
+	tmp_reg1 = dsi_read(dsi->dsi_reg_base, DSI_PHY_LCCON);
 
 	if (enter && !dsi_clk_hs_state(dsi)) {
 		tmp_reg1 = tmp_reg1 | LC_HS_TX_EN;
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 	} else if (!enter && dsi_clk_hs_state(dsi)) {
 		tmp_reg1 = tmp_reg1 & (~LC_HS_TX_EN);
-		dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PHY_LCCON);
+		dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PHY_LCCON);
 	}
 }
 
@@ -498,7 +492,7 @@ static void  dsi_set_mode(struct mtk_dsi *dsi)
 
 	}
 
-	dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_MODE_CTRL);
+	dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_MODE_CTRL);
 }
 
 static void dsi_ps_control(struct mtk_dsi *dsi)
@@ -515,7 +509,7 @@ static void dsi_ps_control(struct mtk_dsi *dsi)
 	else
 		dsi_buffer_bpp = 3;
 
-	ps_wc = vm->vactive * dsi_buffer_bpp;
+	ps_wc = vm->hactive * dsi_buffer_bpp;
 
 	tmp_reg = ps_wc;
 
@@ -536,9 +530,9 @@ static void dsi_ps_control(struct mtk_dsi *dsi)
 
 	tmp_hstx_cklp_wc = ps_wc;
 
-	dsi_write(vm->vactive, dsi->dsi_reg_base + DSI_VACT_NL);
-	dsi_write(tmp_reg, dsi->dsi_reg_base + DSI_PSCTRL);
-	dsi_write(tmp_hstx_cklp_wc, dsi->dsi_reg_base + DSI_HSTX_CKL_WC);
+	dsi_write(vm->vactive, dsi->dsi_reg_base, DSI_VACT_NL);
+	dsi_write(tmp_reg, dsi->dsi_reg_base, DSI_PSCTRL);
+	dsi_write(tmp_hstx_cklp_wc, dsi->dsi_reg_base, DSI_HSTX_CKL_WC);
 }
 
 static void dsi_rxtx_control(struct mtk_dsi *dsi)
@@ -556,14 +550,14 @@ static void dsi_rxtx_control(struct mtk_dsi *dsi)
 		tmp_reg = 7 << 2;
 		break;
 	case 4:
-		tmp_reg = 0xF << 2;
+		tmp_reg = 0xf << 2;
 		break;
 	default:
-		tmp_reg = 0xF << 2;
+		tmp_reg = 0xf << 2;
 		break;
 	}
 
-	dsi_write(tmp_reg, dsi->dsi_reg_base + DSI_TXRX_CTRL);
+	dsi_write(tmp_reg, dsi->dsi_reg_base, DSI_TXRX_CTRL);
 }
 
 static void dsi_ps_control_for_vdo_timing(struct mtk_dsi *dsi)
@@ -596,22 +590,46 @@ static void dsi_ps_control_for_vdo_timing(struct mtk_dsi *dsi)
 
 	tmp_reg1 = tmp_reg1 + ((dsi->vm.hactive * dsi_buffer_bpp) & DSI_PS_WC);
 
-	dsi_write(tmp_reg1, dsi->dsi_reg_base + DSI_PSCTRL);
+	dsi_write(tmp_reg1, dsi->dsi_reg_base, DSI_PSCTRL);
 }
 
 
 static void dsi_config_vdo_timing(struct mtk_dsi *dsi)
 {
+	unsigned int horizontal_sync_active_byte;
+	unsigned int horizontal_backporch_byte;
+	unsigned int horizontal_frontporch_byte;
+	unsigned int dsiTmpBufBpp;
+
 	struct videomode *vm = &dsi->vm;
 
-	dsi_write(vm->vsync_len, dsi->dsi_reg_base + DSI_VSA_NL);
-	dsi_write(vm->vback_porch, dsi->dsi_reg_base + DSI_VBP_NL);
-	dsi_write(vm->vfront_porch, dsi->dsi_reg_base + DSI_VFP_NL);
-	dsi_write(vm->vactive, dsi->dsi_reg_base + DSI_VACT_NL);
+	if (dsi->format == MIPI_DSI_FMT_RGB565)
+		dsiTmpBufBpp = 2;
+	else
+		dsiTmpBufBpp = 3;
 
-	dsi_write(vm->hsync_len, dsi->dsi_reg_base + DSI_HSA_WC);
-	dsi_write(vm->hback_porch, dsi->dsi_reg_base + DSI_HBP_WC);
-	dsi_write(vm->hfront_porch, dsi->dsi_reg_base + DSI_HFP_WC);
+	dsi_write(vm->vsync_len, dsi->dsi_reg_base, DSI_VSA_NL);
+	dsi_write(vm->vback_porch, dsi->dsi_reg_base, DSI_VBP_NL);
+	dsi_write(vm->vfront_porch, dsi->dsi_reg_base, DSI_VFP_NL);
+	dsi_write(vm->vactive, dsi->dsi_reg_base, DSI_VACT_NL);
+
+	if (dsi->mode_flags & MIPI_DSI_MODE_VIDEO_SYNC_PULSE) {
+		horizontal_sync_active_byte = (vm->hsync_len * dsiTmpBufBpp -
+			10);
+		horizontal_backporch_byte = (vm->hback_porch * dsiTmpBufBpp -
+			10);
+	} else {
+		horizontal_sync_active_byte = (vm->hsync_len * dsiTmpBufBpp -
+			10);
+		horizontal_backporch_byte = ((vm->hback_porch + vm->hsync_len) *
+			dsiTmpBufBpp - 10);
+	}
+
+	horizontal_frontporch_byte = (vm->hfront_porch * dsiTmpBufBpp - 12);
+
+	dsi_write(horizontal_sync_active_byte, dsi->dsi_reg_base, DSI_HSA_WC);
+	dsi_write(horizontal_backporch_byte, dsi->dsi_reg_base, DSI_HBP_WC);
+	dsi_write(horizontal_frontporch_byte, dsi->dsi_reg_base, DSI_HFP_WC);
 
 	dsi_ps_control_for_vdo_timing(dsi);
 
@@ -620,8 +638,8 @@ static void dsi_config_vdo_timing(struct mtk_dsi *dsi)
 
 static void mtk_dsi_start(struct mtk_dsi *dsi)
 {
-	dsi_write(0, dsi->dsi_reg_base + DSI_START);
-	dsi_write(1, dsi->dsi_reg_base + DSI_START);
+	dsi_write(0, dsi->dsi_reg_base, DSI_START);
+	dsi_write(1, dsi->dsi_reg_base, DSI_START);
 }
 
 static void mtk_dsi_poweroff(struct mtk_dsi *dsi)
@@ -693,14 +711,13 @@ int mtk_dsi_int(struct videomode *mode)
 	dsi->vm.vfront_porch = mode->vfront_porch;
 	dsi->vm.vsync_len = mode->vsync_len;
 
+	MTKFBDPF("mtk_dsi_int : ps8640_init\n");
+	ps8640_init();
+
+	mdelay(2500);
+
 	MTKFBDPF("mtk_dsi_int : mtk_output_dsi_enable\n");
 	mtk_output_dsi_enable();
-
-	MTKFBDPF("mtk_dsi_int : it6151_init\n");
-	it6151_init(dsi->vm.hactive);
-
-	MTKFBDPF("mtk_dsi_int : it6151_pre_enable\n");
-	it6151_pre_enable();
 
 	return 0;
 }
