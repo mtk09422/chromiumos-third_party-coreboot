@@ -20,7 +20,6 @@
 chip soc/mediatek/mt8173
 	device cpu_cluster 0 on
 		device cpu 0 on end
-		device cpu 1 on end
 	end
 	register "framebuffer_bits_per_pixel" = "16"
 	register "pixelclock" = "76000"
