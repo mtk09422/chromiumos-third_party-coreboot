@@ -22,7 +22,14 @@
 #ifndef __ARCH_MEMLAYOUT_H
 #define __ARCH_MEMLAYOUT_H
 
-/* TODO: add SRAM TTB region and figure out the correct size/alignment for it */
+#define TTB(addr, size) \
+	REGION(ttb, addr, size, 4K) \
+	_ = ASSERT(size >= 4K, "TTB must be at least 4K!");
+
+#define DMA_COHERENT(addr, size) \
+	REGION(dma_coherent, addr, size, 4K) \
+	_ = ASSERT(size % 4K == 0, \
+		"DMA buffer should be multiple of smallest page size (4K)!");
 
 /* ARM64 stacks need 16-byte alignment. The ramstage will set up its own stacks
  * in BSS, so this is only used for the SRAM stages. */
