@@ -243,8 +243,23 @@ enum {
 	MD1_PWR_STA_MASK   = 0x1 << 0,
 };
 
+enum {
+	FREQ_SP,
+	FREQ_HP
+};
+
+enum {
+	FCLK_VENCPLL	= 0x1 << 0,
+	FCLK_VCODECPLL	= 0x1 << 1,
+	FCLK_MMPLL	= 0x1 << 2,
+	FCLK_AXI_CK	= 0x1 << 3,
+	FCLK_VENCLT_CK	= 0x1 << 4,
+	FCLK_CCI400_CK	= 0x1 << 5
+};
+
 void mt_pll_post_init(void);
 void mt_pll_init(void);
 void mt_arm_pll_sel(void);
+void mt_vcore_pll_adjust(void);
 
 #endif /* SOC_MEDIATEK_MT8173_PLL_H */

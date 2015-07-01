@@ -22,6 +22,7 @@
 #include <delay.h>
 #include <soc/addressmap.h>
 #include <soc/pll.h>
+#include <soc/pmic.h>
 
 #define GENMASK(h, l)	(((1U << ((h) - (l) + 1)) - 1) << (l))
 
@@ -347,6 +348,77 @@ static int pll_set_rate(const struct pll *pll, unsigned long rate)
 	return 0;
 }
 
+static void set_freq(int mode, unsigned long clks)
+{
+	int wait_pll = 0;
+
+	if (clks & FCLK_VENCPLL) {
+		if (mode == FREQ_SP) {
+			/* 660 MHz */
+			pll_set_rate(&plls[APMIXED_VENCPLL], 660 * MHZ);
+		} else if (mode == FREQ_HP) {
+			/* 800 MHz */
+			pll_set_rate(&plls[APMIXED_VENCPLL], 800 * MHZ);
+		}
+		wait_pll = 1;
+	}
+
+	if (clks & FCLK_VCODECPLL) {
+		if (mode == FREQ_SP) {
+			/* 384 MHz (1152 / 3) */
+			pll_set_rate(&plls[APMIXED_VCODECPLL], 1152 * MHZ);
+		} else if (mode == FREQ_HP) {
+			/* 494 MHz (1482 / 3) */
+			pll_set_rate(&plls[APMIXED_VCODECPLL], 1482 * MHZ);
+		}
+		wait_pll = 1;
+	}
+
+	if (clks & FCLK_MMPLL) {
+		if (mode == FREQ_SP) {
+			/* 455 MHz */
+			pll_set_rate(&plls[APMIXED_MMPLL], 455 * MHZ);
+		} else if (mode == FREQ_HP) {
+			/* 600 MHz */
+			pll_set_rate(&plls[APMIXED_MMPLL], 600 * MHZ);
+		}
+		wait_pll = 1;
+	}
+
+	if (clks & FCLK_AXI_CK) {
+		if (mode == FREQ_SP) {
+			/* axi_ck = 208 MHz (UNIVPLL2_D2) */
+			mux_set_sel(&muxes[TOP_AXI_SEL], 5);
+		} else if (mode == FREQ_HP) {
+			/* axi_ck = 273 MHz (SYSPLL1_D2) */
+			mux_set_sel(&muxes[TOP_AXI_SEL], 1);
+		}
+	}
+
+	if (clks & FCLK_VENCLT_CK) {
+		if (mode == FREQ_SP) {
+			/* venclite_ck = 312 MHz (UNIVPLL1_D2) */
+			mux_set_sel(&muxes[TOP_VENC_LT_SEL], 6);
+		} else if (mode == FREQ_HP) {
+			/* venclite_ck = 370.5 MHz (VCODECPLL_370P5_CK) */
+			mux_set_sel(&muxes[TOP_VENC_LT_SEL], 10);
+		}
+	}
+
+	if (clks & FCLK_CCI400_CK) {
+		if (mode == FREQ_SP) {
+			/* cci400_ck = 546 MHz (SYSPLL_D2) */
+			mux_set_sel(&muxes[TOP_CCI400_SEL], 5);
+		} else if (mode == FREQ_HP) {
+			/* cci400_ck = 624 MHz (UNIVPLL_D2) */
+			mux_set_sel(&muxes[TOP_CCI400_SEL], 4);
+		}
+	}
+
+	if (wait_pll)
+		udelay(5);
+}
+
 void mt_pll_init(void)
 {
 	u32 reg_value;
@@ -479,6 +551,20 @@ void mt_pll_init(void)
 	/* enable scpsys clock off control */
 	write32((void *)(uintptr_t)CLK_SCP_CFG_0, 0x7FF);
 	write32((void *)(uintptr_t)CLK_SCP_CFG_1, 0x15);
+}
+
+void mt_vcore_pll_adjust(void)
+{
+	/* Vcore 1.125v */
+	mt6391_write(PMIC_RG_VCORE_CON9, 0x44, 0x7F, 0);
+	mt6391_write(PMIC_RG_VCORE_CON10, 0x44, 0x7F, 0);
+
+	set_freq(FREQ_HP, FCLK_MMPLL);
+	set_freq(FREQ_HP, FCLK_AXI_CK);
+	set_freq(FREQ_HP, FCLK_CCI400_CK);
+	set_freq(FREQ_HP, FCLK_VENCPLL);
+	set_freq(FREQ_HP, FCLK_VCODECPLL);
+	set_freq(FREQ_HP, FCLK_VENCLT_CK);
 }
 
 /* after pmic_init */
