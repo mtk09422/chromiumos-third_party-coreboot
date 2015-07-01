@@ -98,6 +98,8 @@ static void configure_usb(void)
 	switch (board_id()) {
 	case 0:
 		break; /* Rev0 doesn't have USB Hub */
+	case 3:
+		configure_rts5411();
 	default:
 		/* Config Cypress HX3 USB3 Hub */
 		configure_hx3();

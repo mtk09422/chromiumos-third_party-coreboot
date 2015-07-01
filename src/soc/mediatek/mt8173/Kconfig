@@ -19,6 +19,7 @@ config SOC_MEDIATEK_MT8173
 	select MEDIATEK_DISPLAY_INIT
 	select DEBUG_CBFS
 	select HAVE_USB_HUB_HX3
+	select HAVE_USB_HUB_RTS5411
 	select HAVE_HARD_RESET
 
 if SOC_MEDIATEK_MT8173
@@ -32,6 +33,12 @@ config HAVE_USB_HUB_HX3
 	default n
 	help
 	  Initial & config the Cypress USB Hub HX3 via I2C bus
+
+config HAVE_USB_HUB_RTS5411
+	bool "Initial external Realtek USB Hub RTS5411"
+	default n
+	help
+	  Initial & config the Realtek USB Hub RTS5411 via I2C bus
 
 config DEBUG_SOC_DRIVER
 	bool "The top level switch for soc driver debug message"

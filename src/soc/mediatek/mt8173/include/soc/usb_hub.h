@@ -24,4 +24,7 @@
 /* Config Cypress HX3 USB Hub */
 void configure_hx3(void);
 
+/* Config Realtek RTS5411 USB Hub */
+void configure_rts5411(void);
+
 #endif
