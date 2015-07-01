@@ -24,6 +24,7 @@
 #include <cbfs.h>
 #include <console/console.h>
 #include <timestamp.h>
+#include <soc/mmu_operations.h>
 
 void main(void)
 {
@@ -37,6 +38,8 @@ void main(void)
 	}
 
 	bootblock_mainboard_init();
+
+	mt8173_vboot2_mmu_init();
 
 	if (IS_ENABLED(CONFIG_VBOOT2_VERIFY_FIRMWARE))
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,

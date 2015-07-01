@@ -51,6 +51,29 @@ static void mt8173_memrange_init(void)
 	mmu_config_range(_ttb, _ttb_size, SECURE_MEM);
 }
 
+static void mt8173_sramrange_init(void)
+{
+	mmu_init(NULL, (uint64_t *)_ttb, _ttb_size);
+
+	/* Set 0x0 to end of dram as device memory */
+	mmu_config_range(0, (uintptr_t)_dram + dram_size, DEV_MEM);
+
+	/* SRAM is cached */
+	mmu_config_range(_sram_l2c, _sram_l2c_size + _sram_size, CACHED_MEM);
+
+	/* DMA is non-cached and is reserved for TPM & da9212 I2C DMA */
+	mmu_config_range(_dma_coherent, _dma_coherent_size, UNCACHED_MEM);
+
+	/* set ttb as secure */
+	mmu_config_range(_ttb, _ttb_size, SECURE_MEM);
+}
+
+void mt8173_vboot2_mmu_init(void)
+{
+	mt8173_sramrange_init();
+	mmu_enable();
+}
+
 void mt8173_mmu_init(void)
 {
 	/* Return L2C from SRAM.

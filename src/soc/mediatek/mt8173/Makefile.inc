@@ -28,6 +28,7 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 bootblock-y += wdt.c
+bootblock-y += mmu_operations.c
 
 ################################################################################
 
@@ -39,6 +40,7 @@ verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 verstage-y += timer.c cpu_lib.S
 verstage-y += wdt.c
 verstage-y += cbfs.c
+verstage-y += mmu_operations.c
 
 ################################################################################
 

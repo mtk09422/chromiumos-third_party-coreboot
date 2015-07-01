@@ -22,6 +22,7 @@
 #include <arch/hlt.h>
 #include <arch/stages.h>
 #include <console/console.h>
+#include <soc/mmu_operations.h>
 #include <soc/verstage.h>
 #include <symbols.h>
 #include <timestamp.h>
@@ -40,6 +41,8 @@ void main(void)
 	console_init();
 	exception_init();
 	verstage_mainboard_init();
+
+	mt8173_mmu_enable();
 
 	entry = vboot2_verify_firmware();
 

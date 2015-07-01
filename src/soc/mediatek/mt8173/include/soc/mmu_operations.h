@@ -29,6 +29,7 @@ enum {
 	UNCACHED_MEM	= MA_MEM | MA_NS | MA_RW | MA_MEM_NC,
 };
 
+void mt8173_vboot2_mmu_init(void);
 void mt8173_mmu_init(void);
 void mt8173_mmu_enable(void);
 
