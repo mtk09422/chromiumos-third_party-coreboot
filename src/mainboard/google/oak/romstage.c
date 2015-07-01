@@ -20,6 +20,7 @@
 #include <arch/cpu.h>
 #include <arch/exception.h>
 #include <arch/io.h>
+#include <arch/mmu.h>
 #include <arch/stages.h>
 
 #include <cbfs.h>
@@ -29,6 +30,8 @@
 #include <symbols.h>
 #include <timestamp.h>
 
+#include <soc/mmu_operations.h>
+
 void main(void)
 {
 	void *entry = NULL;
@@ -37,6 +40,8 @@ void main(void)
 	/* init uart baudrate when pll on */
 	console_init();
 	exception_init();
+
+	mt8173_mmu_init();
 
 	timestamp_add_now(TS_START_COPYRAM);
 

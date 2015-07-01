@@ -17,19 +17,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/clock.h>
-#include <arch/cpu.h>
-#include <arch/stages.h>
-#include <soc/mmu_operations.h>
+#ifndef __SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
+#define __SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
 
-void arm64_arch_timer_init(void)
-{
-	const uint32_t freq = 13 * MHz;
-        // Set the cntfrq register.
-        set_cntfrq(freq);
-}
+#include <arch/mmu.h>
 
-void arm64_soc_init(void)
-{
-	mt8173_mmu_enable();
-}
+enum {
+	DEV_MEM		= MA_DEV | MA_S  | MA_RW,
+	CACHED_MEM	= MA_MEM | MA_NS | MA_RW,
+	SECURE_MEM	= MA_MEM | MA_S  | MA_RW,
+	UNCACHED_MEM	= MA_MEM | MA_NS | MA_RW | MA_MEM_NC,
+};
+
+void mt8173_mmu_init(void);
+void mt8173_mmu_enable(void);
+
+#endif //__SOC_MEDIATEK_MT8173_MMU_OPERATIONS_H__
