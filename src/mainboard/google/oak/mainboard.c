@@ -18,12 +18,25 @@
  */
 
 #include <arch/cache.h>
+#include <arch/io.h>
 #include <boot/coreboot_tables.h>
 #include <device/device.h>
+#include <edid.h>
 #include <soc/display.h>
+#include <soc/ddp.h>
+
+static void configure_hdmi(void)
+{
+	u32 reg;
+
+	reg = read32((void *)DISPSYS_CONFIG_BASE + DISP_REG_CONFIG_HDMI_EN);
+	reg = reg & 0xffff7fff;
+	write32((void *)DISPSYS_CONFIG_BASE + DISP_REG_CONFIG_HDMI_EN, reg);
+}
 
 static void mainboard_init(device_t dev)
 {
+	configure_hdmi();
 }
 
 static void mainboard_enable(device_t dev)
