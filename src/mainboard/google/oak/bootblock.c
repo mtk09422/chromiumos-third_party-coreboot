@@ -22,6 +22,7 @@
 #include <delay.h>
 #include <soc/mt8173.h>
 #include <soc/pericfg.h>
+#include <soc/pll.h>
 #include <soc/pmic.h>
 #include <soc/pmic_wrap_init.h>
 #include <soc/wdt.h>
@@ -38,10 +39,16 @@ void bootblock_mainboard_init(void)
 
 	init_timer();
 
+	mt_pll_init();
+
 	pwrap_init_preloader();
 
 	/* init pmic i2c interface and pmic */
 	pmic_init();
+
+	/* post init pll */
+	mt_pll_post_init();
+	mt_arm_pll_sel();
 
 	/* init watch dog, will disable AP watch dog */
 	mtk_wdt_init();
