@@ -17,27 +17,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/cache.h>
-#include <boot/coreboot_tables.h>
-#include <device/device.h>
-#include <soc/display.h>
+#ifndef _IT6151_H_
+#define _IT6151_H_
 
-static void mainboard_init(device_t dev)
-{
-}
+void it6151_enable(void);
+void it6151_disable(void);
+void it6151_pre_enable(void);
+int  it6151_init(u32 hactive);
 
-static void mainboard_enable(device_t dev)
-{
-	dev->ops->init = &mainboard_init;
-}
-
-struct chip_operations mainboard_ops = {
-	.name = "oak",
-	.enable_dev = mainboard_enable,
-};
-
-void mainboard_power_on_backlight(void)
-{
-
-}
+#endif
 

@@ -24,6 +24,9 @@
 #include <gic.h>
 
 #include <soc/addressmap.h>
+#include <soc/display.h>
+#include <vendorcode/google/chromeos/chromeos.h>
+#include "chip.h"
 
 static void soc_read_resources(device_t dev)
 {
@@ -66,6 +69,14 @@ static void soc_init(device_t dev)
 	printk(BIOS_INFO, "CPU: Mediatek MT8173\n");
 
 	arch_initialize_cpus(dev, &cntrl_ops);
+
+#if IS_ENABLED(CONFIG_MEDIATEK_DISPLAY_INIT)
+	if (vboot_skip_display_init())
+		printk(BIOS_INFO, "Skipping display init.\n");
+	else
+		mt8173_display_init(dev);
+#endif
+
 }
 
 static struct device_operations soc_ops = {

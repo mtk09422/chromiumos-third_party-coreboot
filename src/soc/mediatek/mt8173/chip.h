@@ -17,27 +17,25 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/cache.h>
-#include <boot/coreboot_tables.h>
-#include <device/device.h>
-#include <soc/display.h>
 
-static void mainboard_init(device_t dev)
-{
-}
+#ifndef __SOC_MEDIATEK_MT8173_CHIP_H__
+#define __SOC_MEDIATEK_MT8173_CHIP_H__
 
-static void mainboard_enable(device_t dev)
-{
-	dev->ops->init = &mainboard_init;
-}
+#include <soc/gpio.h>
 
-struct chip_operations mainboard_ops = {
-	.name = "oak",
-	.enable_dev = mainboard_enable,
+struct soc_mediatek_mt8173_config {
+	u32 framebuffer_bits_per_pixel;
+
+	u32 pixelclock;
+	u32 hactive;
+	u32 hfront_porch;
+	u32 hback_porch;
+	u32 hsync_len;
+	u32 vactive;
+	u32 vfront_porch;
+	u32 vback_porch;
+	u32 vsync_len;
+
 };
 
-void mainboard_power_on_backlight(void)
-{
-
-}
-
+#endif /* __SOC_MEDIATEK_MT8173_CHIP_H__ */
