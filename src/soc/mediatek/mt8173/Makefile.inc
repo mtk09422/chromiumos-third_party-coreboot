@@ -27,6 +27,8 @@ ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
+bootblock-y += wdt.c
+
 ################################################################################
 
 romstage-y += cpu_lib.S

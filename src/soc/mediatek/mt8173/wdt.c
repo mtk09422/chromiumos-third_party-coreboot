@@ -17,27 +17,40 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/io.h>
-#include <console/console.h>
 #include <delay.h>
-#include <soc/mt8173.h>
-#include <soc/pericfg.h>
+#include <console/console.h>
+#include <arch/io.h>
 #include <soc/wdt.h>
 
-extern void bootblock_soc_init(void);
+static struct mt8173_wdt_regs * const mt8173_wdt = (void *)RGU_BASE;
 
-void bootblock_mainboard_init(void);
-
-void bootblock_mainboard_init(void)
+int mtk_wdt_init(void)
 {
+	uint32_t wdt_sta;
 
-	/* Clear UART0 power down signal */
-	clrbits_le32(&mt8173_pericfg->pdn0_set, PERICFG_UART0_PDN);
+	/* Write Mode register will clear status register */
+	wdt_sta = read32(&mt8173_wdt->wdt_status);
 
-	init_timer();
+	if (wdt_sta)
+		printk(BIOS_INFO, "WDT_STATUS: %#x\n", wdt_sta);
+	else
+		printk(BIOS_INFO, "WDT does not trigger reboot\n");
 
-	/* init watch dog, will disable AP watch dog */
-	mtk_wdt_init();
+	/* Config HW reboot mode */
+	clrsetbits_le32(&mt8173_wdt->wdt_mode,
+			MTK_WDT_MODE_DUAL_MODE | MTK_WDT_MODE_IRQ |
+			MTK_WDT_MODE_EXT_POL | MTK_WDT_MODE_ENABLE,
+			MTK_WDT_MODE_EXTEN | MTK_WDT_MODE_KEY);
 
-	bootblock_soc_init();
+	printk(BIOS_INFO, "%s  WDT_MODE: %#x\n", __func__,
+	       read32(&mt8173_wdt->wdt_mode));
+	return wdt_sta;
+}
+
+void hard_reset(void)
+{
+	write32(&mt8173_wdt->wdt_swrst, MTK_WDT_SWRST_KEY);
+
+	while (1)
+		;
 }

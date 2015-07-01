@@ -17,27 +17,42 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <arch/io.h>
-#include <console/console.h>
-#include <delay.h>
-#include <soc/mt8173.h>
-#include <soc/pericfg.h>
-#include <soc/wdt.h>
+#ifndef SOC_MEDIATEK_MT8173_WDT_H
+#define SOC_MEDIATEK_MT8173_WDT_H
 
-extern void bootblock_soc_init(void);
+#include <stdint.h>
+#include <soc/addressmap.h>
 
-void bootblock_mainboard_init(void);
+struct mt8173_wdt_regs {
+	u32 wdt_mode;
+	u32 wdt_length;
+	u32 wdt_restart;
+	u32 wdt_status;
+	u32 wdt_interval;
+	u32 wdt_swrst;
+	u32 wdt_swsysrst;
+	u32 reserved[9];
+	u32 wdt_debug_ctrl;
+};
 
-void bootblock_mainboard_init(void)
-{
+/*WDT_MODE*/
+enum {
+	MTK_WDT_MODE_KEY = 0x22000000,
 
-	/* Clear UART0 power down signal */
-	clrbits_le32(&mt8173_pericfg->pdn0_set, PERICFG_UART0_PDN);
+	MTK_WDT_MODE_DUAL_MODE = 1 << 6,
+	MTK_WDT_MODE_IRQ = 1 << 3,
+	MTK_WDT_MODE_EXTEN = 1 << 2,
+	MTK_WDT_MODE_EXT_POL = 1 << 1,
+	MTK_WDT_MODE_ENABLE = 1 << 0
+};
 
-	init_timer();
+/*WDT_SWRST*/
+enum {
+	MTK_WDT_SWRST_KEY = 0x1209
+};
 
-	/* init watch dog, will disable AP watch dog */
-	mtk_wdt_init();
+int mtk_wdt_init(void);
+void hard_reset(void);
 
-	bootblock_soc_init();
-}
+#endif /* SOC_MEDIATEK_MT8173_WDT_H */
+
