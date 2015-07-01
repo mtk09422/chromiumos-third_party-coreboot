@@ -81,6 +81,8 @@ ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += ddp.c
 ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += dsi.c
 ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += it6151.c
 
+ramstage-y += usb.c
+
 ################################################################################
 
 TYPE=sf
