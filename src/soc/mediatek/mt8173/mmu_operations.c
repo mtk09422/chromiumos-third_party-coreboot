@@ -32,6 +32,9 @@ static const uint64_t dram_size = (uint64_t)CONFIG_DRAM_SIZE_MB * MiB;
 
 static void mt8173_memrange_init(void)
 {
+	uint64_t tz_start;
+	size_t tz_size;
+
 	/* keep xlat table in sram */
 	mmu_init(NULL, (uint64_t *)_ttb, _ttb_size);
 
@@ -46,6 +49,11 @@ static void mt8173_memrange_init(void)
 
 	/* DRAM is cached */
 	mmu_config_range(_dram, dram_size, CACHED_MEM);
+
+	/* Add trustzone carveout region */
+	carveout_range(CARVEOUT_TZ, &tz_start, &tz_size);
+	tz_start *= MiB;
+	mmu_config_range((void *)tz_start, tz_size * MiB, SECURE_MEM);
 
 	/* set ttb as secure */
 	mmu_config_range(_ttb, _ttb_size, SECURE_MEM);

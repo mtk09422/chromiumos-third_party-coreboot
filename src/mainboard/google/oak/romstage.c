@@ -31,6 +31,7 @@
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
+#include <soc/addressmap.h>
 #include <soc/mmu_operations.h>
 
 void main(void)
@@ -42,6 +43,7 @@ void main(void)
 	console_init();
 	exception_init();
 
+	trustzone_region_init();
 	mt8173_mmu_init();
 
 	entry = vboot2_load_ramstage();
