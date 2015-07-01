@@ -2,6 +2,7 @@ source src/soc/broadcom/Kconfig
 source src/soc/imgtec/Kconfig
 source src/soc/intel/Kconfig
 source src/soc/marvell/Kconfig
+source src/soc/mediatek/Kconfig
 source src/soc/nvidia/Kconfig
 source src/soc/qualcomm/Kconfig
 source src/soc/samsung/Kconfig
