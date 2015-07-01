@@ -16,24 +16,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
+#include <arm_tf.h>
 
-#ifndef __SOC_MEDIATEK_MT8173_MTCMOS_H__
-#define __SOC_MEDIATEK_MT8173_MTCMOS_H__
+/* Special value used to verify platform parameters from BL2 to BL3-1.
+ * The value must be same with the one defined in ARM TF mediatek platform
+ * code.
+ */
+enum { MT_BL31_PLAT_PARAM_VAL = 0x0f1e2d3c4b5a6978ULL };
 
-enum {
-	STA_POWER_DOWN = 0,
-	STA_POWER_ON = 1
-};
-
-enum {
-	CPU_ID_LITTLE_CPU0 = 0,
-	CPU_ID_LITTLE_CPU1 = 1,
-	CPU_ID_BIG_CPU0 = 4,
-	CPU_ID_BIG_CPU1 = 5,
-};
-
-/* Interface to control specified CPU(linear_id) power on/off */
-int mtcmos_ctrl_cpu(unsigned int linear_id, int state, int check_wfi);
-void mtcmos_ctrl_disp(int state);
-void mtcmos_ctrl_audio(int state);
-#endif /* __SOC_MEDIATEK_MT8173_MTCMOS_H__ */
+void *soc_get_bl31_plat_params(bl31_params_t *bl31_params)
+{
+	return (void *)MT_BL31_PLAT_PARAM_VAL;
+}

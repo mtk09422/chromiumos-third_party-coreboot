@@ -47,7 +47,7 @@ verstage-y += mmu_operations.c
 
 ################################################################################
 
-romstage-y += cpu_lib.S
+romstage-y += cpu_lib.S cpu.c
 romstage-y += cbfs.c
 romstage-y += timer.c
 
@@ -67,7 +67,7 @@ ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
 ramstage-y += spi.c
 ramstage-y += cbfs.c
-ramstage-y += soc.c
+ramstage-y += soc.c cpu.c mtcmos.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += pmic_wrap_init.c pmic.c i2c.c
@@ -84,6 +84,12 @@ ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += it6151.c
 ramstage-y += usb.c
 ramstage-$(CONFIG_HAVE_USB_HUB_HX3) += usb_hub_hx3_config.c
 ramstage-$(CONFIG_HAVE_USB_HUB_RTS5411) += usb_hub_rts5411_config.c
+
+ramstage-$(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE) += bl31_plat_param.c
+
+ifeq ($(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE),y)
+BL31_MAKEARGS += PLAT=mt8173
+endif
 
 ################################################################################
 

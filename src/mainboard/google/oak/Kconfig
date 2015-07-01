@@ -43,6 +43,10 @@ config MAINBOARD_PART_NUMBER
 	string
 	default "oak"
 
+config MAX_CPUS
+	int
+	default 2
+
 config DRAM_SIZE_MB
 	int
 	default 2048
@@ -66,5 +70,9 @@ config DRIVER_TPM_I2C_ADDR
 config VBOOT_RAMSTAGE_INDEX
 	hex
 	default 0x3
+
+config VBOOT_BL31_INDEX
+	hex
+	default 0x4
 
 endif # BOARD_GOOGLE_OAK

@@ -22,6 +22,7 @@
 #include <device/device.h>
 #include <symbols.h>
 #include <gic.h>
+#include <soc/cpu.h>
 
 #include <soc/addressmap.h>
 #include <soc/display.h>
@@ -56,6 +57,7 @@ static size_t cntrl_total_cpus(void)
 
 static int cntrl_start_cpu(unsigned int id, void (*entry)(void))
 {
+	start_cpu(id, (uintptr_t)entry);
 	return 0;
 }
 
@@ -86,10 +88,30 @@ static struct device_operations soc_ops = {
 
 static void enable_soc_dev(device_t dev)
 {
-	dev->ops = &soc_ops;
+	if (dev->path.type == DEVICE_PATH_CPU_CLUSTER)
+		dev->ops = &soc_ops;
 }
 
 struct chip_operations soc_mediatek_mt8173_ops = {
 	CHIP_NAME("SOC Mediatek MT8173\n")
 	    .enable_dev = enable_soc_dev,
+};
+
+static void mt8173_cpu_init(device_t cpu)
+{
+}
+
+static const struct cpu_device_id ids[] = {
+	{ 0x410fd032 },	/* A53 */
+	{ 0x410fd072 },	/* A57 */
+	{ CPU_ID_END },
+};
+
+static struct device_operations cpu_dev_ops = {
+	.init = mt8173_cpu_init,
+};
+
+static const struct cpu_driver driver __cpu_driver = {
+	.ops	  = &cpu_dev_ops,
+	.id_table = ids,
 };

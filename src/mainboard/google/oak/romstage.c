@@ -32,6 +32,7 @@
 #include <vendorcode/google/chromeos/chromeos.h>
 
 #include <soc/addressmap.h>
+#include <soc/cpu.h>
 #include <soc/mmu_operations.h>
 
 void main(void)
@@ -45,6 +46,8 @@ void main(void)
 
 	trustzone_region_init();
 	mt8173_mmu_init();
+
+	set_secondary_cpu_boot_arm64();
 
 	entry = vboot2_load_ramstage();
 

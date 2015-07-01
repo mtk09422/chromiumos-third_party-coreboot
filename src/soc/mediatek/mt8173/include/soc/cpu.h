@@ -17,23 +17,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SOC_MEDIATEK_MT8173_MTCMOS_H__
-#define __SOC_MEDIATEK_MT8173_MTCMOS_H__
+#ifndef __SOC_MEDIATEK_MT8173_CPU_H__
+#define __SOC_MEDIATEK_MT8173_CPU_H__
 
-enum {
-	STA_POWER_DOWN = 0,
-	STA_POWER_ON = 1
-};
+/* Ask a core to enter sleep mode, and boot to entry_64 address upon wakeup */
+void cpu_sleep(unsigned int cpu, uintptr_t entry_64);
 
-enum {
-	CPU_ID_LITTLE_CPU0 = 0,
-	CPU_ID_LITTLE_CPU1 = 1,
-	CPU_ID_BIG_CPU0 = 4,
-	CPU_ID_BIG_CPU1 = 5,
-};
+/* Wakeup a core specified by cpu id */
+void cpu_wakeup(unsigned cpu);
 
-/* Interface to control specified CPU(linear_id) power on/off */
-int mtcmos_ctrl_cpu(unsigned int linear_id, int state, int check_wfi);
-void mtcmos_ctrl_disp(int state);
-void mtcmos_ctrl_audio(int state);
-#endif /* __SOC_MEDIATEK_MT8173_MTCMOS_H__ */
+/* Start a core in 64-bit mode at the entry_64 address. */
+void start_cpu(unsigned int cpu, uintptr_t entry_64);
+
+/* Config secondary CPUs to boot in 64-bit mode */
+void set_secondary_cpu_boot_arm64(void);
+
+#endif /* __SOC_MEDIATEK_MT8173_CPU_H__ */
