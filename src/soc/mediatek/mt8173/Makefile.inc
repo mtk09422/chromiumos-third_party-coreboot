@@ -20,6 +20,7 @@
 bootblock-y += bootblock.c
 bootblock-y += cpu_lib.S
 bootblock-y += cbfs.c
+bootblock-y += spi.c
 bootblock-y += timer.c
 
 ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
@@ -36,6 +37,7 @@ ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
+romstage-y += spi.c
 romstage-y += addressmap.c
 romstage-y += mmu_operations.c
 
@@ -43,6 +45,7 @@ romstage-y += mmu_operations.c
 
 ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
+ramstage-y += spi.c
 ramstage-y += cbfs.c
 ramstage-y += soc.c
 ramstage-y += timer.c
