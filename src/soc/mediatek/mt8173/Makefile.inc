@@ -29,7 +29,7 @@ bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
 bootblock-y += gpio.c gpio_init.c pmic_wrap_init.c pmic.c i2c.c da9212.c
-bootblock-y += wdt.c
+bootblock-y += wdt.c rtc.c
 bootblock-y += mmu_operations.c
 
 ################################################################################
