@@ -19,11 +19,14 @@
 
 #include <arch/cache.h>
 #include <arch/io.h>
+#include <boardid.h>
 #include <boot/coreboot_tables.h>
 #include <device/device.h>
 #include <edid.h>
+#include <gpio.h>
 #include <soc/display.h>
 #include <soc/ddp.h>
+#include <soc/usb.h>
 
 static void configure_hdmi(void)
 {
@@ -34,8 +37,25 @@ static void configure_hdmi(void)
 	write32((void *)DISPSYS_CONFIG_BASE + DISP_REG_CONFIG_HDMI_EN, reg);
 }
 
+#define USB_PORT_SWITCH_GPIO 3
+
+static void usb_port_switch(void)
+{
+	switch (board_id()) {
+	case 0:
+		/* Rev0: switch download port to type A */
+		gpio_output(USB_PORT_SWITCH_GPIO, 1);
+		break;
+	default:
+		break;
+	}
+
+}
+
 static void mainboard_init(device_t dev)
 {
+	setup_usb_host();
+	usb_port_switch();
 	configure_hdmi();
 }
 
