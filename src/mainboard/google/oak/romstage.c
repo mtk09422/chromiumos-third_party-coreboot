@@ -24,6 +24,7 @@
 #include <arch/stages.h>
 
 #include <cbfs.h>
+#include <cbmem.h>
 #include <console/console.h>
 #include <delay.h>
 #include <romstage_handoff.h>
@@ -33,7 +34,9 @@
 
 #include <soc/addressmap.h>
 #include <soc/cpu.h>
+#include <soc/memory.h>
 #include <soc/mmu_operations.h>
+#include <soc/pll.h>
 
 void main(void)
 {
@@ -44,8 +47,18 @@ void main(void)
 	console_init();
 	exception_init();
 
+	/* init memory */
+	mt_mempll_pre();
+	mt_mempll_post();
+	/* set mem_clk */
+	write32((void *)(uintptr_t)CLK_CFG_0, 0x01000105);
+	mt_mem_init();
+
 	trustzone_region_init();
 	mt8173_mmu_init();
+
+	/* should be called after memory init */
+	cbmem_initialize_empty();
 
 	set_secondary_cpu_boot_arm64();
 

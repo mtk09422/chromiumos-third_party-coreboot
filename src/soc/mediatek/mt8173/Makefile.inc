@@ -49,6 +49,7 @@ verstage-y += mmu_operations.c
 
 romstage-y += cpu_lib.S cpu.c
 romstage-y += cbfs.c
+romstage-y += pll.c mempll.c
 romstage-y += timer.c
 
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
@@ -58,7 +59,9 @@ romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 romstage-y += spi.c
 romstage-y += gpio.c gpio_init.c
 romstage-y += pmic_wrap_init.c i2c.c pmic.c da9212.c
+romstage-y += stdlib.c memory.c
 romstage-y += addressmap.c
+romstage-y += emi.c dramc_pi_basic_api.c dramc_pi_calibration_api.c
 romstage-y += mmu_operations.c
 
 ################################################################################
