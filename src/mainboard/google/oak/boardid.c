@@ -17,30 +17,45 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __MAINBOARD_GOOGLE_OAK_GPIO_H__
-#define __MAINBOARD_GOOGLE_OAK_GPIO_H__
-
+#include <boardid.h>
 #include <gpio.h>
+#include <console/console.h>
+#include <stdlib.h>
+#include "gpio.h"
 
-enum {
-	LID		= 12,
-	/* Board ID related GPIOS. */
-	BOARD_ID_0	= 55,
-	BOARD_ID_1	= 56,
-	BOARD_ID_2	= 53,
-	/* Board ID related GPIOS. */
-	RAM_ID_0	= 54,
-	RAM_ID_1	= 51,
-	RAM_ID_2	= 52,
-	RAM_ID_3	= 49,
-	/* Warm reset */
-	AP_SYS_RESET_L	= 121,
-	/* Write Protect */
-	WRITE_PROTECT_L	= 4,
-	/* Power button - Depending on board id, maybe active high / low */
-	POWER_BUTTON	= 14,
-	/* EC in RW signal */
-	EC_IN_RW	= 34,
-};
+static int board_id_value = -1;
 
-#endif /* __MAINBOARD_GOOGLE_OAK_GPIO_H__ */
+static uint8_t get_board_id(void)
+{
+	uint8_t bid;
+	bid = gpio_get(BOARD_ID_0) << 0 |
+	      gpio_get(BOARD_ID_1) << 1 |
+	      gpio_get(BOARD_ID_2) << 2;
+
+	if (bid == 4)
+		bid = 0;
+
+	printk(BIOS_INFO, "Board ID %d\n", bid);
+
+	return bid;
+}
+
+uint8_t board_id(void)
+{
+	if (board_id_value < 0)
+		board_id_value = get_board_id();
+
+	return board_id_value;
+}
+
+uint32_t ram_code(void)
+{
+	uint32_t code;
+
+	code = gpio_get(RAM_ID_0) << 0 |
+	       gpio_get(RAM_ID_1) << 1 |
+	       gpio_get(RAM_ID_2) << 2 |
+	       gpio_get(RAM_ID_3) << 3;
+
+	return code;
+}

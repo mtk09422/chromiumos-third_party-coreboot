@@ -18,6 +18,7 @@
 ##
 
 bootblock-y += memlayout.ld
+bootblock-y += boardid.c
 bootblock-c-ccopts += -mstrict-align
 
 verstage-y += chromeos.c
@@ -26,10 +27,12 @@ verstage-c-ccopts += -mstrict-align
 
 romstage-y += romstage.c
 romstage-y += memlayout.ld
+romstage-y += boardid.c
 romstage-c-ccopts += -mstrict-align
 
 ramstage-y += mainboard.c
 ramstage-y += chromeos.c
 ramstage-y += memlayout.ld
+ramstage-y += boardid.c
 
 INCLUDES += -Isrc/mainboard/google/oak/include
