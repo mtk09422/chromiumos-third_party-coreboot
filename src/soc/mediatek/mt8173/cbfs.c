@@ -18,8 +18,9 @@
  */
 
 #include <cbfs.h>
+#include <soc/nor_if.h>
 
 int init_default_cbfs_media(struct cbfs_media *media)
 {
-	return 0;
+	return init_mt8173_nor_cbfs_media(media);
 }

@@ -19,7 +19,7 @@
 
 bootblock-y += bootblock.c
 bootblock-y += cpu_lib.S
-bootblock-y += cbfs.c
+bootblock-y += cbfs.c nor_cbfs.c  blkdev.c nor_if.c
 bootblock-y += pll.c mtcmos.c
 bootblock-y += spi.c
 bootblock-y += timer.c
@@ -42,13 +42,13 @@ verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
 
 verstage-y += timer.c cpu_lib.S
 verstage-y += wdt.c
-verstage-y += cbfs.c
+verstage-y += cbfs.c nor_cbfs.c blkdev.c nor_if.c
 verstage-y += mmu_operations.c
 
 ################################################################################
 
 romstage-y += cpu_lib.S cpu.c
-romstage-y += cbfs.c
+romstage-y += cbfs.c nor_cbfs.c blkdev.c nor_if.c
 romstage-y += pll.c mempll.c
 romstage-y += timer.c
 
@@ -69,7 +69,7 @@ romstage-y += mmu_operations.c
 ramstage-y += cpu_lib.S
 ramstage-y += cbmem.c
 ramstage-y += spi.c
-ramstage-y += cbfs.c
+ramstage-y += cbfs.c nor_cbfs.c blkdev.c  nor_if.c
 ramstage-y += soc.c cpu.c mtcmos.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
