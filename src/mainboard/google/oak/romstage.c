@@ -27,18 +27,24 @@
 #include <delay.h>
 #include <romstage_handoff.h>
 #include <symbols.h>
+#include <timestamp.h>
 
 void main(void)
 {
 	void *entry = NULL;
+	timestamp_add_now(TS_START_ROMSTAGE);
 
 	/* init uart baudrate when pll on */
 	console_init();
 	exception_init();
 
+	timestamp_add_now(TS_START_COPYRAM);
+
 	if (entry == NULL)
 		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
 			CONFIG_CBFS_PREFIX "/ramstage");
+
+	timestamp_add_now(TS_END_ROMSTAGE);
 
 	stage_exit(entry);
 }
