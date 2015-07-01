@@ -28,7 +28,7 @@ ifeq ($(CONFIG_BOOTBLOCK_CONSOLE),y)
 bootblock-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
 
-bootblock-y += gpio.c gpio_init.c pmic_wrap_init.c pmic.c
+bootblock-y += gpio.c gpio_init.c pmic_wrap_init.c pmic.c i2c.c da9212.c
 bootblock-y += wdt.c
 bootblock-y += mmu_operations.c
 
@@ -57,7 +57,7 @@ endif
 romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
 romstage-y += spi.c
 romstage-y += gpio.c gpio_init.c
-romstage-y += pmic_wrap_init.c i2c.c pmic.c
+romstage-y += pmic_wrap_init.c i2c.c pmic.c da9212.c
 romstage-y += addressmap.c
 romstage-y += mmu_operations.c
 

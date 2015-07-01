@@ -20,6 +20,7 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <delay.h>
+#include <soc/da9212.h>
 #include <soc/gpio.h>
 #include <soc/mt8173.h>
 #include <soc/mtcmos.h>
@@ -51,6 +52,7 @@ void bootblock_mainboard_init(void)
 
 	/* init pmic i2c interface and pmic */
 	pmic_init();
+	da9212_probe();
 
 	mt_gpio_set_default_ext();
 
