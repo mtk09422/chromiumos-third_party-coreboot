@@ -23,10 +23,27 @@
 #include <symbols.h>
 #include <gic.h>
 
+#include <soc/addressmap.h>
+
 static void soc_read_resources(device_t dev)
 {
-	ram_resource(dev, 0, (uintptr_t)_dram / KiB,
-		     CONFIG_DRAM_SIZE_MB * KiB);
+	unsigned long index = 0;
+	int i; uintptr_t begin, end;
+	size_t size;
+	for (i = 0; i < CARVEOUT_NUM; i++) {
+		carveout_range(i, &begin, &size);
+		if (size == 0)
+			continue;
+		reserved_ram_resource(dev, index++, begin * KiB, size * KiB);
+	}
+
+	memory_in_range_below_4gb(&begin, &end);
+	size = end - begin;
+	ram_resource(dev, index++, begin * KiB, size * KiB);
+
+	memory_in_range_above_4gb(&begin, &end);
+	size = end - begin;
+	ram_resource(dev, index++, begin * KiB, size * KiB);
 }
 
 static size_t cntrl_total_cpus(void)
