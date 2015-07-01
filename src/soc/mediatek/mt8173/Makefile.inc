@@ -33,6 +33,7 @@ bootblock-y += mmu_operations.c
 ################################################################################
 
 verstage-y += verstage.c
+verstage-y += i2c.c
 verstage-y += spi.c
 
 verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
