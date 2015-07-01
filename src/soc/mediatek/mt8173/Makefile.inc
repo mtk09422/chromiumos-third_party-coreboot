@@ -20,7 +20,7 @@
 bootblock-y += bootblock.c
 bootblock-y += cpu_lib.S
 bootblock-y += cbfs.c
-bootblock-y += pll.c
+bootblock-y += pll.c mtcmos.c
 bootblock-y += spi.c
 bootblock-y += timer.c
 

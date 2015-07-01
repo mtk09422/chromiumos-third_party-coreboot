@@ -21,6 +21,7 @@
 #include <console/console.h>
 #include <delay.h>
 #include <soc/mt8173.h>
+#include <soc/mtcmos.h>
 #include <soc/pericfg.h>
 #include <soc/pll.h>
 #include <soc/pmic.h>
@@ -40,6 +41,8 @@ void bootblock_mainboard_init(void)
 	init_timer();
 
 	mt_pll_init();
+	mtcmos_ctrl_disp(STA_POWER_ON);
+	mtcmos_ctrl_audio(STA_POWER_ON);
 
 	pwrap_init_preloader();
 
