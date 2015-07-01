@@ -35,15 +35,19 @@ romstage-y += timer.c
 ifeq ($(CONFIG_EARLY_CONSOLE),y)
 romstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 endif
+romstage-$(CONFIG_DYNAMIC_CBMEM) += cbmem.c
+romstage-y += addressmap.c
 
 ################################################################################
 
 ramstage-y += cpu_lib.S
+ramstage-y += cbmem.c
 ramstage-y += cbfs.c
 ramstage-y += soc.c
 ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += ramstage.c
+ramstage-y += addressmap.c
 
 ################################################################################
 

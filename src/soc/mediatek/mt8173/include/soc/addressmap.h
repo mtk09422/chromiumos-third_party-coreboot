@@ -60,4 +60,15 @@ enum {
 	MTK_GICC_BASE		= 0x10222000
 };
 
+enum {
+	CARVEOUT_NUM
+};
+
+/* Find memory below and above 4GiB boundary repsectively. All units 1MiB. */
+void memory_in_range_below_4gb(uintptr_t *base_mib, uintptr_t *end_mib);
+void memory_in_range_above_4gb(uintptr_t *base_mib, uintptr_t *end_mib);
+
+/* Provided the careout id, obtain the base and size in 1MiB units. */
+void carveout_range(int id, uintptr_t *base_mib, size_t *size_mib);
+
 #endif /* __SOC_MEDIATEK_MT8173_INCLUDE_SOC_ADDRESS_MAP_H___ */
