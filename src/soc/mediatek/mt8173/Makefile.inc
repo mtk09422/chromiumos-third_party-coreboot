@@ -31,6 +31,17 @@ bootblock-y += wdt.c
 
 ################################################################################
 
+verstage-y += verstage.c
+verstage-y += spi.c
+
+verstage-$(CONFIG_CONSOLE_SERIAL) += uart.c
+
+verstage-y += timer.c cpu_lib.S
+verstage-y += wdt.c
+verstage-y += cbfs.c
+
+################################################################################
+
 romstage-y += cpu_lib.S
 romstage-y += cbfs.c
 romstage-y += timer.c
@@ -54,6 +65,7 @@ ramstage-y += timer.c
 ramstage-$(CONFIG_CONSOLE_SERIAL_UART) += uart.c
 ramstage-y += ramstage.c mmu_operations.c
 ramstage-y += addressmap.c
+ramstage-y += wdt.c
 
 ################################################################################
 

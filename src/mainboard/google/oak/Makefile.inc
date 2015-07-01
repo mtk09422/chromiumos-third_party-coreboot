@@ -20,6 +20,10 @@
 bootblock-y += memlayout.ld
 bootblock-c-ccopts += -mstrict-align
 
+verstage-y += chromeos.c
+verstage-y += memlayout.ld
+verstage-c-ccopts += -mstrict-align
+
 romstage-y += romstage.c
 romstage-y += memlayout.ld
 romstage-c-ccopts += -mstrict-align

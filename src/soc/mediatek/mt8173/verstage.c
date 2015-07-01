@@ -16,43 +16,34 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
-#include <arch/cache.h>
-#include <arch/cpu.h>
-#include <arch/exception.h>
-#include <arch/io.h>
-#include <arch/mmu.h>
-#include <arch/stages.h>
 
-#include <cbfs.h>
+#include <arch/cache.h>
+#include <arch/exception.h>
+#include <arch/hlt.h>
+#include <arch/stages.h>
 #include <console/console.h>
-#include <delay.h>
-#include <romstage_handoff.h>
+#include <soc/verstage.h>
 #include <symbols.h>
 #include <timestamp.h>
 #include <vendorcode/google/chromeos/chromeos.h>
 
-#include <soc/mmu_operations.h>
+void __attribute__((weak)) verstage_mainboard_init(void)
+{
+	/* Default empty implementation. */
+}
 
 void main(void)
 {
-	void *entry = NULL;
-	timestamp_add_now(TS_START_ROMSTAGE);
+	void *entry;
 
-	/* init uart baudrate when pll on */
+	timestamp_add_now(TS_START_VBOOT);
 	console_init();
 	exception_init();
+	verstage_mainboard_init();
 
-	mt8173_mmu_init();
+	entry = vboot2_verify_firmware();
 
-	entry = vboot2_load_ramstage();
-
-	timestamp_add_now(TS_START_COPYRAM);
-
-	if (entry == NULL)
-		entry = cbfs_load_stage(CBFS_DEFAULT_MEDIA,
-			CONFIG_CBFS_PREFIX "/ramstage");
-
-	timestamp_add_now(TS_END_ROMSTAGE);
-
-	stage_exit(entry);
+	if (entry)
+		stage_exit(entry);
+	hlt();
 }
