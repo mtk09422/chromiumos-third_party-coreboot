@@ -20,6 +20,7 @@
 #include <arch/io.h>
 #include <console/console.h>
 #include <delay.h>
+#include <soc/gpio.h>
 #include <soc/mt8173.h>
 #include <soc/mtcmos.h>
 #include <soc/pericfg.h>
@@ -44,10 +45,14 @@ void bootblock_mainboard_init(void)
 	mtcmos_ctrl_disp(STA_POWER_ON);
 	mtcmos_ctrl_audio(STA_POWER_ON);
 
+	mt_gpio_init();
+
 	pwrap_init_preloader();
 
 	/* init pmic i2c interface and pmic */
 	pmic_init();
+
+	mt_gpio_set_default_ext();
 
 	/* post init pll */
 	mt_pll_post_init();
