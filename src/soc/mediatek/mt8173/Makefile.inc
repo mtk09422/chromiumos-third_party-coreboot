@@ -82,6 +82,7 @@ ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += dsi.c
 ramstage-${CONFIG_MEDIATEK_DISPLAY_INIT} += it6151.c
 
 ramstage-y += usb.c
+ramstage-$(CONFIG_HAVE_USB_HUB_HX3) += usb_hub_hx3_config.c
 
 ################################################################################
 

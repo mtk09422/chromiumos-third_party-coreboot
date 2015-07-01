@@ -29,6 +29,7 @@
 #include <soc/pmic.h>
 #include <soc/spm.h>
 #include <soc/usb.h>
+#include <soc/usb_hub.h>
 
 static void configure_regulator(void)
 {
@@ -92,6 +93,18 @@ static inline void configure_vpu_sram(void)
 	write32(&mt8173_spm->vpu_sram_con, 0xfffffff0);
 }
 
+static void configure_usb(void)
+{
+	switch (board_id()) {
+	case 0:
+		break; /* Rev0 doesn't have USB Hub */
+	default:
+		/* Config Cypress HX3 USB3 Hub */
+		configure_hx3();
+		break;
+	}
+}
+
 static void mainboard_init(device_t dev)
 {
 	setup_usb_host();
@@ -99,6 +112,7 @@ static void mainboard_init(device_t dev)
 	configure_hdmi();
 	configure_vpu_sram();
 	configure_regulator();
+	configure_usb();
 }
 
 static void mainboard_enable(device_t dev)

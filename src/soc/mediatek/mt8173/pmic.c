@@ -290,6 +290,17 @@ static void pmic_default_buck_voltage(void)
 		/* set the power control by register(use original) */
 		mt6391_write(PMIC_RG_BUCK_CON3, 0x1, 0x1, 12);
 	}
+
+	/* Set VPCA7 to 1.2V */
+	mt6391_write(PMIC_RG_VPCA7_CON9, 0x50, PMIC_RG_VPCA7_VOSEL_MASK,
+		     PMIC_RG_VPCA7_VOSEL_SHIFT);
+	mt6391_write(PMIC_RG_VPCA7_CON10, 0x50, PMIC_RG_VPCA7_VOSEL_ON_MASK,
+		     PMIC_RG_VPCA7_VOSEL_ON_SHIFT);
+	/* Enable VGP6 */
+	mt6391_write(PMIC_RG_DIGLDO_CON10, 0x1, 0x1, 15);
+	/* Set VGP6 to 3.3V */
+	mt6391_write(PMIC_RG_DIGLDO_CON33, 0x07, 0x07, 5);
+
 }
 
 u32 pmic_init(void)
@@ -328,7 +339,7 @@ u32 pmic_init(void)
 		     PMIC_RG_VCA15_EN_SHIFT);
 	mt6391_write(PMIC_RG_VSRMCA15_CON7, 0x1, PMIC_RG_VSRMCA15_EN_MASK,
 		     PMIC_RG_VSRMCA15_EN_SHIFT);
-	mt6391_write(PMIC_RG_VPCA7_CON7, 0x0, PMIC_RG_VPCA7_EN_MASK,
+	mt6391_write(PMIC_RG_VPCA7_CON7, 0x1, PMIC_RG_VPCA7_EN_MASK,
 		     PMIC_RG_VPCA7_EN_SHIFT);
 	udelay(200); /* delay for Buck ready */
 

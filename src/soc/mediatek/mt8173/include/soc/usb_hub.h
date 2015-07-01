@@ -16,16 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
+/* Cypress HX3 USB Hub configuration */
 
-#ifndef SOC_MEDIATEK_MT8173_CUST_GPIO_USAGE_H
-#define SOC_MEDIATEK_MT8173_CUST_GPIO_USAGE_H
+#ifndef USB_HUB_H
+#define USB_HUB_H
 
-#define GPIO_EXT_BUCK_EN_A_PIN		6
+/* Config Cypress HX3 USB Hub */
+void configure_hx3(void);
 
-#define GPIO_EXT_BUCK_EN_B_PIN		0
-
-#define GPIO_EXT_BUCK_IC_EN_PIN		29
-
-#define GPIO_USB_HUB_HX3_RESET_L_PIN	101
-
-#endif /* SOC_MEDIATEK_MT8173_CUST_GPIO_USAGE_H */
+#endif
